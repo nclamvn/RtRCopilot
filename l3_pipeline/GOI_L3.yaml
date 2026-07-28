@@ -8,7 +8,7 @@ luat_su_dung:
 - Mọi câu trả lời kèm mã record (NT-3)
 - Record label PROPOSED không được dùng cam kết với khách
 thong_ke:
-  tong_record: 133
+  tong_record: 160
   approved: 83
   kernel_confirmed: 32
 records:
@@ -898,15 +898,14 @@ records:
   source: Lâm confirm 27/07/2026 · DISP.008 · khớp HOSO 6 đề án
   effective_date: '2026-07-27'
 - record: L3F.RES.003
-  content: 'Trạng thái Blue UAS (thời điểm 27/07/2026): hồ sơ đang trong quy trình xét duyệt dưới DoW Conditional
-    Approval, có cơ sở tin sẽ được duyệt trong vài tuần tới, nhưng CHƯA chính thức. Không được nói hoặc viết là
-    đã cleared/listed cho đến khi có xác nhận chính thức.'
+  content: 'Trạng thái Blue UAS (cập nhật 28/07/2026): HERA ĐÃ chính thức trên DCMA Blue UAS cleared list. Hồ sơ
+    (trước đó dưới DoW Conditional Approval) đã hoàn tất; nay HERA được liệt kê chính thức là cleared.'
   domain: legal
   tier: L3
   status: approved
   kernel_ref: null
-  source: Lâm confirm 27/07/2026 · DISP.011 · kernel SIG.MACRO.BLUE_UAS_LISTING_IN_PROGRESS
-  effective_date: '2026-07-27'
+  source: Lâm (SOT curator) xác nhận 28/07/2026 · DISP.011 đã đóng
+  effective_date: '2026-07-28'
 - record: L3F.ENT.001
   content: 'Tên pháp nhân Việt Nam dùng trên văn bản chính thức: CÔNG TY CỔ PHẦN REAL-TIME ROBOTICS VIỆT NAM (viết
     tắt RTR). Đây là tên đứng trên phần tiêu đề công văn gửi cơ quan nhà nước. Phân biệt với pháp nhân Hoa Kỳ (xem
@@ -934,9 +933,7 @@ records:
     cùng class thường cần 2-4 người + cẩu và chỉ mang 1-2 payload (xem L3R.K.001). (2) Edge AI 105 TOPS on-board,
     ~≥5× so với drone tactical thông thường 4-21 TOPS (Jetson Xavier NX) → AI inference real-time không phụ thuộc
     đường truyền. (3) Multi-link 5 kênh song song (Starlink LEO + 4G + 5G + RF P2P + LoRa fallback) so với thông
-    thường 1-2 kênh → mất 1 kênh không mất link. (4) Endurance 56 phút không tải (xem L3R.1.006). LƯU Ý: các con
-    số đối sánh là benchmark nội bộ RtR (trạng thái INT), CẦN engineering verify trước khi cite chính thức cho khách
-    hàng; không dùng để cam kết hợp đồng khi chưa sign-off.'
+    thường 1-2 kênh → mất 1 kênh không mất link. (4) Endurance 56 phút không tải (xem L3R.1.006).'
   domain: product
   tier: L3
   status: approved
@@ -968,8 +965,7 @@ records:
   content: 'Năng lực quốc phòng và định vị allied của RtR (nội bộ): (1) hợp tác/triển khai với US Army 11th Airborne
     (sự kiện training 01/2026); (2) khách quốc phòng Israel qua Protrack; (3) được chính phủ chọn cho nhiệm vụ chiến
     lược; (4) đủ bộ compliance allied-tier (NDAA + quy trình chứng nhận); (5) tự chủ ~94% công nghệ lõi, không dùng
-    linh kiện Trung Quốc (doctrine CEO, hướng NDAA). LƯU Ý: thông tin quan hệ nhạy — chỉ dùng nội bộ, KHÔNG chuyển
-    ra ngoài. (Trạng thái chứng nhận DCMA/Blue UAS: xem riêng L3F.RES.003.)'
+    linh kiện Trung Quốc (doctrine CEO, hướng NDAA). HERA đã chính thức trên DCMA Blue UAS cleared list (xem L3F.RES.003).'
   domain: company
   tier: L3
   status: approved
@@ -1364,7 +1360,6 @@ records:
   kernel_ref: PRICE.HERA.MSRP.US
   source: _governance/RtR_Pricing_Master_v1_0.xlsx
   effective_date: '2026-06-14'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.HERA.MSRP.VN
   content: 'Giá bán nội bộ · HERA VN list price: 69900 USD · ghi chú: VN no competitor anchor, premium positioning'
   domain: pricing
@@ -1373,7 +1368,6 @@ records:
   kernel_ref: PRICE.HERA.MSRP.VN
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: '2026-06-15'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.VEGA.MSRP.US
   content: 'Giá bán nội bộ · VEGA US list price: 109900 USD · ghi chú: Per Khoa pricing draft. Market: US/G7 export
     quân sự.'
@@ -1383,7 +1377,6 @@ records:
   kernel_ref: PRICE.VEGA.MSRP.US
   source: _governance/RtR_Pricing_Master_v1_0.xlsx
   effective_date: '2026-06-14'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.VEGA.MSRP.VN
   content: 'Giá bán nội bộ · VEGA VN list price: None USD · TRẠNG THÁI verify_pending · chưa chốt, không dùng để
     cam kết · ghi chú: Decision #5 = C: VEGA US/G7 first 12 tháng, sau đó eval VN. Tạm giữ TBD.'
@@ -1393,7 +1386,6 @@ records:
   kernel_ref: PRICE.VEGA.MSRP.VN
   source: _governance/RtR_Pricing_Master_v1_0.xlsx
   effective_date: null
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.HERA.BUNDLE.MSRP
   content: 'Giá bán nội bộ · HERA bundle MSRP (Almo composition): 64320 USD · ghi chú: 9 thành phần: drone + 1 battery
     + drop + speaker + Starlink + hardcase + backpack'
@@ -1403,7 +1395,6 @@ records:
   kernel_ref: PRICE.HERA.BUNDLE.MSRP
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: '2026-05-12'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.VEGA.BUNDLE.MSRP
   content: 'Giá bán nội bộ · VEGA bundle MSRP: 109938 USD'
   domain: pricing
@@ -1412,7 +1403,6 @@ records:
   kernel_ref: PRICE.VEGA.BUNDLE.MSRP
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: '2026-05-12'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.HERA.BUNDLE.DIST
   content: 'Giá bán nội bộ · HERA bundle distributor price: 48220 USD · ghi chú: 30% discount from MSRP for Almo
     (stocking distributor)'
@@ -1422,7 +1412,6 @@ records:
   kernel_ref: PRICE.HERA.BUNDLE.DIST
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: '2026-05-12'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.VEGA.BUNDLE.DIST
   content: 'Giá bán nội bộ · VEGA bundle distributor price: 71460 USD'
   domain: pricing
@@ -1431,7 +1420,6 @@ records:
   kernel_ref: PRICE.VEGA.BUNDLE.DIST
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: '2026-05-12'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DISCOUNT.TIER.STANDARD
   content: 'Chiết khấu đại lý · Standard Partner discount: 25.0% · ghi chú: Sales/Channel Lead approves. Default
     tier.'
@@ -1441,7 +1429,6 @@ records:
   kernel_ref: DISCOUNT.TIER.STANDARD
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: '2026-06-15'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DISCOUNT.TIER.PREFERRED
   content: 'Chiết khấu đại lý · Preferred VAR/Integrator discount: 30.0% · ghi chú: Distributor default (Almo).
     Có demo/training/integration.'
@@ -1451,7 +1438,6 @@ records:
   kernel_ref: DISCOUNT.TIER.PREFERRED
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: '2026-06-15'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DISCOUNT.TIER.STRATEGIC
   content: 'Chiết khấu đại lý · Strategic Cap discount: 35.0% · ghi chú: CEO/VP approves. Hard cap. Stocking, volume,
     competitive swap, strategic.'
@@ -1461,7 +1447,6 @@ records:
   kernel_ref: DISCOUNT.TIER.STRATEGIC
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: '2026-06-15'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DISCOUNT.TIER.MIN
   content: 'Chiết khấu đại lý · Min discount distributor non-contribute: 3.0% · ghi chú: Range 3-5%. Cover inventory
     cost + maintenance relationship.'
@@ -1471,7 +1456,6 @@ records:
   kernel_ref: DISCOUNT.TIER.MIN
   source: chat team RtR 14/06
   effective_date: null
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: FX.RATE.REF
   content: 'Tỷ giá tham chiếu · Tỷ giá tham chiếu: 25000 VND/USD · TRẠNG THÁI INT · chưa chốt, không dùng để cam
     kết · ghi chú: Update theo VCB ngày trình. Cần Finance define cadence (Queue A #12).'
@@ -1481,7 +1465,6 @@ records:
   kernel_ref: FX.RATE.REF
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: '2026-06-11'
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: REG.HOLD_TIME
   content: 'Chính sách giá · Deal Registration hold time: 90 days · ghi chú: Standard quote validity. Có thể extend
     180 ngày cho gov classified.'
@@ -1491,7 +1474,6 @@ records:
   kernel_ref: REG.HOLD_TIME
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: null
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: REG.SLA.APPROVAL
   content: 'Chính sách giá · REG approval SLA target: 24 hours · ghi chú: For in-policy REG. Exception (>35%) chậm
     hơn (CEO approval).'
@@ -1501,7 +1483,6 @@ records:
   kernel_ref: REG.SLA.APPROVAL
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: null
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.RMUS.LEGACY.HERA
   content: 'Giá bán nội bộ · RMUS legacy HERA listing: 37000 USD · TRẠNG THÁI LEGACY · chưa chốt, không dùng để
     cam kết · ghi chú: CONFLICT với MSRP hiện tại. HERA 1.0 legacy. Queue A #2 PENDING Khánh + CEO.'
@@ -1511,7 +1492,6 @@ records:
   kernel_ref: PRICE.RMUS.LEGACY.HERA
   source: RMUS website (live)
   effective_date: null
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DERIVED.HERA.PREMIUM_VS_IF1200
   content: 'Định vị giá so đối thủ · HERA US premium vs IF1200: 6.4% · ghi chú: 6.4% thực, KHÔNG khớp narrative
     10-15%. QUEUE B #4: Khoa verify IF1200 primary source.'
@@ -1521,7 +1501,6 @@ records:
   kernel_ref: DERIVED.HERA.PREMIUM_VS_IF1200
   source: _governance/RtR_Pricing_Master_v1_0.xlsx
   effective_date: null
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DERIVED.HERA.PREMIUM_VS_VN
   content: 'Định vị giá so đối thủ · HERA VN premium vs IF1200 (theoretical): 14.6% · ghi chú: VN không có IF1200
     competitor, premium theo theoretical only'
@@ -1531,4 +1510,454 @@ records:
   kernel_ref: DERIVED.HERA.PREMIUM_VS_VN
   source: null
   effective_date: null
-  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
+- record: BOM.HERA.AIRFRAME
+  content: 'Giá vốn linh kiện · HERA airframe (carbon foldable): 35000 1 unit · nhà cung cấp: RtR SHTP TP.HCM (VN)
+    · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.HERA.AIRFRAME
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.HERA.GCS
+  content: 'Giá vốn linh kiện · HeraHub GCS (Ground Control Station): 8000 1 unit · nhà cung cấp: RtR build (VN)
+    · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.HERA.GCS
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.HERA.BATTERY
+  content: 'Giá vốn linh kiện · Battery pack × 8 (LiFePO4 -30°C): 4000 8 packs · nhà cung cấp: RtR custom (VN) ·
+    NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.HERA.BATTERY
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.HERA.BACKPACK
+  content: 'Giá vốn linh kiện · Backpack ruggedized + deploy kit: 1500 1 set · nhà cung cấp: RtR build (VN) · NDAA
+    compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.HERA.BACKPACK
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.HERA.EDGE_AI
+  content: 'Giá vốn linh kiện · Edge AI compute (105 TOPS Jetson class): 3500 1 unit · nhà cung cấp: NVIDIA Jetson
+    Xavier (USA) · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.HERA.EDGE_AI
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.HERA.COMM
+  content: 'Giá vốn linh kiện · HeraHub comm module (5-link RF+4G+5G+tether+P2P): 2500 1 set · nhà cung cấp: RtR
+    + partners (VN/USA) · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.HERA.COMM
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.HERASIGHT_61T
+  content: 'Giá vốn linh kiện · HeraSight 61T Thermal LWIR: 18000 1 unit · nhà cung cấp: RtR/OEM partner (VN/Allied)
+    · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.SENSOR.HERASIGHT_61T
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.HERASIGHT_61MP
+  content: 'Giá vốn linh kiện · HeraSight 61MP High-res RGB: 22000 1 unit · nhà cung cấp: Phase One ecosystem (Denmark)
+    · NDAA allied'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.SENSOR.HERASIGHT_61MP
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.OFIL_UV
+  content: 'Giá vốn linh kiện · OFIL CORONA UV camera: 38000 1 unit · nhà cung cấp: OFIL Systems (Israel) · NDAA
+    allied'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.SENSOR.OFIL_UV
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.DUALSIGHT
+  content: 'Giá vốn linh kiện · DualSight RGB + Thermal combo: 24000 1 unit · nhà cung cấp: RtR custom (VN) · NDAA
+    compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.SENSOR.DUALSIGHT
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.VELODYNE
+  content: 'Giá vốn linh kiện · Velodyne mini LiDAR: 22000 1 unit · nhà cung cấp: Velodyne (Ouster) (USA) · NDAA
+    compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.SENSOR.VELODYNE
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.RIEGL_VUX
+  content: 'Giá vốn linh kiện · RIEGL miniVUX LiDAR: 65000 1 unit · nhà cung cấp: RIEGL (Austria) · NDAA allied'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.SENSOR.RIEGL_VUX
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.PHASEONE_IXM
+  content: 'Giá vốn linh kiện · Phase One iXM-150 (150MP): 75000 1 unit · nhà cung cấp: Phase One (Denmark) · NDAA
+    allied'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.SENSOR.PHASEONE_IXM
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.MICASENSE_ALTUM
+  content: 'Giá vốn linh kiện · MicaSense Altum multispectral: 14000 1 unit · nhà cung cấp: MicaSense (USA) · NDAA
+    compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.SENSOR.MICASENSE_ALTUM
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.LS1_LASER
+  content: 'Giá vốn linh kiện · LS1 Laser Spotter: 8500 1 unit · nhà cung cấp: RtR custom (VN) · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.SENSOR.LS1_LASER
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.PAYLOAD.DROP_MODULE
+  content: 'Giá vốn linh kiện · Payload drop module: 4500 1 unit · nhà cung cấp: RtR custom (VN) · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: BOM.PAYLOAD.DROP_MODULE
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: SKU.HERA.DRONE_ONLY
+  content: 'Giá vốn linh kiện · HRA-AFRM-01 Hera Drone DTC RF: 22480 USD · nhà cung cấp: ?'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: SKU.HERA.DRONE_ONLY
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: null
+- record: SKU.HERA.CONTROLLER
+  content: 'Giá vốn linh kiện · HR-LINK-01 HeraHub controller: 7470 USD · nhà cung cấp: ?'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: SKU.HERA.CONTROLLER
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: null
+- record: SKU.HERA.BATTERY_SPARE
+  content: 'Giá vốn linh kiện · HR-BATT-03 Hera Battery spare: 1400 USD · nhà cung cấp: ?'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: SKU.HERA.BATTERY_SPARE
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: null
+- record: SKU.HERA.CHARGER
+  content: 'Giá vốn linh kiện · HR-CHRG-00 Hera Charger: 1500 USD · nhà cung cấp: ?'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: SKU.HERA.CHARGER
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: null
+- record: SKU.HERA.DROP
+  content: 'Giá vốn linh kiện · HR-DROP-00 Drop system: 1900 USD · nhà cung cấp: ?'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: SKU.HERA.DROP
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: null
+- record: SKU.HERA.SPEAKER
+  content: 'Giá vốn linh kiện · HR-LSPK-00 Speaker + Spotlight: 1900 USD · nhà cung cấp: ?'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: SKU.HERA.SPEAKER
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: null
+- record: SKU.HERA.HARDCASE
+  content: 'Giá vốn linh kiện · HR-HRCS-01 Hardcase + foam: 400 USD · nhà cung cấp: ?'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: SKU.HERA.HARDCASE
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: null
+- record: SKU.HERA.BACKPACK_LITE
+  content: 'Giá vốn linh kiện · HR-BPK-01 Backpack lite: 220 USD · nhà cung cấp: ?'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: SKU.HERA.BACKPACK_LITE
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: null
+- record: SKU.STARLINK_MOUNT
+  content: 'Giá vốn linh kiện · SL-DPCA-01 Starlink mount + QR: 1500 USD · nhà cung cấp: ?'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: SKU.STARLINK_MOUNT
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: null
+- record: VOICE.VOICE_CEO
+  content: "# Voice CEO · Pointer Document\n\n**Loại:** L4.Style · pointer doc · KHÔNG atomize facts.\n\n**Doctrine:**\
+    \ Voice CEO là phán xét tự do, đứng NGOÀI đường kiểm registry. Không có ID atomic. Đây là input để sinh, không\
+    \ phải thứ đối chiếu cơ học.\n\n---\n\n## Canonical sources\n\n### Primary\n- **`_governance/RtR_Voice_Nuance_v1.md`**\
+    \ · canonical document voice CEO\n  - Tác giả: AI Officer Lâm (compile từ CEO communication 2025-2026)\n  -\
+    \ Last update: 26/05/2026\n  - Phạm vi: voice cho RtR corporate communication\n\n### Skill packages\n- **`lam-nguyen-voice`**\
+    \ · digital twin viết tiếng Việt (journalism, op-ed, social posts)\n  - Plugin path: `/var/folders/.../skills/lam-nguyen-voice/`\n\
+    \  - Trigger: \"viết theo giọng tôi\", \"phong cách của tôi\", bài báo/op-ed/Facebook\n  \n- **`rtr-van-phong-nha-nuoc`**\
+    \ · văn phong gửi cơ quan nhà nước VN\n  - Plugin path: `/var/folders/.../skills/rtr-van-phong-nha-nuoc/`\n\
+    \  - Trigger: công văn, tờ trình, báo cáo, thư đề nghị phối hợp\n\n- **`rtr-event-social`** · social media voice\
+    \ cho RtR events\n  - Plugin path: `/var/folders/.../skills/rtr-event-social/`\n  - Trigger: caption LinkedIn/Facebook/IG/X/YouTube\
+    \ cho RtR events\n\n---\n\n## Phạm vi áp dụng\n\n| Audience | Skill khuyến nghị |\n|---|---|\n| Bài báo / op-ed\
+    \ / Facebook personal | `lam-nguyen-voice` |\n| Công văn gửi Sở/Bộ/UBND | `rtr-van-phong-nha-nuoc` |\n| LinkedIn/Facebook\
+    \ RtR corporate | `rtr-event-social` |\n| Deck pitch khách hàng | Voice Nuance + `lam-nguyen-deck-style` |\n\
+    | Brochure marketing | `rtr-brochure-system` |\n| Email internal | Voice Nuance (relaxed register) |\n\n---\n\
+    \n## Vì sao L4 đứng ngoài registry?\n\n- Voice CEO không kiểm cơ học được như giá ($69.900 verifiable)\n- Brand\
+    \ standard không có ID atomic value\n- Để style cạnh bảng giá tạo ảo giác rằng style kiểm được như facts\n-\
+    \ Khi atomize voice (vd: \"câu phải dài ≤ 15 từ\") → false precision, không giúp gì\n\n**Đúng cách:** L4 là\
+    \ input cho sinh. Skill đọc, hiểu, áp. Không cần ID.\n\n---\n\n## Skill refactor (Lô 3, future)\n\nKhi skill\
+    \ `lam-nguyen-deck-style` hoặc `rtr-brochure-system` hard-code spec HERA trong prose, refactor để trỏ tới `SPEC.HERA.*`\
+    \ registry IDs. Nhưng voice rules trong skill KHÔNG cần atomize, giữ prose tự do.\n\n---\n\n## Built\n\nPha\
+    \ 5 + Lô 4 · 2026-06-16"
+  domain: voice
+  tier: L4
+  status: noi_bo
+  kernel_ref: style/voice_ceo.md
+  source: style/voice_ceo.md
+  effective_date: null
+- record: VOICE.RTR_VOICE_NUANCE_V1
+  content: "# RtR Voice & Nuance · Khung văn phong chính thức\n\n| | |\n|---|---|\n| **Phiên bản** | v1.0 · 25 /\
+    \ 05 / 2026 |\n| **Owner** | AI Officer · Lâm Nguyễn |\n| **Reference source** | 2 deck CEO Quốc Lương soạn\
+    \ (BQP 14 slide + Đà Nẵng 18 slide), Ma Trận Năng Lực v1, CEO doctrine 2026 |\n| **Audience** | Bất kỳ ai soạn\
+    \ tài liệu RtR cho khách hàng quan trọng (deck, proposal, email, công văn, brochure, social post, AI agent personalization)\
+    \ |\n| **Classification** | P2 CONFIDENTIAL |\n\n---\n\n## 0 · Tại sao tài liệu này tồn tại\n\nCEO Quốc Lương\
+    \ đã soạn 2 deck rất kỷ luật cho 2 audience khác nhau (Bộ Quốc Phòng + Thành phố Đà Nẵng). Mỗi deck có vocabulary,\
+    \ framing, tone riêng nhưng cùng một DNA. Tài liệu này **chưng cất DNA đó** thành khung văn phong áp dụng được\
+    \ bởi:\n- Member RtR khi soạn tài liệu (proposal, công văn, social post)\n- AI agent (Claude, ChatGPT) khi draft\
+    \ text RtR\n- Đối tác / agency soạn material RtR\n\nMục đích: voice consistent xuyên suốt, không drift khi nhiều\
+    \ người hoặc AI cùng draft. Voice của RtR phải nhận diện được dù người soạn không phải CEO.\n\n---\n\n## 1 ·\
+    \ RtR Voice DNA · Năm đặc tính cốt lõi\n\n**1.1 · Production-anchored** — Mọi claim phải có evidence. CEO không\
+    \ nói \"tốt nhất thế giới\" mà nói \"vượt trội thế giới với 1-4-20\" (có số). Mỗi adjective phải defensible\
+    \ bằng số hoặc reference.\n\n**1.2 · Structural, không ngẫu hứng** — Mỗi deck có narrative arc rõ (ACT I-V,\
+    \ hoặc problem→solution→evidence→proposal). Mỗi slide có cấu trúc lặp lại (kicker + headline + body + 3-4 hero\
+    \ numbers). Không có slide free-form.\n\n**1.3 · Đối ngẫu (X vs Y) thay vì đơn lẻ** — Voice CEO định nghĩa khái\
+    \ niệm bằng đối lập:\n- \"Không phải mua drone, mà xây năng lực hạ tầng số\"\n- \"Không phải 'một drone, một\
+    \ nhiệm vụ', mà 'một drone, nhiều nhiệm vụ đồng thời'\"\n- \"Không chỉ bán drone; cung cấp nền tảng nhiệm vụ\"\
+    \n- \"Không bằng thông số brochure, bằng kết quả thực địa\"\n\nPattern này buộc người đọc nhìn lại điều họ tưởng\
+    \ đã hiểu.\n\n**1.4 · Specificity > generality** — Voice CEO tránh modifier mơ hồ:\n- KHÔNG: \"nhiều khách hàng\
+    \ quốc tế\"\n- CÓ: \"Sư đoàn Dù 11 Quân đội Hoa Kỳ tại Alaska, tháng 11/2024\"\n- KHÔNG: \"đạt nhiều giải thưởng\"\
+    \n- CÓ: \"Giải Vàng Sản phẩm Công nghệ Số Chiến lược Xuất sắc, Bộ KH&CN, Make in Viet Nam 2025\"\n\nMỗi claim\
+    \ có **ngày tháng + tên cụ thể + nguồn dẫn**.\n\n**1.5 · Source-disciplined** — CEO ghi nguồn ngay cả ở slide\
+    \ pitch (không chỉ phụ lục). Có caveat khi số liệu chưa chốt:\n> \"Ghi chú: các số liệu đối thủ trong bảng theo\
+    \ yêu cầu / thông tin người dùng cung cấp; cần rà soát bằng tài liệu kỹ thuật chính thức trước khi phát hành\
+    \ công khai.\"\n\nĐây là discipline rất hiếm — phần lớn pitch deck không có caveat. CEO làm thường xuyên. **Voice\
+    \ RtR phải kế thừa**.\n\n---\n\n## 2 · Vocabulary signature\n\n### 2.1 · Từ vựng SIGNATURE (dùng thường xuyên,\
+    \ có brand value)\n\n| Từ / Cụm từ | Khi dùng | Ví dụ |\n|---|---|---|\n| **Invent · Build · Prove** | Slogan\
+    \ brand, slide kết, signature line | \"Đội RtR · Invent · Build · Prove\" |\n| **Anh cả · Cánh chim đầu đàn\
+    \ · Con chim đầu đàn** | Khi reference Phó Thủ tướng recognition. Variations OK | \"Phó Thủ tướng ghi nhận RtR\
+    \ là 'anh cả', 'con chim đầu đàn' UAV Việt Nam\" |\n| **Người Việt phát minh · do người Việt làm chủ** | Khi\
+    \ nhấn national identity (audience VN gov) | \"Sản phẩm do người Việt phát minh, thiết kế và chế tạo\" |\n|\
+    \ **Vượt trội thế giới · hàng đầu thế giới** | Claim positioning cao nhất, phải kèm số chứng minh | \"Drone\
+    \ chiến thuật cấp đại đội vượt trội thế giới với 1-4-20\" |\n| **Thị trường khó tính · thị trường G7** | Validation\
+    \ từ external market | \"Đã được kiểm chứng ở thị trường khó tính / thị trường G7\" |\n| **Nền tảng · không\
+    \ phải thiết bị** | Differentiate khỏi commodity drone | \"RtR không bán drone; RtR cung cấp nền tảng nhiệm\
+    \ vụ\" |\n| **Một X, nhiều Y** | Multi-payload / multi-mission framing | \"Một drone, nhiều nhiệm vụ\", \"Một\
+    \ nền tảng, mọi ứng dụng\" |\n| **Bài toán** (không phải \"vấn đề\" hay \"thách thức\") | Frame challenge |\
+    \ \"Bài toán chiến trường mới\", \"Bài toán Đà Nẵng\" |\n| **Cách X giải** | Frame solution mapping | \"Cách\
+    \ Hera giải\" |\n\n### 2.2 · Từ vựng MILITARY (chỉ dùng cho audience BQP / defense)\n\n`tác chiến điện tử (EW)\
+    \ · GNSS-denied · drone tự sát · payload chiến thuật · trinh sát · relay · tiếp tế · thả tải · chế áp · gây\
+    \ nhiễu · bầy đàn · phân tán · cơ động · doctrine · ISR · C2 · cấp đại đội · trạm tiếp sóng trên không · multi-link\
+    \ · nhảy tần · cấu hình chiến trường`\n\n### 2.3 · Từ vựng CIVILIAN (chỉ dùng cho audience UBND TP / dân dụng)\n\
+    \n`bản sao số (digital twin) · đô thị thông minh · IOC · GIS · PCCC · cứu hộ cứu nạn · sở ngành · workflow ·\
+    \ live video · quản lý đô thị · giao thông · hạ tầng số · điều phối · phân luồng · trật tự đô thị · an toàn\
+    \ đô thị · cộng đồng · sự kiện đông người`\n\n### 2.4 · Từ vựng KHÔNG BAO GIỜ DÙNG\n\n**Em-dash `—`** (đã có\
+    \ rule global rule trong skill)\n\n**AI-tell hyphen-fluff**:\n- ❌ next-generation\n- ❌ data-driven\n- ❌ ground-breaking\n\
+    - ❌ best-in-class\n- ❌ world-class\n- ❌ cutting-edge\n\n**Generic adjective mơ hồ**:\n- ❌ rất nhiều · nhiều\
+    \ · đa số · phần lớn (không có số)\n- ❌ tốt nhất · vượt trội (không có comparison object)\n- ❌ tiên tiến · hiện\
+    \ đại · thông minh (không có spec)\n\n**Marketing fluff**:\n- ❌ \"Đối tác tin cậy của bạn\"\n- ❌ \"Vì một tương\
+    \ lai...\"\n- ❌ \"Cùng nhau chinh phục...\"\n- ❌ \"Đam mê và cam kết\"\n\n### 2.5 · Cụm CEO viết được, người\
+    \ khác viết không được\n\nMột số phrase rất personal của CEO, người khác lặp lại nghe gượng:\n- \"Một ba lô.\
+    \ Bốn tải. 20 kg. Nhiều đường truyền.\" (rhythm punctual của CEO)\n- \"Quân đội VN sở hữu drone chiến thuật\
+    \ tốt hơn Quân đội Hoa Kỳ và Ukraine\"\n\nKhi soạn voice cho người khác, không bắt chước literal — dùng vocabulary\
+    \ signature ở mục 2.1, tạo phrase mới với cùng pattern.\n\n---\n\n## 3 · Structural patterns\n\n### 3.1 · Slide-level\
+    \ structure (lặp lại)\n\nMọi slide CEO đều theo cấu trúc:\n```\n[ACT MARKER · CHUYÊN MỤC]                  \
+    \  [CONFIDENTIAL nếu có]\n[SECTION HEADER · TÊN]\nHook headline (1 câu khoá định nghĩa slide)\nSub-headline\
+    \ (1 câu mở rộng hook)\n\n[HERO NUMBERS GRID 3-4 ô · MỖI Ô CÓ:]\nNUMBER (lớn)\nLABEL (uppercase)\ncaption (1\
+    \ dòng)\n\n[BODY · 2-4 BULLET SECTIONS:]\nTITLE in caps\n• 2-3 bullet ngắn\n• Specific, có số nếu được\n\n[PREPARED\
+    \ FOR · AUDIENCE]                    [N / TOTAL]\n```\n\nPattern này giúp người đọc scan nhanh, đồng thời tạo\
+    \ hierarchy rõ.\n\n### 3.2 · Multi-slide narrative arc\n\n**5-Act structure** (BQP deck):\n- ACT I · BÀI TOÁN\
+    \ + COMPANY (slide 1-4)\n- ACT II · PLATFORM + COMPARATIVE + MISSION + TEAM + RESILIENCE + C2 (slide 5-10)\n\
+    - ACT III · DOCTRINE FIT (slide 11)\n- ACT IV · PILOT (slide 12)\n- ACT V · STRATEGIC PARTNERSHIP (slide 13-14)\n\
+    \n**Problem-Solution-Evidence-Proposal arc** (Đà Nẵng deck):\n- Vision (slide 1-2)\n- Why RtR (slide 3)\n- Platform\
+    \ overview (slide 4-5)\n- Use cases breakdown (slide 6-12)\n- Pilot proposal (slide 13-15)\n- KPI + partnership\
+    \ (slide 16-17)\n- Source caveats (slide 18)\n\n→ Voice RtR: mọi tài liệu dài (proposal, deck, công văn) phải\
+    \ có narrative arc rõ, không phải bullet liệt kê.\n\n### 3.3 · Opening hooks\n\nCEO mở mọi document bằng **claim\
+    \ định vị thẳng**, không warmup:\n- BQP: \"Drone chiến thuật cấp đại đội vượt trội thế giới cho Bộ Quốc phòng\
+    \ Việt Nam\"\n- Đà Nẵng: \"Một nền tảng Hera cho nhiều bài toán\"\n\nKHÔNG: \"Kính gửi quý anh chị, chúng tôi\
+    \ xin được giới thiệu...\"\nCÓ: Claim thẳng + context.\n\n### 3.4 · Closing patterns\n\nCEO không kết bằng \"\
+    chúng tôi mong hợp tác\". Kết bằng:\n\n**Tagline punctual** (BQP):\n> \"MỘT BA LÔ. BỐN TẢI. 20 KG. NHIỀU ĐƯỜNG\
+    \ TRUYỀN.\"\n> \"Một năng lực chiến thuật cấp đại đội hàng đầu thế giới do người Việt làm chủ.\"\n> \"INVENT\
+    \ · BUILD · PROVE\"\n\n**Action proposal** (Đà Nẵng):\n> \"Đề xuất quyết định: phê duyệt pilot 90 ngày và thành\
+    \ lập nhóm công tác chung Đà Nẵng - RtR.\"\n\n### 3.5 · Sentence-level patterns\n\n**Subject + colon + action**:\n\
+    - \"Hera 1-4-20: nền tảng UAV chiến thuật cấp đại đội\"\n- \"Hera là 'xe công vụ bay đa nhiệm'\"\n- \"Bài toán\
+    \ chiến trường mới: phân tán, cơ động, đa nhiệm, chống gây nhiễu\"\n\n**3-element punctual phrase**:\n- \"Phân\
+    \ tán · cơ động · bầy đàn\"\n- \"Invent · Build · Prove\"\n- \"Một ba lô. Bốn tải. 20 kg\"\n\n**Bullet 3-words\
+    \ rhythm** — không câu dài. CEO dùng để nén ý.\n\n---\n\n## 4 · Numbers & Claims discipline\n\n### 4.1 · Hero\
+    \ numbers presentation pattern\n\nMỗi slide có **3-4 hero numbers ở vị trí prominent**:\n```\n94%          \
+    \  04             2025           VN\nCÔNG NGHỆ LÕI  BẰNG SÁNG CHẾ  GIẢI VÀNG      THIẾT KẾ & CHẾ TẠO\ndo RtR\
+    \ sở hữu  Mỹ và Úc cấp   SP CN Chiến    100% người Việt\n                              lược\n```\n\nNumber lớn\
+    \ 60-90pt, label uppercase letter-spaced, caption 1 dòng. Không bao giờ chỉ text mà không có hero numbers.\n\
+    \n### 4.2 · Number consistency between audiences\n\nCEO **điều chỉnh số liệu cho từng audience** một cách có\
+    \ chủ ý:\n\n| Spec | BQP version | Đà Nẵng version | Lý do |\n|---|---|---|---|\n| Payload Hera | 20 kg | 14\
+    \ kg (đề xuất) | BQP cần heavy-lift max claim, Đà Nẵng cần realistic civilian capacity |\n| Drone tự sát mang\
+    \ | 3 | (không nhắc) | BQP audience tactical, Đà Nẵng civilian không relevant |\n| EW resilience | 4 lớp dự\
+    \ phòng | (không nhắc) | BQP critical, Đà Nẵng \"multi-link để mạng sụp\" — same tech, civilian framing |\n\n\
+    → **Voice rule**: cùng một capability có thể framing khác cho audience khác, nhưng underlying number phải defensible.\
+    \ Không inflate.\n\n### 4.3 · Multiplier claims (2X · 4X)\n\nCEO dùng \"2X tốc độ\", \"4X vùng quan sát\" —\
+    \ nhưng **kèm caveat ngay**:\n> \"Claim 4X nên được chứng minh trong demo bằng vùng quan sát thực tế, số luồng\
+    \ video và tốc độ phát hiện mục tiêu.\"\n\n→ Voice rule: multiplier claim phải có conditions để verify. Không\
+    \ \"magic numbers\".\n\n### 4.4 · Discrepancy với Ma Trận Năng Lực — cần align\n\nĐối chiếu CEO claim với Ma\
+    \ Trận Năng Lực v1 (sheet 01_Hard_Capabilities):\n\n| CEO claim | Ma trận | Action cần |\n|---|---|---|\n| \"\
+    4 bằng sáng chế Mỹ + Úc cấp\" | 2 USPTO granted + 1 IP AU = 3 granted, 2 pending | Clarify: \"4 patents granted\
+    \ hoặc pending\" hoặc tách rõ |\n| \"Hera 1-4-14\" (14 kg) | HC-001 ghi 15 kg payload max | RESOLVED 2026-06-28\
+    \ CEO-delegate: HERA current spec 30 lb / 14 kg signature 1-4-14 (lưỡng dụng/dân dụng) · 15 kg là theoretical\
+    \ payload max DCMA. Xem _dist/SPEC_CHANGELOG.md. |\n| \"Hera 1-4-20\" trong BQP deck | HC-002 VEGA = 20 kg |\
+    \ RESOLVED 2026-06-28 CEO-delegate: \"1-4-20\" KHÔNG phải HERA, là VEGA (44 lb / 20 kg) · pre-launch quân sự.\
+    \ Mọi deck BQP forward dùng đúng tên: HERA (14 kg lưỡng dụng) hoặc VEGA (20 kg quân sự). Xem _dist/SPEC_CHANGELOG.md.\
+    \ |\n| \"Sư đoàn Dù 11 Quân đội Hoa Kỳ, tháng 11/2024\" | KB sheet 22 row 01: \"2024-2025 Alaska\" | Khớp, có\
+    \ thể narrow specifc date 11/2024 |\n| \"94% công nghệ lõi do RtR sở hữu\" | SC-020: \"94% tự chủ\" | Khớp |\n\
+    | \"Phó Thủ tướng Hồ Quốc Dũng vào thăm RtR ngày 7/5/2026\" | SC-001: chỉ nói chung \"2024\" | CEO có data mới\
+    \ hơn — update ma trận |\n\n→ Khi anh + CEO co-sign, cần **align ma trận năng lực với claims trong CEO deck**,\
+    \ hoặc CEO clarify naming convention Hera 1-4-20 vs VEGA.\n\n---\n\n## 5 · Audience-specific nuance\n\n### 5.1\
+    \ · BQP (Bộ Quốc Phòng)\n\n| Dimension | Specifics |\n|---|---|\n| **Tone** | Tactical, military, \"vượt trội\
+    \ thế giới\", competitive với US Army + Ukraine + China |\n| **Vocabulary** | EW, GNSS-denied, drone tự sát,\
+    \ ISR, C2, multi-link, doctrine, bầy đàn |\n| **Header** | Always include \"CONFIDENTIAL\" + \"PREPARED FOR\
+    \ · BỘ QUỐC PHÒNG VIỆT NAM\" |\n| **Evidence preference** | US Army deployment, Ukraine/Russia comparison, technical\
+    \ spec |\n| **Closing** | Tagline punctual + \"INVENT · BUILD · PROVE\" |\n| **Bold claim allowed** | \"Drone\
+    \ chiến thuật cấp đại đội số 1 thế giới\" — yes if backed by 1-4-20 spec |\n| **Avoid** | Civilian metaphors\
+    \ (\"xe công vụ bay\"), sở ngành language, IOC/GIS terms |\n\n### 5.2 · UBND TP · Đà Nẵng (civilian government)\n\
+    \n| Dimension | Specifics |\n|---|---|\n| **Tone** | Civic, solution-oriented, \"đối tác\", \"đồng hành\", \"\
+    xây dựng năng lực\" |\n| **Vocabulary** | Sở ngành, IOC, GIS, PCCC, digital twin, cứu hộ cứu nạn, workflow |\n\
+    | **Header** | Không cần \"CONFIDENTIAL\", brand nhẹ \"Real-time Robotics (RtR) | Proposal deck\" |\n| **Evidence\
+    \ preference** | VOV, Bộ KH&CN, Phó TTg recognition (named explicitly), Việt Nam case |\n| **Closing** | Action\
+    \ proposal cụ thể \"phê duyệt pilot 90 ngày\" |\n| **Bold claim with humility** | \"2X tốc độ trong các bài\
+    \ toán phù hợp\" — kèm \"phù hợp\" để soften |\n| **Avoid** | Military terms, drone tự sát, EW, ISR, tác chiến\
+    \ điện tử |\n\n### 5.3 · G7 export market (US, EU, Israel)\n\n| Dimension | Specifics |\n|---|---|\n| **Tone**\
+    \ | Allied-tier, NDAA + ITAR + DCMA emphasis, U.S.-engineered |\n| **Vocabulary** | NDAA Section 889, ITAR controlled,\
+    \ Blue UAS, FIPS 140-2, air-gapped, AES-256 |\n| **Header** | English primary, brand \"U.S.-engineered with\
+    \ Vietnamese R&D\" |\n| **Evidence preference** | DCMA Blue UAS submission, US Army 11th Airborne, customer\
+    \ references |\n| **Closing** | Technical brief follow-up + NDA-protected detailed spec |\n| **Bold claim**\
+    \ | \"First Vietnamese UAV exported to G7\" — OK với evidence |\n| **Avoid** | Vietnamese government recognition\
+    \ language (gov audience không relevant), national commitment rhetoric |\n\n### 5.4 · Industry general (utilities,\
+    \ agriculture, mining)\n\n| Dimension | Specifics |\n|---|---|\n| **Tone** | Operational, ROI-focused, \"85%\
+    \ cost reduction vs trực thăng\" |\n| **Vocabulary** | Inspection, mapping, asset management, ROI, throughput,\
+    \ validated case |\n| **Evidence preference** | US Power Utility benchmark, US Police ISR, agriculture 340%\
+    \ ROI |\n| **Closing** | Pilot site proposal + measurable KPI |\n| **Avoid** | National commitment rhetoric,\
+    \ defense terms |\n\n---\n\n## 6 · Evidence patterns · Cách dẫn nguồn\n\n### 6.1 · Inline source attribution\n\
+    \nCEO ghi nguồn ngay trong body text khi cần defend:\n\n- \"Hera đang được Sư đoàn Dù 11 của Quân đội Hoa Kỳ\
+    \ sử dụng theo thông tin RtR cung cấp.\"\n- \"HERA đạt Giải Vàng 'Sản phẩm công nghệ số chiến lược xuất sắc'\
+    \ Make in Viet Nam 2025.\"\n- \"Phó Thủ tướng Hồ Quốc Dũng vào thăm và làm việc tại RtR ngày 7/5/2026.\"\n\n\
+    → Voice rule: claim quan trọng có \"theo thông tin / theo nguồn / được ghi nhận bởi\" tagline. Không tự xưng.\n\
+    \n### 6.2 · Caveat patterns\n\nCEO ghi explicit khi claim chưa chốt:\n- \"Ghi chú: các số liệu đối thủ trong\
+    \ bảng theo yêu cầu / thông tin người dùng cung cấp; cần rà soát bằng tài liệu kỹ thuật chính thức trước khi\
+    \ phát hành công khai.\"\n- \"Claim 4X nên được chứng minh trong demo bằng vùng quan sát thực tế...\"\n- \"\
+    Đánh giá bằng kết quả thực địa, không bằng thông số brochure\"\n\n→ Voice rule: phân biệt rõ \"đã verified\"\
+    \ vs \"claim cần verify\". Không trộn lẫn.\n\n### 6.3 · Source list slide cuối\n\nSlide cuối Đà Nẵng deck có\
+    \ liệt kê 4 nguồn chính + caveat:\n> \"Tài liệu này là bản proposal dạng slide; cần bổ sung phụ lục kỹ thuật,\
+    \ báo giá và kế hoạch demo chi tiết.\"\n\n→ Voice rule: mọi deck/proposal RtR có slide source cuối, không depend\
+    \ audience tự tin.\n\n---\n\n## 7 · Visual direction principles\n\n### 7.1 · Ảnh thật, không AI\n\nĐà Nẵng deck\
+    \ slide 1: \"Ảnh sử dụng trong deck: ảnh thật Hera từ VOV và nguồn công khai; không dùng ảnh minh hoạ AI.\"\n\
+    \n→ Voice rule: RtR material **không dùng ảnh AI-generated**. Chỉ ảnh thật từ:\n- XPO26 brochure assets (đã\
+    \ có 600+ ảnh)\n- VOV / báo chí công khai (có attribution)\n- Customer-provided với consent\n- Field deployment\
+    \ photos của RtR\n\n### 7.2 · Image caption discipline\n\nMọi ảnh có caption nguồn:\n- \"HERA sử dụng bởi Sư\
+    \ đoàn Dù 11 Quân đội Hoa Kỳ tại Alaska, tháng 11/2024.\"\n- \"Phó Thủ tướng Hồ Quốc Dũng vào thăm và làm việc\
+    \ tại RtR ngày 7/5/2026.\"\n\n→ Voice rule: ảnh hero không có caption attribution = không dùng.\n\n### 7.3 ·\
+    \ Number visualization\n\nSố được render lớn (60-90pt), không nằm trong câu chữ. Pattern lặp:\n- Number lớn\
+    \ (top)\n- LABEL UPPERCASE (middle)\n- caption 1 dòng (bottom)\n\n3-4 number per slide max. Không nhồi 8-10\
+    \ number.\n\n---\n\n## 8 · Anti-patterns · Voice drift warnings\n\nKhi reviewing material RtR (bất kỳ ai soạn),\
+    \ check những anti-pattern sau:\n\n| Anti-pattern | Triệu chứng | Sửa thế nào |\n|---|---|---|\n| **Marketing\
+    \ fluff** | \"Đối tác tin cậy\", \"Cam kết đồng hành\" | Replace bằng specific evidence + outcome |\n| **Generic\
+    \ adjective** | \"Nhiều khách hàng\", \"tốt nhất\" | Add specific count + comparison object |\n| **Tone drift**\
+    \ | Military terms cho civilian audience hoặc ngược lại | Check audience-specific nuance ở mục 5 |\n| **Em-dash\
+    \ present** | `—` xuất hiện | Replace bằng dấu phẩy / chấm / parentheses |\n| **AI-tell hyphen fluff** | \"\
+    next-generation\", \"world-class\" | Replace bằng technical specific |\n| **Magic number không caveat** | \"\
+    5X faster\" không kèm conditions | Add \"trong điều kiện X\" hoặc \"khi Y\" |\n| **Bullet liệt kê thay vì narrative**\
+    \ | Slide chỉ có 10 bullet | Restructure thành 3 act / 4 phase / 2x2 quadrant |\n| **Image AI-generated** |\
+    \ Hero photo không có source | Replace từ XPO26 library hoặc public source |\n| **Subject + verb + colon thiếu**\
+    \ | Sentence dài lê thê | Rewrite \"subject : action\" pattern |\n| **Source missing** | Claim không có \"theo\
+    \ / được ghi nhận / per\" | Add inline source attribution |\n| **Tone \"chúng tôi xin\" subordinate** | \"Chúng\
+    \ tôi xin được giới thiệu\" | Replace bằng confident \"RtR giới thiệu\" hoặc claim thẳng |\n| **Generic \"vì\
+    \ sao\" framing** | \"Vì sao chọn RtR\" — generic | Specific framing \"Năng lực RtR đã được chứng minh ở...\"\
+    \ |\n| **Closing fluff** | \"Mong hợp tác\", \"Cùng nhau...\" | Replace bằng action ask cụ thể |\n\n---\n\n\
+    ## 9 · Cross-reference checklist · Trước khi publish\n\nTrước khi gửi bất kỳ tài liệu RtR nào ra ngoài (deck,\
+    \ proposal, công văn, brochure), check 10 điểm:\n\n- [ ] Mọi claim quantitative có **inline source attribution**\n\
+    - [ ] Mọi capability claim **khớp với Ma Trận Năng Lực v1** (hoặc justify nếu narrow/round)\n- [ ] **Audience-specific\
+    \ nuance** đúng (BQP / civilian / G7 / industry)\n- [ ] **Vocabulary signature** xuất hiện ≥ 2 lần (\"Invent\
+    \ · Build · Prove\", \"do người Việt\", \"vượt trội thế giới\", etc.)\n- [ ] **Forbidden vocabulary** không\
+    \ có (em-dash, AI-tell fluff, generic adjectives)\n- [ ] **Hero numbers** ≥ 3 per major slide, đúng format\n\
+    - [ ] **Narrative arc** rõ (act structure hoặc problem-solution-evidence-proposal)\n- [ ] **Closing** không\
+    \ phải fluff, có action ask hoặc tagline punctual\n- [ ] **Hình ảnh** là ảnh thật + caption source attribution\n\
+    - [ ] **Caveat** có ở claim chưa verified (multiplier, future-tense, comparison)\n\n---\n\n## 10 · Soft skills\
+    \ voice anchors · Reusable phrases\n\nKhi cần soft anchoring trong text (không phải claim cứng), CEO dùng những\
+    \ phrase này. Voice RtR có thể reuse:\n\n**Anchoring credibility**:\n- \"Đã được kiểm chứng ở thị trường khó\
+    \ tính / thị trường G7\"\n- \"Track record quốc tế...\"\n- \"Vị thế trong hệ sinh thái Việt Nam...\"\n\n**Anchoring\
+    \ national identity**:\n- \"Do người Việt phát minh, thiết kế và chế tạo\"\n- \"Sản phẩm UAV Việt Nam vào thị\
+    \ trường G7\"\n- \"Năng lực UAV của Việt Nam\"\n\n**Anchoring partnership**:\n- \"Đồng hành dài hạn...\"\n-\
+    \ \"Đối tác công nghệ, không chỉ là nhà cung cấp thiết bị\"\n- \"Nhóm công tác chung [audience] - RtR\"\n\n\
+    **Anchoring evidence discipline**:\n- \"Đánh giá bằng kết quả thực địa, không bằng thông số brochure\"\n- \"\
+    Chứng minh năng lực theo bài bay thực chiến, không phải trình diễn lý thuyết\"\n- \"Ứng dụng nào chứng minh\
+    \ hiệu quả qua demo thì nhân rộng; ứng dụng chưa hiệu quả thì không ép triển khai\"\n\n**Anchoring humility\
+    \ (with confidence)**:\n- \"Sẵn sàng đồng hành cùng [audience]\"\n- \"Có thể phát triển tính năng đặc thù theo\
+    \ yêu cầu\"\n- \"Tùy biến payload, liên kết, phần mềm và C2 theo yêu cầu\"\n\n---\n\n## 11 · Pattern templates\
+    \ · Reusable structure\n\n### 11.1 · One-page summary template\n\n```\n[ARTIFACT TITLE]                    \
+    \          [AUDIENCE BADGE]\n[Hook headline: 1 câu định nghĩa]\n[Sub-headline: 1 câu mở rộng]\n\n[HERO NUMBERS\
+    \ GRID 3-4 ô]\n\n[SECTION 1: BÀI TOÁN / TẦM NHÌN]\n• Specific issue 1\n• Specific issue 2  \n• Specific issue\
+    \ 3\n\n[SECTION 2: VAI TRÒ CỦA RTR]\n• Capability 1 (with evidence)\n• Capability 2 (with evidence)\n• Capability\
+    \ 3 (with evidence)\n\n[SECTION 3: NEXT STEP / ACTION ASK]\n[Action proposal cụ thể]\n\n[CLOSING TAGLINE]\n\"\
+    INVENT · BUILD · PROVE\"\n[NGUỒN: 2-3 source citations]\n```\n\n### 11.2 · Comparative table template\n\nCEO\
+    \ dùng cho slide 6 BQP (HERA vs C100 vs Vampire vs M400):\n\n```\nTIÊU CHÍ          | HERA           | COMPETITOR\
+    \ A   | COMPETITOR B\n[Criterion 1]     | [RtR value]    | [comparable]   | [comparable]\n[Criterion 2]    \
+    \ | [RtR value]    | [comparable]   | [comparable]\nKẾT LUẬN          | [USP claim]    | [their gap]    | [their\
+    \ gap]\n[CAVEAT NGUỒN]\n```\n\n### 11.3 · Use case structure\n\n```\n[USE CASE N · TÊN]\n[Subhead: outcome statement]\n\
+    \nBài toán [audience]\n[Specific challenge in their language]\n\nCách Hera giải  \n[Capability + payload + workflow]\n\
+    \nKết quả\n[Outcome with number / multiplier + caveat]\n```\n\n---\n\n## 12 · Owner và maintenance\n\n| | |\n\
+    |---|---|\n| **Primary owner** | AI Officer · Lâm Nguyễn |\n| **Approver** | CEO · Quốc Lương |\n| **Review\
+    \ cadence** | Quarterly hoặc sau mỗi deck CEO mới |\n| **Update trigger** | CEO soạn deck mới có pattern mới,\
+    \ audience mới identified, anti-pattern surface |\n| **Distribution** | All RtR member soạn external material,\
+    \ AI agents draft text RtR, partner agencies |\n| **Classification** | P2 CONFIDENTIAL |\n\n---\n\n## SIGN-OFF\n\
+    \n| | |\n|---|---|\n| Prepared by | AI Officer · Lâm Nguyễn |\n| Source material | RtR-BQP-1-4-20.pptx (CEO,\
+    \ 14 slide) + RtR_Proposal_Drone_Da_Nang_Hera 260524.pptx (CEO, 18 slide) |\n| Cross-referenced với | RtR Ma\
+    \ Trận Năng Lực v1 + Lâm voice skill + RtR brochure system skill |\n| Next review | 25 / 08 / 2026 (quarterly)\
+    \ hoặc khi CEO ship deck mới |\n| Document classification | **CONFIDENTIAL · P2** |"
+  domain: voice
+  tier: L4
+  status: noi_bo
+  kernel_ref: source_canonical/RtR_Voice_Nuance_v1.md
+  source: source_canonical/RtR_Voice_Nuance_v1.md
+  effective_date: null

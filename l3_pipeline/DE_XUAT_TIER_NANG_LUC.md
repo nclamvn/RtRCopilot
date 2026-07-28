@@ -1,4 +1,15 @@
-# Đề xuất tier — ma trận năng lực (chờ Lâm duyệt lô)
+# Đề xuất tier — ma trận năng lực (ĐÃ ĐƯỢC THAY THẾ 28/07 chiều)
+
+> **CẬP NHẬT 28/07 (chiều):** Lâm chốt **"ứng dụng nội bộ nên không có gì mật với nội bộ" → MỘT GÓI**.
+> Toàn bộ bảng phân tier dưới đây KHÔNG còn áp dụng: mọi năng lực (gồm quốc phòng/gov/nội bộ) + giá bán
+> + **giá vốn BOM** + voice giờ vào chung một gói cho mọi nhân viên. **SC-011 Blue UAS: Lâm xác nhận HERA
+> ĐÃ chính thức cleared** → không còn landmine, L3F.RES.003 cập nhật thành cleared. Chỉ còn giữ ngoài gói:
+> margin chưa-kiểm (doctrine A3) + deal/intel bên thứ ba. Truy vết bằng đăng nhập từng người. Giữ file này
+> làm lịch sử quyết định.
+
+---
+
+## (Lịch sử) Đề xuất tier ban đầu — trước khi Lâm chốt một-gói
 
 **Bối cảnh:** `kernel/registry/capabilities.yaml` (76 năng lực: 37 Hard · 22 Soft · 17 Org, nguồn chính `RtR_Ma_Tran_Nang_Luc.xlsx` — dán nhãn **P2 CONFIDENTIAL**). Máy (QA 28/07) đã **chọn tay** phần công khai an toàn nạp vào gói staff; phần nhạy/quốc phòng/nội bộ **chưa nạp**, chờ anh quyết tier. Ba tier đề xuất:
 - **STAFF (L3)** — công khai (báo chí/giải thưởng/brochure), mọi nhân viên thấy.

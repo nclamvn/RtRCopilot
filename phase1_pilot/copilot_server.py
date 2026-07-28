@@ -226,6 +226,7 @@ SYNONYMS = [
     ("man hinh", ["nits", "lcd"]),
     ("sang gia bao nhieu nit", ["nits"]),
     ("tai trong", ["payload"]),
+    ("payload", ["kg"]),          # hỏi payload là hỏi kg → record nói "14 kg" thắng record "5.7 lb"
     ("nang duoc", ["payload", "kg"]),
     ("patent", ["sang", "che", "patent"]),
     ("bang sang che", ["patent"]),
@@ -260,12 +261,17 @@ def search(query, top=3):
     # cũng chứa "dual-pod"). Bỏ dấu cách trên query đã chuẩn hoá, entity nào là chuỗi con thì neo.
     q_despaced = q_norm.replace(" ", "")
     q_ents = [e for e in ENTITIES if e in q_tokens or e in q_despaced]
+    # tài liệu văn phong (voice) là free-text rất dài → khớp gần mọi câu, thắng oan record fact.
+    # Chỉ để nó nổi khi hỏi ĐÚNG về văn phong/giọng; còn lại phạt nặng như phông nền.
+    q_voice = any(k in q_norm for k in ("van phong", "giong", "voice", "soan thao", "phong cach", "van phogn"))
     scored = []
     for r in RECORDS:
         score = sum(idf(t) for t in q_tokens if t in r["_tokens"])
         score += sum(4.0 for tri in triplets if tri in r["_blob"])
         if len(q_norm) > 8 and q_norm in r["_blob"]:
             score += 3.0
+        if r.get("domain") == "voice" and not q_voice:
+            score *= 0.15
         # neo entity: hỏi đích danh sản phẩm nào thì record không nhắc sản phẩm đó bị phạt nặng
         if q_ents and not any(e in r["_tokens"] for e in q_ents):
             score *= 0.25

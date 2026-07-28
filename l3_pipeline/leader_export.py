@@ -100,26 +100,10 @@ def main():
     # 4a/4b bên dưới vẫn quét TOÀN gói (gồm base) nên giá vốn BOM/margin chưa-kiểm vẫn bị chặn.
     l2 = []
 
-    # ---- 3 · L4 văn phong ----
+    # ---- 3 · L4 văn phong: giờ nằm trong base (l3_export gộp · một gói nội bộ 28/07) ----
     l4 = []
-    for rel in (allow.get("l4_voice") or {}).get("allow_files", []):
-        p = K / rel
-        if not p.exists():
-            errors.append(f"l4_voice: không thấy file {rel}")
-            continue
-        l4.append({
-            "record": "VOICE." + Path(rel).stem.upper(),
-            "content": p.read_text(encoding="utf-8").strip(),
-            "domain": "voice",
-            "tier": "L4",
-            "status": "restricted",
-            "kernel_ref": rel,
-            "source": rel,
-            "effective_date": None,
-            "canh_bao": "Tài liệu văn phong nội bộ · dùng để soạn thảo, không trích nguyên văn ra ngoài",
-        })
 
-    records = base + l2 + l4
+    records = base + l2 + l4  # = base (một gói: mọi thứ đã ở base, GOI_LEADER == GOI_L3)
 
     # ---- 4 · CỔNG TỰ KIỂM · chứng minh gói KHÔNG chứa thứ bị cấm ----
     # Không đủ nếu chỉ "không đọc tới": phải quét thành phẩm tìm dấu vết dữ liệu cấm.
@@ -132,9 +116,9 @@ def main():
     #  · quét CON SỐ chỉ trên record GIÁ có cấu trúc (một dòng do exporter sinh),
     #    không quét văn xuôi tự do: số nhỏ như 400 va vào bất kỳ đoạn văn nào.
     added = l2 + l4
-    if "--selftest" in sys.argv:   # chứng minh cổng còn cắn · xem cuối file
-        added = added + [{"record": "SELFTEST.INJECT", "tier": "L2", "domain": "pricing",
-                          "content": "giá vốn khung carbon: 35000 USD", "canh_bao": "x"}]
+    if "--selftest" in sys.argv:   # chứng minh cổng MARGIN còn cắn (giá vốn BOM giờ hợp lệ · nội bộ 28/07)
+        added = added + [{"record": "SELFTEST.INJECT", "tier": "L2", "domain": "positioning",
+                          "content": "DERIVED.ALMO.MARGIN.HERA_VN · biên lợi nhuận chưa kiểm 42%", "canh_bao": "x"}]
     pack_text = yaml.dump(records + (added[-1:] if "--selftest" in sys.argv else []), allow_unicode=True)
     struct_text = yaml.dump([r for r in added if r.get("domain") in ("pricing", "positioning")],
                             allow_unicode=True)
@@ -144,16 +128,10 @@ def main():
         import re as _re
         return bool(_re.search(r"(?<![\d.,])%s(?![\d.,])" % _re.escape(str(n)), hay))
 
-    # 4a · giá vốn linh kiện (boms.yaml) · không id nào, không con số nào được lọt
-    boms = load(K / "registry/boms.yaml")
-    for f in boms.get("facts", []):
-        if f["id"] in pack_text:
-            leaks.append(f"BOM id lọt vào gói: {f['id']}")
-        cost = f.get("cost_usd")
-        if cost and num_in(struct_text, cost):
-            leaks.append(f"BOM giá vốn lọt vào gói: {f['id']} = {cost}")
+    # 4a · GIÁ VỐN BOM: Lâm chốt 28/07 "nội bộ không gì mật" → giá vốn giờ HỢP LỆ trong gói chung
+    #       (gộp qua l3_export). Không còn quét chặn BOM. Truy vết bằng đăng nhập từng người.
 
-    # 4b · fact chi phí phái sinh không được phép
+    # 4b · fact chi phí phái sinh CHƯA KIỂM (margin DRAFT/FLAG) · doctrine A3 vẫn cấm phơi số chưa kiểm
     derived = load(K / "registry/derived_costs.yaml")
     allowed_ids = set((allow.get("l2_positioning") or {}).get("allow", []))
     for f in derived.get("facts", []):

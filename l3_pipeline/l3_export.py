@@ -75,10 +75,10 @@ def main():
             "effective_date": f.get("effective_date"),
         })
 
-    # ---- GIÁ BÁN + ĐỊNH VỊ · nội bộ-không-mật (Lâm chốt 28/07): gộp vào gói chung ----
-    # CHỈ id được khai đích danh trong leader_allowlist (fail-closed) → giá vốn BOM (boms.yaml) và
-    # margin chưa kiểm (derived_costs DRAFT/FLAG) KHÔNG lọt vì không có trong allowlist. GIÁ VỐN để
-    # tới lúc dựng pilot (theo đề xuất Lâm chọn). Nguồn giá vẫn là prices.yaml (một nguồn, không nhân bản).
+    # ---- GIÁ BÁN + GIÁ VỐN + ĐỊNH VỊ + VOICE · một gói nội bộ (Lâm chốt 28/07: "nội bộ không gì mật") ----
+    # Mọi nhân viên nội bộ thấy hết: giá bán (prices.yaml), giá vốn BOM (boms.yaml), định vị
+    # (derived_costs, chỉ id đã khai), văn phong CEO (style/). Đăng nhập từng người giữ để TRUY VẾT.
+    # Vẫn giữ ngoài gói: margin chưa-kiểm (derived DRAFT/FLAG · doctrine A3) + deal/intel bên thứ ba.
     allow = yaml.safe_load((K / "leader_allowlist.yaml").read_text()) or {}
 
     def take_l2(section_key, reg_file, domain):
@@ -87,8 +87,7 @@ def main():
             return
         reg2 = yaml.safe_load((K / reg_file).read_text()) or {}
         by_id = {f["id"]: f for f in reg2.get("facts", [])}
-        # mỏ neo tiếng Việt: content giá gốc là tiếng Anh ("HERA US list price"), người dùng gõ
-        # "giá bán/chiết khấu" → cần từ khoá Việt trong content mới khớp retrieval MOCK.
+        # mỏ neo tiếng Việt: content giá gốc tiếng Anh ("HERA US list price") · query Việt cần từ khoá Việt.
         vn = {"PRICE": "Giá bán nội bộ", "DISCOUNT": "Chiết khấu đại lý", "FX": "Tỷ giá tham chiếu",
               "REG": "Chính sách giá", "DERIVED": "Định vị giá so đối thủ"}
         for fid in wanted:
@@ -98,19 +97,43 @@ def main():
                 continue
             anchor = vn.get(fid.split(".")[0], "Giá")
             records.append({
-                "record": fid,
-                "content": f"{anchor} · {fmt_price(f)}",
-                "domain": domain,
-                "tier": "L2",
-                "status": "noi_bo",
-                "kernel_ref": fid,
+                "record": fid, "content": f"{anchor} · {fmt_price(f)}", "domain": domain,
+                "tier": "L2", "status": "noi_bo", "kernel_ref": fid,
                 "source": (f.get("source") or {}).get("file"),
                 "effective_date": f.get("verified_date"),
-                "canh_bao": "NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty",
             })
 
     take_l2("l2_pricing", "prices.yaml", "pricing")
     take_l2("l2_positioning", "derived_costs.yaml", "positioning")
+
+    # Giá vốn linh kiện (BOM) · nội bộ-không-mật (Lâm 28/07): gộp cho mọi nhân viên.
+    boms = yaml.safe_load((K / "boms.yaml").read_text()) or {}
+    for f in boms.get("facts", []):
+        vendor = f.get("vendor") or "?"
+        country = f.get("country") or ""
+        records.append({
+            "record": f["id"],
+            "content": (f"Giá vốn linh kiện · {f.get('key', f['id'])}: {f.get('cost_usd')} "
+                        f"{f.get('unit', 'USD')} · nhà cung cấp: {vendor}"
+                        + (f" ({country})" if country else "")
+                        + (f" · NDAA {f['ndaa_status']}" if f.get("ndaa_status") else "")),
+            "domain": "cost", "tier": "L2", "status": "noi_bo", "kernel_ref": f["id"],
+            "source": (f.get("source") or {}).get("file") if isinstance(f.get("source"), dict) else f.get("source"),
+            "effective_date": None,
+        })
+
+    # Văn phong CEO (L4) · để soạn thảo đúng giọng công ty. (allowlist path là kernel-root-relative)
+    for rel in (allow.get("l4_voice") or {}).get("allow_files", []):
+        vp = K.parent / rel
+        if not vp.exists():
+            errors.append(f"l4_voice: không thấy {rel}")
+            continue
+        records.append({
+            "record": "VOICE." + Path(rel).stem.upper(),
+            "content": vp.read_text(encoding="utf-8").strip(),
+            "domain": "voice", "tier": "L4", "status": "noi_bo", "kernel_ref": rel,
+            "source": rel, "effective_date": None,
+        })
 
     if errors:
         print(yaml.dump({"STATUS": "FAIL", "errors": errors}, allow_unicode=True))

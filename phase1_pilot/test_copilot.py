@@ -143,23 +143,19 @@ check("brand: 'sứ mệnh RtR?' → L3F.BRD.002 (không còn honest-null)",
       bool(_hm) and _hm[0][1]["record"] == "L3F.BRD.002",
       f"top={_hm[0][1]['record'] if _hm else 'NULL'}")
 
-# LANDMINE Blue UAS: ma trận năng lực (SC-011) chứa claim SAI "on DCMA Blue UAS list" đang escalation.
-# Bất kỳ harvest năng lực nào cũng KHÔNG được kéo claim đã-cleared vào; câu hỏi trực tiếp phải về
-# record trạng thái thật (L3F.RES.003 · "đang trong quy trình"), KHÔNG khẳng định đã trên list.
+# Blue UAS: Lâm xác nhận 28/07 HERA ĐÃ chính thức cleared → trạng thái thật giờ là cleared.
+# Trước 28/07 record cố ý honest-null/in-progress (claim từng sai trong hồ sơ nhà nước); nay đảo
+# theo xác nhận curator. Test khoá chiều mới: câu Blue UAS → record khẳng định đã cleared/chính thức.
 _hb = cs.search("RtR Blue UAS cleared chưa?")
-check("landmine Blue UAS: câu trạng thái → L3F.RES.003 (in-progress), không claim đã-cleared",
-      bool(_hb) and _hb[0][1]["record"] == "L3F.RES.003" and "quy trinh" in norm(_hb[0][1]["content"]),
-      f"top={_hb[0][1]['record'] if _hb else 'NULL'}")
+check("Blue UAS (28/07): câu trạng thái → record khẳng định ĐÃ cleared/chính thức",
+      bool(_hb) and any(k in norm(_hb[0][1]["content"]) for k in ("cleared", "chinh thuc")),
+      f"top={_hb[0][1]['record'] if _hb else 'NULL'} · {_hb[0][1]['content'][:50] if _hb else ''}")
 
-# QA 28/07 · Lâm chốt "nội bộ không gì mật" → năng lực quốc phòng/đối tác (trước đề xuất leader) nạp staff.
-# CỐ Ý loại SC-011 (Blue UAS claim sai): fact năng lực KHÔNG được khẳng định "đã trên Blue UAS list".
+# Nội bộ-không-mật (28/07): năng lực quốc phòng/đối tác → staff (mọi thứ nội bộ).
 _hc = cs.search("RtR hợp tác quốc phòng với ai?")
 check("năng lực: 'hợp tác quốc phòng?' → L3F.CAP.001 (US Army/Israel...)",
       bool(_hc) and _hc[0][1]["record"] == "L3F.CAP.001",
       f"top={_hc[0][1]['record'] if _hc else 'NULL'}")
-check("năng lực KHÔNG lan claim sai: L3F.CAP.001 không khẳng định đã-cleared Blue UAS",
-      "blue uas" not in norm(_hc[0][1]["content"]) or "rieng" in norm(_hc[0][1]["content"]),
-      "CAP.001 chỉ trỏ L3F.RES.003, không khẳng định")
 _hp = cs.search("RtR phân phối ở Mỹ qua ai?")
 check("năng lực: 'phân phối ở Mỹ?' → L3F.CAP.002 (RMUS/đối tác)",
       bool(_hp) and _hp[0][1]["record"] == "L3F.CAP.002",
@@ -187,13 +183,14 @@ FORBIDDEN = [
 ]
 for label, term in FORBIDDEN:
     check(f"gói không chứa: {label}", term not in PACK, f"tìm thấy '{term}'")
-# Blue UAS phải là in-progress, không phải cleared-khẳng-định
-blue = [r for r in cs.RECORDS if "blue uas" in norm(r.get("content", ""))]
-check("Blue UAS: có record trạng thái", len(blue) >= 1)
-check("Blue UAS: không record nào nói 'đã cleared' trần",
-      all(("chua" in norm(r["content"]) or "in progress" in norm(r["content"])
-           or "quy trinh" in norm(r["content"])) for r in blue),
-      "; ".join(r["record"] for r in blue))
+# Blue UAS (Lâm xác nhận 28/07): HERA ĐÃ chính thức cleared → record trạng thái chuyên trách khẳng
+# định cleared, KHÔNG còn stale "in-progress/quy trình xét duyệt" (đảo từ bản 27/07 theo curator).
+res003 = [r for r in cs.RECORDS if r["record"] == "L3F.RES.003"]
+check("Blue UAS: có record trạng thái chuyên trách L3F.RES.003", len(res003) == 1)
+check("Blue UAS: record trạng thái khẳng định ĐÃ cleared, không còn in-progress",
+      bool(res003) and any(k in norm(res003[0]["content"]) for k in ("cleared", "chinh thuc"))
+      and "quy trinh xet duyet" not in norm(res003[0]["content"]),
+      res003[0]["content"][:60] if res003 else "thiếu record")
 # 15 kg chỉ xuất hiện trong ngữ cảnh legacy (guard: phải tìm thấy ít nhất 1, tránh pass rỗng)
 kg15 = [r for r in cs.RECORDS if "15 kg" in norm(r.get("content", "")) or "33 lb" in norm(r.get("content", ""))]
 check("15 kg/33 lb: có record doctrine legacy trong gói", len(kg15) >= 1)
@@ -519,25 +516,21 @@ import subprocess
 PIPE = HERE.parent / "l3_pipeline"
 LEADER = PIPE / "GOI_LEADER.yaml"
 
-# Nội bộ-không-mật (Lâm 28/07): gói chung CÓ giá BÁN cho mọi nhân viên. NHƯNG giá VỐN (BOM) +
-# margin chưa-kiểm để tới lúc dựng pilot → vẫn NGOÀI gói. Khoá hai chiều: có giá bán, không giá vốn.
-check("gói chung CÓ giá bán (nội bộ)", all(x in norm(cs.GOI_TEXT) for x in ("msrp", "discount")),
-      "thiếu giá bán trong gói chung")
-check("gói chung KHÔNG chứa giá vốn BOM (để tới pilot)",
-      not any(t in cs.GOI_TEXT for t in ("BOM.HERA", "BOM.VEGA", "cost_usd")), "lộ giá vốn")
-check("gói chung KHÔNG chứa margin chưa kiểm",
+# MỘT GÓI nội bộ (Lâm 28/07 "nội bộ không gì mật"): mọi nhân viên thấy giá bán + giá VỐN BOM + voice.
+# GIỮ NGOÀI gói (khác bản chất "mật"): margin chưa-kiểm (doctrine A3 cấm phơi số chưa kiểm). Truy vết
+# bằng đăng nhập từng người. GOI_LEADER giờ == GOI_L3 (mọi thứ ở base).
+check("gói chung CÓ giá bán", all(x in norm(cs.GOI_TEXT) for x in ("msrp", "discount")), "thiếu giá bán")
+check("gói chung CÓ giá vốn BOM (nội bộ-không-mật)",
+      any(t in cs.GOI_TEXT for t in ("BOM.HERA", "BOM.VEGA")), "thiếu giá vốn (đáng lẽ có)")
+check("gói chung VẪN KHÔNG chứa margin chưa kiểm (doctrine A3)",
       not any(t in cs.GOI_TEXT for t in ("ALMO.MARGIN", "BASE_BUILD_COST")), "lộ margin chưa kiểm")
-check("record giá mang nhãn nội bộ", "khong chuyen tiep ra ngoai" in norm(cs.GOI_TEXT),
-      "record giá thiếu nhãn nội bộ")
 
 if LEADER.exists():
     lead = LEADER.read_text(encoding="utf-8")
     ln = norm(lead)
-    check("gói lãnh đạo CÓ giá bán (qua base)", "msrp" in ln and "discount" in ln)
-    check("gói lãnh đạo CÓ nhãn nội bộ trên record giá", "khong chuyen tiep ra ngoai" in ln)
-    check("gói lãnh đạo KHÔNG chứa giá vốn linh kiện",
-          not any(t in lead for t in ("BOM.HERA", "BOM.VEGA", "cost_usd")), "lộ BOM")
-    check("gói lãnh đạo KHÔNG chứa biên lợi nhuận chưa kiểm chứng",
+    check("gói lãnh đạo (== gói chung) CÓ giá bán + giá vốn",
+          "msrp" in ln and any(t in lead for t in ("BOM.HERA", "BOM.VEGA")))
+    check("gói lãnh đạo VẪN KHÔNG chứa margin chưa kiểm",
           "ALMO.MARGIN" not in lead and "BASE_BUILD_COST" not in lead, "lộ margin/claim")
     # cổng của exporter phải tự chứng minh còn cắn
     r = subprocess.run([sys.executable, str(PIPE / "leader_export.py"), "--selftest"],
