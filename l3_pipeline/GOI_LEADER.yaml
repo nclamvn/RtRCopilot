@@ -1,0 +1,1689 @@
+goi: RtR Copilot · GÓI LÃNH ĐẠO
+canh_bao_dau_goi: GÓI HẠN CHẾ · chứa giá bán và chính sách chiết khấu. Chỉ phục vụ nhóm lãnh đạo đã được cấp quyền.
+  Bắt buộc chạy chế độ LIVE + passcode riêng (RB.1-RB.3).
+ngay_sinh: '2026-07-27'
+nguon: kernel/registry/leader_allowlist.yaml (fail-closed) + l3_facts.yaml + prices.yaml + derived_costs.yaml +
+  style/
+duyet_boi: Lâm (AI Officer · SOT curator)
+thong_ke:
+  tong_record: 128
+  l3_nen: 108
+  l2_han_che: 18
+  l4_van_phong: 2
+  giu_ngoai_goi: 5
+records:
+- record: L3F.1.001
+  content: 'HeraSight LR có spec chính: camera RGB Sony ILX-LR1 full frame 61MP, camera thermal FLIR Boson+ 640x512,
+    laser rangefinder tầm 1800 m, AI computer NVIDIA Jetson Xavier NX tích hợp, trọng lượng payload 965±20 g (2.13
+    lbs) chưa gồm lens.
+
+    '
+  domain: product
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/Product description V2/1. HeraSight LR1.xlsx
+  effective_date: null
+- record: L3F.1.008
+  content: 'HeraLink được đổi tên thành HeraHub hiệu lực từ tháng 5/2026 vì tên gần với trademark HereLink của Cube
+    Pilot, sau khi Cube Pilot gửi friendly request đề nghị đổi tên.
+
+    '
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  effective_date: null
+- record: L3F.1.011
+  content: 'VEGA dùng smart battery 50.4V dung lượng 35000 mAh.
+
+    '
+  domain: product
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/Product description V2/Vega Brochure_20260429.xlsx
+  effective_date: null
+- record: L3F.1.019
+  content: 'Kênh liên hệ chính thức của RtR gồm điện thoại Việt Nam +84 909 735 829, điện thoại Mỹ +1 510 457 6280,
+    email chung info@rtrobotics.com, email sales sales@rtrobotics.com và website rtrobotics.com.
+
+    '
+  domain: company
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/RtR-Product-Master-Canonical-v2.xlsx
+  effective_date: null
+- record: L3F.1.020
+  content: 'Tên brand viết đúng là "Real-time Robotics" với chữ t viết thường (không phải Real-Time), viết tắt cho
+    phép là RtR hoặc RTROBOTICS, và không dùng "RTR" all-caps trong body copy.
+
+    '
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/RtR-Company-Card-Brief.docx
+  effective_date: null
+- record: L3F.1.022
+  content: 'RtR Messaging Framework v1.0 (29/04/2026) là quy định MANDATORY cho mọi nhân sự đứng booth và mọi tài
+    liệu external, với quy tắc lõi: narrative "Vietnamese deeptech goes global" chỉ dành cho audience E/F (báo chí
+    VN, tuyển dụng VN, gov VN/ASEAN), tuyệt đối không dùng với DoD, prime contractor, US/G7 gov hoặc US press.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/RtR-MESSAGING-FRAMEWORK.md
+  effective_date: '2026-04-29'
+- record: L3F.1.023
+  content: 'Câu trả lời chuẩn khi khách hỏi "where are you guys from?" là: "We''re U.S.-aligned with manufacturing
+    in Vietnam. Full-stack vertical integration in-house. NDAA-compliant." (không trả lời "We''re from Vietnam").
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/RtR-MESSAGING-FRAMEWORK.md
+  effective_date: '2026-04-29'
+- record: L3F.1.027
+  content: 'RtR tham gia XPONENTIAL 2026 x MDEX (AUVSI / Messe Düsseldorf North America) ngày 11-14/05/2026 tại
+    Huntington Place Convention Center, Detroit MI, với booth #20005 dạng island 20x20 ft (400 sq ft) gần cửa ra
+    vào chính.
+
+    '
+  domain: event
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/RtR-XPO26-Company-Briefing.docx
+  effective_date: '2026-04-20'
+- record: L3F.1.028
+  content: 'MDEX (Michigan Defense Expo) hợp nhất với XPONENTIAL chỉ duy nhất năm 2026; năm 2027 MDEX quay về Macomb
+    Community College, nên 2026 là cửa sổ một lần để gặp DoD buyers và NDIA Michigan ecosystem cùng một venue.
+
+    '
+  domain: event
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/RtR-XPO26-Company-Briefing.docx
+  effective_date: '2026-04-20'
+- record: L3F.1.029
+  content: 'Quy trình thu lead tại booth RtR gồm 4 bước khoảng 30 giây mỗi khách: quét badge QR (hoặc nhập tay/chụp
+    danh thiếp), phân loại tier A/B/C/F kèm thời gian mua và sản phẩm quan tâm, ghi chú nhanh (gõ hoặc voice-to-text),
+    rồi lưu lead với email cảm ơn tự động.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-website/docs/booth-staff-guide.md
+  effective_date: null
+- record: L3F.1.030
+  content: 'Booth app RtR là PWA cài lên Home Screen, hoạt động offline với tự động sync, và có 4 chức năng phụ:
+    My Leads (xem/lọc lead), Price Range (tra giá trả khách), Tech Support (search FAQ kỹ thuật) và Export CSV cuối
+    ngày gửi team CRM.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-website/docs/booth-staff-guide.md
+  effective_date: null
+- record: L3F.1.031
+  content: 'Luật escalation tại booth: khách Tier A chuyển CEO ngay lập tức, media chuyển CEO cùng Vy (CEO chỉ tiếp
+    media khi được page mã ''E-MEDIA''), CEO là điểm cuối escalation và khi quá tải thì delegate cho COO.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/RtR-Booth-Playbook-EN.pdf
+  effective_date: null
+- record: L3F.1.032
+  content: 'Đội booth XPO26 gồm 7 vai trò có playbook cá nhân hóa (trong đó Founder & CEO, COO, Business Development
+    Manager, Software Manager, Mechanical R&D Team Lead) cộng 2 vai trò remote từ Việt Nam là CEO Assistant & Logistics
+    Manager và AI Officer.
+
+    '
+  domain: company
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/RtR-Booth-Team-Profiles-EN.docx
+  effective_date: null
+- record: L3F.1.033
+  content: 'Brand assets của RtR nằm tại rtr-website/content/branding/ (6 file logo PNG+SVG, Brand Identity Guidelines
+    PDF, brochure, namecard); folder content/ là thư viện asset local bị gitignore, còn bản brochure deploy công
+    khai nằm tại rtr-website/public/brochures/ và guidelines tại public/brand/.
+
+    '
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-website/content/INVENTORY.md
+  effective_date: '2026-04-21'
+- record: L3F.1.034
+  content: 'RtR-Product-Master-Canonical (XPO26/) là file single source of truth tổng hợp thông tin chuẩn 8 sản
+    phẩm RtR cho mọi tài liệu external, với source priority: file anh Quốc là chuẩn cho USP/slogan, brochure là
+    chuẩn cho spec kỹ thuật, khi conflict thì ghi cả hai và flag PENDING VERIFY.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/RtR-Product-Master-Canonical-v2.xlsx
+  effective_date: '2026-05-04'
+- record: L3F.1.037
+  content: 'Theo bảng certifications trong Company KB v2.0: ISO 9001 certified, FCC certified, IP54 certified, MIL-STD-810
+    tested, DO-160G tested, FIPS 140-2 capable, FAA Part 107 compatible, ITAR controlled.
+
+    '
+  domain: legal
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  effective_date: '2026-05-18'
+- record: L3F.1.038
+  content: '"Anthracite Discipline" là design philosophy chính thức cho company card RtR với palette Anthracite
+    #262421, Brushed White #F5F2EC, Patina Gold #C9A56C, Hairline #3A3734 và bộ chữ Outfit (display + body) cùng
+    JetBrains Mono (technical).
+
+    '
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/XPO26/anthracite-discipline.md
+  effective_date: null
+- record: L3F.2.001
+  content: 'RtR có hệ thống Sales Brief gồm workbook chuẩn tiếng Việt (RtR_Sales_Brief_Template_VN.xlsx) và skill
+    sales-brief-fill đặt tại KnowledgeBase/Sales_Brief_System/, cho phép nhân viên sales gửi ghi chép hoặc voice
+    note sau buổi gặp khách để AI tự điền brief, mất khoảng 5 phút thay vì 20 phút điền tay.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/README.md
+  effective_date: null
+- record: L3F.2.002
+  content: 'Quy trình điền Sales Brief có 4 luật cứng: fact điền thẳng còn judgment chỉ đề xuất chờ người bán confirm;
+    thiếu thì hỏi không bịa; số trọng yếu phải đọc lại nguyên văn để xác nhận; chỉ nhận voice note nhân viên tự
+    thuật, không xử lý ghi âm cuộc họp với khách vì vấn đề consent.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/SKILL.md
+  effective_date: null
+- record: L3F.2.003
+  content: 'Quy ước đặt tên file Sales Brief hoàn chỉnh là RTR_[abbr]_Brief_[YYMMDD]_VN.xlsx, trong đó abbr là viết
+    tắt tên khách hàng.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/SKILL.md
+  effective_date: null
+- record: L3F.2.004
+  content: 'Workbook Sales Brief tự tính điểm cơ hội tại ô C59, tự báo cảnh báo thiếu dữ liệu tại ô B63, in khuyến
+    nghị tại ô B61, và có dòng 67 định dạng sẵn để copy vào CRM; script fill_brief.py chạy LibreOffice recalc rồi
+    đọc ngược các ô này để verify.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/scripts/cell_map.json
+  effective_date: null
+- record: L3F.2.006
+  content: 'RtR có chương trình bảo dưỡng định kỳ cho 8 sản phẩm (HERA, HeraHub, HeraSight, Hera Battery, Hera Charger,
+    Drop System, S1 Spotlight, LS1 Aerial Loudspeaker), mỗi sản phẩm một workbook CRM riêng (01-08), quản trị bằng
+    master workbook 00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  effective_date: null
+- record: L3F.2.007
+  content: 'Chu kỳ bảo dưỡng chuẩn cho cả 8 sản phẩm RtR là 3/6/12 tháng hoặc theo mức sử dụng (cái nào đến trước),
+    với usage limit 12 tháng đề xuất theo sản phẩm, ví dụ HERA 12.000 km bay tích lũy, HeraHub 1.000 giờ vận hành,
+    HeraSight 500 giờ payload, Battery 200 chu kỳ sạc.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  effective_date: null
+  label: PROPOSED · chưa cam kết với khách
+- record: L3F.2.008
+  content: 'Ba mốc bảo dưỡng HERA trong chương trình v1.0-PROPOSED là BD 3 tháng/3.000 km bay tích lũy (kiểm tra
+    nhẹ), BD 6 tháng/6.000 km (kiểm tra trung gian) và BD 12 tháng/12.000 km (đại tu, hiệu chuẩn sâu), điều kiện
+    áp dụng là tháng hoặc usage tùy cái nào đến trước.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  effective_date: null
+  label: PROPOSED · chưa cam kết với khách
+- record: L3F.2.009
+  content: 'Baseline bảo hành đề xuất theo sản phẩm: HERA 24 tháng/12.000 km bay, HeraHub 24 tháng/1.000 giờ, HeraSight
+    24 tháng/500 giờ payload, Battery 12 tháng/200 chu kỳ sạc, Charger 24 tháng/1.000 lần sạc, Drop System 12 tháng/500
+    lần thả, S1 12 tháng/500 giờ chiếu, LS1 12 tháng/500 giờ phát.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  effective_date: null
+  label: PROPOSED · chưa cam kết với khách
+- record: L3F.2.010
+  content: 'Chính sách baseline chương trình bảo dưỡng: mọi con số chưa ký duyệt giữ trạng thái PROPOSED; 4 chính
+    sách MANDATORY gồm dụng cụ đo phải còn hạn calibration, mỗi work order critical phải có log/ảnh/đo/part trace,
+    recall mức S0 stop-use ngay không chờ cuộc họp, và baseline chỉ thay đổi qua ECO/PCN không sửa im lặng.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  effective_date: null
+  label: PROPOSED · chưa cam kết với khách
+- record: L3F.2.011
+  content: 'Chương trình bảo dưỡng triển khai theo lộ trình 90 ngày (pilot, dữ liệu, phê duyệt, vận hành chính thức)
+    với 8 workstream và 4 gate G1-G4, kèm ma trận RACI 9 nhóm chức năng (CTO, Product Eng, Quality, EHS, Service,
+    Supply, Finance, Sales/CSKH, IT/CRM) và bộ KPI portfolio 8 chỉ số có ngưỡng Green/Amber/Red.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  effective_date: null
+- record: L3F.2.015
+  content: 'Pin HERA có thông số 44,4 V và 35.000 mAh, trạng thái Source-confirmed từ hồ sơ DCMA Supporting Document,
+    baseline 2026-07.
+
+    '
+  domain: product
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  effective_date: null
+- record: L3F.2.016
+  content: 'Dải nhiệt độ vận hành khuyến cáo cho chương trình bảo dưỡng HERA là -20 đến 45 độ C (baseline 2026-07
+    · PROPOSED chờ Engineering duyệt). Năng lực demonstrated riêng: bay ổn định -30 độ C validated US Army Alaska
+    (HC-040) · hai fact hai ngữ cảnh không mâu thuẫn.'
+  domain: product
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  effective_date: null
+  label: PROPOSED · chưa cam kết với khách
+- record: L3F.2.017
+  content: 'RtR có bộ template làm deck tại KnowledgeBase/RtR_Deck_Templates/ gồm 5 file (01_Deck_Brief, 02_Slide_Card,
+    03_Partner_Brief, 04_Gates_Checklist, 05_Scorecard) với quy trình chuẩn 7 bước; nguồn chuẩn là kernel/_dist/toolkits/RTR_PRESENTATION_STANDARD.md
+    v1.0 ban hành 16/07/2026.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/README.md
+  effective_date: '2026-07-16'
+- record: L3F.2.018
+  content: 'Mọi deck RtR phải đi tuần tự Gate 0-10 không nhảy cóc, bắt đầu từ Gate 0 viết một câu quyết định cần
+    xin; cuối checklist có 6 red flag mà chỉ cần dính một cái là dừng phát hành (ví dụ số mô phỏng trình bày như
+    số thực tế, con số lớn không mẫu số, slide cuối chỉ có Cảm ơn).
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/04_Gates_Checklist.md
+  effective_date: '2026-07-16'
+- record: L3F.2.019
+  content: 'Deck RtR trước khi phát hành phải chấm scorecard 100 điểm với ngưỡng: từ 85 điểm trở lên mới sẵn sàng
+    trình, 75-84 cần sửa điểm yếu cụ thể, 65-74 chưa đủ thuyết phục, dưới 65 làm lại storyline/fact base.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/05_Scorecard.md
+  effective_date: '2026-07-16'
+- record: L3F.2.020
+  content: 'Luận điểm trong deck RtR được chấm Priority Score theo công thức P = 0,30D + 0,20Pain + 0,20Delta +
+    0,20Proof + 0,10Urgency; chỉ chọn tối đa 3 trụ cột giá trị có P từ 4,0 trở lên lên main deck, luận điểm 2,5
+    đến dưới 3,2 chuyển xuống phụ lục.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/04_Gates_Checklist.md
+  effective_date: '2026-07-16'
+- record: L3F.2.021
+  content: 'RtR có fact-sheet chính thức gửi báo chí (RtR_Factsheet_GuiAnhDong.docx, cập nhật 14/07/2026) tổng hợp
+    thông tin công ty và sản phẩm phục vụ báo cáo về kinh tế tầm thấp, đầu mối là AI Officer Nguyễn Cảnh Lâm, dùng
+    nội bộ cho công tác báo chí và không phổ biến ngoài phạm vi trao đổi.
+
+    '
+  domain: company
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: '2026-07-14'
+- record: L3F.2.022
+  content: 'Roadmap Hera 2026-2028 gồm 5 variant: V1 Hera Energy (thermal, dự kiến Q4 2026), V2 Hera Agri (multispectral
+    5 kênh, Q1 2027), V3 Hera Civil (LIDAR solid-state, Q2 2027), V4 Hera Indoor (review 2027 Q2), V5 Hera Maritime
+    (review 2027 Q4); năm nền tảng dùng chung 60 đến 80 phần trăm phần cứng lõi.
+
+    '
+  domain: product
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: '2026-07-14'
+- record: L3F.2.030
+  content: 'RtR có khung văn phong chính thức (RtR Voice & Nuance v1.0, 25/05/2026, classification P2 CONFIDENTIAL)
+    chưng cất từ 2 deck CEO soạn, gồm 5 đặc tính Voice DNA, vocabulary signature, và nuance riêng cho 4 nhóm audience
+    (BQP, chính quyền dân sự, thị trường G7, industry).
+
+    '
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Voice_Nuance_v1.md
+  effective_date: '2026-05-25'
+- record: L3F.2.031
+  content: 'Tài liệu RtR không dùng ảnh AI-generated; chỉ dùng ảnh thật (XPO26 brochure assets, báo chí công khai
+    có attribution, ảnh khách cung cấp có consent, ảnh field deployment của RtR) và mọi ảnh hero phải có caption
+    nguồn, không có caption thì không dùng.
+
+    '
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Voice_Nuance_v1.md
+  effective_date: '2026-05-25'
+- record: L3F.2.033
+  content: 'RtR tổ chức Source of Truth theo doctrine 4 xuất xứ (L1 sự thật lưu sẵn vào registry, L2 sự thật dẫn
+    xuất lưu công thức, L3 nghĩa vụ pháp quy vào obligations, L4 phán xét tự do đứng ngoài đường kiểm) với 3 kho
+    riêng và ID convention dotted hierarchy (PRICE.*, BOM.*, SPEC.*, HC-/SC-/OC-...).
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/_governance/SOT_Reorg_Methodology_v1_0.md
+  effective_date: '2026-06-16'
+- record: L3F.2.034
+  content: 'Trước meeting khách lớn, RtR chạy Adversarial Audit Checklist đóng vai đối tác theo 7 vai audit (CFO,
+    kỹ thuật, pháp chế...); mỗi mục gồm câu hỏi đối tác có khả năng hỏi, trạng thái sẵn sàng của RtR và action item,
+    với doctrine không có câu nào không có hồi đáp thì không trình.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Adversarial_Audit_Checklist_HBC_BKHCN_EVNNPT.md
+  effective_date: '2026-06-12'
+- record: L3F.2.035
+  content: 'RtR đã audit 6 skill nội bộ ngày 07/07/2026 (vibecode-kit, registry-hygiene, refinery, rtr-3d-mission-sim,
+    de-an-cncl-nafosted, de-an-skhcn-audit) bằng cách đối chiếu với vận hành thật; registry-hygiene trưởng thành
+    nhất 8/10, de-an-skhcn-audit thấp nhất 6/10.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Skill_Audit_6_Skills_2026-07-07.md
+  effective_date: '2026-07-07'
+- record: L3F.2.037
+  content: 'RtR có package chuyển giao 4 phương pháp lõi tại KnowledgeBase/PhuongPhap_ChuyenGiao/ (SOT Kernel-in-a-Box,
+    Refinery, Vibecode Kit, Văn bản Nhà nước), license CC BY-SA 4.0 cho tài liệu và MIT cho code, theo mô hình chuyển
+    giao 3 tầng trong đó package là tầng 2 (engine + phương pháp).
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/PhuongPhap_ChuyenGiao/README.md
+  effective_date: '2026-07-12'
+- record: L3F.2.038
+  content: 'Ba nguyên tắc chung xuyên suốt 4 phương pháp lõi của RtR: fail-loud thay vì fail-silent; tin cổng sau
+    khi thấy nó cắn (cổng phải tự chứng minh bắt được lỗi); trung thực về độ tin cậy quan trọng hơn trông có vẻ
+    đầy đủ.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/PhuongPhap_ChuyenGiao/README.md
+  effective_date: '2026-07-12'
+- record: L3F.2.039
+  content: 'RtR có gói "Em gửi anh Đông" v1.0 (14/07/2026) tại KnowledgeBase/Gui_Anh_Dong/: bộ công cụ hướng dẫn
+    người ngoài dùng AI viết bản thảo và kiểm chứng dữ liệu, gồm 4 tập PDF và 2 skill (ai-viet, loc-va-kiem-chung),
+    license CC BY-SA 4.0, với nguyên tắc lõi mọi con số AI đưa ra phải kiểm chứng từ nguồn thứ hai và trách nhiệm
+    cuối thuộc người ký tên.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/Gui_Anh_Dong/README.md
+  effective_date: '2026-07-14'
+- record: L3F.3.001
+  content: 'The Sky Watch (brand-lead "Vietnam UAV Intelligence Platform") là bản đăng ký dữ liệu độc lập về UAV
+    và kinh tế tầm thấp do Real-time Robotics vận hành, trong đó mỗi giá trị mang nguồn kèm mức tin cậy và phần
+    chưa kiểm để trống công khai.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  effective_date: null
+- record: L3F.3.002
+  content: 'The Sky Watch go-live công khai trên tên miền chính thức theskywatch.com (HTTPS hợp lệ) ngày 14/07/2026.
+
+    '
+  domain: event
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
+  effective_date: '2026-07-14'
+- record: L3F.3.003
+  content: 'CMS của The Sky Watch là Directus cộng Postgres đặt sau Caddy (Caddy tự cấp HTTPS), chạy trên VPS Vultr
+    tại Singapore, truy cập tại cms.theskywatch.com; chỉ Caddy hở internet ở cổng 80/443.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
+  effective_date: '2026-07-14'
+- record: L3F.3.004
+  content: 'Tại thời điểm go-live 14/07/2026, trang chính The Sky Watch là bản tĩnh chạy trên Vercel; tên miền mua
+    tại Mắt Bão, bản ghi A của tên miền gốc trỏ về Vercel.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
+  effective_date: '2026-07-14'
+- record: L3F.3.005
+  content: 'Mã nguồn trang tĩnh The Sky Watch nằm trong repo GitHub nclamvn/usr-portal (branch main, site 100% HTML
+    build sẵn commit vào repo), host tự deploy mỗi push.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/CLOUDFLARE-PAGES-SETUP.md
+  effective_date: null
+- record: L3F.3.006
+  content: 'Lớp dữ liệu The Sky Watch tại mốc v1 code-side đóng gồm 733 thực thể: 500 UAV, 233 doanh nghiệp, 39
+    quốc gia, 13 phân khúc.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  effective_date: null
+- record: L3F.3.007
+  content: 'The Sky Watch thực thi bất biến dữ liệu (zero-fab, honest-null hai chiều, disputed-keep-all, provenance
+    phân tầng) bằng khoảng 40 gate verify_* cộng 33 teeth_* nối trong build_all.sh; gate đỏ thì không deploy.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  effective_date: null
+- record: L3F.3.008
+  content: 'Kỷ luật biên tập The Sky Watch: bài analysis lập luận bắt buộc có human_author người thật trong contributors.yaml;
+    bài do pipeline sinh là data-report ngôi ba không kê đơn; cấm byline bịa; mọi bài nhắc RtR/HERA bắt buộc có
+    disclosure.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  effective_date: null
+- record: L3F.3.009
+  content: 'Bài flagship của The Sky Watch là op-ed Section 848 "Việt Nam chọn phe" ký tên thật Nguyễn Cảnh Lâm,
+    đặt làm mặt tiền ANALYSIS/01 và có công bố lợi ích.
+
+    '
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  effective_date: null
+- record: L3F.3.010
+  content: 'Nền tảng đổi tên từ USR sang The Sky Watch trước go-live; danh tính xuất bản: Organization/publisher
+    là The Sky Watch, site_name là VUIP, operator là RtR; toàn bộ 1012 trang canonical/og/sitemap/robots trỏ theskywatch.com.
+
+    '
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  effective_date: null
+- record: L3F.3.011
+  content: 'Directus của The Sky Watch self-host theo MSCL free tier (dưới ngưỡng doanh thu và nhân sự, kể cả production);
+    free MSCL giới hạn 3 seat, thêm biên tập viên cần grant LICENSE_KEY hoặc bản trả phí.
+
+    '
+  domain: legal
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  effective_date: null
+- record: L3F.3.012
+  content: 'Giai đoạn 1 (GD1) của The Sky Watch gồm 5 cấu phần database (Database Drone, Hồ sơ doanh nghiệp, Bộ
+    thuật ngữ, Văn bản pháp luật, Quy trình cấp phép bay kèm biểu mẫu); bản đối chiếu 13/07/2026 kết luận khung
+    GD1 đạt trọn, trong đó 3 cấu phần nội dung đạt trọn vẹn.
+
+    '
+  domain: process
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/DOI-CHIEU-GD1.md
+  effective_date: '2026-07-13'
+- record: L3F.3.013
+  content: 'The Sky Watch có trang quy trình cấp phép bay 24 bước (3 mục vòng đời) kèm 13 biểu mẫu link về trang
+    scan, và hồ sơ Nghị định 288/2025 gồm bản scan ký số cộng trích nguyên văn Điều 3/4/19/27/34 cộng tóm lược dẫn
+    điều.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/DOI-CHIEU-GD1.md
+  effective_date: '2026-07-13'
+- record: L3F.3.014
+  content: 'Phân vai vận hành GD1 The Sky Watch: Duân phụ trách web-cms cùng theo dõi tin và bài nền; Lâm phụ trách
+    web-cms, database drone, database doanh nghiệp, thuật ngữ, văn bản pháp luật, cấp phép bay, công cụ so sánh;
+    Kiên phụ trách quy tắc biên tập, trang pháp lý, format báo cáo, kênh FB/video.
+
+    '
+  domain: company
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/DOI-CHIEU-GD1.md
+  effective_date: '2026-07-13'
+- record: L3F.3.015
+  content: 'Hệ thành viên và hàng đợi biên tập của The Sky Watch triển khai trên Directus production (image directus/directus:12.1.1)
+    theo nguyên tắc fail-closed: đăng ký công khai chỉ bật sau khi schema, quyền sở hữu, SMTP và Flow kiểm xong;
+    Member không đọc/sửa bài Member khác; chỉ Editor hoặc Managing Editor được publish.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/MEMBER-EDITORIAL-DEPLOY.md
+  effective_date: null
+- record: L3F.3.016
+  content: 'Xương sống tuân thủ (tier-A) của registry The Sky Watch: trường blue_uas ghi 26 đạt / 114 loại / 360
+    chưa rõ, trường ndaa_compliant ghi 28 / 114 / 358; riêng RtR được để honest-null ở blue_uas vì FCC-conditional
+    không đồng nghĩa Blue UAS.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  effective_date: null
+- record: L3F.3.021
+  content: 'CEO-template.pptx là file template PPTX theo phong cách CEO được lưu và dùng trong pipeline dựng deck
+    tại project_HaiPhong/_output (bản render PDF cùng pipeline mang tên HaiPhong_Deck_v3_CEO_Style.pdf).
+
+    '
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/project_HaiPhong/_output/CEO-template.pptx
+  effective_date: null
+- record: L3F.4.001
+  content: 'RtR CRM (folder crm) là nền tảng sales và operations nội bộ của RtR: quản lý contacts/companies, pipeline
+    deal theo gate compliance, báo giá/đơn hàng/hóa đơn, quản lý fleet, email tích hợp Gmail có routing theo pháp
+    quyền, knowledge base AI và SAM.gov opportunity scanner, với kiến trúc hai kho dữ liệu tách biệt VN/US; tech
+    stack chính Next.js 14 + TypeScript + Prisma + PostgreSQL (x2 VN/US), deploy Docker/PM2/Caddy; trạng thái vận
+    hành và owner không ghi trong X-Ray.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/crm/PROJECT_XRAY.md
+  effective_date: '2026-05-29'
+- record: L3F.4.002
+  content: 'RtR IP Filing Assistant (folder ip) là nền tảng quản lý sáng chế enterprise phục vụ 80+ nhân viên, phủ
+    trọn vòng đời IP từ quản lý tài sản (DAM), phân tích sáng chế có AI hỗ trợ (3 AI persona, multi-model Claude/OpenAI/Gemini)
+    đến workflow phê duyệt chính thức; X-Ray 03/2026 đánh dấu các module lõi PRODUCTION READY; tech stack chính
+    Node.js 20 + Fastify + Drizzle ORM + PostgreSQL + React 18 (monorepo Turborepo); owner không ghi.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/ip/PROJECT_XRAY.md
+  effective_date: '2026-03-04'
+- record: L3F.4.003
+  content: 'RTR-MRP (folder rtr-mrp) là hệ thống hoạch định nguồn lực sản xuất (Material Requirements Planning)
+    toàn diện cho sản xuất drone và thiết bị công nghệ cao: hoạch định vật tư ATP/CTP/Pegging, work orders + capacity
+    + OEE, quản lý chất lượng ISO (NCR/CAPA), dự báo AI/ML (Gemini/OpenAI), PWA quét mã vạch offline; tech stack
+    chính Next.js 15 App Router + React 19 + Prisma 6 + PostgreSQL 16 + NextAuth 5, target deploy Render (Singapore);
+    trạng thái vận hành và owner không ghi trong README.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-mrp/README.md
+  effective_date: null
+- record: L3F.4.004
+  content: 'VietERP MRP (folder rtr-mrp-v2) là biến thể đổi thương hiệu của RTR-MRP: README gần như trùng nguyên
+    văn với rtr-mrp (chỉ đổi tên hệ thống và thay "drone" bằng "product"), cùng chức năng MRP + quản lý sản xuất
+    + chất lượng ISO + dự báo AI/ML trên cùng tech stack Next.js 15 + React 19 + Prisma 6 + PostgreSQL 16; trạng
+    thái vận hành và owner không ghi trong README.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-mrp-v2/README.md
+  effective_date: null
+- record: L3F.4.005
+  content: 'Folder rtr-pm không có doc ở gốc nhưng chứa nguyên một bản app RtR Control Tower (rtr-pm/RtR-ControlTower,
+    kèm README, Blueprint, X-Ray và ảnh QA): bảng điều khiển trung tâm cho dự án phát triển drone, theo dõi tiến
+    độ, vấn đề, chất lượng và đội ngũ real-time; tech stack chính React 19 + Vite 7 + Supabase (Auth + Realtime
+    + PostgreSQL); trạng thái vận hành và owner không ghi.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-pm/RtR-ControlTower/README.md
+  effective_date: null
+- record: L3F.4.006
+  content: 'RtR Control Tower bản Supabase full-module (folder rtr-quanlyduan) là dashboard tình báo dự án real-time
+    cho vận hành sản xuất drone RtR: phase-gate management, issue tracking, supply chain, flight testing, production,
+    inventory, finance và engine SignalHub AI (anomaly detection, project health index); tech stack chính React
+    19 + Vite 7 SPA + Supabase (auth, database, edge functions, realtime), deploy Vercel; trạng thái vận hành và
+    owner không ghi trong README.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-quanlyduan/README.md
+  effective_date: null
+- record: L3F.4.007
+  content: 'RTR DroneVerse (folder rtr-simulator) là hệ thống mô phỏng UAV chiến thuật đa nhiệm vụ của RtR: 14 mission
+    đa pha, bản đồ vệ tinh Esri tọa độ GPS thật, 4 chế độ xem (map/3D/radar/split), AI tích hợp cho scenario generation,
+    tactical advisor và debrief, swarm intelligence kiểu Reynolds Boids; tech stack chính React 19 + Vite 8 + Three.js
+    + MapLibre GL + Express.js, deploy Render.com, license Proprietary RTR; trạng thái vận hành và owner không ghi.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-simulator/README.md
+  effective_date: null
+- record: L3F.4.008
+  content: 'Hệ thống rtr-twin (folder rtr-twin) tồn tại trong /Users/os/RtR/ nhưng folder rỗng hoàn toàn: chưa có
+    tài liệu mô tả, chưa xác định được mục đích, trạng thái, tech stack hay owner.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-twin/
+  effective_date: null
+- record: L3F.4.009
+  content: 'Hệ thống controltower (folder controltower) tồn tại trong /Users/os/RtR/ nhưng folder rỗng hoàn toàn:
+    chưa có tài liệu mô tả, chưa xác định được mục đích, trạng thái, tech stack hay owner.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/controltower/
+  effective_date: null
+- record: L3F.4.010
+  content: 'The Sky Watch (folder rtr-news) là nền tảng tin tức và kiến thức UAV công khai của RtR, đã production:
+    go-live tên miền chính thức theskywatch.com ngày 14/07/2026 với HTTPS hợp lệ, CMS tại cms.theskywatch.com; kiến
+    trúc trang chính static trên Vercel, CMS Directus + Postgres sau Caddy trên VPS Singapore; người thực hiện go-live:
+    Lâm.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
+  effective_date: '2026-07-14'
+- record: L3F.4.011
+  content: 'Website công ty RtR (folder rtr-website) là site rtrobotics.com xây trên Next.js App Router: các vertical
+    defense/commercial/OEM, blog/news/careers qua Sanity CMS, digital business card NFC/QR, và nền tảng Booth PWA
+    thu lead triển lãm (quét badge, ghi âm, phân loại lead); tech stack chính Next.js 16 + React 19 + TypeScript
+    strict + Tailwind CSS v4 + Sanity v5 + Sentry; trạng thái deploy và owner không ghi trong X-Ray.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-website/PROJECT_XRAY.md
+  effective_date: '2026-05-08'
+- record: L3F.4.012
+  content: 'Hệ thống utm (folder utm) tồn tại trong /Users/os/RtR/ nhưng folder rỗng hoàn toàn: chưa có tài liệu
+    mô tả, chưa xác định được mục đích, trạng thái, tech stack hay owner.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/utm/
+  effective_date: null
+- record: L3F.4.013
+  content: 'RtR Control Tower (folder rtr-ctl-fresh) là ứng dụng web quản lý toàn diện vòng đời phát triển sản phẩm
+    drone: dashboard KPI, issues, quality gates, cây BOM, team/phân quyền (Admin/Engineer/Viewer), audit log, real-time
+    qua Supabase Realtime, export PDF/Excel/slides, giao diện song ngữ Việt-Anh; tech stack chính React 19 + Vite
+    7 + Supabase (Auth + Realtime + PostgreSQL), license Private; trạng thái vận hành và owner không ghi trong README.
+
+    '
+  domain: system
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/rtr-ctl-fresh/README.md
+  effective_date: null
+- record: L3F.RES.001
+  content: Dòng sensor RGB + Thermal của Hera có tên chính thức là HeraSight LR. Tên kỹ thuật 61T vẫn được dùng
+    nội bộ để chỉ việc dòng này dùng cảm biến 61 megapixel của Sony. Hai tên cùng một sản phẩm.
+  domain: product
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: Lâm confirm 27/07/2026 · DISP.001
+  effective_date: '2026-07-27'
+- record: L3F.RES.002
+  content: 'CEO Lương Việt Quốc là Tiến sĩ Kinh tế Phát triển tại UC Berkeley. Hành trình học tập theo học bổng:
+    Fulbright, Cornell, rồi UC Berkeley.'
+  domain: company
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: Lâm confirm 27/07/2026 · DISP.008 · khớp HOSO 6 đề án
+  effective_date: '2026-07-27'
+- record: L3F.RES.003
+  content: 'Trạng thái Blue UAS (thời điểm 27/07/2026): hồ sơ đang trong quy trình xét duyệt dưới DoW Conditional
+    Approval, có cơ sở tin sẽ được duyệt trong vài tuần tới, nhưng CHƯA chính thức. Không được nói hoặc viết là
+    đã cleared/listed cho đến khi có xác nhận chính thức.'
+  domain: legal
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: Lâm confirm 27/07/2026 · DISP.011 · kernel SIG.MACRO.BLUE_UAS_LISTING_IN_PROGRESS
+  effective_date: '2026-07-27'
+- record: CAND.1.005
+  content: 'HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-001
+  source: /Users/os/RtR/XPO26/Product description V2/2. HERA Brochure_Quoc_ 250506.xlsx
+  effective_date: null
+- record: CAND.1.006
+  content: 'HERA bay tối đa 56 phút không tải và 40 phút khi mang payload 5.7 lb.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-001
+  source: /Users/os/RtR/XPO26/Product description V2/2. HERA Brochure_Quoc_ 250506.xlsx
+  effective_date: null
+- record: CAND.1.007
+  content: '[SPEC CŨ · RENAME-01: HeraLink đã đổi tên thành HeraHub · spec hiện hành là LCD 1280x800, 1800 nits,
+    xem CAND.1.009] Tài liệu HeraLink v2.0 (thế hệ trước) mô tả GCS với màn 10.1 inch LCD 1920x1200 độ sáng 1200
+    nits, chip Qualcomm QCS8550 RAM 16GB, Android 13, nặng 2.8 kg, 6 luồng video 1080p đồng thời, pin hot-swap 3
+    giờ/bộ và RTK base station tích hợp. Chỉ dùng cho lịch sử sản phẩm, không dùng số này trong tài liệu hiện hành.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-017 + RENAME-01
+  source: /Users/os/RtR/XPO26/Product description V2/3. HeraLink_v2.0docx.xlsx
+  effective_date: null
+- record: CAND.1.009
+  content: 'Company Knowledge Base v2.0 vẫn mô tả HeraHub với màn hình 2000-nit, giá trị đã bị kernel thay bằng
+    1800 nits cho HeraHub từ 16/07/2026.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-017
+  source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  effective_date: null
+- record: CAND.1.010
+  content: 'VEGA có trọng lượng cất cánh không tải 38.4 lbs (17.4 kg), MTOW 82.4 lbs (37.4 kg) với 44 lbs payload,
+    bay 60 phút không tải, tầm điều khiển 10 km, chịu gió 13 m/s Beaufort 6.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-002
+  source: /Users/os/RtR/XPO26/Product description V2/Vega Brochure_20260429.xlsx
+  effective_date: null
+- record: CAND.1.013
+  content: 'OmniSight là gimbal dual-pod AI đầu tiên trên thế giới, mỗi pod mang nhiều sensor EO-IR và laser rangefinder,
+    pan/tilt 360 độ độc lập hoặc đồng bộ, độ rung góc ±0.005 độ, có 3 chế độ vận hành (Wide Horizon, Focus & Context,
+    Independence), nặng 2 kg.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-013
+  source: /Users/os/RtR/XPO26/Product description V2/5. OmniSight Gimbal – Chameleon Eyes.xlsx
+  effective_date: null
+- record: CAND.1.015
+  content: 'DualSight có 2 camera RGB Sony FCB-EV9520L (30X optical + 12X digital mỗi camera), 2 thermal FLIR Boson/Boson+
+    640x512 NETD ≤20 mK, nặng 1830±30 g, Edge AI Jetson Orin NX 100 TOPS, laser rangefinder cấu hình 2/4/6 km, real-time
+    stitching với overlap chỉnh 0-100%.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-012
+  source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  effective_date: null
+- record: CAND.1.016
+  content: 'SkyWatch 360 là một HERA bay tether mang 3 DualSight đồng bộ, cho 6 luồng video đồng thời giám sát 360
+    độ liên tục ở độ cao tối đa 100 m với thời gian bay không giới hạn nhờ nguồn qua dây.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-014
+  source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  effective_date: null
+- record: CAND.1.017
+  content: 'Loudspeaker LS1 dùng lõi siren-speaker police-grade Whelen WSSC Series, phát 120 dB đo tại 1 m, tầm
+    phủ hiệu quả 300 m, công suất 30W, 10 tone siren Scan-Lock chọn được, gimbal ổn định 2 trục.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-015
+  source: /Users/os/RtR/XPO26/Product description V2/LoudSpeaker LS1 Brochure_20260429 (1).xlsx
+  effective_date: null
+- record: CAND.1.018
+  content: 'Spotlight S1 chiếu 50 lux tại 50 m và 13 lux tại 100 m, công suất 80W, beam 15 độ, màu 6500K, strobe
+    5 Hz, gimbal ổn định 3 trục, đạt eye safety IEC 62471 Risk Group 1.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-016
+  source: /Users/os/RtR/XPO26/Product description V2/Spotlight S1 Brochure_20260429 (2).xlsx
+  effective_date: null
+- record: CAND.1.021
+  content: 'Trên company card thị trường Mỹ, signature sản phẩm dùng đơn vị pound: HERA 1-4-30 và VEGA 1-4-44.
+
+    '
+  domain: brand
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-001
+  source: /Users/os/RtR/XPO26/RtR-Company-Card-Brief.docx
+  effective_date: null
+- record: CAND.1.036
+  content: 'Company Knowledge Base v2.0 ghi RMUS là "U.S. exclusive reseller" của RtR.
+
+    '
+  domain: company
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: SC-015 + D6
+  source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  effective_date: '2026-05-18'
+- record: CAND.2.005
+  content: 'Danh mục sản phẩm chuẩn trong dropdown "RtR Product" của Sales Brief gồm 16 giá trị: HERA, VEGA, HERA
+    + VEGA, HeraHub, VegaHub, HeraSight, HeraSight LR, VegaSight, OmniSight, DualSight, SkyWatch 360, LiDAR, RAGAS,
+    AeroTunnel, Dịch vụ, Chưa xác định.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-056 · HC-057 · HC-058
+  source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/scripts/cell_map.json
+  effective_date: null
+- record: CAND.2.013
+  content: '[SPEC CŨ · ĐÃ ĐÓNG 27/07/2026: curator chốt IP43 là số cũ chưa cập nhật · hiện hành IP54 · xem L3R.K.006]
+    Ghi nhận lịch sử: baseline bảo dưỡng HERA từng ghi kháng bụi/nước IP43 theo HERA Specification và yêu cầu Engineering
+    chốt lại với tài liệu IP54, trong khi kernel HC-042 ghi IP54 weather sealing ở mức provenance verified_primary.
+    File gốc đã sửa sang IP54.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-042
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  effective_date: null
+- record: CAND.2.014
+  content: '[SPEC CŨ · ĐÃ ĐÓNG 27/07/2026: curator chốt 10 km là số cũ chưa cập nhật · hiện hành 15 km · xem L3R.K.007]
+    Ghi nhận lịch sử: baseline bảo dưỡng HERA từng ghi tầm điều khiển 10 km và ghi chú tài liệu khác có 15 km, trong
+    khi kernel HC-001 ghi range 15 km cho HERA. File gốc đã sửa sang 15 km.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-001
+  source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  effective_date: null
+- record: CAND.2.023
+  content: 'RtR có 4 bằng sáng chế đã được cấp và 10 bằng sáng chế đang trong quá trình xét duyệt (theo factsheet
+    báo chí 14/07/2026).
+
+    '
+  domain: company
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: SPEC_CHANGELOG (4 patent đã cấp + 10 đang xét duyệt) · CEO_STRATEGIC_STANCE_2026-07-01
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: '2026-07-14'
+- record: CAND.2.024
+  content: 'Ngày 22/06/2026, FCC Hoa Kỳ ban hành quyết định DA-26-616A1 miễn trừ Hera khỏi lệnh cấm nhập khẩu UAV;
+    tại thời điểm ban hành đây là sản phẩm UAV duy nhất tại châu Á được FCC miễn trừ, phân phối được cho cả thị
+    trường dân sự lẫn quốc phòng Hoa Kỳ.
+
+    '
+  domain: legal
+  tier: L4
+  status: kernel_confirmed
+  kernel_ref: SPEC_CHANGELOG (Hera FCC miễn trừ 22/06/2026) · CEO_STRATEGIC_STANCE_2026-07-01
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: '2026-06-22'
+- record: CAND.2.025
+  content: 'Ngày 22/12/2025, Hoa Kỳ ban hành lệnh cấm nhập khẩu UAV từ tất cả các nước bao gồm mọi đồng minh, xác
+    định phụ thuộc UAV nhập khẩu là rủi ro an ninh quốc gia.
+
+    '
+  domain: legal
+  tier: L4
+  status: kernel_confirmed
+  kernel_ref: CEO_STRATEGIC_STANCE_2026-07-01 (mục bối cảnh 22/12/2025)
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: '2025-12-22'
+- record: CAND.2.026
+  content: 'Năm 2027 RtR có kế hoạch mở nhà máy sản xuất Hera tại Hoa Kỳ theo mô hình xuất khẩu công nghệ: phần
+    giá trị cao thiết kế và lập trình đặt tại Việt Nam, phần chế tạo và lắp ráp đặt tại Hoa Kỳ.
+
+    '
+  domain: company
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: POSITIONING_5CHAN_2026-07-03 (chân 7 · nhà máy Hoa Kỳ 2027) · CEO_STRATEGIC_STANCE_2026-07-01
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: null
+- record: CAND.2.027
+  content: 'CEO sáng lập RtR là Lương Việt Quốc, Tiến sĩ tại UC Berkeley, từng theo học Cornell (Hoa Kỳ) và Fulbright
+    (Việt Nam), với định hướng sáng lập "vượt thế giới hoặc phá sản".
+
+    '
+  domain: company
+  tier: L4
+  status: kernel_confirmed
+  kernel_ref: OC-001 · CEO_STRATEGIC_STANCE_2026-07-01
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: '2026-07-14'
+- record: CAND.2.028
+  content: 'Bảng spec HERA trong factsheet báo chí (MTOW 30,5 kg, payload 14 kg 4 khoang, 56 phút, 15 km, Edge AI
+    105 TOPS, gấp 14x, trạng thái đang giao thương mại) khớp spec hiện hành kernel HC-001; bảng VEGA (37,4 kg, 20
+    kg, 60 phút, 10 km, -30 đến +45 độ C, Beaufort 6) khớp HC-002.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-001 · HC-002
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: '2026-07-14'
+- record: CAND.2.029
+  content: 'Con số "8,5/9 công nghệ lõi do RtR làm chủ" và "5/9 công nghệ lõi trên chuẩn quốc tế" là con số RtR
+    tự đánh giá theo phương pháp so sánh với sản phẩm cùng lớp của Hoa Kỳ và Ukraine, và khi trích dẫn ra ngoài
+    cần chú thích điều này.
+
+    '
+  domain: company
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: SC-020
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: '2026-07-14'
+- record: CAND.2.032
+  content: 'Từ vựng cấm trong mọi tài liệu RtR: em-dash, AI-tell hyphen-fluff (next-generation, world-class, cutting-edge...),
+    tính từ mơ hồ không có số (nhiều, tốt nhất, tiên tiến...) và marketing fluff (đối tác tin cậy, vì một tương
+    lai...).
+
+    '
+  domain: brand
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: DOCTRINE_1PAGE rule 4 (KHÔNG em-dash U+2014)
+  source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Voice_Nuance_v1.md
+  effective_date: '2026-05-25'
+- record: CAND.3.030
+  content: 'RtR (pháp nhân Hoa Kỳ), do Dr. Lương Việt Quốc sáng lập, được thành lập năm 2014. Đây là mốc thành lập
+    entity Hoa Kỳ, phân biệt với pháp nhân Việt Nam (Công ty CP Real-time Robotics Việt Nam) thành lập 2017 (xem
+    CAND.3.025).
+
+    '
+  domain: company
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: OC-001
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: null
+- record: CAND.3.031
+  content: 'Nhà máy / trung tâm R&D và sản xuất của RtR đặt tại Lot I-4b-4.2 Road N3, Saigon Hi-Tech Park (SHTP),
+    TP Thủ Đức. Đây là facility engineering, phân biệt với địa chỉ trụ sở ĐKKD 40/10 Khổng Tử (xem CAND.3.026).
+
+    '
+  domain: company
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: OC-020
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: null
+- record: L3R.K.001
+  content: 'Signature sản phẩm hiện hành thị trường VN: HERA 1-4-14 (1 người vận hành, 4 khoang hàng, 14 kg payload)
+    và VEGA 1-4-20 (payload 20 kg / 44 lb). Thị trường Mỹ dùng đơn vị pound trên company card: HERA 1-4-30, VEGA
+    1-4-44. Không trộn đơn vị trong cùng một tài liệu.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-001 + doctrine signature-unit-per-market
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: '2026-07-16'
+- record: L3R.K.002
+  content: 'HERA 2.0 cấu hình US (FAA Part 107): trọng lượng không tải 16 kg (đã gồm pin), payload 9 kg (20 lb),
+    MTOW không quá 25 kg (55 lb) đúng trần Part 107. HERA có hai cấu hình theo thị trường: bản VN payload 14 kg
+    (1-4-14), bản US Part 107 payload 9 kg. Chốt CEO 16/07/2026.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-001
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: '2026-07-16'
+- record: L3R.K.003
+  content: 'VegaHub (GCS cho VEGA) dùng màn hình 2000 nits phục vụ vận hành tactical ngoài trời. Spec tách riêng
+    với HeraHub (LCD 1280x800, 1800 nits) từ 16/07/2026; trước đó hai thiết bị dùng chung mô tả.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-019 + HC-017
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: '2026-07-16'
+- record: L3R.K.004
+  content: 'Payload HERA 15 kg (33 lb) là spec CŨ; spec hiện hành là 14 kg (signature 1-4-14). Việc đổi 15 kg sang
+    14 kg diễn ra TRƯỚC ngày 27/07/2026 nhưng chưa xác định được mốc chính xác, nên không ghi ngày hiệu lực cho
+    lần đổi này. Ngày 27/07/2026 là ngày rà soát và gắn nhãn legacy cho toàn bộ tài liệu còn ghi 15 kg (archive
+    tại _archives/legacy_hera_1-4-15_20260727 kèm file cảnh báo), KHÔNG phải ngày spec thay đổi. Chỉ nhắc 15 kg
+    khi nói về lịch sử sản phẩm, không dùng trong tài liệu gửi khách.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: SPEC_CHANGELOG 2026-07-27 LEGACY-TAG (ngày rà soát · không phải ngày đổi spec)
+  source: /Users/os/RtR/kernel/_dist/LEGACY_HERA_15KG_MANIFEST.md
+  effective_date: null
+- record: L3R.K.005
+  content: 'Văn bản gửi cơ quan nhà nước (công văn, tờ trình, báo cáo, email chính thức) soạn theo bộ văn phong
+    chuẩn RtR: thể thức đúng Nghị định 30/2020/NĐ-CP, 7 nguyên tắc điều hành, 3 mức đề nghị, vốn từ chuẩn hoá, checklist
+    trước gửi và template công văn có sẵn (skill rtr-van-phong-nha-nuoc).
+
+    '
+  domain: process
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: toolkit rtr-van-phong-nha-nuoc
+  source: /Users/os/RtR/kernel/_dist/toolkits/
+  effective_date: null
+- record: L3R.K.006
+  content: 'Chuẩn kháng bụi nước của HERA là IP54 (kernel HC-042, provenance verified_primary, certified). Con số
+    IP43 từng xuất hiện trong baseline workbook bảo dưỡng là SỐ CŨ chưa cập nhật, curator chốt ngày 27/07/2026 và
+    đã sửa trong file gốc. Không dùng IP43 trong bất kỳ tài liệu nào.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-042 + DISP.005 đóng 2026-07-27
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: '2026-07-27'
+- record: L3R.K.007
+  content: 'Tầm điều khiển HERA là 15 km (kernel HC-001, chốt CEO 16/07/2026). Con số 10 km trong baseline workbook
+    bảo dưỡng là SỐ CŨ chưa cập nhật, curator chốt 27/07/2026 và đã sửa trong file gốc. Lưu ý phân biệt: 10 km là
+    tầm của VEGA (kernel HC-002), không phải HERA.
+
+    '
+  domain: product
+  tier: L3
+  status: kernel_confirmed
+  kernel_ref: HC-001 + HC-002 + DISP.006 đóng 2026-07-27
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: '2026-07-27'
+- record: PRICE.HERA.MSRP.US
+  content: 'HERA US list price: 64900 USD · ghi chú: Stay competitive vs IF1200 ($60-62K)'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: PRICE.HERA.MSRP.US
+  source: _governance/RtR_Pricing_Master_v1_0.xlsx
+  effective_date: '2026-06-14'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: PRICE.HERA.MSRP.VN
+  content: 'HERA VN list price: 69900 USD · ghi chú: VN no competitor anchor, premium positioning'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: PRICE.HERA.MSRP.VN
+  source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
+  effective_date: '2026-06-15'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: PRICE.VEGA.MSRP.US
+  content: 'VEGA US list price: 109900 USD · ghi chú: Per Khoa pricing draft. Market: US/G7 export quân sự.'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: PRICE.VEGA.MSRP.US
+  source: _governance/RtR_Pricing_Master_v1_0.xlsx
+  effective_date: '2026-06-14'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: PRICE.VEGA.MSRP.VN
+  content: 'VEGA VN list price: None USD · TRẠNG THÁI verify_pending · chưa chốt, không dùng để cam kết · ghi chú:
+    Decision #5 = C: VEGA US/G7 first 12 tháng, sau đó eval VN. Tạm giữ TBD.'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: PRICE.VEGA.MSRP.VN
+  source: _governance/RtR_Pricing_Master_v1_0.xlsx
+  effective_date: null
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: PRICE.HERA.BUNDLE.MSRP
+  content: 'HERA bundle MSRP (Almo composition): 64320 USD · ghi chú: 9 thành phần: drone + 1 battery + drop + speaker
+    + Starlink + hardcase + backpack'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: PRICE.HERA.BUNDLE.MSRP
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: '2026-05-12'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: PRICE.VEGA.BUNDLE.MSRP
+  content: 'VEGA bundle MSRP: 109938 USD'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: PRICE.VEGA.BUNDLE.MSRP
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: '2026-05-12'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: PRICE.HERA.BUNDLE.DIST
+  content: 'HERA bundle distributor price: 48220 USD · ghi chú: 30% discount from MSRP for Almo (stocking distributor)'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: PRICE.HERA.BUNDLE.DIST
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: '2026-05-12'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: PRICE.VEGA.BUNDLE.DIST
+  content: 'VEGA bundle distributor price: 71460 USD'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: PRICE.VEGA.BUNDLE.DIST
+  source: _governance/Pricing to Almo - emj updates 260512.xlsx
+  effective_date: '2026-05-12'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: DISCOUNT.TIER.STANDARD
+  content: 'Standard Partner discount: 25.0% · ghi chú: Sales/Channel Lead approves. Default tier.'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: DISCOUNT.TIER.STANDARD
+  source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
+  effective_date: '2026-06-15'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: DISCOUNT.TIER.PREFERRED
+  content: 'Preferred VAR/Integrator discount: 30.0% · ghi chú: Distributor default (Almo). Có demo/training/integration.'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: DISCOUNT.TIER.PREFERRED
+  source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
+  effective_date: '2026-06-15'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: DISCOUNT.TIER.STRATEGIC
+  content: 'Strategic Cap discount: 35.0% · ghi chú: CEO/VP approves. Hard cap. Stocking, volume, competitive swap,
+    strategic.'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: DISCOUNT.TIER.STRATEGIC
+  source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
+  effective_date: '2026-06-15'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: DISCOUNT.TIER.MIN
+  content: 'Min discount distributor non-contribute: 3.0% · ghi chú: Range 3-5%. Cover inventory cost + maintenance
+    relationship.'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: DISCOUNT.TIER.MIN
+  source: chat team RtR 14/06
+  effective_date: null
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: FX.RATE.REF
+  content: 'Tỷ giá tham chiếu: 25000 VND/USD · TRẠNG THÁI INT · chưa chốt, không dùng để cam kết · ghi chú: Update
+    theo VCB ngày trình. Cần Finance define cadence (Queue A #12).'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: FX.RATE.REF
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: '2026-06-11'
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: REG.HOLD_TIME
+  content: 'Deal Registration hold time: 90 days · ghi chú: Standard quote validity. Có thể extend 180 ngày cho
+    gov classified.'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: REG.HOLD_TIME
+  source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
+  effective_date: null
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: REG.SLA.APPROVAL
+  content: 'REG approval SLA target: 24 hours · ghi chú: For in-policy REG. Exception (>35%) chậm hơn (CEO approval).'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: REG.SLA.APPROVAL
+  source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
+  effective_date: null
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: PRICE.RMUS.LEGACY.HERA
+  content: 'RMUS legacy HERA listing: 37000 USD · TRẠNG THÁI LEGACY · chưa chốt, không dùng để cam kết · ghi chú:
+    CONFLICT với MSRP hiện tại. HERA 1.0 legacy. Queue A #2 PENDING Khánh + CEO.'
+  domain: pricing
+  tier: L2
+  status: restricted
+  kernel_ref: PRICE.RMUS.LEGACY.HERA
+  source: RMUS website (live)
+  effective_date: null
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: DERIVED.HERA.PREMIUM_VS_IF1200
+  content: 'HERA US premium vs IF1200: 6.4% · ghi chú: 6.4% thực, KHÔNG khớp narrative 10-15%. QUEUE B #4: Khoa
+    verify IF1200 primary source.'
+  domain: positioning
+  tier: L2
+  status: restricted
+  kernel_ref: DERIVED.HERA.PREMIUM_VS_IF1200
+  source: _governance/RtR_Pricing_Master_v1_0.xlsx
+  effective_date: null
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: DERIVED.HERA.PREMIUM_VS_VN
+  content: 'HERA VN premium vs IF1200 (theoretical): 14.6% · ghi chú: VN không có IF1200 competitor, premium theo
+    theoretical only'
+  domain: positioning
+  tier: L2
+  status: restricted
+  kernel_ref: DERIVED.HERA.PREMIUM_VS_VN
+  source: null
+  effective_date: null
+  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+- record: VOICE.VOICE_CEO
+  content: "# Voice CEO · Pointer Document\n\n**Loại:** L4.Style · pointer doc · KHÔNG atomize facts.\n\n**Doctrine:**\
+    \ Voice CEO là phán xét tự do, đứng NGOÀI đường kiểm registry. Không có ID atomic. Đây là input để sinh, không\
+    \ phải thứ đối chiếu cơ học.\n\n---\n\n## Canonical sources\n\n### Primary\n- **`_governance/RtR_Voice_Nuance_v1.md`**\
+    \ · canonical document voice CEO\n  - Tác giả: AI Officer Lâm (compile từ CEO communication 2025-2026)\n  -\
+    \ Last update: 26/05/2026\n  - Phạm vi: voice cho RtR corporate communication\n\n### Skill packages\n- **`lam-nguyen-voice`**\
+    \ · digital twin viết tiếng Việt (journalism, op-ed, social posts)\n  - Plugin path: `/var/folders/.../skills/lam-nguyen-voice/`\n\
+    \  - Trigger: \"viết theo giọng tôi\", \"phong cách của tôi\", bài báo/op-ed/Facebook\n  \n- **`rtr-van-phong-nha-nuoc`**\
+    \ · văn phong gửi cơ quan nhà nước VN\n  - Plugin path: `/var/folders/.../skills/rtr-van-phong-nha-nuoc/`\n\
+    \  - Trigger: công văn, tờ trình, báo cáo, thư đề nghị phối hợp\n\n- **`rtr-event-social`** · social media voice\
+    \ cho RtR events\n  - Plugin path: `/var/folders/.../skills/rtr-event-social/`\n  - Trigger: caption LinkedIn/Facebook/IG/X/YouTube\
+    \ cho RtR events\n\n---\n\n## Phạm vi áp dụng\n\n| Audience | Skill khuyến nghị |\n|---|---|\n| Bài báo / op-ed\
+    \ / Facebook personal | `lam-nguyen-voice` |\n| Công văn gửi Sở/Bộ/UBND | `rtr-van-phong-nha-nuoc` |\n| LinkedIn/Facebook\
+    \ RtR corporate | `rtr-event-social` |\n| Deck pitch khách hàng | Voice Nuance + `lam-nguyen-deck-style` |\n\
+    | Brochure marketing | `rtr-brochure-system` |\n| Email internal | Voice Nuance (relaxed register) |\n\n---\n\
+    \n## Vì sao L4 đứng ngoài registry?\n\n- Voice CEO không kiểm cơ học được như giá ($69.900 verifiable)\n- Brand\
+    \ standard không có ID atomic value\n- Để style cạnh bảng giá tạo ảo giác rằng style kiểm được như facts\n-\
+    \ Khi atomize voice (vd: \"câu phải dài ≤ 15 từ\") → false precision, không giúp gì\n\n**Đúng cách:** L4 là\
+    \ input cho sinh. Skill đọc, hiểu, áp. Không cần ID.\n\n---\n\n## Skill refactor (Lô 3, future)\n\nKhi skill\
+    \ `lam-nguyen-deck-style` hoặc `rtr-brochure-system` hard-code spec HERA trong prose, refactor để trỏ tới `SPEC.HERA.*`\
+    \ registry IDs. Nhưng voice rules trong skill KHÔNG cần atomize, giữ prose tự do.\n\n---\n\n## Built\n\nPha\
+    \ 5 + Lô 4 · 2026-06-16"
+  domain: voice
+  tier: L4
+  status: restricted
+  kernel_ref: style/voice_ceo.md
+  source: style/voice_ceo.md
+  effective_date: null
+  canh_bao: Tài liệu văn phong nội bộ · dùng để soạn thảo, không trích nguyên văn ra ngoài
+- record: VOICE.RTR_VOICE_NUANCE_V1
+  content: "# RtR Voice & Nuance · Khung văn phong chính thức\n\n| | |\n|---|---|\n| **Phiên bản** | v1.0 · 25 /\
+    \ 05 / 2026 |\n| **Owner** | AI Officer · Lâm Nguyễn |\n| **Reference source** | 2 deck CEO Quốc Lương soạn\
+    \ (BQP 14 slide + Đà Nẵng 18 slide), Ma Trận Năng Lực v1, CEO doctrine 2026 |\n| **Audience** | Bất kỳ ai soạn\
+    \ tài liệu RtR cho khách hàng quan trọng (deck, proposal, email, công văn, brochure, social post, AI agent personalization)\
+    \ |\n| **Classification** | P2 CONFIDENTIAL |\n\n---\n\n## 0 · Tại sao tài liệu này tồn tại\n\nCEO Quốc Lương\
+    \ đã soạn 2 deck rất kỷ luật cho 2 audience khác nhau (Bộ Quốc Phòng + Thành phố Đà Nẵng). Mỗi deck có vocabulary,\
+    \ framing, tone riêng nhưng cùng một DNA. Tài liệu này **chưng cất DNA đó** thành khung văn phong áp dụng được\
+    \ bởi:\n- Member RtR khi soạn tài liệu (proposal, công văn, social post)\n- AI agent (Claude, ChatGPT) khi draft\
+    \ text RtR\n- Đối tác / agency soạn material RtR\n\nMục đích: voice consistent xuyên suốt, không drift khi nhiều\
+    \ người hoặc AI cùng draft. Voice của RtR phải nhận diện được dù người soạn không phải CEO.\n\n---\n\n## 1 ·\
+    \ RtR Voice DNA · Năm đặc tính cốt lõi\n\n**1.1 · Production-anchored** — Mọi claim phải có evidence. CEO không\
+    \ nói \"tốt nhất thế giới\" mà nói \"vượt trội thế giới với 1-4-20\" (có số). Mỗi adjective phải defensible\
+    \ bằng số hoặc reference.\n\n**1.2 · Structural, không ngẫu hứng** — Mỗi deck có narrative arc rõ (ACT I-V,\
+    \ hoặc problem→solution→evidence→proposal). Mỗi slide có cấu trúc lặp lại (kicker + headline + body + 3-4 hero\
+    \ numbers). Không có slide free-form.\n\n**1.3 · Đối ngẫu (X vs Y) thay vì đơn lẻ** — Voice CEO định nghĩa khái\
+    \ niệm bằng đối lập:\n- \"Không phải mua drone, mà xây năng lực hạ tầng số\"\n- \"Không phải 'một drone, một\
+    \ nhiệm vụ', mà 'một drone, nhiều nhiệm vụ đồng thời'\"\n- \"Không chỉ bán drone; cung cấp nền tảng nhiệm vụ\"\
+    \n- \"Không bằng thông số brochure, bằng kết quả thực địa\"\n\nPattern này buộc người đọc nhìn lại điều họ tưởng\
+    \ đã hiểu.\n\n**1.4 · Specificity > generality** — Voice CEO tránh modifier mơ hồ:\n- KHÔNG: \"nhiều khách hàng\
+    \ quốc tế\"\n- CÓ: \"Sư đoàn Dù 11 Quân đội Hoa Kỳ tại Alaska, tháng 11/2024\"\n- KHÔNG: \"đạt nhiều giải thưởng\"\
+    \n- CÓ: \"Giải Vàng Sản phẩm Công nghệ Số Chiến lược Xuất sắc, Bộ KH&CN, Make in Viet Nam 2025\"\n\nMỗi claim\
+    \ có **ngày tháng + tên cụ thể + nguồn dẫn**.\n\n**1.5 · Source-disciplined** — CEO ghi nguồn ngay cả ở slide\
+    \ pitch (không chỉ phụ lục). Có caveat khi số liệu chưa chốt:\n> \"Ghi chú: các số liệu đối thủ trong bảng theo\
+    \ yêu cầu / thông tin người dùng cung cấp; cần rà soát bằng tài liệu kỹ thuật chính thức trước khi phát hành\
+    \ công khai.\"\n\nĐây là discipline rất hiếm — phần lớn pitch deck không có caveat. CEO làm thường xuyên. **Voice\
+    \ RtR phải kế thừa**.\n\n---\n\n## 2 · Vocabulary signature\n\n### 2.1 · Từ vựng SIGNATURE (dùng thường xuyên,\
+    \ có brand value)\n\n| Từ / Cụm từ | Khi dùng | Ví dụ |\n|---|---|---|\n| **Invent · Build · Prove** | Slogan\
+    \ brand, slide kết, signature line | \"Đội RtR · Invent · Build · Prove\" |\n| **Anh cả · Cánh chim đầu đàn\
+    \ · Con chim đầu đàn** | Khi reference Phó Thủ tướng recognition. Variations OK | \"Phó Thủ tướng ghi nhận RtR\
+    \ là 'anh cả', 'con chim đầu đàn' UAV Việt Nam\" |\n| **Người Việt phát minh · do người Việt làm chủ** | Khi\
+    \ nhấn national identity (audience VN gov) | \"Sản phẩm do người Việt phát minh, thiết kế và chế tạo\" |\n|\
+    \ **Vượt trội thế giới · hàng đầu thế giới** | Claim positioning cao nhất, phải kèm số chứng minh | \"Drone\
+    \ chiến thuật cấp đại đội vượt trội thế giới với 1-4-20\" |\n| **Thị trường khó tính · thị trường G7** | Validation\
+    \ từ external market | \"Đã được kiểm chứng ở thị trường khó tính / thị trường G7\" |\n| **Nền tảng · không\
+    \ phải thiết bị** | Differentiate khỏi commodity drone | \"RtR không bán drone; RtR cung cấp nền tảng nhiệm\
+    \ vụ\" |\n| **Một X, nhiều Y** | Multi-payload / multi-mission framing | \"Một drone, nhiều nhiệm vụ\", \"Một\
+    \ nền tảng, mọi ứng dụng\" |\n| **Bài toán** (không phải \"vấn đề\" hay \"thách thức\") | Frame challenge |\
+    \ \"Bài toán chiến trường mới\", \"Bài toán Đà Nẵng\" |\n| **Cách X giải** | Frame solution mapping | \"Cách\
+    \ Hera giải\" |\n\n### 2.2 · Từ vựng MILITARY (chỉ dùng cho audience BQP / defense)\n\n`tác chiến điện tử (EW)\
+    \ · GNSS-denied · drone tự sát · payload chiến thuật · trinh sát · relay · tiếp tế · thả tải · chế áp · gây\
+    \ nhiễu · bầy đàn · phân tán · cơ động · doctrine · ISR · C2 · cấp đại đội · trạm tiếp sóng trên không · multi-link\
+    \ · nhảy tần · cấu hình chiến trường`\n\n### 2.3 · Từ vựng CIVILIAN (chỉ dùng cho audience UBND TP / dân dụng)\n\
+    \n`bản sao số (digital twin) · đô thị thông minh · IOC · GIS · PCCC · cứu hộ cứu nạn · sở ngành · workflow ·\
+    \ live video · quản lý đô thị · giao thông · hạ tầng số · điều phối · phân luồng · trật tự đô thị · an toàn\
+    \ đô thị · cộng đồng · sự kiện đông người`\n\n### 2.4 · Từ vựng KHÔNG BAO GIỜ DÙNG\n\n**Em-dash `—`** (đã có\
+    \ rule global rule trong skill)\n\n**AI-tell hyphen-fluff**:\n- ❌ next-generation\n- ❌ data-driven\n- ❌ ground-breaking\n\
+    - ❌ best-in-class\n- ❌ world-class\n- ❌ cutting-edge\n\n**Generic adjective mơ hồ**:\n- ❌ rất nhiều · nhiều\
+    \ · đa số · phần lớn (không có số)\n- ❌ tốt nhất · vượt trội (không có comparison object)\n- ❌ tiên tiến · hiện\
+    \ đại · thông minh (không có spec)\n\n**Marketing fluff**:\n- ❌ \"Đối tác tin cậy của bạn\"\n- ❌ \"Vì một tương\
+    \ lai...\"\n- ❌ \"Cùng nhau chinh phục...\"\n- ❌ \"Đam mê và cam kết\"\n\n### 2.5 · Cụm CEO viết được, người\
+    \ khác viết không được\n\nMột số phrase rất personal của CEO, người khác lặp lại nghe gượng:\n- \"Một ba lô.\
+    \ Bốn tải. 20 kg. Nhiều đường truyền.\" (rhythm punctual của CEO)\n- \"Quân đội VN sở hữu drone chiến thuật\
+    \ tốt hơn Quân đội Hoa Kỳ và Ukraine\"\n\nKhi soạn voice cho người khác, không bắt chước literal — dùng vocabulary\
+    \ signature ở mục 2.1, tạo phrase mới với cùng pattern.\n\n---\n\n## 3 · Structural patterns\n\n### 3.1 · Slide-level\
+    \ structure (lặp lại)\n\nMọi slide CEO đều theo cấu trúc:\n```\n[ACT MARKER · CHUYÊN MỤC]                  \
+    \  [CONFIDENTIAL nếu có]\n[SECTION HEADER · TÊN]\nHook headline (1 câu khoá định nghĩa slide)\nSub-headline\
+    \ (1 câu mở rộng hook)\n\n[HERO NUMBERS GRID 3-4 ô · MỖI Ô CÓ:]\nNUMBER (lớn)\nLABEL (uppercase)\ncaption (1\
+    \ dòng)\n\n[BODY · 2-4 BULLET SECTIONS:]\nTITLE in caps\n• 2-3 bullet ngắn\n• Specific, có số nếu được\n\n[PREPARED\
+    \ FOR · AUDIENCE]                    [N / TOTAL]\n```\n\nPattern này giúp người đọc scan nhanh, đồng thời tạo\
+    \ hierarchy rõ.\n\n### 3.2 · Multi-slide narrative arc\n\n**5-Act structure** (BQP deck):\n- ACT I · BÀI TOÁN\
+    \ + COMPANY (slide 1-4)\n- ACT II · PLATFORM + COMPARATIVE + MISSION + TEAM + RESILIENCE + C2 (slide 5-10)\n\
+    - ACT III · DOCTRINE FIT (slide 11)\n- ACT IV · PILOT (slide 12)\n- ACT V · STRATEGIC PARTNERSHIP (slide 13-14)\n\
+    \n**Problem-Solution-Evidence-Proposal arc** (Đà Nẵng deck):\n- Vision (slide 1-2)\n- Why RtR (slide 3)\n- Platform\
+    \ overview (slide 4-5)\n- Use cases breakdown (slide 6-12)\n- Pilot proposal (slide 13-15)\n- KPI + partnership\
+    \ (slide 16-17)\n- Source caveats (slide 18)\n\n→ Voice RtR: mọi tài liệu dài (proposal, deck, công văn) phải\
+    \ có narrative arc rõ, không phải bullet liệt kê.\n\n### 3.3 · Opening hooks\n\nCEO mở mọi document bằng **claim\
+    \ định vị thẳng**, không warmup:\n- BQP: \"Drone chiến thuật cấp đại đội vượt trội thế giới cho Bộ Quốc phòng\
+    \ Việt Nam\"\n- Đà Nẵng: \"Một nền tảng Hera cho nhiều bài toán\"\n\nKHÔNG: \"Kính gửi quý anh chị, chúng tôi\
+    \ xin được giới thiệu...\"\nCÓ: Claim thẳng + context.\n\n### 3.4 · Closing patterns\n\nCEO không kết bằng \"\
+    chúng tôi mong hợp tác\". Kết bằng:\n\n**Tagline punctual** (BQP):\n> \"MỘT BA LÔ. BỐN TẢI. 20 KG. NHIỀU ĐƯỜNG\
+    \ TRUYỀN.\"\n> \"Một năng lực chiến thuật cấp đại đội hàng đầu thế giới do người Việt làm chủ.\"\n> \"INVENT\
+    \ · BUILD · PROVE\"\n\n**Action proposal** (Đà Nẵng):\n> \"Đề xuất quyết định: phê duyệt pilot 90 ngày và thành\
+    \ lập nhóm công tác chung Đà Nẵng - RtR.\"\n\n### 3.5 · Sentence-level patterns\n\n**Subject + colon + action**:\n\
+    - \"Hera 1-4-20: nền tảng UAV chiến thuật cấp đại đội\"\n- \"Hera là 'xe công vụ bay đa nhiệm'\"\n- \"Bài toán\
+    \ chiến trường mới: phân tán, cơ động, đa nhiệm, chống gây nhiễu\"\n\n**3-element punctual phrase**:\n- \"Phân\
+    \ tán · cơ động · bầy đàn\"\n- \"Invent · Build · Prove\"\n- \"Một ba lô. Bốn tải. 20 kg\"\n\n**Bullet 3-words\
+    \ rhythm** — không câu dài. CEO dùng để nén ý.\n\n---\n\n## 4 · Numbers & Claims discipline\n\n### 4.1 · Hero\
+    \ numbers presentation pattern\n\nMỗi slide có **3-4 hero numbers ở vị trí prominent**:\n```\n94%          \
+    \  04             2025           VN\nCÔNG NGHỆ LÕI  BẰNG SÁNG CHẾ  GIẢI VÀNG      THIẾT KẾ & CHẾ TẠO\ndo RtR\
+    \ sở hữu  Mỹ và Úc cấp   SP CN Chiến    100% người Việt\n                              lược\n```\n\nNumber lớn\
+    \ 60-90pt, label uppercase letter-spaced, caption 1 dòng. Không bao giờ chỉ text mà không có hero numbers.\n\
+    \n### 4.2 · Number consistency between audiences\n\nCEO **điều chỉnh số liệu cho từng audience** một cách có\
+    \ chủ ý:\n\n| Spec | BQP version | Đà Nẵng version | Lý do |\n|---|---|---|---|\n| Payload Hera | 20 kg | 14\
+    \ kg (đề xuất) | BQP cần heavy-lift max claim, Đà Nẵng cần realistic civilian capacity |\n| Drone tự sát mang\
+    \ | 3 | (không nhắc) | BQP audience tactical, Đà Nẵng civilian không relevant |\n| EW resilience | 4 lớp dự\
+    \ phòng | (không nhắc) | BQP critical, Đà Nẵng \"multi-link để mạng sụp\" — same tech, civilian framing |\n\n\
+    → **Voice rule**: cùng một capability có thể framing khác cho audience khác, nhưng underlying number phải defensible.\
+    \ Không inflate.\n\n### 4.3 · Multiplier claims (2X · 4X)\n\nCEO dùng \"2X tốc độ\", \"4X vùng quan sát\" —\
+    \ nhưng **kèm caveat ngay**:\n> \"Claim 4X nên được chứng minh trong demo bằng vùng quan sát thực tế, số luồng\
+    \ video và tốc độ phát hiện mục tiêu.\"\n\n→ Voice rule: multiplier claim phải có conditions để verify. Không\
+    \ \"magic numbers\".\n\n### 4.4 · Discrepancy với Ma Trận Năng Lực — cần align\n\nĐối chiếu CEO claim với Ma\
+    \ Trận Năng Lực v1 (sheet 01_Hard_Capabilities):\n\n| CEO claim | Ma trận | Action cần |\n|---|---|---|\n| \"\
+    4 bằng sáng chế Mỹ + Úc cấp\" | 2 USPTO granted + 1 IP AU = 3 granted, 2 pending | Clarify: \"4 patents granted\
+    \ hoặc pending\" hoặc tách rõ |\n| \"Hera 1-4-14\" (14 kg) | HC-001 ghi 15 kg payload max | RESOLVED 2026-06-28\
+    \ CEO-delegate: HERA current spec 30 lb / 14 kg signature 1-4-14 (lưỡng dụng/dân dụng) · 15 kg là theoretical\
+    \ payload max DCMA. Xem _dist/SPEC_CHANGELOG.md. |\n| \"Hera 1-4-20\" trong BQP deck | HC-002 VEGA = 20 kg |\
+    \ RESOLVED 2026-06-28 CEO-delegate: \"1-4-20\" KHÔNG phải HERA, là VEGA (44 lb / 20 kg) · pre-launch quân sự.\
+    \ Mọi deck BQP forward dùng đúng tên: HERA (14 kg lưỡng dụng) hoặc VEGA (20 kg quân sự). Xem _dist/SPEC_CHANGELOG.md.\
+    \ |\n| \"Sư đoàn Dù 11 Quân đội Hoa Kỳ, tháng 11/2024\" | KB sheet 22 row 01: \"2024-2025 Alaska\" | Khớp, có\
+    \ thể narrow specifc date 11/2024 |\n| \"94% công nghệ lõi do RtR sở hữu\" | SC-020: \"94% tự chủ\" | Khớp |\n\
+    | \"Phó Thủ tướng Hồ Quốc Dũng vào thăm RtR ngày 7/5/2026\" | SC-001: chỉ nói chung \"2024\" | CEO có data mới\
+    \ hơn — update ma trận |\n\n→ Khi anh + CEO co-sign, cần **align ma trận năng lực với claims trong CEO deck**,\
+    \ hoặc CEO clarify naming convention Hera 1-4-20 vs VEGA.\n\n---\n\n## 5 · Audience-specific nuance\n\n### 5.1\
+    \ · BQP (Bộ Quốc Phòng)\n\n| Dimension | Specifics |\n|---|---|\n| **Tone** | Tactical, military, \"vượt trội\
+    \ thế giới\", competitive với US Army + Ukraine + China |\n| **Vocabulary** | EW, GNSS-denied, drone tự sát,\
+    \ ISR, C2, multi-link, doctrine, bầy đàn |\n| **Header** | Always include \"CONFIDENTIAL\" + \"PREPARED FOR\
+    \ · BỘ QUỐC PHÒNG VIỆT NAM\" |\n| **Evidence preference** | US Army deployment, Ukraine/Russia comparison, technical\
+    \ spec |\n| **Closing** | Tagline punctual + \"INVENT · BUILD · PROVE\" |\n| **Bold claim allowed** | \"Drone\
+    \ chiến thuật cấp đại đội số 1 thế giới\" — yes if backed by 1-4-20 spec |\n| **Avoid** | Civilian metaphors\
+    \ (\"xe công vụ bay\"), sở ngành language, IOC/GIS terms |\n\n### 5.2 · UBND TP · Đà Nẵng (civilian government)\n\
+    \n| Dimension | Specifics |\n|---|---|\n| **Tone** | Civic, solution-oriented, \"đối tác\", \"đồng hành\", \"\
+    xây dựng năng lực\" |\n| **Vocabulary** | Sở ngành, IOC, GIS, PCCC, digital twin, cứu hộ cứu nạn, workflow |\n\
+    | **Header** | Không cần \"CONFIDENTIAL\", brand nhẹ \"Real-time Robotics (RtR) | Proposal deck\" |\n| **Evidence\
+    \ preference** | VOV, Bộ KH&CN, Phó TTg recognition (named explicitly), Việt Nam case |\n| **Closing** | Action\
+    \ proposal cụ thể \"phê duyệt pilot 90 ngày\" |\n| **Bold claim with humility** | \"2X tốc độ trong các bài\
+    \ toán phù hợp\" — kèm \"phù hợp\" để soften |\n| **Avoid** | Military terms, drone tự sát, EW, ISR, tác chiến\
+    \ điện tử |\n\n### 5.3 · G7 export market (US, EU, Israel)\n\n| Dimension | Specifics |\n|---|---|\n| **Tone**\
+    \ | Allied-tier, NDAA + ITAR + DCMA emphasis, U.S.-engineered |\n| **Vocabulary** | NDAA Section 889, ITAR controlled,\
+    \ Blue UAS, FIPS 140-2, air-gapped, AES-256 |\n| **Header** | English primary, brand \"U.S.-engineered with\
+    \ Vietnamese R&D\" |\n| **Evidence preference** | DCMA Blue UAS submission, US Army 11th Airborne, customer\
+    \ references |\n| **Closing** | Technical brief follow-up + NDA-protected detailed spec |\n| **Bold claim**\
+    \ | \"First Vietnamese UAV exported to G7\" — OK với evidence |\n| **Avoid** | Vietnamese government recognition\
+    \ language (gov audience không relevant), national commitment rhetoric |\n\n### 5.4 · Industry general (utilities,\
+    \ agriculture, mining)\n\n| Dimension | Specifics |\n|---|---|\n| **Tone** | Operational, ROI-focused, \"85%\
+    \ cost reduction vs trực thăng\" |\n| **Vocabulary** | Inspection, mapping, asset management, ROI, throughput,\
+    \ validated case |\n| **Evidence preference** | US Power Utility benchmark, US Police ISR, agriculture 340%\
+    \ ROI |\n| **Closing** | Pilot site proposal + measurable KPI |\n| **Avoid** | National commitment rhetoric,\
+    \ defense terms |\n\n---\n\n## 6 · Evidence patterns · Cách dẫn nguồn\n\n### 6.1 · Inline source attribution\n\
+    \nCEO ghi nguồn ngay trong body text khi cần defend:\n\n- \"Hera đang được Sư đoàn Dù 11 của Quân đội Hoa Kỳ\
+    \ sử dụng theo thông tin RtR cung cấp.\"\n- \"HERA đạt Giải Vàng 'Sản phẩm công nghệ số chiến lược xuất sắc'\
+    \ Make in Viet Nam 2025.\"\n- \"Phó Thủ tướng Hồ Quốc Dũng vào thăm và làm việc tại RtR ngày 7/5/2026.\"\n\n\
+    → Voice rule: claim quan trọng có \"theo thông tin / theo nguồn / được ghi nhận bởi\" tagline. Không tự xưng.\n\
+    \n### 6.2 · Caveat patterns\n\nCEO ghi explicit khi claim chưa chốt:\n- \"Ghi chú: các số liệu đối thủ trong\
+    \ bảng theo yêu cầu / thông tin người dùng cung cấp; cần rà soát bằng tài liệu kỹ thuật chính thức trước khi\
+    \ phát hành công khai.\"\n- \"Claim 4X nên được chứng minh trong demo bằng vùng quan sát thực tế...\"\n- \"\
+    Đánh giá bằng kết quả thực địa, không bằng thông số brochure\"\n\n→ Voice rule: phân biệt rõ \"đã verified\"\
+    \ vs \"claim cần verify\". Không trộn lẫn.\n\n### 6.3 · Source list slide cuối\n\nSlide cuối Đà Nẵng deck có\
+    \ liệt kê 4 nguồn chính + caveat:\n> \"Tài liệu này là bản proposal dạng slide; cần bổ sung phụ lục kỹ thuật,\
+    \ báo giá và kế hoạch demo chi tiết.\"\n\n→ Voice rule: mọi deck/proposal RtR có slide source cuối, không depend\
+    \ audience tự tin.\n\n---\n\n## 7 · Visual direction principles\n\n### 7.1 · Ảnh thật, không AI\n\nĐà Nẵng deck\
+    \ slide 1: \"Ảnh sử dụng trong deck: ảnh thật Hera từ VOV và nguồn công khai; không dùng ảnh minh hoạ AI.\"\n\
+    \n→ Voice rule: RtR material **không dùng ảnh AI-generated**. Chỉ ảnh thật từ:\n- XPO26 brochure assets (đã\
+    \ có 600+ ảnh)\n- VOV / báo chí công khai (có attribution)\n- Customer-provided với consent\n- Field deployment\
+    \ photos của RtR\n\n### 7.2 · Image caption discipline\n\nMọi ảnh có caption nguồn:\n- \"HERA sử dụng bởi Sư\
+    \ đoàn Dù 11 Quân đội Hoa Kỳ tại Alaska, tháng 11/2024.\"\n- \"Phó Thủ tướng Hồ Quốc Dũng vào thăm và làm việc\
+    \ tại RtR ngày 7/5/2026.\"\n\n→ Voice rule: ảnh hero không có caption attribution = không dùng.\n\n### 7.3 ·\
+    \ Number visualization\n\nSố được render lớn (60-90pt), không nằm trong câu chữ. Pattern lặp:\n- Number lớn\
+    \ (top)\n- LABEL UPPERCASE (middle)\n- caption 1 dòng (bottom)\n\n3-4 number per slide max. Không nhồi 8-10\
+    \ number.\n\n---\n\n## 8 · Anti-patterns · Voice drift warnings\n\nKhi reviewing material RtR (bất kỳ ai soạn),\
+    \ check những anti-pattern sau:\n\n| Anti-pattern | Triệu chứng | Sửa thế nào |\n|---|---|---|\n| **Marketing\
+    \ fluff** | \"Đối tác tin cậy\", \"Cam kết đồng hành\" | Replace bằng specific evidence + outcome |\n| **Generic\
+    \ adjective** | \"Nhiều khách hàng\", \"tốt nhất\" | Add specific count + comparison object |\n| **Tone drift**\
+    \ | Military terms cho civilian audience hoặc ngược lại | Check audience-specific nuance ở mục 5 |\n| **Em-dash\
+    \ present** | `—` xuất hiện | Replace bằng dấu phẩy / chấm / parentheses |\n| **AI-tell hyphen fluff** | \"\
+    next-generation\", \"world-class\" | Replace bằng technical specific |\n| **Magic number không caveat** | \"\
+    5X faster\" không kèm conditions | Add \"trong điều kiện X\" hoặc \"khi Y\" |\n| **Bullet liệt kê thay vì narrative**\
+    \ | Slide chỉ có 10 bullet | Restructure thành 3 act / 4 phase / 2x2 quadrant |\n| **Image AI-generated** |\
+    \ Hero photo không có source | Replace từ XPO26 library hoặc public source |\n| **Subject + verb + colon thiếu**\
+    \ | Sentence dài lê thê | Rewrite \"subject : action\" pattern |\n| **Source missing** | Claim không có \"theo\
+    \ / được ghi nhận / per\" | Add inline source attribution |\n| **Tone \"chúng tôi xin\" subordinate** | \"Chúng\
+    \ tôi xin được giới thiệu\" | Replace bằng confident \"RtR giới thiệu\" hoặc claim thẳng |\n| **Generic \"vì\
+    \ sao\" framing** | \"Vì sao chọn RtR\" — generic | Specific framing \"Năng lực RtR đã được chứng minh ở...\"\
+    \ |\n| **Closing fluff** | \"Mong hợp tác\", \"Cùng nhau...\" | Replace bằng action ask cụ thể |\n\n---\n\n\
+    ## 9 · Cross-reference checklist · Trước khi publish\n\nTrước khi gửi bất kỳ tài liệu RtR nào ra ngoài (deck,\
+    \ proposal, công văn, brochure), check 10 điểm:\n\n- [ ] Mọi claim quantitative có **inline source attribution**\n\
+    - [ ] Mọi capability claim **khớp với Ma Trận Năng Lực v1** (hoặc justify nếu narrow/round)\n- [ ] **Audience-specific\
+    \ nuance** đúng (BQP / civilian / G7 / industry)\n- [ ] **Vocabulary signature** xuất hiện ≥ 2 lần (\"Invent\
+    \ · Build · Prove\", \"do người Việt\", \"vượt trội thế giới\", etc.)\n- [ ] **Forbidden vocabulary** không\
+    \ có (em-dash, AI-tell fluff, generic adjectives)\n- [ ] **Hero numbers** ≥ 3 per major slide, đúng format\n\
+    - [ ] **Narrative arc** rõ (act structure hoặc problem-solution-evidence-proposal)\n- [ ] **Closing** không\
+    \ phải fluff, có action ask hoặc tagline punctual\n- [ ] **Hình ảnh** là ảnh thật + caption source attribution\n\
+    - [ ] **Caveat** có ở claim chưa verified (multiplier, future-tense, comparison)\n\n---\n\n## 10 · Soft skills\
+    \ voice anchors · Reusable phrases\n\nKhi cần soft anchoring trong text (không phải claim cứng), CEO dùng những\
+    \ phrase này. Voice RtR có thể reuse:\n\n**Anchoring credibility**:\n- \"Đã được kiểm chứng ở thị trường khó\
+    \ tính / thị trường G7\"\n- \"Track record quốc tế...\"\n- \"Vị thế trong hệ sinh thái Việt Nam...\"\n\n**Anchoring\
+    \ national identity**:\n- \"Do người Việt phát minh, thiết kế và chế tạo\"\n- \"Sản phẩm UAV Việt Nam vào thị\
+    \ trường G7\"\n- \"Năng lực UAV của Việt Nam\"\n\n**Anchoring partnership**:\n- \"Đồng hành dài hạn...\"\n-\
+    \ \"Đối tác công nghệ, không chỉ là nhà cung cấp thiết bị\"\n- \"Nhóm công tác chung [audience] - RtR\"\n\n\
+    **Anchoring evidence discipline**:\n- \"Đánh giá bằng kết quả thực địa, không bằng thông số brochure\"\n- \"\
+    Chứng minh năng lực theo bài bay thực chiến, không phải trình diễn lý thuyết\"\n- \"Ứng dụng nào chứng minh\
+    \ hiệu quả qua demo thì nhân rộng; ứng dụng chưa hiệu quả thì không ép triển khai\"\n\n**Anchoring humility\
+    \ (with confidence)**:\n- \"Sẵn sàng đồng hành cùng [audience]\"\n- \"Có thể phát triển tính năng đặc thù theo\
+    \ yêu cầu\"\n- \"Tùy biến payload, liên kết, phần mềm và C2 theo yêu cầu\"\n\n---\n\n## 11 · Pattern templates\
+    \ · Reusable structure\n\n### 11.1 · One-page summary template\n\n```\n[ARTIFACT TITLE]                    \
+    \          [AUDIENCE BADGE]\n[Hook headline: 1 câu định nghĩa]\n[Sub-headline: 1 câu mở rộng]\n\n[HERO NUMBERS\
+    \ GRID 3-4 ô]\n\n[SECTION 1: BÀI TOÁN / TẦM NHÌN]\n• Specific issue 1\n• Specific issue 2  \n• Specific issue\
+    \ 3\n\n[SECTION 2: VAI TRÒ CỦA RTR]\n• Capability 1 (with evidence)\n• Capability 2 (with evidence)\n• Capability\
+    \ 3 (with evidence)\n\n[SECTION 3: NEXT STEP / ACTION ASK]\n[Action proposal cụ thể]\n\n[CLOSING TAGLINE]\n\"\
+    INVENT · BUILD · PROVE\"\n[NGUỒN: 2-3 source citations]\n```\n\n### 11.2 · Comparative table template\n\nCEO\
+    \ dùng cho slide 6 BQP (HERA vs C100 vs Vampire vs M400):\n\n```\nTIÊU CHÍ          | HERA           | COMPETITOR\
+    \ A   | COMPETITOR B\n[Criterion 1]     | [RtR value]    | [comparable]   | [comparable]\n[Criterion 2]    \
+    \ | [RtR value]    | [comparable]   | [comparable]\nKẾT LUẬN          | [USP claim]    | [their gap]    | [their\
+    \ gap]\n[CAVEAT NGUỒN]\n```\n\n### 11.3 · Use case structure\n\n```\n[USE CASE N · TÊN]\n[Subhead: outcome statement]\n\
+    \nBài toán [audience]\n[Specific challenge in their language]\n\nCách Hera giải  \n[Capability + payload + workflow]\n\
+    \nKết quả\n[Outcome with number / multiplier + caveat]\n```\n\n---\n\n## 12 · Owner và maintenance\n\n| | |\n\
+    |---|---|\n| **Primary owner** | AI Officer · Lâm Nguyễn |\n| **Approver** | CEO · Quốc Lương |\n| **Review\
+    \ cadence** | Quarterly hoặc sau mỗi deck CEO mới |\n| **Update trigger** | CEO soạn deck mới có pattern mới,\
+    \ audience mới identified, anti-pattern surface |\n| **Distribution** | All RtR member soạn external material,\
+    \ AI agents draft text RtR, partner agencies |\n| **Classification** | P2 CONFIDENTIAL |\n\n---\n\n## SIGN-OFF\n\
+    \n| | |\n|---|---|\n| Prepared by | AI Officer · Lâm Nguyễn |\n| Source material | RtR-BQP-1-4-20.pptx (CEO,\
+    \ 14 slide) + RtR_Proposal_Drone_Da_Nang_Hera 260524.pptx (CEO, 18 slide) |\n| Cross-referenced với | RtR Ma\
+    \ Trận Năng Lực v1 + Lâm voice skill + RtR brochure system skill |\n| Next review | 25 / 08 / 2026 (quarterly)\
+    \ hoặc khi CEO ship deck mới |\n| Document classification | **CONFIDENTIAL · P2** |"
+  domain: voice
+  tier: L4
+  status: restricted
+  kernel_ref: source_canonical/RtR_Voice_Nuance_v1.md
+  source: source_canonical/RtR_Voice_Nuance_v1.md
+  effective_date: null
+  canh_bao: Tài liệu văn phong nội bộ · dùng để soạn thảo, không trích nguyên văn ra ngoài

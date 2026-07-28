@@ -1,0 +1,671 @@
+# TIP-3 · Fact card ứng viên L3 · nguồn: rtr-news (The Sky Watch) + project_HaiPhong/_output (metadata deck) + SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+# Thợ TIP-3 · lập 2026-07-27 · schema theo SCHEMA_FACT_CARD.md (TIP-0)
+# Luật áp: kernel thắng · không bịa · evidence_span bắt buộc · tiền/hợp đồng = L2 · mọi card HOSO_CEO = L2 + chờ Lâm xác nhận riêng
+
+candidates:
+
+# ============================================================
+# NGUỒN 1 · /Users/os/RtR/rtr-news/ · dự án The Sky Watch
+# ============================================================
+
+- id: CAND.3.001
+  content: >
+    The Sky Watch (brand-lead "Vietnam UAV Intelligence Platform") là bản đăng ký
+    dữ liệu độc lập về UAV và kinh tế tầm thấp do Real-time Robotics vận hành,
+    trong đó mỗi giá trị mang nguồn kèm mức tin cậy và phần chưa kiểm để trống công khai.
+  domain: system
+  source_path: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  evidence_span: >
+    "The Sky Watch" (brand-lead: *Vietnam UAV Intelligence Platform*) — một bản
+    đăng-ký dữ-liệu độc-lập về UAV và kinh-tế tầm-thấp, do **Real-time Robotics
+    vận-hành**. Khác một bảng tổng-hợp thường ở **kỷ-luật lý-lịch dữ-liệu**: mỗi
+    giá-trị mang nguồn + mức tin-cậy, phần chưa kiểm để trống công-khai, số
+    mâu-thuẫn giữ cả hai.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn (Chủ nhà dự án TSW)
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: >
+    Cẩn thận trùng tên với HC-014 "SkyWatch 360 Tethered" (sản phẩm hardware,
+    hoàn toàn khác). The Sky Watch = nền tảng tin/dữ liệu, chưa có record kernel.
+
+- id: CAND.3.002
+  content: >
+    The Sky Watch go-live công khai trên tên miền chính thức theskywatch.com
+    (HTTPS hợp lệ) ngày 14/07/2026.
+  domain: event
+  source_path: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
+  evidence_span: >
+    Ngày 14/7/2026. Người thực hiện: Lâm. Trạng thái kiểm: đo trên đường truyền
+    thật. [...] Nền tảng The Sky Watch đã chạy công khai trên tên miền riêng
+    **theskywatch.com** (HTTPS, khóa xanh).
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: '2026-07-14'
+  kernel_check: new
+  kernel_ref: null
+  note: null
+
+- id: CAND.3.003
+  content: >
+    CMS của The Sky Watch là Directus cộng Postgres đặt sau Caddy (Caddy tự cấp HTTPS),
+    chạy trên VPS Vultr tại Singapore, truy cập tại cms.theskywatch.com; chỉ Caddy
+    hở internet ở cổng 80/443.
+  domain: system
+  source_path: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
+  evidence_span: >
+    CMS là Directus cộng Postgres đặt sau Caddy (Caddy tự cấp HTTPS), chạy trên
+    VPS Vultr đặt ở Singapore. Chỉ Caddy hở ra internet ở cổng 80 và 443; cơ sở
+    dữ liệu và Directus không lộ cổng ra ngoài. Directus đã đặt PUBLIC_URL là
+    https://cms.theskywatch.com.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: '2026-07-14'
+  kernel_check: new
+  kernel_ref: null
+  note: null
+
+- id: CAND.3.004
+  content: >
+    Tại thời điểm go-live 14/07/2026, trang chính The Sky Watch là bản tĩnh chạy
+    trên Vercel; tên miền mua tại Mắt Bão, bản ghi A của tên miền gốc trỏ về Vercel.
+  domain: system
+  source_path: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
+  evidence_span: >
+    Trang chính là bản tĩnh chạy trên Vercel; tên miền mua tại Mắt Bão, bản ghi A
+    của tên miền gốc trỏ về Vercel.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: '2026-07-14'
+  kernel_check: new
+  kernel_ref: null
+  note: >
+    Có kế hoạch chuyển host sang Cloudflare Pages (CLOUDFLARE-PAGES-SETUP.md 03/07 +
+    STATUS-TSW.md ghi "mai chuyển CF Pages") nhưng báo cáo go-live 14/07 (mới hơn)
+    ghi Vercel. Hiện trạng host cần Lâm xác nhận khi curate; card này theo nguồn mới nhất.
+
+- id: CAND.3.005
+  content: >
+    Mã nguồn trang tĩnh The Sky Watch nằm trong repo GitHub nclamvn/usr-portal
+    (branch main, site 100% HTML build sẵn commit vào repo), host tự deploy mỗi push.
+  domain: system
+  source_path: /Users/os/RtR/rtr-news/CLOUDFLARE-PAGES-SETUP.md
+  evidence_span: >
+    USR là **100% tĩnh** (HTML build sẵn, commit vào repo `nclamvn/usr-portal`).
+    [...] Chọn repo **`nclamvn/usr-portal`**, branch **`main`**.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+
+- id: CAND.3.006
+  content: >
+    Lớp dữ liệu The Sky Watch tại mốc v1 code-side đóng gồm 733 thực thể: 500 UAV,
+    233 doanh nghiệp, 39 quốc gia, 13 phân khúc.
+  domain: system
+  source_path: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  evidence_span: >
+    **733 thực-thể**: 500 UAV · 233 doanh-nghiệp · 39 quốc-gia · 13 phân-khúc.
+    Mỗi ô: `{value, status, confidence, sources[], last_verified}`.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Số snapshot tại v1 (HEAD d45e1fdc), sẽ trôi theo thời gian; DOI-CHIEU-GD1.md 13/07 xác nhận cùng con số 500 UAV + 233 hãng.
+
+- id: CAND.3.007
+  content: >
+    The Sky Watch thực thi bất biến dữ liệu (zero-fab, honest-null hai chiều,
+    disputed-keep-all, provenance phân tầng) bằng khoảng 40 gate verify_* cộng
+    33 teeth_* nối trong build_all.sh; gate đỏ thì không deploy.
+  domain: process
+  source_path: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  evidence_span: >
+    Zero-fab · honest-null hai chiều · figure-trace sống (số tính lại mỗi bản dựng,
+    lệch thì đỏ) · disputed-keep-all · provenance phân-tầng A/B/C/model-derived [...]
+    Thực-thi bằng **~40 `verify_*` + ~33 `teeth_*`** nối trong `build_all.sh` —
+    mỗi gate kèm răng chứng nó cắn.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+
+- id: CAND.3.008
+  content: >
+    Kỷ luật biên tập The Sky Watch: bài analysis lập luận bắt buộc có human_author
+    người thật trong contributors.yaml; bài do pipeline sinh là data-report ngôi ba
+    không kê đơn; cấm byline bịa; mọi bài nhắc RtR/HERA bắt buộc có disclosure.
+  domain: process
+  source_path: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  evidence_span: >
+    Kỷ-luật register (bất-biến): bài `analysis` lập-luận **bắt buộc human_author
+    người thật** trong `contributors.yaml`; bài do pipeline sinh → **data-report**
+    ngôi-ba không kê-đơn; **cấm byline bịa / tên-ban gán Person**; nhắc RtR/HERA →
+    **bắt buộc disclosure**. Gate `verify_newsroom` + `teeth_editorial` (4 răng) canh.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Kiên (quy tắc biên tập GD1)
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+
+- id: CAND.3.009
+  content: >
+    Bài flagship của The Sky Watch là op-ed Section 848 "Việt Nam chọn phe" ký tên
+    thật Nguyễn Cảnh Lâm, đặt làm mặt tiền ANALYSIS/01 và có công bố lợi ích.
+  domain: brand
+  source_path: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  evidence_span: >
+    **Flagship**: op-ed §848 *"Việt Nam chọn phe"* — bài ký-tên-thật (Nguyễn Cảnh Lâm)
+    làm mặt-tiền `ANALYSIS/01`, có công-bố lợi-ích.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+
+- id: CAND.3.010
+  content: >
+    Nền tảng đổi tên từ USR sang The Sky Watch trước go-live; danh tính xuất bản:
+    Organization/publisher là The Sky Watch, site_name là VUIP, operator là RtR;
+    toàn bộ 1012 trang canonical/og/sitemap/robots trỏ theskywatch.com.
+  domain: brand
+  source_path: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  evidence_span: >
+    Rename **USR → The Sky Watch**: sản-phẩm ship sạch (0 residual/1012 trang),
+    danh-tính coherent (Organization/publisher = The Sky Watch, site_name = VUIP,
+    operator = RtR). [...] 1012 trang, canonical/og/sitemap/robots đều `theskywatch.com`.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+
+- id: CAND.3.011
+  content: >
+    Directus của The Sky Watch self-host theo MSCL free tier (dưới ngưỡng doanh thu
+    và nhân sự, kể cả production); free MSCL giới hạn 3 seat, thêm biên tập viên
+    cần grant LICENSE_KEY hoặc bản trả phí.
+  domain: legal
+  source_path: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  evidence_span: >
+    Self-host **MSCL free** (dưới ngưỡng doanh-thu/nhân-sự, kể cả production).
+    [RUNBOOK-GOLIVE.md ghi chú:] Free MSCL = 3 seat; thêm biên-tập-viên cần grant
+    `LICENSE_KEY` (thử ở DEPLOY.md seq 5) hoặc paid.
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Evidence ghép 2 file cùng dự án (STATUS-TSW.md paragraph 8 + RUNBOOK-GOLIVE.md mục Ghi chú); mỗi vế đều verbatim.
+
+- id: CAND.3.012
+  content: >
+    Giai đoạn 1 (GD1) của The Sky Watch gồm 5 cấu phần database (Database Drone,
+    Hồ sơ doanh nghiệp, Bộ thuật ngữ, Văn bản pháp luật, Quy trình cấp phép bay
+    kèm biểu mẫu); bản đối chiếu 13/07/2026 kết luận khung GD1 đạt trọn, trong đó
+    3 cấu phần nội dung đạt trọn vẹn.
+  domain: process
+  source_path: /Users/os/RtR/rtr-news/DOI-CHIEU-GD1.md
+  evidence_span: >
+    Đối chiếu ngày 13/7/2026. [...] Năm cấu phần đều có mặt. Ba cấu phần nội dung
+    (thuật ngữ, pháp luật, cấp phép) đạt trọn. Hai database hồ sơ đạt đủ khung,
+    dữ liệu đang dày dần. [...] **Khung GD1: đạt trọn.**
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: '2026-07-13'
+  kernel_check: new
+  kernel_ref: null
+  note: null
+
+- id: CAND.3.013
+  content: >
+    The Sky Watch có trang quy trình cấp phép bay 24 bước (3 mục vòng đời) kèm
+    13 biểu mẫu link về trang scan, và hồ sơ Nghị định 288/2025 gồm bản scan ký số
+    cộng trích nguyên văn Điều 3/4/19/27/34 cộng tóm lược dẫn điều.
+  domain: system
+  source_path: /Users/os/RtR/rtr-news/DOI-CHIEU-GD1.md
+  evidence_span: >
+    NĐ 288/2025: bản scan ký số + trích nguyên văn Điều 3/4/19/27/34 + tóm lược
+    dẫn điều [...] trang 24 bước, 3 mục vòng đời + 13 biểu mẫu link đúng trang scan.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: '2026-07-13'
+  kernel_check: new
+  kernel_ref: null
+  note: null
+
+- id: CAND.3.014
+  content: >
+    Phân vai vận hành GD1 The Sky Watch: Duân phụ trách web-cms cùng theo dõi tin
+    và bài nền; Lâm phụ trách web-cms, database drone, database doanh nghiệp,
+    thuật ngữ, văn bản pháp luật, cấp phép bay, công cụ so sánh; Kiên phụ trách
+    quy tắc biên tập, trang pháp lý, format báo cáo, kênh FB/video.
+  domain: company
+  source_path: /Users/os/RtR/rtr-news/DOI-CHIEU-GD1.md
+  evidence_span: >
+    | Duân | web-cms; theo dõi tin, bài nền; theo dõi UAV thời gian thực | [...]
+    | Lâm | web-cms; database drone; database doanh nghiệp; thuật ngữ; văn bản
+    pháp luật; cấp phép bay; công cụ so sánh; thị trường VN; Chatbot (GĐ2) | [...]
+    | Kiên | quy tắc biên tập; pháp lý/bảo mật/điều khoản; format báo cáo;
+    FB/video; tin hằng ngày |
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: '2026-07-13'
+  kernel_check: new
+  kernel_ref: null
+  note: Chỉ tên + vai trò vận hành, không kèm thông tin cá nhân; đúng phạm vi "ai vận hành" mà TIP-3 yêu cầu.
+
+- id: CAND.3.015
+  content: >
+    Hệ thành viên và hàng đợi biên tập của The Sky Watch triển khai trên Directus
+    production (image directus/directus:12.1.1) theo nguyên tắc fail-closed: đăng ký
+    công khai chỉ bật sau khi schema, quyền sở hữu, SMTP và Flow kiểm xong; Member
+    không đọc/sửa bài Member khác; chỉ Editor hoặc Managing Editor được publish.
+  domain: system
+  source_path: /Users/os/RtR/rtr-news/MEMBER-EDITORIAL-DEPLOY.md
+  evidence_span: >
+    Mã đã sẵn sàng theo nguyên tắc fail-closed: đăng ký công khai chỉ được bật sau
+    khi schema, quyền sở hữu, SMTP và Flow đều được kiểm trên chính Directus
+    production. [...] Kiểm tra image `directus/directus:12.1.1` trên staging. [...]
+    4. Member A không đọc/sửa được bài Member B. [...] 6. Reviewer không publish
+    được; Editor hoặc Managing Editor mới publish được.
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: File lập 23/07/2026, trạng thái "mã sẵn sàng" chờ chạy migration trên production; chưa chắc đã bật đăng ký công khai.
+
+- id: CAND.3.016
+  content: >
+    Xương sống tuân thủ (tier-A) của registry The Sky Watch: trường blue_uas ghi
+    26 đạt / 114 loại / 360 chưa rõ, trường ndaa_compliant ghi 28 / 114 / 358;
+    riêng RtR được để honest-null ở blue_uas vì FCC-conditional không đồng nghĩa
+    Blue UAS.
+  domain: system
+  source_path: /Users/os/RtR/rtr-news/STATUS-TSW.md
+  evidence_span: >
+    `blue_uas` **26 đạt / 114 loại / 360 chưa-rõ** · `ndaa_compliant` **28 / 114 /
+    358**. Nguồn: FCC Covered List (Secure Networks Act) + NDAA §889/§1709 +
+    DIU/DCMA Blue UAS list. [...] honest-null RtR = null (FCC-conditional ≠ Blue UAS).
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: >
+    Cách The Sky Watch để RtR = null ở blue_uas NHẤT QUÁN với kernel SC-011
+    (submission v8 finalized, chưa ghi cleared) nhưng MÂU THUẪN với claim
+    "đã trên DCMA Blue UAS Cleared List" trong HOSO_CEO (xem CAND.3.028).
+
+- id: CAND.3.017
+  content: >
+    Việc dựng CMS cho The Sky Watch có hợp đồng spec-of-record (CONTRACT-CMS.md)
+    bám 1:1 theo PRD "Vietnam UAV Intelligence Platform" 8 trang mức Confidential,
+    kiến trúc hybrid CMS động (Directus đề xuất) cộng xuất bản tĩnh gated, với
+    8 vai trò phân quyền bắt buộc.
+  domain: process
+  source_path: /Users/os/RtR/rtr-news/CONTRACT-CMS.md
+  evidence_span: >
+    Spec-of-record cho việc đưa portal tĩnh thành nền tảng có CMS theo **PRD đã
+    thông qua** (8 trang, Confidential). Mọi mục/§ của PRD được trace 1:1 dưới đây.
+    [...] Kiến trúc: [CMS động: headless + RBAC] [...] (đề xuất: Directus [...])
+    [...] 8 vai trò bắt buộc.
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Hợp đồng CMS thuộc diện L2 theo lệnh TIP-3 (hợp đồng và dự toán không vào gói nhân viên); PRD nguồn đánh dấu Confidential.
+
+- id: CAND.3.018
+  content: >
+    Dự toán chi phí hạ tầng website và CMS The Sky Watch năm 2026 (lập 24/07/2026)
+    đề xuất phê duyệt trần 18 triệu đồng/năm, tiếp tục mô hình website trên Vercel
+    và Directus tự quản trên VPS, phục vụ vận hành trang tin với 04 cán bộ quản trị
+    và mạng lưới cộng tác viên; đơn vị vận hành là Real-time Robotics.
+  domain: company
+  source_path: /Users/os/RtR/rtr-news/Du_toan_ha_tang_The_Sky_Watch_2026.docx
+  evidence_span: >
+    (docx, trang đầu, đọc qua pandoc) THE SKY WATCH · DỰ TOÁN CHI PHÍ HẠ TẦNG
+    WEBSITE VÀ CMS NĂM 2026 · Phục vụ vận hành trang tin, 04 cán bộ quản trị và
+    mạng lưới cộng tác viên · Đơn vị vận hành: Real-time Robotics (RtR) · Ngày lập:
+    24/07/2026 · ĐỀ XUẤT PHÊ DUYỆT | 18 TRIỆU ĐỒNG · Tiếp tục mô hình website trên
+    Vercel và Directus tự quản trên VPS [...] ngân sách trần/năm.
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: Lâm Nguyễn
+  effective_date: '2026-07-24'
+  kernel_check: new
+  kernel_ref: null
+  note: Số tiền dự toán thuộc diện L2 theo luật 5 (schema TIP-0) và lệnh TIP-3.
+
+# ============================================================
+# NGUỒN 2 · /Users/os/RtR/project_HaiPhong/_output/ · CHỈ metadata deck
+# ============================================================
+
+- id: CAND.3.019
+  content: >
+    Deck cho khách Hải Phòng mang tên "RtR Hải Phòng Briefing 2026" chủ đề UAV-IOC;
+    phiên bản final trong project_HaiPhong/_output là cặp file
+    RtR_Hai_Phong_UAV-IOC_2026_VN_v4_final.pptx và .pdf (ngày file 24/06/2026),
+    bản tiếng Việt.
+  domain: process
+  source_path: /Users/os/RtR/project_HaiPhong/_output/RtR_Hai_Phong_UAV-IOC_2026_VN_v4_final.pptx
+  evidence_span: >
+    (metadata thư mục _output, ls -la) RtR_Hai_Phong_UAV-IOC_2026_VN_v4_final.pdf ·
+    Jun 24 11:40 · RtR_Hai_Phong_UAV-IOC_2026_VN_v4_final.pptx · Jun 24 11:40.
+    Chuỗi phiên bản cùng thư mục: ..._VN_v2 → ..._VN_v3_final → ..._VN_v4_final
+    (mtime mới nhất). Title HTML bản dựng cùng dự án: "RtR · Hải Phòng Briefing
+    2026 · DN Style".
+  extraction: inferred
+  tier_proposed: L2
+  owner_hint: Lâm Nguyễn
+  effective_date: '2026-06-24'
+  kernel_check: new
+  kernel_ref: null
+  note: >
+    Chờ Lâm xác nhận v4_final đúng là bản đã gửi khách. Mapping deck-khách là
+    thông tin pipeline nên đề xuất L2 theo luật 5 (nghi ngờ đánh L2). Deck ngày
+    24/06 ra đời TRƯỚC mốc chốt spec 16/07/2026 nên nội dung kỹ thuật bên trong
+    có thể mang spec cũ; đúng luật 6, TIP-3 không cào số kỹ thuật từ deck.
+    Quan sát phụ: tên file mang suffix -v2/-v3/-v4 trái doctrine no-version-suffix
+    (doctrine ban hành 03/07, sau ngày tạo file).
+
+- id: CAND.3.020
+  content: >
+    Thư mục project_HaiPhong/_output còn lưu deck khách Quảng Ninh
+    (RtR-Quang-Ninh-2026.pptx) và deck Đà Nẵng (RtR-Da-Nang-Slide-Final.pptx,
+    được dùng làm chuẩn style "DN Style" khi dựng deck Hải Phòng).
+  domain: process
+  source_path: /Users/os/RtR/project_HaiPhong/_output/
+  evidence_span: >
+    (metadata thư mục _output, ls -la) RtR-Quang-Ninh-2026.pptx · Jun 23 15:11 ·
+    RtR-Da-Nang-Slide-Final.pptx · Jun 23 15:24 · HaiPhong_Deck_v2_DNstyle.html
+    (title: "RtR · Hải Phòng Briefing 2026 · DN Style").
+  extraction: inferred
+  tier_proposed: L2
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: >
+    File RtR-Quang-Ninh-2026.pptx KHÁC với deck legacy Hera_1-4-15_QN_Deck đã
+    archive theo LEGACY_HERA_15KG_MANIFEST.md mục 1; quan hệ giữa hai bản
+    (tiền nhiệm/kế nhiệm) chưa xác định, cần curator đối chiếu. File ngày 23/06
+    ra đời trước mốc spec 16/07 nên nội dung có thể legacy; không cào số từ deck.
+
+- id: CAND.3.021
+  content: >
+    CEO-template.pptx là file template PPTX theo phong cách CEO được lưu và dùng
+    trong pipeline dựng deck tại project_HaiPhong/_output (bản render PDF cùng
+    pipeline mang tên HaiPhong_Deck_v3_CEO_Style.pdf).
+  domain: brand
+  source_path: /Users/os/RtR/project_HaiPhong/_output/CEO-template.pptx
+  evidence_span: >
+    (metadata thư mục _output, ls -la) CEO-template.pptx · Jun 23 15:25 ·
+    HaiPhong_Deck_v3_CEO_Style.pdf · Jun 23 15:41 · các file backup trung gian
+    HaiPhong_Deck_v2_DNstyle.html.bak_ceostyle_20260623_* cho thấy pass áp CEO style.
+  extraction: inferred
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Template được dùng thuộc danh mục L3 draft (mục "Chuẩn văn phong, template được dùng"); tồn tại file là fact chắc, phạm vi sử dụng rộng hơn cần curator xác nhận.
+
+# ============================================================
+# NGUỒN 3 · /Users/os/RtR/SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+# MỌI CARD: tier L2 + chờ Lâm xác nhận riêng (lệnh TIP-3)
+# ============================================================
+
+- id: CAND.3.022
+  content: >
+    CEO TS. Lương Việt Quốc có học vị Tiến sĩ chuyên ngành Kinh tế Phát triển tại
+    Đại học California, Berkeley (Hoa Kỳ), theo diện học bổng Fulbright Scholar.
+  domain: company
+  source_path: /Users/os/RtR/SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+  evidence_span: >
+    (sheet CV_CEO_CHI_TIET, mục I) Học vị | Tiến sĩ · Chuyên ngành | Kinh tế Phát
+    triển · Nơi đào tạo TS | Đại học California, Berkeley (Hoa Kỳ) · Học bổng |
+    Fulbright Scholar. (sheet PHONG_CACH_CEO) Học vị | Tiến sĩ Kinh tế Phát triển -
+    Đại học California, Berkeley (Hoa Kỳ), Fulbright Scholar.
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Lương Việt Quốc
+  effective_date: '2026-06-08'
+  kernel_check: conflict
+  kernel_ref: OC-001
+  note: >
+    Chờ Lâm xác nhận riêng. CONFLICT với kernel OC-001 ghi "PhD engineer +
+    Fulbright scholar (UC Berkeley)": HOSO ghi Tiến sĩ KINH TẾ PHÁT TRIỂN, không
+    phải engineer. Không tự chọn bên, đưa DISPUTED queue.
+
+- id: CAND.3.023
+  content: >
+    Quy ước viết chuẩn về CEO trong hồ sơ chính thức: tên viết "TS. Lương Việt Quốc"
+    (không double prefix, không "Mr. Quoc"), chức danh nghề nghiệp "Tổng Giám đốc",
+    vai trò pháp lý "Người đại diện theo pháp luật Real-time Robotics Việt Nam",
+    câu giới thiệu chuẩn kèm "20+ năm kinh nghiệm UAV".
+  domain: brand
+  source_path: /Users/os/RtR/SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+  evidence_span: >
+    (sheet PHONG_CACH_CEO) Tên trong văn bản (mixed case) | TS. Lương Việt Quốc |
+    Tiến sĩ Lương Việt Quốc; Mr. Quoc; Quoc Luong [TRÁNH] · Chức danh nghề nghiệp |
+    Tổng Giám đốc · Cách xưng hô khi giới thiệu | TS. Lương Việt Quốc là Tổng Giám
+    đốc, Người đại diện theo pháp luật Real-time Robotics Việt Nam, có 20+ năm
+    kinh nghiệm UAV.
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: Lâm Nguyễn (chủ file SOT)
+  effective_date: '2026-06-08'
+  kernel_check: new
+  kernel_ref: null
+  note: Chờ Lâm xác nhận riêng. Bản chất là chuẩn văn phong (ứng viên tốt cho L3 sau khi Lâm duyệt hạ tier).
+
+- id: CAND.3.024
+  content: >
+    CEO Lương Việt Quốc là đồng phát minh bằng sáng chế UAV tại USPTO và
+    Australian Patents; quy ước hồ sơ cấm viết chung chung "có sáng chế quốc tế"
+    không nguồn.
+  domain: company
+  source_path: /Users/os/RtR/SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+  evidence_span: >
+    (sheet CV_CEO_CHI_TIET, mục IV) Bằng sáng chế UAV | USPTO + Australian Patents
+    (đồng phát minh). (sheet PHONG_CACH_CEO) Tham chiếu sáng chế | Đồng phát minh
+    bằng sáng chế UAV USPTO + Australian Patents | Phát minh sáng chế; Có sáng chế
+    quốc tế (chung chung không nguồn) [TRÁNH].
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Lương Việt Quốc
+  effective_date: '2026-06-08'
+  kernel_check: duplicate
+  kernel_ref: OC-001
+  note: Chờ Lâm xác nhận riêng. Trùng khớp OC-001 ("Inventor/co-inventor multiple USPTO + IP Australia patents"); kernel thắng, card này chỉ bổ sung quy ước wording.
+
+- id: CAND.3.025
+  content: >
+    Pháp nhân Việt Nam của RtR — Công ty Cổ phần Real-time Robotics Việt Nam —
+    thành lập năm 2017, mã số doanh nghiệp 0314718578 (theo ĐKKD lần 6, ngày
+    15/8/2025). Đây là mốc pháp nhân VN, phân biệt với năm thành lập entity Hoa Kỳ
+    2014 (xem CAND.3.030).
+  domain: company
+  source_path: /Users/os/RtR/SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+  evidence_span: >
+    (sheet CV_CEO_CHI_TIET, mục V) Tên đầy đủ | Công ty Cổ phần Real-time Robotics
+    Việt Nam · Mã số doanh nghiệp | 0314718578 (theo ĐKKD lần 6, ngày 15/8/2025) ·
+    Năm thành lập | 2017.
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Lương Việt Quốc
+  effective_date: '2026-06-08'
+  kernel_check: new
+  kernel_ref: null
+  note: >
+    Chờ Lâm xác nhận riêng (card HOSO_CEO). DISP.009 đã xử theo cách tách-đôi:
+    fact này (pháp nhân VN 2017) và CAND.3.030 (entity Hoa Kỳ 2014, trùng OC-001)
+    cùng đúng, không còn conflict. Hết conflict vì đã gắn nhãn rõ hai pháp nhân.
+
+- id: CAND.3.026
+  content: >
+    Địa chỉ trụ sở đăng ký kinh doanh (ĐKKD) của Công ty Cổ phần Real-time Robotics
+    Việt Nam là Số 40/10 đường Khổng Tử, Phường Tăng Nhơn Phú, Thành phố Hồ Chí Minh
+    (đồng nhất trong 6 hồ sơ đề án). Đây là địa chỉ pháp lý ĐKKD, phân biệt với nhà
+    máy/trung tâm R&D-sản xuất tại SHTP (xem CAND.3.031).
+  domain: company
+  source_path: /Users/os/RtR/SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+  evidence_span: >
+    (sheet HO_SO_CEO_CHUAN, dòng 14) Địa chỉ trụ sở | Số 40/10 đường Khổng Tử,
+    Phường Tăng Nhơn Phú, Thành phố Hồ Chí Minh [...] | ✓ | (đồng nhất 6 DA).
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Lương Việt Quốc
+  effective_date: '2026-06-08'
+  kernel_check: new
+  kernel_ref: null
+  note: >
+    Chờ Lâm xác nhận riêng (card HOSO_CEO). DISP.010 đã xử theo cách tách-đôi:
+    fact này (địa chỉ ĐKKD 40/10 Khổng Tử) và CAND.3.031 (facility SHTP, trùng
+    OC-020) là HAI khái niệm khác nhau cùng đúng — không còn conflict.
+
+- id: CAND.3.027
+  content: >
+    Công ty mẹ của RtR Việt Nam là Real-time Robotics, Inc. đặt tại Castro Valley,
+    California, Hoa Kỳ (mã CAGE 97ZG2, mã UEI GP4K theo hồ sơ).
+  domain: company
+  source_path: /Users/os/RtR/SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+  evidence_span: >
+    (sheet CV_CEO_CHI_TIET, mục V) Công ty mẹ | Real-time Robotics, Inc.
+    (Castro Valley, California, Hoa Kỳ - CAGE 97ZG2, UEI GP4K).
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Lương Việt Quốc
+  effective_date: '2026-06-08'
+  kernel_check: duplicate
+  kernel_ref: OC-021
+  note: >
+    Chờ Lâm xác nhận riêng. Địa danh khớp OC-021 (US HQ 4250 Heyer Ave Castro
+    Valley CA). Khác biệt framing: HOSO gọi "công ty mẹ", kernel gọi "US HQ";
+    mã UEI trong file có vẻ bị cắt ngắn (GP4K ngắn hơn chuẩn UEI 12 ký tự),
+    cần kiểm lại giá trị đầy đủ.
+
+- id: CAND.3.028
+  content: >
+    Hồ sơ CEO 6 đề án ghi HERA (1-4-14, payload 14 kg) "đã trên DCMA Blue UAS
+    Cleared List" và VEGA (1-4-20, payload 20 kg) "đang chuẩn bị Blue UAS submission".
+  domain: product
+  source_path: /Users/os/RtR/SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+  evidence_span: >
+    (sheet CV_CEO_CHI_TIET, mục IV) Sản phẩm chủ lực | HERA (1-4-14, 14kg payload,
+    đã trên DCMA Blue UAS Cleared List) · Sản phẩm thứ 2 | VEGA (1-4-20, 20kg
+    payload, đang chuẩn bị Blue UAS submission).
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Lương Việt Quốc
+  effective_date: '2026-06-08'
+  kernel_check: conflict
+  kernel_ref: SC-011
+  note: >
+    Chờ Lâm xác nhận riêng. CONFLICT kép với SC-011: kernel ghi Blue UAS submission
+    v8 finalized 15/05/2026 cho nền tảng VEGA (chưa ghi "cleared"), còn HOSO ghi
+    HERA "đã trên Cleared List" và VEGA "đang chuẩn bị". The Sky Watch cũng để
+    RtR = honest-null ở blue_uas (CAND.3.016). Payload 14 kg / 20 kg thì trùng
+    khớp HC-001 / HC-002, không phải legacy 15 kg. Không tự chọn bên, ưu tiên
+    đưa DISPUTED queue vì claim này nằm trong hồ sơ gửi nhà nước.
+
+- id: CAND.3.029
+  content: >
+    Trong cả 6 đề án nộp Sở KH&CN, TS. Lương Việt Quốc giữ vai trò Chủ nhiệm
+    nhiệm vụ với thời gian thực hiện nhiệm vụ 18 tháng, từ 07/2026 đến 12/2027.
+  domain: company
+  source_path: /Users/os/RtR/SOT/HOSO_CEO_TRICH_TU_6DA.xlsx
+  evidence_span: >
+    (sheet CV_CEO_CHI_TIET, mục III) Trong hồ sơ Sở KH&CN | Chủ nhiệm nhiệm vụ
+    (CNNV) - cả 6 đề án. (sheet HO_SO_CEO_CHUAN, dòng 15) TS. Lương Việt Quốc,
+    Tổng Giám đốc - Thời gian thực hiện nhiệm vụ: 18 tháng (từ 07/2026 đến 12/2027)
+    | ✓ | (đồng nhất 6 DA).
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Lương Việt Quốc
+  effective_date: '2026-06-08'
+  kernel_check: new
+  kernel_ref: null
+  note: >
+    Chờ Lâm xác nhận riêng. Fact gắn deal/hồ sơ đề án cụ thể nên L2 là đúng tầng
+    kể cả sau xác nhận; chỉ phần "mốc sự nghiệp CNNV 6 đề án" mới cân nhắc
+    xuống L3.
+
+# ============================================================
+# BỔ SUNG 2026-07-27 · nửa kernel của DISP.009/010 (xử tách-đôi tại checkpoint C2)
+# Cặp với CAND.3.025 (pháp nhân VN 2017) và CAND.3.026 (ĐKKD Khổng Tử).
+# ============================================================
+
+- id: CAND.3.030
+  content: >
+    RtR (pháp nhân Hoa Kỳ), do Dr. Lương Việt Quốc sáng lập, được thành lập năm
+    2014. Đây là mốc thành lập entity Hoa Kỳ, phân biệt với pháp nhân Việt Nam
+    (Công ty CP Real-time Robotics Việt Nam) thành lập 2017 (xem CAND.3.025).
+  domain: company
+  source_path: /Users/os/RtR/kernel/registry/capabilities.yaml
+  evidence_span: >
+    (registry capabilities.yaml, id OC-001 "CEO/Founder Dr. Quoc Luong")
+    description: "PhD engineer + Fulbright scholar (UC Berkeley). Inventor/co-inventor
+    multiple USPTO + IP Australia patents. Founded RtR 2014".
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: OC-001
+  note: >
+    Nửa kernel của DISP.009 (xử tách-đôi tại C2). Trùng OC-001 nên duplicate;
+    đưa vào candidates để gói L3 phát biểu song song hai mốc pháp nhân, tránh
+    nhân viên tưởng 2014 vs 2017 mâu thuẫn. Kernel-backed nên L3.
+
+- id: CAND.3.031
+  content: >
+    Nhà máy / trung tâm R&D và sản xuất của RtR đặt tại Lot I-4b-4.2 Road N3,
+    Saigon Hi-Tech Park (SHTP), TP Thủ Đức. Đây là facility engineering, phân biệt
+    với địa chỉ trụ sở ĐKKD 40/10 Khổng Tử (xem CAND.3.026).
+  domain: company
+  source_path: /Users/os/RtR/kernel/registry/capabilities.yaml
+  evidence_span: >
+    (registry capabilities.yaml, id OC-020 "SHTP TP.HCM R&D + manufacturing facility")
+    description: "Trụ sở engineering tại Lot I-4b-4.2 Road N3 Saigon Hi-Tech Park,
+    Thu Duc City. Vertical integration".
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Operations
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: OC-020
+  note: >
+    Nửa kernel của DISP.010 (xử tách-đôi tại C2). Trùng OC-020 nên duplicate;
+    cặp với CAND.3.026 (ĐKKD) để phân định rõ "địa chỉ pháp lý" vs "nhà máy".
+    Kernel-backed nên L3.

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- RtR Copilot · tự chạy nền trên macOS.
+     Chép vào ~/Library/LaunchAgents/ rồi:  launchctl load ~/Library/LaunchAgents/com.rtr.copilot.plist
+     Sửa đường dẫn dưới nếu thư mục dự án khác. Key/passcode đặt trong file .env cạnh script. -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.rtr.copilot</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/os/RtR/KnowledgeBase/RtR_Copilot/phase1_pilot/start_copilot.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/os/RtR/KnowledgeBase/RtR_Copilot/phase1_pilot</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/os/RtR/KnowledgeBase/RtR_Copilot/phase1_pilot/server_out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/os/RtR/KnowledgeBase/RtR_Copilot/phase1_pilot/server_err.log</string>
+</dict>
+</plist>

@@ -1,0 +1,365 @@
+# TIP-4 · Fact card ứng viên: hệ thống phần mềm nội bộ RtR
+# Thợ TIP-4 · 2026-07-27 · schema theo SCHEMA_FACT_CARD.md (TIP-0)
+# Phạm vi: 13 folder trong /Users/os/RtR/ (crm, ip, rtr-mrp, rtr-mrp-v2, rtr-pm,
+#   rtr-quanlyduan, rtr-simulator, rtr-twin, controltower, rtr-news, rtr-website,
+#   utm, rtr-ctl-fresh). Mỗi hệ thống đúng một card.
+# Lưu ý cụm Control Tower: 4 folder liên quan (rtr-quanlyduan, rtr-ctl-fresh,
+#   rtr-pm/RtR-ControlTower, controltower) — xem note từng card.
+
+candidates:
+  - id: CAND.4.001
+    content: >
+      RtR CRM (folder crm) là nền tảng sales và operations nội bộ của RtR:
+      quản lý contacts/companies, pipeline deal theo gate compliance, báo
+      giá/đơn hàng/hóa đơn, quản lý fleet, email tích hợp Gmail có routing
+      theo pháp quyền, knowledge base AI và SAM.gov opportunity scanner,
+      với kiến trúc hai kho dữ liệu tách biệt VN/US; tech stack chính
+      Next.js 14 + TypeScript + Prisma + PostgreSQL (x2 VN/US), deploy
+      Docker/PM2/Caddy; trạng thái vận hành và owner không ghi trong X-Ray.
+    domain: system
+    source_path: /Users/os/RtR/crm/PROJECT_XRAY.md
+    evidence_span: >
+      RtR CRM is a full-stack Next.js 14 application serving as the sales
+      and operations platform for Real-Time Robotics (RtR), a Vietnamese
+      drone manufacturer (HERA and Vega platforms) selling into both the
+      Vietnamese domestic market and the US defense/government market.
+      [...] Key domain modules: CRM contacts/companies, deal pipeline with
+      gate-based compliance stages, quoting/orders/invoicing, fleet asset
+      management, email integration with jurisdiction-aware routing,
+      campaign engine, AI-powered knowledge base, SAM.gov opportunity
+      scanner, partner/channel management, and multi-currency support.
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: 2026-05-29
+    kernel_check: new
+    kernel_ref: null
+    note: Ngày lấy theo header X-Ray "TIP-XRAY-1 | Vibecode Kit v6.0 | 2026-05-29".
+
+  - id: CAND.4.002
+    content: >
+      RtR IP Filing Assistant (folder ip) là nền tảng quản lý sáng chế
+      enterprise phục vụ 80+ nhân viên, phủ trọn vòng đời IP từ quản lý
+      tài sản (DAM), phân tích sáng chế có AI hỗ trợ (3 AI persona,
+      multi-model Claude/OpenAI/Gemini) đến workflow phê duyệt chính thức;
+      X-Ray 03/2026 đánh dấu các module lõi PRODUCTION READY; tech stack
+      chính Node.js 20 + Fastify + Drizzle ORM + PostgreSQL + React 18
+      (monorepo Turborepo); owner không ghi.
+    domain: system
+    source_path: /Users/os/RtR/ip/PROJECT_XRAY.md
+    evidence_span: >
+      The RtR IP Filing Assistant is an enterprise patent management
+      platform built across 11 development cycles (Phase 1-8) plus 7
+      additional sprints in the current session (AOI, DAM Extension, Doc
+      Ingestion, Brainstorm & Critique, Patch, Collaboration Workflow).
+      The system now covers the full IP lifecycle from asset management
+      through AI-assisted patent analysis to formal approval workflows
+      for 80+ staff members. [...] Module | Endpoints | Tables | Status:
+      IDF (Invention Disclosure) | ~25 | 3 | PRODUCTION READY
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: 2026-03-04
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      Trạng thái "PRODUCTION READY" là đánh giá per-module trong X-Ray
+      v2.0 ngày March 4, 2026, không phải tuyên bố hệ thống đang chạy
+      production cho user thật.
+
+  - id: CAND.4.003
+    content: >
+      RTR-MRP (folder rtr-mrp) là hệ thống hoạch định nguồn lực sản xuất
+      (Material Requirements Planning) toàn diện cho sản xuất drone và
+      thiết bị công nghệ cao: hoạch định vật tư ATP/CTP/Pegging, work
+      orders + capacity + OEE, quản lý chất lượng ISO (NCR/CAPA), dự báo
+      AI/ML (Gemini/OpenAI), PWA quét mã vạch offline; tech stack chính
+      Next.js 15 App Router + React 19 + Prisma 6 + PostgreSQL 16 +
+      NextAuth 5, target deploy Render (Singapore); trạng thái vận hành
+      và owner không ghi trong README.
+    domain: system
+    source_path: /Users/os/RtR/rtr-mrp/README.md
+    evidence_span: >
+      # RTR-MRP — Hệ thống Hoạch định Nguồn lực Sản xuất
+      > **Hệ thống MRP (Material Requirements Planning) toàn diện** dành
+      cho doanh nghiệp sản xuất drone và thiết bị công nghệ cao, tích hợp
+      AI/ML để dự báo nhu cầu và tối ưu hoạch định. [...] RTR-MRP là hệ
+      thống quản lý sản xuất thế hệ mới, được xây dựng trên nền tảng
+      Next.js 15 với kiến trúc App Router hiện đại.
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: null
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      README ghi quy mô ~378,000 LOC, 158 Prisma models, 291 API routes,
+      2,695 test cases. Cạnh folder này còn nhiều bundle backup
+      (rtr-mrp-PREWRITE-backup.bundle, rtr-mrp-clean.git, rtr-mrp-pr,
+      rtr-mrp-s40-playwright) không lập card riêng vì là artefact phụ.
+
+  - id: CAND.4.004
+    content: >
+      VietERP MRP (folder rtr-mrp-v2) là biến thể đổi thương hiệu của
+      RTR-MRP: README gần như trùng nguyên văn với rtr-mrp (chỉ đổi tên
+      hệ thống và thay "drone" bằng "product"), cùng chức năng MRP + quản
+      lý sản xuất + chất lượng ISO + dự báo AI/ML trên cùng tech stack
+      Next.js 15 + React 19 + Prisma 6 + PostgreSQL 16; trạng thái vận
+      hành và owner không ghi trong README.
+    domain: system
+    source_path: /Users/os/RtR/rtr-mrp-v2/README.md
+    evidence_span: >
+      # VietERP MRP — Hệ thống Hoạch định Nguồn lực Sản xuất
+      > **Hệ thống MRP (Material Requirements Planning) toàn diện** dành
+      cho doanh nghiệp sản xuất product và thiết bị công nghệ cao, tích
+      hợp AI/ML để dự báo nhu cầu và tối ưu hoạch định. [...] VietERP MRP
+      là hệ thống quản lý sản xuất thế hệ mới, được xây dựng trên nền
+      tảng Next.js 15 với kiến trúc App Router hiện đại.
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: null
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      Nghi fork white-label của rtr-mrp (RtR root còn có folder
+      _archive-vieterp-fork). Cần owner xác nhận quan hệ rtr-mrp vs
+      rtr-mrp-v2 và bản nào canonical trước khi đưa cả hai vào danh mục
+      tool cho nhân viên.
+
+  - id: CAND.4.005
+    content: >
+      Folder rtr-pm không có doc ở gốc nhưng chứa nguyên một bản app
+      RtR Control Tower (rtr-pm/RtR-ControlTower, kèm README, Blueprint,
+      X-Ray và ảnh QA): bảng điều khiển trung tâm cho dự án phát triển
+      drone, theo dõi tiến độ, vấn đề, chất lượng và đội ngũ real-time;
+      tech stack chính React 19 + Vite 7 + Supabase (Auth + Realtime +
+      PostgreSQL); trạng thái vận hành và owner không ghi.
+    domain: system
+    source_path: /Users/os/RtR/rtr-pm/RtR-ControlTower/README.md
+    evidence_span: >
+      # RtR Control Tower
+      Bảng điều khiển trung tâm cho dự án phát triển drone — theo dõi
+      tiến độ, vấn đề, chất lượng và đội ngũ trong thời gian thực.
+      [...] RtR Control Tower là ứng dụng web quản lý toàn diện vòng đời
+      phát triển sản phẩm drone.
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: null
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      README trùng nguyên văn với rtr-ctl-fresh/README.md, nghi rtr-pm
+      giữ bản cũ của cùng một app (mtime 04/2026 vs rtr-ctl-fresh mới
+      hơn). Cần owner chỉ định bản canonical; card CAND.4.013 là bản
+      rtr-ctl-fresh.
+
+  - id: CAND.4.006
+    content: >
+      RtR Control Tower bản Supabase full-module (folder rtr-quanlyduan)
+      là dashboard tình báo dự án real-time cho vận hành sản xuất drone
+      RtR: phase-gate management, issue tracking, supply chain, flight
+      testing, production, inventory, finance và engine SignalHub AI
+      (anomaly detection, project health index); tech stack chính React
+      19 + Vite 7 SPA + Supabase (auth, database, edge functions,
+      realtime), deploy Vercel; trạng thái vận hành và owner không ghi
+      trong README.
+    domain: system
+    source_path: /Users/os/RtR/rtr-quanlyduan/README.md
+    evidence_span: >
+      # RtR Control Tower
+      Real-time project intelligence dashboard for Real-Time Robotics
+      drone manufacturing operations. Provides phase-gate management,
+      issue tracking, supply chain visibility, production monitoring,
+      and an AI-powered SignalHub intelligence engine. [...] React 19 +
+      Vite 7 SPA, backed by Supabase (auth, database, edge functions,
+      realtime).
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: null
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      Tên folder (quanlyduan) khác tên hệ thống trong README (RtR
+      Control Tower). Codebase khác với rtr-ctl-fresh dù trùng tên hệ
+      thống; module rộng hơn (SignalHub, finance, orders). Cần owner
+      phân xử tên gọi chính thức giữa các bản Control Tower.
+
+  - id: CAND.4.007
+    content: >
+      RTR DroneVerse (folder rtr-simulator) là hệ thống mô phỏng UAV
+      chiến thuật đa nhiệm vụ của RtR: 14 mission đa pha, bản đồ vệ tinh
+      Esri tọa độ GPS thật, 4 chế độ xem (map/3D/radar/split), AI tích
+      hợp cho scenario generation, tactical advisor và debrief, swarm
+      intelligence kiểu Reynolds Boids; tech stack chính React 19 + Vite
+      8 + Three.js + MapLibre GL + Express.js, deploy Render.com, license
+      Proprietary RTR; trạng thái vận hành và owner không ghi.
+    domain: system
+    source_path: /Users/os/RtR/rtr-simulator/README.md
+    evidence_span: >
+      # RTR DroneVerse — Tactical UAV Simulator
+      Hệ thống mô phỏng UAV đa nhiệm vụ với AI tích hợp, bản đồ vệ tinh
+      thực, và swarm intelligence. [...] License: Proprietary — RTR
+      (Real-Time Robotics)
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: null
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      README liệt kê kịch bản mission cụ thể (rescue/military/patrol và
+      địa danh thật); card này chỉ mô tả tool ở mức danh mục nên giữ L3,
+      curator cân nhắc nếu muốn ẩn chi tiết kịch bản khỏi gói nhân viên.
+
+  - id: CAND.4.008
+    content: >
+      Hệ thống rtr-twin (folder rtr-twin) tồn tại trong /Users/os/RtR/
+      nhưng folder rỗng hoàn toàn: chưa có tài liệu mô tả, chưa xác định
+      được mục đích, trạng thái, tech stack hay owner.
+    domain: system
+    source_path: /Users/os/RtR/rtr-twin/
+    evidence_span: >
+      (Không có file doc để trích. Kiểm chứng bằng listing thư mục ngày
+      2026-07-27: folder rtr-twin không chứa file nào, kể cả file ẩn;
+      không có PROJECT_XRAY.md / README.md / GIOI_THIEU_APP.md.)
+    extraction: inferred
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: null
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      Cần owner bổ sung XRAY. Tên gợi ý digital twin nhưng không suy
+      diễn mục đích khi chưa có doc.
+
+  - id: CAND.4.009
+    content: >
+      Hệ thống controltower (folder controltower) tồn tại trong
+      /Users/os/RtR/ nhưng folder rỗng hoàn toàn: chưa có tài liệu mô
+      tả, chưa xác định được mục đích, trạng thái, tech stack hay owner.
+    domain: system
+    source_path: /Users/os/RtR/controltower/
+    evidence_span: >
+      (Không có file doc để trích. Kiểm chứng bằng listing thư mục ngày
+      2026-07-27: folder controltower không chứa file nào, kể cả file
+      ẩn; không có PROJECT_XRAY.md / README.md / GIOI_THIEU_APP.md.)
+    extraction: inferred
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: null
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      Cần owner bổ sung XRAY. Trùng tên với cụm app "RtR Control Tower"
+      (rtr-quanlyduan, rtr-ctl-fresh, rtr-pm/RtR-ControlTower) nhưng
+      folder rỗng nên chưa xác định quan hệ.
+
+  - id: CAND.4.010
+    content: >
+      The Sky Watch (folder rtr-news) là nền tảng tin tức và kiến thức
+      UAV công khai của RtR, đã production: go-live tên miền chính thức
+      theskywatch.com ngày 14/07/2026 với HTTPS hợp lệ, CMS tại
+      cms.theskywatch.com; kiến trúc trang chính static trên Vercel, CMS
+      Directus + Postgres sau Caddy trên VPS Singapore; người thực hiện
+      go-live: Lâm.
+    domain: system
+    source_path: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
+    evidence_span: >
+      # Báo cáo: The Sky Watch lên tên miền chính thức
+      Ngày 14/7/2026. Người thực hiện: Lâm. Trạng thái kiểm: đo trên
+      đường truyền thật. [...] Nền tảng The Sky Watch đã chạy công khai
+      trên tên miền riêng **theskywatch.com** (HTTPS, khóa xanh). Hệ
+      quản trị nội dung (CMS) đã chuyển từ địa chỉ IP tạm sang
+      **cms.theskywatch.com**, cũng có HTTPS hợp lệ.
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: Lâm (AI Officer/COO, người thực hiện go-live theo báo cáo)
+    effective_date: 2026-07-14
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      Folder không có PROJECT_XRAY/README/GIOI_THIEU_APP nên đọc
+      BAO-CAO-GOLIVE-THESKYWATCH.md thay thế (deviation đã báo). Chỉ làm
+      system card; content bài viết do Thợ khác cào. Chi tiết bảo mật
+      server trong báo cáo KHÔNG đưa vào card.
+
+  - id: CAND.4.011
+    content: >
+      Website công ty RtR (folder rtr-website) là site rtrobotics.com
+      xây trên Next.js App Router: các vertical defense/commercial/OEM,
+      blog/news/careers qua Sanity CMS, digital business card NFC/QR,
+      và nền tảng Booth PWA thu lead triển lãm (quét badge, ghi âm,
+      phân loại lead); tech stack chính Next.js 16 + React 19 +
+      TypeScript strict + Tailwind CSS v4 + Sanity v5 + Sentry; trạng
+      thái deploy và owner không ghi trong X-Ray.
+    domain: system
+    source_path: /Users/os/RtR/rtr-website/PROJECT_XRAY.md
+    evidence_span: >
+      # PROJECT X-RAY: Real-time Robotics (RtR) Website
+      **Scan date:** 2026-05-08
+      **Domain:** rtrobotics.com
+      **Codebase:** 249 source files, ~28,600 lines of TypeScript/TSX
+      [...] booth/  # BOOTH PLATFORM (PWA) - full lead capture system
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: 2026-05-08
+    kernel_check: new
+    kernel_ref: null
+    note: null
+
+  - id: CAND.4.012
+    content: >
+      Hệ thống utm (folder utm) tồn tại trong /Users/os/RtR/ nhưng
+      folder rỗng hoàn toàn: chưa có tài liệu mô tả, chưa xác định được
+      mục đích, trạng thái, tech stack hay owner.
+    domain: system
+    source_path: /Users/os/RtR/utm/
+    evidence_span: >
+      (Không có file doc để trích. Kiểm chứng bằng listing thư mục ngày
+      2026-07-27: folder utm không chứa file nào, kể cả file ẩn; không
+      có PROJECT_XRAY.md / README.md / GIOI_THIEU_APP.md.)
+    extraction: inferred
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: null
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      Cần owner bổ sung XRAY. Tên gợi ý UTM (Unmanned Traffic
+      Management) nhưng không suy diễn mục đích khi chưa có doc.
+
+  - id: CAND.4.013
+    content: >
+      RtR Control Tower (folder rtr-ctl-fresh) là ứng dụng web quản lý
+      toàn diện vòng đời phát triển sản phẩm drone: dashboard KPI,
+      issues, quality gates, cây BOM, team/phân quyền
+      (Admin/Engineer/Viewer), audit log, real-time qua Supabase
+      Realtime, export PDF/Excel/slides, giao diện song ngữ Việt-Anh;
+      tech stack chính React 19 + Vite 7 + Supabase (Auth + Realtime +
+      PostgreSQL), license Private; trạng thái vận hành và owner không
+      ghi trong README.
+    domain: system
+    source_path: /Users/os/RtR/rtr-ctl-fresh/README.md
+    evidence_span: >
+      RtR Control Tower là ứng dụng web quản lý toàn diện vòng đời phát
+      triển sản phẩm drone. Hệ thống tập trung dữ liệu từ nhiều module
+      (issues, gates, BOM, flight tests, suppliers, finance...) vào một
+      giao diện thống nhất, hỗ trợ ra quyết định nhanh cho đội ngũ kỹ
+      thuật và quản lý. [...] Giấy phép: Private — Không phân phối công
+      khai.
+    extraction: normalized
+    tier_proposed: L3
+    owner_hint: null
+    effective_date: null
+    kernel_check: new
+    kernel_ref: null
+    note: >
+      README trùng nguyên văn với rtr-pm/RtR-ControlTower/README.md
+      (card CAND.4.005); rtr-quanlyduan (CAND.4.006) cũng tự nhận "RtR
+      Control Tower" nhưng codebase khác. Ba bản + folder controltower
+      rỗng: cần owner chỉ định bản canonical trước khi trả lời nhân
+      viên "Control Tower là tool nào".

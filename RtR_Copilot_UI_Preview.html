@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="utf-8"><link rel="icon" href="data:image/png;base64,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">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RtR Copilot · UI Preview</title>
+<style>
+/* ============================================================
+   RtR Copilot · dựng theo Design DNA Playbook v1.0
+   Token và kích thước lấy nguyên từ mục 5, 6, 7, 8, 9
+   ============================================================ */
+:root{
+  --rtr-header-h:76px; --rtr-sidebar-w:236px; --rtr-sidebar-w-compact:74px;
+  --rtr-evidence-w:356px; --rtr-evidence-w-medium:310px;
+  --rtr-thread-max:850px; --rtr-composer-max:900px; --rtr-page-pad:30px;
+  --rtr-panel-head-h:55px; --rtr-subhead-h:44px; --rtr-filterbar-h:48px; --rtr-radius-max:8px;
+
+  --rtr-bg:#050505; --rtr-sidebar:#080808; --rtr-panel:#0D0D0D;
+  --rtr-panel-2:#121212; --rtr-panel-3:#171717;
+  --rtr-text:#F2F1EC; --rtr-muted:#93938C; --rtr-faint:#64645F;
+  --rtr-line:#292925; --rtr-line-2:#3A3933;
+  --rtr-signal:#F0C400; --rtr-signal-ink:#171300;
+  --rtr-logo:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAYKADAAQAAAABAAAAYAAAAACpM19OAAAMVElEQVR4Ae1ce4xU1Rn/7jzuzL6Z3QG2sOzCsrtQWmitFTSIxoLWVgmS2tjEgC2pWGrTFsUQ/2hj+oeJbaqRGrQVifWBFhRIIfXVpK2Jxgq2ViDLLk/BZYFl37M777n9fme5m5nZe3dnd++9MztzTxj2Ps/j9zvnO9/jnCuRRgpcmjHTK8eXxxVan0jQGkkiUhSNB+1LuggAM04xh4NedjgcbzgT0Q8lX09P+gtDj129qnRWlkckaSu/tMHlkqoTCYUikfRX7PPxIOD1SKLzxhJ0JhGnZzyVV/7A5ETVPIYJCHb5ah3k2C0XS8uiQYXicfUR+68RCLhdRE4mIxKkA7IUW6+OBgcyR88nxbFH9krLQgEbfCMAT88jGiMKDSgkF9PqcNy5k0U6U0IkCAgp0lZvibQ0NGgL+nTgjD5HB/cUS2tDHZX3IW8JE67TmTjidCrTbbFjNNza+ckyUTRKR9r7ypY6JGf8Bq+XbPC1sTLlKoNPPBF/ZUZp4KsOnoU3QNuxk3UIQKWXPRIrm7QABKy2VU3rwB8uiYHnf2ViEh6+aB9YjoBNgOWQpxZoE5CKh+VnNgGWQ55aoE1AKh6Wn9kEWA55aoE2Aal4WH5mE2A55KkF2gSk4mH5mU2A5ZCnFmgTkIqH5Wc2AZZDnlqgTUAqHpafibCYUaVeXQlgVHYTymeqrd4wjAA0PJFgB2s2ExfvkDjY6lLI6RiKccTjEsW5XrlKjCEEcDiTnntpPh1pnkZudyI7FABvJsDtSlBZaYxm+ENUXztATfP7ac6sQfJ4EhwGlLLfSdLQMYQAiJ72S0V04kwpydkiYLhhDDKToWA08mgoLorTPCbipmUdtIJ/0/1hikbwDN/PgWQIAWgHRgGGPn7ZTanlx2ISNZ8op6PHK2jvW7PpzlXtdMeqC1RSHOMRkX0dJPs1MJktjE6IJa8nTp3dHtqxq54efXwJHWupII+cJXGZ1Oa8JyCprWJiBhEnTpfRr55YTAf/PkuIzGxqb4aJoOSGph8LeZsqGdIfMfRcYtk/GqhQFCIsfp7Z2UD9ARfds+YcxWKOrGhKphMA9a+8JEoyD3fTOeACAORg0EnBkFOQCrC1yHCwmorrL/5lnhBPa7/TRuGI9QLBdAKiDMgP7zlLy5d2WDLpRXnS7et305lzpXT4fz76zxEf9fI5tLN0InAO5eGF1+tpdnWQrrumi1eDW0uC6QSgG3q9cSovi1IkbHLjrmqWfl+EGucF6NabLtK5C8W072819N77M3nFtyQAT5Z3GAkxtg+ee6mB6ud+ShVcTysNSpMRGWqqaiVjLjD1x7o/wIsx0BAnkPM13LN/eX8rPfrzZppWHmURdZWlJBagOoOoPX+ttVyNtoSApLZafqiSsYJF4K8fPkpVPDpwLT155LgYJWfOlZCLxZJVKe8JUIEMhZ20qLGPNm9sEfNBum8I80FfwE3v/quanBYakwVDAIgACdd9vYvuur1NiCeVHPUvDLaPPqminl43O/XUq+b+LSgCACXmhTXfbqMvzQgJL2kyvNCILnZ4qZUNNReTYUXKKQLQA6G3T/Y3mgzHJO2vDNON7JiLafiCYEc0t5YTtCMrkiVqaCYNgYrYcqqCJ0gHe5Un3niFNa2y0ijV1QzqWraID3zza120/62aEVUD8Ge/KBEq64ibJlzICQLQaBhPj29bxPJXnlTvg4hZdk0n/eaRo5raDjAE2TC8YJug3OTejoBOZ7csRBV2UKRP1kZzkBMEqI0CEOpPvTbev3g/3eJNzwOjpKQ4LkZKb5875TbeDQZdBAveCm9pTs0BKUiYfCJClzzpagk7/jqA6T1fbV7BEoAeDrVUa7RACVBjyipQZv0tSAIgpnpY9MBJh5GQnOAqQUxZeG9TbyU/ZthxTs0Bo7UKvh3I7rHsozBPwmOFGqGmnuT4dWDANSKGDfFTzTaCm63hMMeOzU5TggA4y1bd1E7F3pggYTRQYqxi1vEqiNF23uLeh4ems6DXyIlJbpjbLwL6GncNv5TzBEANhIG27nufk98fHFrtMAoM6LPQ8/VGAeR7y6kyOvyZb8QSGpRVXBSjRU19FOc5woqU8wSoIEAERXnSBLgTTZhwYQO8+uZcETFLX0IDI3DB/F6qnT1omSFmDc0TRczA9wA+XM6v76+lj/9bOUL2o6gEk3PL8stC/9eSTgZWZzirKTMChms8gQOolHC07eaAy679dSNED7JEjKC2ZkAs3sIKOqvSlCZA1eH13AUAHjL/SpeHXn5jLr39D/b1MxHqe8kgo/fffcd5ETWzMjg/pQmAGlnE8WYPr/WB3ybZiQev5uVOD33wsV+s/2m7WKTrWgDgN1zbSStXXNaMEyQTZfTxlCUAuvzxk2Us0+uoclqYZrLuXjUtInxJ3ezQg0cTun5XjyxCjHp+HVjEs2YG6SfrTwrrVytcaTToyflNWQIA1PXf6KQuXm64bWejCLY7eRSok6cq9/WABwgI0Jez63rLphYRoIEn1eo0ZQkAUOi9d97WJkTQtheaxESaqQ8HYFfyiNn6YDMtXtiblUVZaMOUJgANCLNtcOvNF4XoeXpHkzDAMNGOlhAVa6rvp1/8uFWsH7Jy0k2v15QnAA0CCatWXGIZTvTUn5rERKpHAgy5mbx547EtRwkLuLIJPupuvdBDqSYkuJZhRD3M8hy7YWDxaiWIqEsceEc4Ej4hLZVU6z2zruUNAQAoxEsfb77+Mj2y6bhYcKvntoA7es/BObT/7RrhdjYL3EzyzSsChkhwihUPP9twQvRuLSMNvR4iaudr8+j9j6aLSTwTsMx4Ju8IECTw0vSVN16m9XefFZqSFnAIxEBMbdvRSEd5cyECMNlIeUkAgISa+f3V53lP2AUhmrTAxSjoH3DT755dSF9cKBJub63nzLyWtwRA9CC6df+9p4WbQU/bQayh/ZJXkIAQpZ72ZBYJeUsAAIO+D2cclqc31Qd0/TwQP82tFfT082zMsXGHSdqqlNcEAETIeR9bvFtYM5pRFdbcH4Dn4ND7gMOUz79aP+TY09Zi8aihKe8JAFoIT86bM0APPdDCu3USujtgZCbhwHuzOG4wRzNgYyjyVzMrCALQVswB1y7pop/ed1I47DTVU34OcwJiB9jShC2tZqeCIQBAwlq+jf1G9679XDdoDxsBM8D2Fxvok88qdWMIRhFTUAQANKinP7jrHN1+y0VBiBaQcFdgm+vv/7iATvOWpfTgvdY7E71WcARA9OD3AAdgsFtGTz3FWqQOjqj9dvtCusIxh9H2HEwUfLxXcASg0VBPvax6PsT7xerrBnTFEXr+qbOl9CSPhBDPIWaopwVJAEhARK2Kd8rAcVfpY/VUx3uKiNqhTyvp2T83iGWRRntPC5YAkAD1tIE3dG/e2Eoe7u0YGVoJ2tA7/6ymV/ZqL2nReifTa4YRANcvepHWT0vl06ogjCat9/V8+1p5jPdamF3Y2FGzcd0pJmDIcAMR6T/MAbv21dGBd4e+sDLecvSeNyQiBoCrp4dofl1ArCpOLgzfbsBulLFIgHzFksBpFdGUJeN4D8YTfDR8aEqCevrdb7WL9UPv8NohvY9OIYCzjwM5+BTal3nPsZ7YGk8lpeCVKkPahR6DjNIHMa7B9ZuJ7Bytp5vtJFPrNzA49JUVPRDRTtQFn0Ibq1Pp5YHr3mL+nMIAbTJkBCBDsRohHX3c4JRpRfV63njyEAVO4D+1jqX8KbOxEnenjNs0Vl6GESCG0STHkgrCWJU28774uJSZBaTlbdgknJavfZohAjYBGQJl1mM2AWYhm2G+NgEZAmXWYzYBZiGbYb42ARkCZdZjNgFmIZthvg7VAszwefsxgxFwsPFjfuDT4ErnS3YAHiLoFY9Hx4eQLy3NxXaw51VyJLpZBCmv5WL98rlOEPvhsBJzSsoxR9CR+HcorJx3G+YVymfojGmbLOMDtnRY9nUfd/h8PT3s2nvKaYshY9AdIxf0fsQV+N8TfMwLITm19XRtDwaUg95Sey4YA79J3Qb4nhKJIiFle4m/cz8yEwQ0NrJIcsXXRYLKmwgUyHL2t+5MqqU59jKA97KEcbs5CBNQthd1dG5Wq5jS5XfvJufqlf4fOZ30oJJQlsgeCd+QtNNkEGBtJxpV+NNP0qFEXHnS4+/cm5ydJrxsG8jRXv9iJUELWFaVxeM2DcmgZXrMHVmBqslCv1ne1n1MeoyYjtT0f8zZuWQubTRLAAAAAElFTkSuQmCC") center/cover no-repeat;
+  --rtr-success:#85B36B; --rtr-warning:#D0A73A; --rtr-danger:#D97867; --rtr-info:#8AA8C8;
+  --rtr-shadow:0 18px 50px rgba(0,0,0,.34);
+  --ease:cubic-bezier(.2,0,0,1);
+}
+html[data-theme="light"]{
+  --rtr-bg:#EFEEE8; --rtr-sidebar:#E7E5DD; --rtr-panel:#F9F8F3;
+  --rtr-panel-2:#FFFFFF; --rtr-panel-3:#E9E7DF;
+  --rtr-text:#12120F; --rtr-muted:#686760; --rtr-faint:#6e6c63;
+  --rtr-line:#D0CEC4; --rtr-line-2:#B7B4AA;
+  --rtr-signal:#D5AD00; --rtr-signal-ink:#171300;
+  --rtr-success:#4F7A3B; --rtr-warning:#9C7900; --rtr-danger:#A44F43; --rtr-info:#426C91;
+  --rtr-shadow:0 18px 50px rgba(25,25,18,.08);
+}
+*{box-sizing:border-box}
+html,body{height:100%;overflow:hidden;margin:0}
+body{background:var(--rtr-bg);color:var(--rtr-text);
+  font:14px/1.55 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;letter-spacing:inherit;color:inherit}
+::selection{background:var(--rtr-signal);color:var(--rtr-signal-ink)}
+:focus-visible{outline:2px solid var(--rtr-signal);outline-offset:2px}
+
+/* ---- 11 · shell ---- */
+.app{display:grid;grid-template-columns:var(--rtr-sidebar-w) minmax(0,1fr);height:100vh;height:100dvh}
+/* ba hàng: topbar cố định · dải trạng thái tự co theo nội dung · thân chiếm phần còn lại.
+   Khai thiếu hàng thì dải trạng thái rơi vào hàng 1fr và nuốt cả màn hình. */
+.main{display:grid;grid-template-rows:var(--rtr-header-h) auto minmax(0,1fr);min-width:0;min-height:0}
+
+/* ---- 12 · sidebar ---- */
+.sidebar{background:var(--rtr-sidebar);border-right:1px solid var(--rtr-line);
+  display:flex;flex-direction:column;min-height:0}
+.brand{height:var(--rtr-header-h);padding:18px 18px 14px;display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--rtr-line);flex-shrink:0}
+.brand-mark{width:34px;height:34px;background:var(--rtr-logo);
+  display:grid;place-items:center;font-weight:800;font-size:13px;letter-spacing:-.04em;flex-shrink:0}
+.brand-txt b{display:block;font-size:13px;font-weight:700;letter-spacing:.13em}
+.brand-txt span{display:block;margin-top:3px;font-size:10px;text-transform:uppercase;
+  letter-spacing:.14em;color:var(--rtr-faint)}
+.wswitch{margin:14px 12px 6px;padding:10px;border:1px solid var(--rtr-line);
+  display:flex;align-items:center;gap:9px;cursor:default;background:var(--rtr-panel)}
+.wswitch .tier{width:26px;height:26px;display:grid;place-items:center;font-size:10px;font-weight:800;
+  background:var(--rtr-signal);color:var(--rtr-signal-ink);flex-shrink:0}
+.wswitch .t{font-size:12px;font-weight:600;line-height:1.2}
+.wswitch .s{font-size:10px;color:var(--rtr-muted);margin-top:2px}
+.wswitch .chev{margin-left:auto;color:var(--rtr-faint)}
+.nav-label{padding:15px 18px 7px;font-size:9px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--rtr-faint)}
+.nav{padding:0 9px;display:flex;flex-direction:column}
+.nav button{display:flex;align-items:center;gap:11px;padding:10px;background:transparent;border:0;
+  border-left:2px solid transparent;color:var(--rtr-muted);font-size:12.5px;font-weight:500;
+  cursor:pointer;text-align:left;transition:background .16s var(--ease),color .16s var(--ease),border-color .16s var(--ease)}
+.nav button:hover{background:var(--rtr-panel);color:var(--rtr-text)}
+.nav button.on{background:var(--rtr-panel-2);color:var(--rtr-text);border-left-color:var(--rtr-signal)}
+.nav svg{width:17px;height:17px;flex-shrink:0}
+.nav .count{margin-left:auto;font-size:10px;padding:1px 6px;border:1px solid var(--rtr-line);color:var(--rtr-faint)}
+.identity{margin-top:auto;border-top:1px solid var(--rtr-line);padding:11px 10px 14px}
+.identity .row{display:flex;align-items:center;gap:9px;padding:8px}
+.identity .av{width:28px;height:28px;background:var(--rtr-panel-3);border:1px solid var(--rtr-line);
+  display:grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0}
+.identity .n{font-size:11px;font-weight:600}
+.identity .r{font-size:10px;color:var(--rtr-muted);margin-top:1px}
+
+/* ---- 13 · topbar ---- */
+.topbar{height:var(--rtr-header-h);padding:0 18px;display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--rtr-line);background:var(--rtr-bg);min-width:0;flex-wrap:nowrap}
+.crumb{font-size:12px;color:var(--rtr-muted);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;min-width:0}
+.crumb b{color:var(--rtr-text);font-weight:600}
+.spacer{flex:1;min-width:0}
+.chip{height:28px;padding:0 10px;display:flex;align-items:center;gap:8px;flex-shrink:0;
+  border:1px solid var(--rtr-line);font-size:10px;color:var(--rtr-muted);white-space:nowrap;
+  overflow:hidden;max-width:44vw;text-overflow:ellipsis}
+.iconbtn{flex-shrink:0}
+#btnMenu{display:none}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--rtr-success);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--rtr-success) 18%,transparent);flex-shrink:0}
+.dot.warn{background:var(--rtr-warning);box-shadow:0 0 0 3px color-mix(in srgb,var(--rtr-warning) 18%,transparent)}
+.iconbtn{width:30px;height:30px;display:grid;place-items:center;background:var(--rtr-panel);
+  border:1px solid var(--rtr-line);cursor:pointer;color:var(--rtr-muted);position:relative;
+  transition:border-color .14s var(--ease),color .14s var(--ease)}
+.iconbtn::after{content:"";position:absolute;inset:-3px}
+.iconbtn:hover{border-color:var(--rtr-line-2);color:var(--rtr-text)}
+.iconbtn svg{width:15px;height:15px}
+
+/* ---- mockbar ---- */
+#mockbar{display:none;height:30px;padding:0 18px;font-size:10.5px;align-items:center;gap:8px;
+  background:color-mix(in srgb,var(--rtr-warning) 11%,var(--rtr-bg));
+  color:var(--rtr-warning);border-bottom:1px solid var(--rtr-line);
+  white-space:nowrap;overflow:hidden}
+#mockbar b{font-weight:700;letter-spacing:.1em;text-transform:uppercase;flex-shrink:0}
+#mockbar span{overflow:hidden;text-overflow:ellipsis}
+body.is-mock #mockbar{display:flex}
+
+/* ---- screens ---- */
+.body{min-height:0;position:relative}
+.screen{display:none;height:100%;min-height:0}
+.screen.on{display:block}
+
+/* ---- 14 · overview ---- */
+.home{display:grid;grid-template-columns:minmax(0,1fr) 40%;height:100%}
+.home-main{padding:7vh 6vw;overflow-y:auto}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--rtr-signal)}
+.hero{font-size:clamp(48px,6vw,82px);line-height:.92;letter-spacing:-.065em;font-weight:700;margin:14px 0 0}
+.hero .m{color:var(--rtr-muted)}
+.lede{max-width:610px;font-size:15px;line-height:1.6;color:var(--rtr-muted);margin:18px 0 0}
+.qa{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:820px;margin-top:34px}
+.qa button{padding:16px;min-height:126px;background:var(--rtr-panel);border:1px solid var(--rtr-line);
+  text-align:left;cursor:pointer;display:flex;flex-direction:column;
+  transition:border-color .16s var(--ease),transform .16s var(--ease)}
+.qa button:hover{border-color:var(--rtr-signal);transform:translateY(-2px)}
+.qa .ix{display:flex;align-items:center;justify-content:space-between;
+  font-size:9px;font-weight:700;letter-spacing:.14em;color:var(--rtr-faint)}
+.qa h3{font-size:14px;font-weight:650;margin:auto 0 6px}
+.qa p{font-size:10.5px;line-height:1.45;color:var(--rtr-muted);margin:0}
+.metrics{display:flex;gap:22px;margin-top:34px;flex-wrap:wrap}
+.metrics .lb{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--rtr-faint)}
+.metrics .nm{font-size:18px;font-weight:650;margin-top:4px}
+.home-art{background:#020202;border-left:1px solid var(--rtr-line);position:relative;overflow:hidden}
+html[data-theme="light"] .home-art{background:var(--rtr-panel-3)}
+.home-art::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(var(--rtr-text) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--rtr-text) 1px,transparent 1px);
+  background-size:44px 44px;opacity:.035;
+  -webkit-mask-image:linear-gradient(180deg,#000 15%,transparent 92%);
+  mask-image:linear-gradient(180deg,#000 15%,transparent 92%)}
+.art-label{position:absolute;left:32px;right:32px;bottom:34px}
+.art-label .k{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--rtr-signal)}
+.art-label .v{font-size:12px;color:var(--rtr-muted);margin-top:7px;line-height:1.5}
+
+/* ---- 15 · conversation ---- */
+.copilot{display:grid;grid-template-columns:minmax(520px,1fr) var(--rtr-evidence-w);height:100%;grid-template-rows:minmax(0,1fr)}
+.conv{display:grid;grid-template-rows:minmax(0,1fr) auto;min-width:0;min-height:0}
+#thread{overflow-y:auto;padding:28px 7vw 24px}
+.tmeta{max-width:var(--rtr-thread-max);margin:0 auto 28px;display:flex;align-items:center;gap:12px;
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--rtr-faint)}
+.tmeta::after{content:"";flex:1;height:1px;background:var(--rtr-line)}
+.msg{max-width:var(--rtr-thread-max);margin:0 auto}
+.q-row{display:flex;justify-content:flex-end;margin-bottom:30px}
+.q-row div{max-width:620px;padding:14px 16px;background:var(--rtr-panel-2);
+  border:1px solid var(--rtr-line);font-size:14px;line-height:1.55}
+.ans{position:relative;padding-left:46px;margin-bottom:26px}
+.ans-mark{position:absolute;left:0;top:0;width:28px;height:28px;background:var(--rtr-logo);
+  color:var(--rtr-signal-ink);display:grid;place-items:center;font-size:11px;font-weight:800}
+.trust{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-size:10px;
+  letter-spacing:.08em;text-transform:uppercase}
+.trust .st{color:var(--rtr-success);font-weight:700;display:flex;align-items:center;gap:6px}
+.trust .st.warn{color:var(--rtr-warning)} .trust .st.dgr{color:var(--rtr-danger)}
+.trust .st.lock{color:var(--rtr-warning)}
+.trust .dt{color:var(--rtr-faint);letter-spacing:.04em;text-transform:none;font-size:10px}
+.ans h4{font-size:25px;font-weight:650;line-height:1.2;letter-spacing:-.035em;margin:0 0 12px}
+.ans p{margin:0 0 13px;font-size:14.5px;line-height:1.62;white-space:pre-wrap}
+.factgrid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rtr-line);margin:18px 0}
+.factgrid .c{padding:14px 15px;border-right:1px solid var(--rtr-line)}
+.factgrid .c:last-child{border-right:0}
+.factgrid .l{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--rtr-faint)}
+.factgrid .v{font-size:18px;font-weight:650;margin-top:6px;line-height:1.25}
+.cites{display:flex;flex-wrap:wrap;gap:8px;margin:17px 0}
+.cite{display:inline-flex;align-items:center;gap:7px;padding:7px 9px;font-size:10px;
+  background:var(--rtr-panel);border:1px solid var(--rtr-line);cursor:pointer;
+  transition:border-color .14s var(--ease)}
+.cite:hover{border-color:var(--rtr-signal)}
+.cite b{color:var(--rtr-signal);font-weight:800;letter-spacing:.07em}
+.cite span{color:var(--rtr-muted)}
+.acts{display:flex;gap:5px;margin-top:17px}
+.acts button{height:29px;padding:0 9px;font-size:10.5px;background:transparent;
+  border:1px solid var(--rtr-line);color:var(--rtr-muted);cursor:pointer;
+  transition:border-color .14s var(--ease),color .14s var(--ease)}
+.acts button:hover{border-color:var(--rtr-line-2);color:var(--rtr-text)}
+.nullbox{border:1px solid var(--rtr-line);border-left:3px solid var(--rtr-danger);padding:14px}
+.nullbox .t{font-size:14.5px;margin-bottom:8px}
+.nullbox .s{font-size:12px;color:var(--rtr-muted)}
+.restricted{border:1px solid var(--rtr-line);border-left:3px solid var(--rtr-warning);padding:14px;
+  font-size:13px;color:var(--rtr-muted)}
+.progress{height:2px;background:var(--rtr-line);overflow:hidden;margin:6px 0 12px;max-width:220px}
+.progress i{display:block;height:100%;width:36%;background:var(--rtr-signal);
+  animation:slide 1.1s var(--ease) infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}
+.stage{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--rtr-faint)}
+
+/* ---- 16 · composer ---- */
+.composer-wrap{padding:12px 5vw 18px;border-top:0}
+.composer{max-width:var(--rtr-composer-max);margin:0 auto;background:var(--rtr-panel-2);
+  border:1px solid var(--rtr-line-2);box-shadow:var(--rtr-shadow)}
+.composer textarea{width:100%;height:62px;padding:14px 15px;background:transparent;border:0;
+  resize:none;outline:0;font-size:14px;line-height:1.5}
+.ctool{display:flex;align-items:center;gap:8px;padding:8px;border-top:1px solid var(--rtr-line)}
+.ctool .mini{height:26px;padding:0 8px;font-size:10px;background:transparent;border:1px solid var(--rtr-line);
+  color:var(--rtr-muted);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.ctool .mini:hover{border-color:var(--rtr-line-2);color:var(--rtr-text)}
+.ctool .note{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--rtr-faint)}
+.ctool .kbd{margin-left:auto;font-size:9.5px;color:var(--rtr-faint)}
+.send{width:32px;height:28px;display:grid;place-items:center;background:var(--rtr-signal);
+  color:var(--rtr-signal-ink);border:1px solid var(--rtr-signal);cursor:pointer}
+.send:disabled{opacity:.45;cursor:not-allowed}
+.send svg{width:14px;height:14px}
+#pass{width:104px;height:26px;padding:0 8px;font-size:10.5px;background:var(--rtr-panel);
+  border:1px solid var(--rtr-line);outline:0}
+#pass:focus{border-color:var(--rtr-signal)}
+
+/* ---- 17 · evidence dock ---- */
+.dock{width:var(--rtr-evidence-w);background:var(--rtr-sidebar);border-left:1px solid var(--rtr-line);
+  display:grid;grid-template-rows:var(--rtr-panel-head-h) minmax(0,1fr)}
+.dock-head{padding:0 16px;display:flex;align-items:center;border-bottom:1px solid var(--rtr-line)}
+.dock-head .t{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.dock-head .c{margin-left:auto;font-size:10px;color:var(--rtr-muted)}
+.dock-body{overflow-y:auto;padding:14px}
+.trustcard{padding:14px;margin-bottom:11px;border:1px solid var(--rtr-line);background:var(--rtr-panel)}
+.trustcard .hd{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;font-weight:700;color:var(--rtr-success)}
+.track{height:3px;background:var(--rtr-line);margin:11px 0}
+.track i{display:block;height:100%;background:var(--rtr-success)}
+.tmeta2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.tmeta2 .l{font-size:8px;text-transform:uppercase;letter-spacing:.12em;color:var(--rtr-faint)}
+.tmeta2 .v{font-size:10px;font-weight:600;margin-top:2px}
+.ecard{border:1px solid var(--rtr-line);margin-bottom:9px;background:var(--rtr-panel);cursor:pointer;
+  border-left:2px solid transparent;transition:border-color .14s var(--ease)}
+.ecard:hover{border-color:var(--rtr-line-2)}
+.ecard.sel{border-left-color:var(--rtr-signal)}
+.ecard .ti{padding:12px 12px 9px}
+.ecard .rid{font-size:9.5px;font-weight:800;letter-spacing:.07em;color:var(--rtr-signal)}
+.ecard .nm{font-size:11.5px;line-height:1.45;margin-top:6px}
+.ecard .mt{padding:8px 12px;border-top:1px solid var(--rtr-line);display:flex;gap:10px;flex-wrap:wrap;
+  font-size:9px;color:var(--rtr-faint);text-transform:uppercase;letter-spacing:.08em}
+.excerpt{padding:12px;font-size:10.5px;line-height:1.55;border-top:1px solid var(--rtr-line);
+  color:var(--rtr-muted)}
+.excerpt mark{background:color-mix(in srgb,var(--rtr-signal) 23%,transparent);color:inherit}
+.dock-empty{font-size:11px;color:var(--rtr-faint);line-height:1.6}
+
+/* ---- 20 · data pages ---- */
+.page{height:100%;overflow-y:auto;padding:var(--rtr-page-pad)}
+.phead{padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid var(--rtr-line);
+  display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.phead .k{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rtr-signal)}
+.phead h2{font-size:30px;font-weight:650;line-height:1.1;letter-spacing:-.04em;margin:8px 0 0}
+.phead p{max-width:620px;font-size:13px;color:var(--rtr-muted);margin:8px 0 0;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px}
+.stats .s{padding:14px;border:1px solid var(--rtr-line);background:var(--rtr-panel)}
+.stats .l{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--rtr-faint)}
+.stats .n{font-size:24px;font-weight:650;margin-top:6px;line-height:1}
+.stats .st{font-size:9px;color:var(--rtr-muted);margin-top:5px}
+.filterbar{height:var(--rtr-filterbar-h);padding:0 12px;display:flex;align-items:center;gap:8px;
+  border:1px solid var(--rtr-line);border-bottom:0;background:var(--rtr-panel)}
+.filterbar input{min-width:300px;height:30px;padding:0 10px;background:var(--rtr-panel-2);
+  border:1px solid var(--rtr-line);outline:0;font-size:12px}
+.filterbar input:focus{border-color:var(--rtr-signal)}
+.filterbar .f{height:28px;padding:0 10px;font-size:10px;background:transparent;
+  border:1px solid var(--rtr-line);color:var(--rtr-muted);cursor:pointer}
+.filterbar .f.on{border-color:var(--rtr-signal);color:var(--rtr-text)}
+table{width:100%;border-collapse:collapse;border:1px solid var(--rtr-line);background:var(--rtr-panel)}
+th{padding:10px 12px;text-align:left;font-size:8px;text-transform:uppercase;letter-spacing:.13em;
+  color:var(--rtr-faint);border-bottom:1px solid var(--rtr-line);font-weight:700}
+td{padding:12px;font-size:10.5px;line-height:1.5;border-bottom:1px solid var(--rtr-line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--rtr-panel-2)}
+td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:nowrap}
+.tag{display:inline-block;padding:2px 6px;font-size:8.5px;text-transform:uppercase;letter-spacing:.1em;
+  border:1px solid var(--rtr-line);color:var(--rtr-muted)}
+.tag.ok{color:var(--rtr-success);border-color:color-mix(in srgb,var(--rtr-success) 40%,var(--rtr-line))}
+.tag.wr{color:var(--rtr-warning);border-color:color-mix(in srgb,var(--rtr-warning) 40%,var(--rtr-line))}
+
+/* ---- 21 · gaps ---- */
+.gaplayout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:12px}
+.panel{border:1px solid var(--rtr-line);background:var(--rtr-panel)}
+.panel .sub{height:var(--rtr-subhead-h);padding:0 14px;display:flex;align-items:center;
+  border-bottom:1px solid var(--rtr-line);font-size:11px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase}
+.grow{display:grid;grid-template-columns:54px minmax(0,1fr) 100px;gap:12px;padding:13px;
+  border-bottom:1px solid var(--rtr-line);cursor:pointer;align-items:start}
+.grow:hover{background:var(--rtr-panel-2)}
+.grow .fq{font-size:20px;font-weight:650;line-height:1}
+.grow .un{font-size:8px;color:var(--rtr-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:3px}
+.grow .q{font-size:12px;line-height:1.5}
+.grow .vr{font-size:10px;color:var(--rtr-faint);margin-top:5px;line-height:1.5}
+.gdetail{padding:16px}
+.gdetail .lab{font-size:8px;text-transform:uppercase;letter-spacing:.14em;color:var(--rtr-faint)}
+.gdetail h3{font-size:19px;line-height:1.35;font-weight:650;margin:8px 0 14px}
+.gdetail .li{border:1px solid var(--rtr-line);padding:9px 11px;font-size:10.5px;margin-bottom:6px;
+  color:var(--rtr-muted)}
+.btn-primary{width:100%;height:34px;padding:0 13px;background:var(--rtr-signal);color:var(--rtr-signal-ink);
+  border:1px solid var(--rtr-signal);font-weight:700;font-size:11.5px;cursor:pointer;margin-top:12px}
+
+/* ---- 22 · audit ---- */
+.timeline{max-width:900px;margin-left:18px;border-left:1px solid var(--rtr-line-2);padding-top:4px}
+.ev{position:relative;padding:0 0 28px 30px}
+.ev::before{content:"";position:absolute;left:-5px;top:2px;width:9px;height:9px;
+  background:var(--rtr-bg);border:2px solid var(--rtr-signal)}
+.ev .tm{font-size:8px;text-transform:uppercase;letter-spacing:.14em;color:var(--rtr-faint)}
+.ev .ti{font-size:12px;font-weight:600;margin-top:5px}
+.ev .card{margin-top:9px;padding:10px;border:1px solid var(--rtr-line);background:var(--rtr-panel);
+  font-size:10px;line-height:1.5;color:var(--rtr-muted)}
+.ev .gate{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--rtr-signal)}
+
+/* ---- 19 · document studio ---- */
+.studio{display:grid;grid-template-columns:320px minmax(480px,1fr) 340px;gap:12px;min-height:670px}
+.tmpl{margin:8px;padding:12px;display:flex;gap:11px;border:1px solid transparent;cursor:pointer}
+.tmpl:hover{background:var(--rtr-panel-2)}
+.tmpl.on{border-color:var(--rtr-line-2);background:var(--rtr-panel-2)}
+.tmpl .ic{width:32px;height:38px;border:1px solid var(--rtr-line);flex-shrink:0;
+  display:grid;place-items:center;font-size:8px;color:var(--rtr-faint)}
+.tmpl .t{font-size:11px;font-weight:600}
+.tmpl .d{font-size:9.5px;line-height:1.4;color:var(--rtr-muted);margin-top:4px}
+.tmpl .v{font-size:8px;text-transform:uppercase;letter-spacing:.12em;color:var(--rtr-faint);margin-top:5px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--rtr-line)}
+.steps div{padding:11px;font-size:10px;text-align:center;color:var(--rtr-muted);
+  border-bottom:2px solid transparent}
+.steps div.on{color:var(--rtr-text);border-bottom-color:var(--rtr-signal)}
+.field{padding:0 14px;margin-bottom:14px}
+.field .lb{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--rtr-faint);margin-bottom:6px}
+.field input{width:100%;padding:10px;background:var(--rtr-panel-2);border:1px solid var(--rtr-line);outline:0;font-size:12px}
+.field input:focus{border-color:var(--rtr-signal)}
+.locked{padding:10px;border:1px solid var(--rtr-line);border-left:2px solid var(--rtr-signal);
+  background:color-mix(in srgb,var(--rtr-signal) 4%,var(--rtr-panel-2));font-size:12px}
+.locked .rid{font-size:8.5px;font-weight:800;letter-spacing:.08em;color:var(--rtr-signal);margin-top:5px}
+.preview-col{background:#C9C7BF;display:flex;flex-direction:column}
+.paper{width:286px;min-height:404px;margin:18px auto 8px;padding:26px 24px;background:#fff;color:#111;
+  box-shadow:0 12px 35px rgba(0,0,0,.24);border-top:5px solid var(--rtr-signal);font-size:10px;line-height:1.6}
+.paper h5{font-size:13px;margin:0 0 10px;letter-spacing:-.02em}
+.gate-state{margin:auto 14px 14px;padding:12px;border:1px solid var(--rtr-danger);
+  background:color-mix(in srgb,var(--rtr-danger) 8%,transparent);color:var(--rtr-danger);
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;text-align:center}
+
+/* ---- 16.4 · khay đính kèm · KHÔNG phải nạp tri thức (NT-1) ---- */
+#attach{display:none;border-top:1px solid var(--rtr-line);padding:12px}
+#attach.on{display:block}
+#attach .hd{font-size:9px;text-transform:uppercase;letter-spacing:.13em;color:var(--rtr-faint);
+  margin-bottom:7px;display:flex;gap:8px;align-items:center}
+#attach .warn{color:var(--rtr-warning)}
+#attach textarea{width:100%;height:64px;padding:9px 10px;background:var(--rtr-panel);
+  border:1px solid var(--rtr-line);resize:none;outline:0;font-size:12px}
+#attach textarea:focus{border-color:var(--rtr-signal)}
+#attach .foot{font-size:9.5px;color:var(--rtr-muted);margin-top:7px;line-height:1.5}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 7px;font-size:9.5px;
+  border:1px solid var(--rtr-line-2);color:var(--rtr-muted);margin-right:6px}
+.pill b{color:var(--rtr-text);font-weight:600}
+.pill i{cursor:pointer;font-style:normal;color:var(--rtr-faint)}
+
+/* ---- 16.5 · nút dừng khi đang xử lý ---- */
+.send.stop{background:transparent;border-color:var(--rtr-danger);color:var(--rtr-danger)}
+.cursor{display:inline-block;width:7px;height:15px;background:var(--rtr-signal);
+  vertical-align:-2px;margin-left:2px;animation:blink 1s steps(2) infinite}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+
+/* ---- 28 · command menu (⌘K) ---- */
+#cmd{position:fixed;inset:0;z-index:80;display:none;background:rgba(0,0,0,.55)}
+#cmd.on{display:block}
+#cmd .box{width:min(560px,92vw);margin:12vh auto 0;background:var(--rtr-panel-2);
+  border:1px solid var(--rtr-line-2);box-shadow:var(--rtr-shadow)}
+#cmd input{width:100%;padding:14px 16px;background:transparent;border:0;border-bottom:1px solid var(--rtr-line);
+  outline:0;font-size:14px}
+#cmd .list{max-height:46vh;overflow-y:auto}
+#cmd .it{padding:10px 16px;display:flex;align-items:center;gap:11px;cursor:pointer;font-size:12.5px}
+#cmd .it.sel{background:var(--rtr-panel-3)}
+#cmd .it .k{margin-left:auto;font-size:9px;color:var(--rtr-faint);letter-spacing:.1em;text-transform:uppercase}
+#cmd .grp{padding:9px 16px 5px;font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--rtr-faint)}
+
+/* ---- 20.6 · drawer hồ sơ record ---- */
+#rec{position:fixed;top:0;right:0;bottom:0;width:min(460px,94vw);z-index:70;background:var(--rtr-panel);
+  border-left:1px solid var(--rtr-line-2);box-shadow:var(--rtr-shadow);
+  transform:translateX(101%);transition:transform .2s var(--ease);display:grid;
+  grid-template-rows:var(--rtr-panel-head-h) minmax(0,1fr)}
+#rec.on{transform:none}
+#rec .hd{padding:0 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--rtr-line)}
+#rec .hd .t{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+#rec .bd{overflow-y:auto;padding:16px}
+#rec .stmt{font-size:14px;line-height:1.6;padding-bottom:14px;margin-bottom:14px;
+  border-bottom:1px solid var(--rtr-line)}
+#rec .kv{margin-bottom:12px}
+#rec .kv .l{font-size:8px;text-transform:uppercase;letter-spacing:.14em;color:var(--rtr-faint)}
+#rec .kv .v{font-size:11.5px;margin-top:3px;word-break:break-word;line-height:1.5}
+#rec .kv .v.none{color:var(--rtr-faint);font-style:normal}
+#rec .use{border:1px solid var(--rtr-line);padding:9px 11px;font-size:10.5px;margin-bottom:6px;
+  color:var(--rtr-muted);line-height:1.5}
+
+/* ---- 39 · desktop trung bình và tablet ngang · 901-1150 px ---- */
+@media (max-width:1150px){
+  .copilot{grid-template-columns:minmax(0,1fr) var(--rtr-evidence-w-medium)}
+  .dock{width:var(--rtr-evidence-w-medium)}
+  .home{grid-template-columns:minmax(0,1fr)}
+  .home-art{display:none}
+  .studio{grid-template-columns:300px minmax(0,1fr)}
+  .preview-col{display:none}
+  #thread{padding:24px 4vw 20px}
+  .composer-wrap{padding:12px 4vw 16px}
+}
+/* ---- 40 · gọn · 900 px trở xuống · sidebar co còn 74 px, GIỮ đủ hai cột ---- */
+@media (max-width:900px){
+  .app{grid-template-columns:var(--rtr-sidebar-w-compact) minmax(0,1fr)}
+  .brand{padding:0;justify-content:center}
+  .brand-txt,.wswitch .t,.wswitch .s,.wswitch .chev,.nav-label,.nav .txt,.nav .count,
+  .identity .n,.identity .r{display:none}
+  .wswitch{justify-content:center;margin:14px 8px 6px;padding:8px}
+  .nav{padding:0 6px}
+  .nav button{justify-content:center;padding:11px 0;border-left-width:2px}
+  .identity .row{justify-content:center;padding:8px 0}
+  .copilot{grid-template-columns:minmax(0,1fr)}
+  .dock{position:fixed;top:0;right:0;bottom:0;width:min(360px,88vw);z-index:40;
+    transform:translateX(101%);transition:transform .2s var(--ease);box-shadow:var(--rtr-shadow)}
+  .dock.open{transform:none}
+  .qa{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .gaplayout,.studio{grid-template-columns:minmax(0,1fr)}
+  .page{padding:18px}
+  .hero{font-size:clamp(38px,9vw,58px)}
+  .factgrid{grid-template-columns:1fr 1fr}
+  .filterbar{flex-wrap:wrap;height:auto;padding:10px 12px}
+  .filterbar input{min-width:0;width:100%}
+}
+/* ---- 41 · di động dọc · dựng lại bố cục, KHÔNG thu nhỏ bản desktop ---- */
+@media (max-width:640px){
+  :root{--rtr-header-h:60px}
+  .app{grid-template-columns:minmax(0,1fr)}
+  #btnMenu{display:grid}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:250px;z-index:60;
+    transform:translateX(-101%);transition:transform .2s var(--ease);box-shadow:var(--rtr-shadow)}
+  .sidebar.open{transform:none}
+  .brand{height:60px;padding:0 16px;justify-content:flex-start}
+  .brand-txt,.wswitch .t,.wswitch .s,.wswitch .chev,.nav-label,.nav .txt,.nav .count,
+  .identity .n,.identity .r{display:revert}
+  .wswitch{justify-content:flex-start;margin:14px 12px 6px;padding:10px}
+  .nav{padding:0 9px}
+  .nav button{justify-content:flex-start;padding:11px 10px}
+  .identity .row{justify-content:flex-start;padding:8px}
+  #scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:none}
+  #scrim.on{display:block}
+  .chip{max-width:none;font-size:9.5px;padding:0 8px}
+  .chip .lbl{display:none}
+  #thread{padding:18px 14px 14px}
+  .composer-wrap{padding:8px 12px calc(12px + env(safe-area-inset-bottom))}
+  .ans{padding-left:0}
+  .ans-mark{position:static;margin-bottom:10px}
+  .ans h4{font-size:20px}
+  .q-row div{max-width:100%}
+  .factgrid{grid-template-columns:1fr}
+  .factgrid .c{border-right:0;border-bottom:1px solid var(--rtr-line)}
+  .factgrid .c:last-child{border-bottom:0}
+  .stats{grid-template-columns:1fr}
+  .page{padding:14px}
+  .phead h2{font-size:24px}
+  table{display:block;overflow-x:auto;white-space:nowrap}
+  .ctool{flex-wrap:wrap}
+  .ctool .kbd{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ 12 · SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark" role="img" aria-label="RtR"></div>
+      <div class="brand-txt"><b>RT ROBOTICS</b><span id="brandsub">Copilot / Internal</span></div>
+    </div>
+
+    <div class="wswitch">
+      <div class="tier" id="tierBadge">L3</div>
+      <div>
+        <div class="t" id="wsTitle">Employee Workspace</div>
+        <div class="s" id="wsSub">Safe knowledge pack</div>
+      </div>
+      <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.7"><path d="M8 9l4 4 4-4"/></svg>
+    </div>
+
+    <div class="nav-label">Công việc</div>
+    <nav class="nav" id="navWork">
+      <button data-s="home" class="on">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 11l8-6 8 6v8H4z"/></svg>
+        <span class="txt">Tổng quan</span></button>
+      <button data-s="copilot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5h16v11H8l-4 3z"/></svg>
+        <span class="txt">Hỏi đáp</span></button>
+      <button data-s="studio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>
+        <span class="txt">Tạo tài liệu</span></button>
+    </nav>
+
+    <div class="nav-label">Nguồn sự thật</div>
+    <nav class="nav" id="navGov">
+      <button data-s="sot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span class="txt">Tra cứu SOT</span><span class="count" id="cntSot">—</span></button>
+      <button data-s="gaps">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 5v9"/><path d="M12 18h.01"/><path d="M3 20h18L12 3z"/></svg>
+        <span class="txt">Khoảng trống</span><span class="count" id="cntGap">—</span></button>
+      <button data-s="audit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="8"/></svg>
+        <span class="txt">Nhật ký</span></button>
+    </nav>
+
+    <div class="identity">
+      <div class="row">
+        <div class="av">RT</div>
+        <div><div class="n">Nhân sự RtR</div><div class="r" id="idTier">Tier L3 · nội bộ</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="topbar">
+      <button class="iconbtn" id="btnMenu" aria-label="Mở điều hướng">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="crumb">RtR Copilot / <b id="crumb">Tổng quan</b></div>
+      <div class="spacer"></div>
+      <div class="chip"><span class="dot" id="syncDot"></span><span id="syncTxt">SOT SYNC</span></div>
+      <div id="scrim"></div>
+      <button class="iconbtn" id="btnLang" title="Ngôn ngữ giao diện"><span id="langTxt" style="font-size:10px;font-weight:700;letter-spacing:.06em">VI</span></button>
+      <button class="iconbtn" id="btnCmd" title="Bảng lệnh (⌘K)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 6H7a2 2 0 100 4h10a2 2 0 100-4h-2M9 18H7a2 2 0 110-4h10a2 2 0 110 4h-2"/></svg>
+      </button>
+      <button class="iconbtn" id="btnTheme" title="Đổi nền sáng / tối">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>
+      </button>
+    </header>
+
+    <div id="mockbar"><b>Chế độ MOCK</b><span>Trả lời bằng máy tra cứu, chưa nối AI. Cắm ANTHROPIC_API_KEY để chuyển LIVE.</span></div>
+
+    <div class="body">
+
+      <!-- ---------- 14 · OVERVIEW ---------- -->
+      <section class="screen on" id="s-home">
+        <div class="home">
+          <div class="home-main">
+            <div class="eyebrow">Nguồn sự thật RtR · nội bộ</div>
+            <h1 class="hero">Ask.<br>Verify.<br><span class="m">Deliver.</span></h1>
+            <p class="lede">RtR Copilot là giao diện vận hành trên nguồn sự thật của công ty. Hỏi bằng tiếng Việt tự nhiên, mọi câu trả lời truy được về record gốc, và tài liệu sinh ra từ fact đã khoá.</p>
+
+            <div class="qa">
+              <button data-go="copilot" data-q="Payload Hera hiện tại bao nhiêu?">
+                <div class="ix"><span>01 / ASK</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                <h3>Hỏi một câu</h3><p>Spec sản phẩm, quy trình, mốc lịch sử. Trả lời kèm mã nguồn gốc.</p></button>
+              <button data-go="sot">
+                <div class="ix"><span>02 / VERIFY</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                <h3>Tra cứu record</h3><p>Tìm thẳng trong SOT, không qua AI. Nguyên văn, nhanh, không tốn API.</p></button>
+              <button data-go="studio">
+                <div class="ix"><span>03 / DELIVER</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                <h3>Tạo tài liệu</h3><p>Sinh văn bản từ template và fact đã khoá, không sửa tay được.</p></button>
+            </div>
+
+            <div class="metrics">
+              <div><div class="lb">Record trong gói</div><div class="nm" id="mRec">—</div></div>
+              <div><div class="lb">Ngày gói</div><div class="nm" id="mDate">—</div></div>
+              <div><div class="lb">Chế độ</div><div class="nm" id="mMode">—</div></div>
+              <div><div class="lb">Khoảng trống ghi nhận</div><div class="nm" id="mGap">—</div></div>
+            </div>
+          </div>
+          <div class="home-art">
+            <div class="art-label">
+              <div class="k">Invent. Build. Prove.</div>
+              <div class="v">Mọi con số trong giao diện này đều truy được về một record trong kernel. Không có câu trả lời nào không có nguồn.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 15/16/17 · COPILOT ---------- -->
+      <section class="screen" id="s-copilot">
+        <div class="copilot">
+          <div class="conv">
+            <div id="thread">
+              <div class="tmeta"><span>Phiên hiện tại</span></div>
+              <div class="msg" id="intro">
+                <div class="ans">
+                  <div class="ans-mark" role="img" aria-label="RtR Copilot"></div>
+                  <div class="trust"><span class="st"><span class="dot"></span>Sẵn sàng</span>
+                    <span class="dt" id="introDate"></span></div>
+                  <h4>Hỏi bất kỳ thông tin chung nào của công ty.</h4>
+                  <p>Mọi câu trả lời kèm mã nguồn gốc, bấm vào mã để mở hồ sơ record bên phải. Không có trong nguồn thì báo không có, và câu hỏi được ghi nhận để bổ sung.</p>
+                  <div class="cites" id="sugg"></div>
+                </div>
+              </div>
+            </div>
+            <div class="composer-wrap">
+              <div class="composer">
+                <textarea id="msg" placeholder="Hỏi về spec, quy trình hoặc yêu cầu tạo tài liệu…"></textarea>
+                <div id="attach">
+                  <div class="hd"><span>Ghi chú kèm câu hỏi</span>
+                    <span class="warn">không nạp vào nguồn sự thật</span></div>
+                  <textarea id="attachTxt" placeholder="Thông số, bối cảnh hoặc dữ liệu bác muốn Copilot dùng cho riêng câu hỏi này…"></textarea>
+                  <div class="foot">Nội dung này chỉ đi kèm câu hỏi hiện tại. Nó <b>không</b> trở thành tri thức công ty và không được Copilot coi là sự thật đã duyệt. Muốn bổ sung fact chính thức thì gửi curator.</div>
+                </div>
+                <div class="ctool">
+                  <button class="mini" id="btnAttach" title="Đính kèm ghi chú cho câu hỏi này">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    Ghi chú</button>
+                  <input id="pass" type="password" placeholder="Mã nội bộ" autocomplete="current-password">
+                  <span class="note">Copilot chỉ trả lời từ SOT</span>
+                  <span class="kbd">⌘ + Enter để gửi</span>
+                  <button class="send" id="btnSend" title="Gửi">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="dock" id="dock">
+            <div class="dock-head"><span class="t">Bằng chứng</span><span class="c" id="dockCount">0 record</span></div>
+            <div class="dock-body" id="dockBody">
+              <div class="dock-empty">Bằng chứng là một phần của câu trả lời, không phải phụ lục. Bấm vào mã nguồn gốc trong câu trả lời để mở hồ sơ record tại đây.</div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ---------- 20 · SOT EXPLORER ---------- -->
+      <section class="screen" id="s-sot">
+        <div class="page">
+          <div class="phead">
+            <div><div class="k">Nguồn sự thật</div><h2>Tra cứu record</h2>
+              <p>Đọc trực tiếp gói tri thức đang phục vụ. Không qua AI nên kết quả là nguyên văn record. Nhân viên xem và báo lỗi được, không sửa được nội dung gốc.</p></div>
+          </div>
+          <div class="stats">
+            <div class="s"><div class="l">Record trong gói</div><div class="n" id="sRec">—</div><div class="st">Gói đang phục vụ</div></div>
+            <div class="s"><div class="l">Ngày gói</div><div class="n" id="sDate">—</div><div class="st">Sinh từ kernel</div></div>
+            <div class="s"><div class="l">Chế độ</div><div class="n" id="sMode">—</div><div class="st" id="sModeNote"></div></div>
+            <div class="s"><div class="l">Kết quả</div><div class="n" id="sHits">0</div><div class="st">Khớp truy vấn hiện tại</div></div>
+          </div>
+          <div class="filterbar">
+            <input id="lkq" placeholder="Tìm trong SOT: tên sản phẩm, thông số, quy trình…">
+            <span style="font-size:10px;color:var(--rtr-faint)">Gõ để tìm · bấm dòng để mở hồ sơ</span>
+          </div>
+          <table>
+            <thead><tr><th style="width:130px">Record</th><th>Nội dung</th><th style="width:110px">Domain</th><th style="width:70px">Tier</th><th style="width:110px">Trạng thái</th></tr></thead>
+            <tbody id="lkBody"><tr><td colspan="5" style="color:var(--rtr-faint);padding:20px 12px">Gõ từ khoá để bắt đầu.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ---------- 21 · GAPS ---------- -->
+      <section class="screen" id="s-gaps">
+        <div class="page">
+          <div class="phead">
+            <div><div class="k">Thu thập tri thức</div><h2>Khoảng trống</h2>
+              <p>Câu hỏi hệ thống không trả lời được sẽ thành tín hiệu thu thập có kiểm soát, không phải lỗi giấu đi. Đây là lịch làm việc của curator tuần sau.</p></div>
+          </div>
+          <div class="gaplayout">
+            <div class="panel"><div class="sub">Hàng đợi · xếp theo tần suất</div><div id="gapList"></div></div>
+            <div class="panel"><div class="sub">Chi tiết</div><div class="gdetail" id="gapDetail">
+              <div class="dock-empty">Chọn một khoảng trống để xem các cách hỏi đã ghi nhận.</div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 22 · AUDIT ---------- -->
+      <section class="screen" id="s-audit">
+        <div class="page">
+          <div class="phead">
+            <div><div class="k">Kiểm chứng</div><h2>Nhật ký</h2>
+              <p>Mọi lượt hỏi đáp được ghi lại kèm thời gian và chế độ. Đây là vết kiểm chứng, không phải công cụ theo dõi nhân viên.</p></div>
+          </div>
+          <div class="timeline" id="auditList"></div>
+        </div>
+      </section>
+
+      <!-- ---------- 19 · DOCUMENT STUDIO ---------- -->
+      <section class="screen" id="s-studio">
+        <div class="page">
+          <div class="phead">
+            <div><div class="k">Deliver</div><h2>Tạo tài liệu</h2>
+              <p>Tài liệu sinh ra từ template và fact đã khoá. Fact khoá không sửa tay được; thiếu trường bắt buộc thì chặn, không xuất bản nháp.</p></div>
+          </div>
+          <div class="studio">
+            <div class="panel">
+              <div class="sub">Template</div>
+              <div class="tmpl on"><div class="ic">DOC</div><div><div class="t">Fact-sheet sản phẩm</div>
+                <div class="d">Một trang thông số hiện hành, số lấy từ record đã khoá.</div><div class="v">v1.0 · Sản phẩm</div></div></div>
+              <div class="tmpl"><div class="ic">DOC</div><div><div class="t">Công văn cơ quan nhà nước</div>
+                <div class="d">Thể thức Nghị định 30/2020 · văn phong chuẩn RtR.</div><div class="v">v1.0 · Đối ngoại</div></div></div>
+              <div class="tmpl"><div class="ic">XLS</div><div><div class="t">Sales brief sau buổi gặp</div>
+                <div class="d">Điền từ ghi chép nhanh, tự tính điểm cơ hội.</div><div class="v">v2.1 · Kinh doanh</div></div></div>
+            </div>
+            <div class="panel">
+              <div class="steps"><div class="on">1 · Đọc yêu cầu</div><div>2 · Điền trường</div><div>3 · Soát và xuất</div></div>
+              <div style="padding:14px 0 4px">
+                <div class="field"><div class="lb">Tên khách hàng · trường người nhập</div>
+                  <input placeholder="Ví dụ: Sở Nông nghiệp Hải Phòng"></div>
+                <div class="field"><div class="lb">Payload HERA · fact khoá từ SOT</div>
+                  <div class="locked">14 kg · signature 1-4-14<div class="rid">HC-001</div></div></div>
+                <div class="field"><div class="lb">Tầm điều khiển · fact khoá từ SOT</div>
+                  <div class="locked">15 km<div class="rid">HC-001</div></div></div>
+              </div>
+            </div>
+            <div class="preview-col">
+              <div class="paper">
+                <h5>Fact-sheet HERA</h5>
+                <div>Payload 14 kg · 4 khoang quick-release</div>
+                <div>Tầm điều khiển 15 km</div>
+                <div>Thời gian bay 56 phút</div>
+                <div style="margin-top:14px;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#666">
+                  Nguồn: HC-001 · bản nháp chưa đóng dấu</div>
+              </div>
+              <div class="gate-state">FAIL-LOUD · render service chưa nối</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div id="cmd"><div class="box">
+  <input id="cmdq" placeholder="Gõ để tìm lệnh, màn hình hoặc record…" autocomplete="off">
+  <div class="list" id="cmdList"></div>
+</div></div>
+
+<aside id="rec">
+  <div class="hd"><span class="t">Hồ sơ record</span>
+    <span style="margin-left:auto"></span>
+    <button class="iconbtn" id="recClose" aria-label="Đóng">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button></div>
+  <div class="bd" id="recBody"></div>
+</aside>
+
+<script>
+/* PREVIEW SHIM · xem giao diện không cần server · record là bản THẬT trích từ gói.
+   Sinh tự động bởi tools/build_preview.py · đừng sửa tay file này. */
+const __RECS=[{"record": "CAND.1.005", "content": "HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.", "domain": "product", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "HC-001", "source": "/Users/os/RtR/XPO26/Product description V2/2. HERA Brochure_Quoc_ 250506.xlsx", "effective_date": "null"}, {"record": "L3R.K.001", "content": "Signature sản phẩm hiện hành thị trường VN: HERA 1-4-14 (1 người vận hành, 4 khoang hàng, 14 kg payload) và VEGA 1-4-20 (payload 20 kg / 44 lb). Thị trường Mỹ dùng đơn vị pound trên company card: HERA 1-4-30, VEGA 1-4-44. Không trộn đơn vị trong cùng một tài liệu.", "domain": "product", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "HC-001 + doctrine signature-unit-per-market", "source": "/Users/os/RtR/kernel/registry/capabilities.yaml", "effective_date": "2026-07-16"}, {"record": "L3F.1.037", "content": "Theo bảng certifications trong Company KB v2.0: ISO 9001 certified, FCC certified, IP54 certified, MIL-STD-810 tested, DO-160G tested, FIPS 140-2 capable, FAA Part 107 compatible, ITAR controlled.", "domain": "legal", "tier": "L3", "status": "approved", "kernel_ref": "null", "source": "/Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx", "effective_date": "2026-05-18"}, {"record": "L3R.K.003", "content": "VegaHub (GCS cho VEGA) dùng màn hình 2000 nits phục vụ vận hành tactical ngoài trời. Spec tách riêng với HeraHub (LCD 1280x800, 1800 nits) từ 16/07/2026; trước đó hai thiết bị dùng chung mô tả.", "domain": "product", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "HC-019 + HC-017", "source": "/Users/os/RtR/kernel/registry/capabilities.yaml", "effective_date": "2026-07-16"}, {"record": "CAND.1.007", "content": "[SPEC CŨ · RENAME-01: HeraLink đã đổi tên thành HeraHub · spec hiện hành là LCD 1280x800, 1800 nits, xem CAND.1.009] Tài liệu HeraLink v2.0 (thế hệ trước) mô tả GCS với màn 10.1 inch LCD 1920x1200 độ sáng 1200 nits, chip Qualcomm QCS8550 RAM 16GB, Android 13, nặng 2.8 kg, 6 luồng video 1080p đồng thời, pin hot-swap 3 giờ/bộ và RTK base station tích hợp. Chỉ dùng cho lịch sử sản phẩm, không dùng số này trong tài liệu hiện hành.", "domain": "product", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "HC-017 + RENAME-01", "source": "/Users/os/RtR/XPO26/Product description V2/3. HeraLink_v2.0docx.xlsx", "effective_date": "null"}, {"record": "CAND.2.024", "content": "Ngày 22/06/2026, FCC Hoa Kỳ ban hành quyết định DA-26-616A1 miễn trừ Hera khỏi lệnh cấm nhập khẩu UAV; tại thời điểm ban hành đây là sản phẩm UAV duy nhất tại châu Á được FCC miễn trừ, phân phối được cho cả thị trường dân sự lẫn quốc phòng Hoa Kỳ.", "domain": "legal", "tier": "L4", "status": "kernel_confirmed", "kernel_ref": "SPEC_CHANGELOG (Hera FCC miễn trừ 22/06/2026) · CEO_STRATEGIC_STANCE_2026-07-01", "source": "/Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx", "effective_date": "2026-06-22"}, {"record": "L3F.4.002", "content": "RtR IP Filing Assistant (folder ip) là nền tảng quản lý sáng chế enterprise phục vụ 80+ nhân viên, phủ trọn vòng đời IP từ quản lý tài sản (DAM), phân tích sáng chế có AI hỗ trợ (3 AI persona, multi-model Claude/OpenAI/Gemini) đến workflow phê duyệt chính thức; X-Ray 03/2026 đánh dấu các module lõi PRODUCTION READY; tech stack chính Node.js 20 + Fastify + Drizzle ORM + PostgreSQL + React 18 (monorepo Turborepo); owner không ghi.", "domain": "system", "tier": "L3", "status": "approved", "kernel_ref": "null", "source": "/Users/os/RtR/ip/PROJECT_XRAY.md", "effective_date": "2026-03-04"}, {"record": "CAND.1.013", "content": "OmniSight là gimbal dual-pod AI đầu tiên trên thế giới, mỗi pod mang nhiều sensor EO-IR và laser rangefinder, pan/tilt 360 độ độc lập hoặc đồng bộ, độ rung góc ±0.005 độ, có 3 chế độ vận hành (Wide Horizon, Focus & Context, Independence), nặng 2 kg.", "domain": "product", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "HC-013", "source": "/Users/os/RtR/XPO26/Product description V2/5. OmniSight Gimbal – Chameleon Eyes.xlsx", "effective_date": "null"}, {"record": "L3F.3.001", "content": "The Sky Watch (brand-lead \"Vietnam UAV Intelligence Platform\") là bản đăng ký dữ liệu độc lập về UAV và kinh tế tầm thấp do Real-time Robotics vận hành, trong đó mỗi giá trị mang nguồn kèm mức tin cậy và phần chưa kiểm để trống công khai.", "domain": "system", "tier": "L3", "status": "approved", "kernel_ref": "null", "source": "/Users/os/RtR/rtr-news/STATUS-TSW.md", "effective_date": "null"}, {"record": "L3R.K.004", "content": "Payload HERA 15 kg (33 lb) là spec CŨ; spec hiện hành là 14 kg (signature 1-4-14). Việc đổi 15 kg sang 14 kg diễn ra TRƯỚC ngày 27/07/2026 nhưng chưa xác định được mốc chính xác, nên không ghi ngày hiệu lực cho lần đổi này. Ngày 27/07/2026 là ngày rà soát và gắn nhãn legacy cho toàn bộ tài liệu còn ghi 15 kg (archive tại _archives/legacy_hera_1-4-15_20260727 kèm file cảnh báo), KHÔNG phải ngày spec thay đổi. Chỉ nhắc 15 kg khi nói về lịch sử sản phẩm, không dùng trong tài liệu gửi khách.", "domain": "product", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "SPEC_CHANGELOG 2026-07-27 LEGACY-TAG (ngày rà soát · không phải ngày đổi spec)", "source": "/Users/os/RtR/kernel/_dist/LEGACY_HERA_15KG_MANIFEST.md", "effective_date": "null"}, {"record": "L3R.K.005", "content": "Văn bản gửi cơ quan nhà nước (công văn, tờ trình, báo cáo, email chính thức) soạn theo bộ văn phong chuẩn RtR: thể thức đúng Nghị định 30/2020/NĐ-CP, 7 nguyên tắc điều hành, 3 mức đề nghị, vốn từ chuẩn hoá, checklist trước gửi và template công văn có sẵn (skill rtr-van-phong-nha-nuoc).", "domain": "process", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "toolkit rtr-van-phong-nha-nuoc", "source": "/Users/os/RtR/kernel/_dist/toolkits/", "effective_date": "null"}, {"record": "CAND.2.013", "content": "[SPEC CŨ · ĐÃ ĐÓNG 27/07/2026: curator chốt IP43 là số cũ chưa cập nhật · hiện hành IP54 · xem L3R.K.006] Ghi nhận lịch sử: baseline bảo dưỡng HERA từng ghi kháng bụi/nước IP43 theo HERA Specification và yêu cầu Engineering chốt lại với tài liệu IP54, trong khi kernel HC-042 ghi IP54 weather sealing ở mức provenance verified_primary. File gốc đã sửa sang IP54.", "domain": "product", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "HC-042", "source": "/Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx", "effective_date": "null"}, {"record": "CAND.3.030", "content": "RtR (pháp nhân Hoa Kỳ), do Dr. Lương Việt Quốc sáng lập, được thành lập năm 2014. Đây là mốc thành lập entity Hoa Kỳ, phân biệt với pháp nhân Việt Nam (Công ty CP Real-time Robotics Việt Nam) thành lập 2017 (xem CAND.3.025).", "domain": "company", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "OC-001", "source": "/Users/os/RtR/kernel/registry/capabilities.yaml", "effective_date": "null"}, {"record": "CAND.2.014", "content": "[SPEC CŨ · ĐÃ ĐÓNG 27/07/2026: curator chốt 10 km là số cũ chưa cập nhật · hiện hành 15 km · xem L3R.K.007] Ghi nhận lịch sử: baseline bảo dưỡng HERA từng ghi tầm điều khiển 10 km và ghi chú tài liệu khác có 15 km, trong khi kernel HC-001 ghi range 15 km cho HERA. File gốc đã sửa sang 15 km.", "domain": "product", "tier": "L3", "status": "kernel_confirmed", "kernel_ref": "HC-001", "source": "/Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx", "effective_date": "null"}, {"record": "L3F.2.001", "content": "RtR có hệ thống Sales Brief gồm workbook chuẩn tiếng Việt (RtR_Sales_Brief_Template_VN.xlsx) và skill sales-brief-fill đặt tại KnowledgeBase/Sales_Brief_System/, cho phép nhân viên sales gửi ghi chép hoặc voice note sau buổi gặp khách để AI tự điền brief, mất khoảng 5 phút thay vì 20 phút điền tay.", "domain": "system", "tier": "L3", "status": "approved", "kernel_ref": "null", "source": "/Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/README.md", "effective_date": "null"}], __GAPS=[{"q": "Chính sách nghỉ phép công ty thế nào?", "count": 3, "variants": ["Chế độ nghỉ phép năm bao nhiêu ngày?", "Nghỉ phép được mấy ngày một năm?"], "last": "2026-07-26"}, {"q": "Lịch xe đưa đón nhà máy?", "count": 1, "variants": [], "last": "2026-07-23"}], __AUDIT=[{"t": "2026-07-27T09:14:02", "q": "Payload Hera hiện tại bao nhiêu?", "a": "HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ. [CAND.1.005]", "mode": "MOCK", "gate": "MOCK LOOKUP"}, {"t": "2026-07-26T16:40:11", "q": "Chính sách nghỉ phép công ty thế nào?", "a": "SOT chưa có thông tin khớp câu hỏi này.", "mode": "MOCK", "gate": "HONEST NULL"}, {"t": "2026-07-26T11:02:55", "q": "FCC exemption là gì?", "a": "Ngày 22/06/2026 FCC ban hành DA-26-616A1 miễn trừ Hera. [CAND.2.024]", "mode": "MOCK", "gate": "MOCK LOOKUP"}];
+const __n=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
+function __search(q){const t=__n(q).match(/[a-z0-9]+/g)||[];
+return __RECS.map(r=>[t.filter(x=>x.length>2&&__n(r.content+' '+r.record).includes(x)).length,r])
+.filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);}
+window.fetch=async(u,o)=>{const j=x=>({json:async()=>x,status:200,headers:{get:()=>'application/json'}});
+if(u.startsWith('/health'))return j({ok:true,mode:'MOCK',pack:'staff',model:null,
+  records_loaded:108,pack_date:'2026-07-27 · preview '+__RECS.length+' record mẫu'});
+if(u.startsWith('/api/gaps'))return j({groups:__GAPS});
+if(u.startsWith('/api/audit'))return j({events:__AUDIT});
+if(u.startsWith('/api/usedby'))return j({uses:[{t:'2026-07-27T09:14:02',q:'Payload Hera hiện tại bao nhiêu?'}]});
+if(u.startsWith('/api/search'))return j({results:__search(decodeURIComponent(u.split('q=')[1]||'')).slice(0,10)});
+if(u.startsWith('/api/record')){const id=decodeURIComponent(u.split('id=')[1]||'');
+  return j(__RECS.find(r=>r.record===id)||{error:'không có trong bản preview'});}
+if(u.startsWith('/api/chat')){const m=JSON.parse(o.body).messages,q=m[m.length-1].content,h=__search(q);
+  if(!h.length)return j({answer:'SOT chưa có thông tin khớp câu hỏi này (bản preview chỉ nhúng '+__RECS.length+' record mẫu).\nGAP: '+q});
+  const r=h[0];return j({answer:'[MOCK · máy tra cứu · chưa nối API]\n\n'+r.content+'\n\n['+r.record+
+    (r.kernel_ref&&r.kernel_ref!=='null'?' · '+r.kernel_ref:'')+']'});}
+return j({error:'preview không có endpoint này'});};
+</script>
+<script>
+const $ = id => document.getElementById(id);
+const CRUMB = {home:"Tổng quan", copilot:"Hỏi đáp", sot:"Tra cứu SOT", gaps:"Khoảng trống",
+               audit:"Nhật ký", studio:"Tạo tài liệu"};
+let HEALTH = {}, hist = [], evidence = [], CUR = "home";
+
+/* ---------- theme ---------- */
+const savedTheme = (()=>{ try { return localStorage.getItem("rtr-theme"); } catch(e){ return null; } })();
+if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+$("btnTheme").onclick = () => {
+  const t = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem("rtr-theme", t); } catch(e){}
+};
+
+/* ---------- ngăn kéo điều hướng (di động) ---------- */
+const sidebar = document.querySelector(".sidebar");
+function drawer(open){
+  sidebar.classList.toggle("open", open);
+  $("scrim").classList.toggle("on", open);
+}
+$("btnMenu").onclick = () => drawer(!sidebar.classList.contains("open"));
+$("scrim").onclick = () => { drawer(false); $("dock").classList.remove("open"); };
+addEventListener("keydown", e => { if (e.key === "Escape") { drawer(false); $("dock").classList.remove("open"); } });
+
+/* ---------- router ---------- */
+function go(s){
+  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.s === s));
+  document.querySelectorAll(".screen").forEach(x => x.classList.toggle("on", x.id === "s-" + s));
+  CUR = s;
+  $("crumb").textContent = (typeof I18N !== "undefined" ? I18N[LANG]["nav." + s] : null) || CRUMB[s] || s;
+  if (s === "gaps") loadGaps();
+  if (s === "audit") loadAudit();
+  if (s === "copilot" && innerWidth > 640) $("msg").focus();
+  drawer(false);
+}
+document.querySelectorAll(".nav button").forEach(b => b.onclick = () => go(b.dataset.s));
+document.querySelectorAll(".qa button").forEach(b => b.onclick = () => {
+  go(b.dataset.go);
+  if (b.dataset.q) { $("msg").value = b.dataset.q; send(); }
+});
+
+/* ---------- health ---------- */
+fetch("/health").then(r => r.json()).then(h => {
+  HEALTH = h;
+  const leader = h.pack === "leader";
+  $("mRec").textContent = $("sRec").textContent = h.records_loaded;
+  $("mDate").textContent = $("sDate").textContent = h.pack_date;
+  $("mMode").textContent = $("sMode").textContent = h.mode;
+  $("cntSot").textContent = h.records_loaded;
+  $("introDate").textContent = "Gói SOT " + h.pack_date;
+  $("syncTxt").innerHTML = '<span class="lbl">SOT SYNC&nbsp;&nbsp;</span>'
+    + (leader ? "L2·L3·L4" : "L3") + " · " + h.pack_date;
+  if (leader) {
+    $("tierBadge").textContent = "L4";
+    $("wsTitle").textContent = "Leadership Workspace";
+    $("wsSub").textContent = "Gói hạn chế · có giá bán";
+    $("idTier").textContent = "Tier L4 · hạn chế";
+    $("brandsub").textContent = "Copilot / Restricted";
+  }
+  if (h.mode !== "LIVE") {
+    document.body.classList.add("is-mock");
+    $("syncDot").classList.add("warn");
+    $("sModeNote").textContent = "Tra cứu máy, chưa nối AI";
+  } else {
+    $("sModeNote").textContent = h.model || "";
+  }
+  applyLang();
+  $("mGap").textContent = "—";
+  fetch("/api/gaps").then(r => r.json()).then(d => {
+    $("cntGap").textContent = d.groups.length;
+    $("mGap").textContent = d.groups.length;
+  }).catch(()=>{});
+});
+
+/* ---------- gợi ý ---------- */
+["Payload Hera hiện tại bao nhiêu?","FCC exemption là gì?","Quy trình sales brief sau buổi gặp?",
+ "IP rating của Hera?"].forEach(q => {
+  const b = document.createElement("button");
+  b.className = "cite"; b.type = "button";
+  b.innerHTML = '<b>HỎI</b><span></span>';
+  b.querySelector("span").textContent = q;
+  b.onclick = () => { $("msg").value = q; send(); };
+  $("sugg").appendChild(b);
+});
+
+/* ---------- gửi câu hỏi ---------- */
+const RID = /\[((?:HC|OC|SC|STRAT|L3F|L3R|CAND|SPEC|DISP|PRICE|DISCOUNT|REG|FX|DERIVED|VOICE)[-.][^\]\s·]*)([^\]]*)\]/g;
+
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+
+function classify(text){
+  const t = text.toLowerCase();
+  if (/gap:/.test(text) || t.includes("chưa có thông tin")) return "null";
+  if (t.includes("ngoài phạm vi") || t.includes("không được phép") || t.includes("tier gate")) return "restricted";
+  if (t.includes("[mock")) return "mock";
+  return "verified";
+}
+
+function renderAnswer(box, text){
+  const state = classify(text);
+  const ids = [...text.matchAll(RID)].map(m => m[1]);
+  const uniq = [...new Set(ids)];
+  let body = text.replace(/^\[MOCK[^\]]*\]\s*/i, "").trim();
+
+  const trustMap = {
+    verified: ['<span class="dot"></span>Verified from SOT', "st"],
+    mock:     ['Tra cứu máy · chưa nối AI', "st warn"],
+    null:     ['Honest null · SOT chưa có', "st dgr"],
+    restricted:['Ngoài quyền truy cập', "st lock"]
+  };
+  const [label, cls] = trustMap[state];
+
+  let html = '<div class="ans-mark" role="img" aria-label="RtR Copilot"></div>';
+  html += `<div class="trust"><span class="${cls}">${label}</span>`
+        + `<span class="dt">Gói SOT ${HEALTH.pack_date || ""}</span></div>`;
+
+  if (state === "null") {
+    const gap = (body.match(/GAP:\s*(.+)/) || [])[1] || "";
+    html += '<div class="nullbox"><div class="t">SOT chưa có thông tin này.</div>'
+          + '<div class="s">Câu hỏi đã được ghi nhận vào danh sách khoảng trống để curator bổ sung.'
+          + (gap ? "<br>Ghi nhận: " + esc(gap) : "") + '</div></div>'
+          + '<div class="acts"><button data-act="gap">Gửi yêu cầu bổ sung fact</button></div>';
+  } else {
+    const paras = body.replace(RID, "").split(/\n{2,}/).filter(x => x.trim());
+    const first = paras.shift() || body;
+    html += "<p>" + esc(first.trim()) + "</p>";
+    paras.forEach(p => html += "<p>" + esc(p.trim()) + "</p>");
+    if (uniq.length) {
+      html += '<div class="cites">' + uniq.map(id =>
+        `<button class="cite" data-rid="${id}"><b>${id}</b><span>xem hồ sơ</span></button>`).join("") + "</div>";
+    }
+    html += '<div class="acts"><button data-act="copy">Sao chép</button>'
+          + '<button data-act="doc">Dùng trong tài liệu</button>'
+          + '<button data-act="issue">Báo sai</button></div>';
+  }
+
+  box.innerHTML = html;
+  box.querySelectorAll(".cite").forEach(c => c.onclick = () => { openRec(c.dataset.rid, true); openRecDrawer(c.dataset.rid); });
+  box.querySelectorAll("[data-act]").forEach(b => b.onclick = () => act(b.dataset.act, body));
+  if (uniq.length) loadEvidence(uniq);
+}
+
+function act(kind, text){
+  if (kind === "copy") { navigator.clipboard?.writeText(text); toast("Đã sao chép câu trả lời"); }
+  if (kind === "doc") { go("studio"); }
+  if (kind === "issue") { toast("Báo sai: nhắn anh Lâm kèm mã record trong câu trả lời"); }
+  if (kind === "gap") { toast("Đã ghi nhận · xem tại màn Khoảng trống"); }
+}
+function toast(m){
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:90;"
+    + "background:var(--rtr-panel-2);border:1px solid var(--rtr-line-2);padding:10px 14px;"
+    + "font-size:11.5px;box-shadow:var(--rtr-shadow)";
+  d.textContent = m; document.body.appendChild(d);
+  setTimeout(() => d.remove(), 2600);
+}
+
+function addQ(t){
+  const w = document.createElement("div"); w.className = "msg";
+  const r = document.createElement("div"); r.className = "q-row";
+  const d = document.createElement("div"); d.textContent = t;
+  r.appendChild(d); w.appendChild(r); $("thread").appendChild(w);
+  $("thread").scrollTop = 1e9; return w;
+}
+function addA(){
+  const w = document.createElement("div"); w.className = "msg";
+  const a = document.createElement("div"); a.className = "ans";
+  a.innerHTML = '<div class="ans-mark" role="img" aria-label="RtR Copilot"></div><div class="progress"><i></i></div>'
+              + '<div class="stage">RETRIEVE · CHECK TIER · VERIFY · COMPOSE</div>';
+  w.appendChild(a); $("thread").appendChild(w); $("thread").scrollTop = 1e9; return a;
+}
+
+/* ---------- 16.4 · khay ghi chú · KHÔNG nạp vào SOT (NT-1) ---------- */
+$("btnAttach").onclick = () => {
+  const on = $("attach").classList.toggle("on");
+  if (on) $("attachTxt").focus();
+};
+
+/* ---------- gửi · chảy dần + huỷ giữa chừng ---------- */
+let controller = null;
+const MARK = '<div class="ans-mark" role="img" aria-label="RtR Copilot"></div>';
+
+function errBox(box, title, detail){
+  box.innerHTML = MARK
+    + '<div class="trust"><span class="st dgr">Lỗi hệ thống</span></div>'
+    + '<div class="nullbox"><div class="t">' + title + '</div><div class="s">' + esc(detail) + '</div></div>';
+}
+function setSending(on){
+  $("btnSend").classList.toggle("stop", on);
+  $("btnSend").title = on ? "Dừng" : "Gửi";
+  $("btnSend").setAttribute("aria-label", on ? "Dừng" : "Gửi");
+  $("btnSend").innerHTML = on
+    ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="7" width="10" height="10"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h13M12 5l7 7-7 7"/></svg>';
+}
+
+async function send(){
+  if (controller) { controller.abort(); return; }   // đang chạy → nút là nút dừng
+  const q = $("msg").value.trim(); if (!q) return;
+  const note = $("attachTxt").value.trim();
+  $("msg").value = "";
+  const shown = addQ(q);
+  if (note) {
+    const p = document.createElement("div");
+    p.style.cssText = "max-width:620px;margin:-24px 0 24px auto;text-align:right";
+    p.innerHTML = '<span class="pill"><b>Ghi chú kèm theo</b> · không nạp vào SOT</span>';
+    shown.appendChild(p);
+  }
+  // Câu hỏi lưu SẠCH trong lịch sử. Ghi chú gửi ở trường riêng để server ghép
+  // vào lần gọi API mà KHÔNG ghi vào log · ghi chú không phải fact, không được
+  // lọt vào hàng đợi thu-fact của curator.
+  hist.push({role:"user", content: q});
+  $("attachTxt").value = ""; $("attach").classList.remove("on");
+
+  const box = addA();
+  controller = new AbortController();
+  setSending(true);
+  const useStream = HEALTH.mode === "LIVE";
+  try {
+    const r = await fetch("/api/chat", {method:"POST", signal: controller.signal,
+      headers:{"content-type":"application/json","x-passcode":$("pass").value},
+      body: JSON.stringify({messages: hist, note: note, stream: useStream})});
+
+    if (useStream && (r.headers.get("content-type") || "").includes("event-stream")) {
+      const reader = r.body.getReader(), dec = new TextDecoder();
+      let buf = "", text = "";
+      box.innerHTML = MARK
+        + '<div class="trust"><span class="st"><span class="dot"></span>Đang soạn từ SOT</span></div>'
+        + '<p id="liveTxt"></p>';
+      const live = box.querySelector("#liveTxt");
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, {stream:true});
+        const parts = buf.split("\n\n"); buf = parts.pop();
+        for (const part of parts) {
+          if (!part.startsWith("data:")) continue;
+          let ev; try { ev = JSON.parse(part.slice(5)); } catch(e) { continue; }
+          if (ev.t) {
+            text += ev.t;
+            live.innerHTML = esc(text) + '<span class="cursor"></span>';
+            $("thread").scrollTop = 1e9;
+          }
+        }
+      }
+      hist.push({role:"assistant", content:text});
+      renderAnswer(box, text);
+    } else {
+      const d = await r.json();
+      if (d.error) { errBox(box, "Không gọi được dịch vụ.", d.error); hist.pop(); }
+      else { hist.push({role:"assistant", content:d.answer}); renderAnswer(box, d.answer); }
+    }
+  } catch(err) {
+    if (err.name === "AbortError") {
+      box.innerHTML = MARK
+        + '<div class="trust"><span class="st warn">Đã dừng theo yêu cầu</span></div>'
+        + '<div class="restricted">Câu trả lời chưa hoàn tất nên không được ghi nhận. Hỏi lại khi cần.</div>';
+      hist.pop();
+    } else {
+      errBox(box, "Mất kết nối tới server.", String(err));
+      hist.pop();
+    }
+  }
+  controller = null; setSending(false);
+  $("thread").scrollTop = 1e9;
+}
+$("btnSend").onclick = send;
+$("msg").addEventListener("keydown", e => {
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); }
+});
+
+/* ---------- evidence dock ---------- */
+async function loadEvidence(ids){
+  const rows = [];
+  for (const id of ids.slice(0, 6)) {
+    try {
+      const r = await fetch("/api/record?id=" + encodeURIComponent(id));
+      const d = await r.json();
+      if (!d.error) rows.push(d);
+    } catch(e){}
+  }
+  evidence = rows; renderDock();
+}
+function renderDock(sel){
+  $("dockCount").textContent = evidence.length + " record";
+  if (!evidence.length) {
+    $("dockBody").innerHTML = '<div class="dock-empty">Bằng chứng là một phần của câu trả lời, không phải phụ lục.</div>';
+    return;
+  }
+  const cov = Math.min(100, evidence.length * 34);
+  let h = '<div class="trustcard"><div class="hd"><span class="dot"></span>Truy được về nguồn</div>'
+    + `<div class="track"><i style="width:${cov}%"></i></div>`
+    + '<div class="tmeta2">'
+    + `<div><div class="l">Số record</div><div class="v">${evidence.length}</div></div>`
+    + `<div><div class="l">Gói</div><div class="v">${(HEALTH.pack||"staff").toUpperCase()}</div></div>`
+    + `<div><div class="l">Ngày gói</div><div class="v">${HEALTH.pack_date||"—"}</div></div>`
+    + `<div><div class="l">Xung đột</div><div class="v">Không</div></div>`
+    + "</div></div>";
+  evidence.forEach(r => {
+    const stale = /\[SPEC CŨ/i.test(r.content || "");
+    h += `<div class="ecard${sel===r.record?" sel":""}" data-rid="${r.record}">`
+      + `<div class="ti"><div class="rid">${r.record}</div>`
+      + `<div class="nm">${esc((r.content||"").slice(0,150))}${(r.content||"").length>150?"…":""}</div></div>`
+      + `<div class="mt"><span>${r.domain||"—"}</span><span>tier ${r.tier||"—"}</span>`
+      + `<span>${r.effective_date||"không ghi ngày"}</span>`
+      + (stale ? '<span style="color:var(--rtr-warning)">spec cũ</span>' : "")
+      + (r.canh_bao ? '<span style="color:var(--rtr-warning)">hạn chế</span>' : "")
+      + "</div></div>";
+  });
+  $("dockBody").innerHTML = h;
+  $("dockBody").querySelectorAll(".ecard").forEach(c =>
+    c.onclick = () => openRec(c.dataset.rid, false));
+}
+async function openRec(rid, fromChat){
+  const r = await fetch("/api/record?id=" + encodeURIComponent(rid));
+  const d = await r.json();
+  if (d.error) { toast("Record không có trong gói này"); return; }
+  if (!evidence.find(x => x.record === rid)) evidence.unshift(d);
+  renderDock(rid);
+  if (innerWidth <= 900) { $("dock").classList.add("open"); $("scrim").classList.add("on"); }
+  const card = $("dockBody").querySelector(`.ecard[data-rid="${CSS.escape(rid)}"]`);
+  if (card && !card.querySelector(".excerpt")) {
+    const ex = document.createElement("div");
+    ex.className = "excerpt"; ex.textContent = d.content || "";
+    card.appendChild(ex);
+  }
+}
+
+/* ---------- 37.4 · ngôn ngữ giao diện · mã record KHÔNG đổi ---------- */
+const I18N = {
+  vi: {"nav.home":"Tổng quan","nav.copilot":"Hỏi đáp","nav.studio":"Tạo tài liệu",
+       "nav.sot":"Tra cứu SOT","nav.gaps":"Khoảng trống","nav.audit":"Nhật ký",
+       "lbl.work":"Công việc","lbl.gov":"Nguồn sự thật","dock.title":"Bằng chứng",
+       "ph.ask":"Hỏi về spec, quy trình hoặc yêu cầu tạo tài liệu…",
+       "ph.lookup":"Tìm trong SOT: tên sản phẩm, thông số, quy trình…",
+       "note.sot":"Copilot chỉ trả lời từ SOT","btn.note":"Ghi chú"},
+  en: {"nav.home":"Overview","nav.copilot":"Ask","nav.studio":"Documents",
+       "nav.sot":"SOT explorer","nav.gaps":"Knowledge gaps","nav.audit":"Audit trail",
+       "lbl.work":"Work","lbl.gov":"Source of truth","dock.title":"Evidence",
+       "ph.ask":"Ask about specs, process, or request a document…",
+       "ph.lookup":"Search SOT: product, spec, process…",
+       "note.sot":"Copilot answers from SOT only","btn.note":"Note"}
+};
+let LANG = (() => { try { return localStorage.getItem("rtr-lang") || "vi"; } catch(e){ return "vi"; } })();
+function applyLang(){
+  const t = I18N[LANG];
+  document.querySelectorAll(".nav button").forEach(b => {
+    const el = b.querySelector(".txt"); if (el) el.textContent = t["nav." + b.dataset.s];
+  });
+  const labels = document.querySelectorAll(".nav-label");
+  if (labels[0]) labels[0].textContent = t["lbl.work"];
+  if (labels[1]) labels[1].textContent = t["lbl.gov"];
+  document.querySelector(".dock-head .t").textContent = t["dock.title"];
+  $("msg").placeholder = t["ph.ask"];
+  $("lkq").placeholder = t["ph.lookup"];
+  document.querySelector(".ctool .note").textContent = t["note.sot"];
+  $("btnAttach").lastChild.textContent = " " + t["btn.note"];
+  $("langTxt").textContent = LANG.toUpperCase();
+  document.documentElement.lang = LANG;
+  $("crumb").textContent = t["nav." + CUR] || CUR;
+}
+$("btnLang").onclick = () => {
+  LANG = LANG === "vi" ? "en" : "vi";
+  try { localStorage.setItem("rtr-lang", LANG); } catch(e){}
+  applyLang();
+};
+
+/* ---------- 28 · bảng lệnh ⌘K ---------- */
+const CMDS = [
+  {g:"Đi tới", t:"Tổng quan", k:"nav", run:()=>go("home")},
+  {g:"Đi tới", t:"Hỏi đáp", k:"nav", run:()=>go("copilot")},
+  {g:"Đi tới", t:"Tra cứu SOT", k:"nav", run:()=>go("sot")},
+  {g:"Đi tới", t:"Khoảng trống", k:"nav", run:()=>go("gaps")},
+  {g:"Đi tới", t:"Nhật ký", k:"nav", run:()=>go("audit")},
+  {g:"Đi tới", t:"Tạo tài liệu", k:"nav", run:()=>go("studio")},
+  {g:"Hỏi nhanh", t:"Payload Hera hiện tại bao nhiêu?", k:"hỏi",
+   run:()=>{go("copilot");$("msg").value="Payload Hera hiện tại bao nhiêu?";send();}},
+  {g:"Hỏi nhanh", t:"FCC exemption là gì?", k:"hỏi",
+   run:()=>{go("copilot");$("msg").value="FCC exemption là gì?";send();}},
+  {g:"Giao diện", t:"Đổi nền sáng / tối", k:"tuỳ chọn", run:()=>$("btnTheme").click()},
+  {g:"Giao diện", t:"Đổi ngôn ngữ VI / EN", k:"tuỳ chọn", run:()=>$("btnLang").click()}
+];
+let cmdSel = 0, cmdHits = [];
+function openCmd(){ $("cmd").classList.add("on"); $("cmdq").value=""; renderCmd(); $("cmdq").focus(); }
+function closeCmd(){ $("cmd").classList.remove("on"); }
+function renderCmd(){
+  const q = strip($("cmdq").value);
+  const base = CMDS.filter(c => !q || strip(c.g + " " + c.t).includes(q));
+  const recs = q.length >= 2
+    ? Object.keys(RECINDEX).filter(id => strip(id).includes(q)).slice(0,5)
+        .map(id => ({g:"Record", t:id, k:"hồ sơ", run:()=>openRecDrawer(id)}))
+    : [];
+  cmdHits = base.concat(recs); cmdSel = Math.min(cmdSel, Math.max(0, cmdHits.length-1));
+  let html = "", lastG = "";
+  cmdHits.forEach((c,i) => {
+    if (c.g !== lastG) { html += '<div class="grp">' + c.g + "</div>"; lastG = c.g; }
+    html += '<div class="it' + (i===cmdSel?" sel":"") + '" data-i="' + i + '">'
+          + esc(c.t) + '<span class="k">' + c.k + "</span></div>";
+  });
+  $("cmdList").innerHTML = html || '<div class="grp">Không có lệnh khớp</div>';
+  $("cmdList").querySelectorAll(".it").forEach(el =>
+    el.onclick = () => { closeCmd(); cmdHits[+el.dataset.i].run(); });
+}
+function strip(x){ return x.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d"); }
+$("btnCmd").onclick = openCmd;
+$("cmdq").addEventListener("input", () => { cmdSel = 0; renderCmd(); });
+$("cmd").addEventListener("click", e => { if (e.target.id === "cmd") closeCmd(); });
+addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openCmd(); return; }
+  if (!$("cmd").classList.contains("on")) return;
+  if (e.key === "Escape") { closeCmd(); }
+  if (e.key === "ArrowDown") { e.preventDefault(); cmdSel = Math.min(cmdSel+1, cmdHits.length-1); renderCmd(); }
+  if (e.key === "ArrowUp") { e.preventDefault(); cmdSel = Math.max(cmdSel-1, 0); renderCmd(); }
+  if (e.key === "Enter" && cmdHits[cmdSel]) { e.preventDefault(); closeCmd(); cmdHits[cmdSel].run(); }
+});
+
+/* ---------- 20.6 · drawer hồ sơ record ---------- */
+let RECINDEX = {};
+fetch("/api/search?q=" + encodeURIComponent("a e i o u")).then(()=>{}).catch(()=>{});
+$("recClose").onclick = () => $("rec").classList.remove("on");
+addEventListener("keydown", e => { if (e.key === "Escape") $("rec").classList.remove("on"); });
+
+async function openRecDrawer(rid){
+  const d = await (await fetch("/api/record?id=" + encodeURIComponent(rid))).json();
+  if (d.error) { toast("Record không có trong gói này"); return; }
+  const row = (l, v, none) => '<div class="kv"><div class="l">' + l + '</div><div class="v'
+    + (v ? "" : " none") + '">' + esc(v || none || "không ghi trong nguồn") + "</div></div>";
+  let h = '<div class="stmt">' + esc(d.content || "") + "</div>";
+  h += row("Mã record", d.record);
+  h += row("Tier truy cập", d.tier);
+  h += row("Domain", d.domain);
+  h += row("Nguồn gốc", d.source, "không ghi đường dẫn nguồn");
+  h += row("Tham chiếu kernel", d.kernel_ref);
+  h += row("Ngày hiệu lực", d.effective_date, "chưa xác định · cố ý để trống thay vì đoán");
+  h += row("Trạng thái", d.status);
+  if (d.canh_bao) h += row("Cảnh báo", d.canh_bao);
+  h += row("Bị thay thế bởi", d.stale ? "Record này mô tả spec thế hệ CŨ · xem record hiện hành cùng chủ đề" : "",
+           "không có bản thay thế");
+  h += row("Ký duyệt", "", "gói này không chở trường ký duyệt · tra kernel nếu cần");
+  h += '<div class="kv"><div class="l">Đã dùng trong câu trả lời</div>'
+     + '<div class="v" id="recUses">đang tra…</div></div>';
+  h += '<button class="btn-primary" id="recIssue">Báo sai record này</button>';
+  $("recBody").innerHTML = h;
+  $("rec").classList.add("on");
+  $("recIssue").onclick = () => toast("Nhắn anh Lâm kèm mã " + rid + " và câu trả lời sai");
+  try {
+    const u = await (await fetch("/api/usedby?id=" + encodeURIComponent(rid))).json();
+    $("recUses").innerHTML = u.uses.length
+      ? u.uses.map(x => '<div class="use">' + esc(x.q) + '<br><span style="font-size:9px;opacity:.7">'
+          + x.t.replace("T"," ") + "</span></div>").join("")
+      : '<span class="none" style="color:var(--rtr-faint)">chưa lần nào</span>';
+  } catch(e) { $("recUses").textContent = "không tra được"; }
+}
+
+/* ---------- 20 · tra cứu ---------- */
+let lkT;
+$("lkq").addEventListener("input", () => { clearTimeout(lkT); lkT = setTimeout(doSearch, 200); });
+async function doSearch(){
+  const q = $("lkq").value.trim();
+  if (!q) { $("lkBody").innerHTML = '<tr><td colspan="5" style="color:var(--rtr-faint);padding:20px 12px">Gõ từ khoá để bắt đầu.</td></tr>'; $("sHits").textContent = 0; return; }
+  const d = await (await fetch("/api/search?q=" + encodeURIComponent(q))).json();
+  $("sHits").textContent = d.results.length;
+  if (!d.results.length) {
+    $("lkBody").innerHTML = '<tr><td colspan="5" style="color:var(--rtr-faint);padding:20px 12px">Không có record khớp. Câu hỏi dạng tự nhiên thì thử màn Hỏi đáp.</td></tr>';
+    return;
+  }
+  $("lkBody").innerHTML = d.results.map(r => {
+    const stale = /\[SPEC CŨ/i.test(r.content || "");
+    return `<tr data-rid="${r.record}"><td class="rid">${r.record}</td>`
+      + `<td>${esc((r.content||"").slice(0,190))}${(r.content||"").length>190?"…":""}</td>`
+      + `<td>${r.domain||"—"}</td><td>${r.tier||"—"}</td>`
+      + `<td><span class="tag ${stale?"wr":"ok"}">${stale?"spec cũ":(r.status||"approved")}</span></td></tr>`;
+  }).join("");
+  d.results.forEach(r => { RECINDEX[r.record] = 1; });
+  $("lkBody").querySelectorAll("tr").forEach(tr => tr.onclick = () => openRecDrawer(tr.dataset.rid));
+}
+
+/* ---------- 21 · gaps ---------- */
+async function loadGaps(){
+  const d = await (await fetch("/api/gaps")).json();
+  if (!d.groups.length) {
+    $("gapList").innerHTML = '<div style="padding:20px 14px;font-size:11px;color:var(--rtr-faint)">Chưa ghi nhận khoảng trống nào. Mục này đầy lên khi có người hỏi câu hệ thống chưa trả lời được.</div>';
+    return;
+  }
+  $("gapList").innerHTML = d.groups.map((g, i) =>
+    `<div class="grow" data-i="${i}"><div><div class="fq">${g.count}</div><div class="un">lượt hỏi</div></div>`
+    + `<div><div class="q">${esc(g.q)}</div>`
+    + (g.variants.length ? `<div class="vr">${g.variants.length} cách hỏi khác</div>` : "")
+    + `</div><div style="font-size:9px;color:var(--rtr-faint);text-transform:uppercase;letter-spacing:.1em">${g.last}</div></div>`
+  ).join("");
+  $("gapList").querySelectorAll(".grow").forEach(r => r.onclick = () => {
+    const g = d.groups[r.dataset.i];
+    $("gapDetail").innerHTML = '<div class="lab">Khoảng trống</div>'
+      + `<h3>${esc(g.q)}</h3>`
+      + '<div class="lab" style="margin-bottom:7px">Các cách hỏi đã ghi nhận</div>'
+      + [g.q, ...g.variants].map(v => `<div class="li">${esc(v)}</div>`).join("")
+      + `<div class="lab" style="margin-top:14px">Lần gần nhất</div><div class="li">${g.last}</div>`
+      + '<button class="btn-primary">Đưa vào lịch thu fact tuần sau</button>';
+  });
+}
+
+/* ---------- 22 · audit ---------- */
+async function loadAudit(){
+  const d = await (await fetch("/api/audit")).json();
+  if (!d.events.length) {
+    $("auditList").innerHTML = '<div style="font-size:11px;color:var(--rtr-faint);padding-left:30px">Chưa có lượt hỏi nào được ghi.</div>';
+    return;
+  }
+  $("auditList").innerHTML = d.events.map(e =>
+    `<div class="ev"><div class="tm">${e.t.replace("T"," ")}</div>`
+    + `<div class="ti">${esc(e.q.slice(0,110))}</div>`
+    + `<div class="card">${esc((e.a||"").slice(0,180))}…`
+    + `<div style="margin-top:7px;display:flex;gap:10px"><span class="gate">${e.gate}</span>`
+    + `<span style="margin-left:auto;font-size:9px;color:var(--rtr-faint)">chế độ ${e.mode}</span></div></div></div>`
+  ).join("");
+}
+</script>
+</body>
+</html>

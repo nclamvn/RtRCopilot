@@ -1,0 +1,130 @@
+# DISPUTED QUEUE · checkpoint C2 · Lâm duyệt
+# Chủ thầu tổng hợp từ 11 conflict của 4 Thợ · 27/07/2026
+# Luật: engine không tự resolve · từng ca cần người quyết hoặc uỷ quyền leader
+
+disputes:
+
+- dispute_id: DISP.001
+  field: Tên dòng sensor HeraSight 61T
+  value_a: {value: "HeraSight 61T (tên hiện hành)", source: "kernel HC-011", effective_date: null}
+  value_b: {value: "61T đã đổi tên thành HeraSight LR", source: "rtr-website Product description (CAND.1.003)", effective_date: null}
+  de_xuat: Hỏi Product team một câu · liên quan luôn verify_action của HC-056
+  trang_thai: DA_XU_Lam_confirm_2026-07-27
+  resolution: >
+    Lâm confirm 27/07: HeraSight LR là tên chính thức · 61T là tên kỹ thuật (cảm biến Sony 61MP) · hai tên một sản phẩm. Kernel HC-011 update · HC-056 merged về HC-011 · fact L3F.RES.001 nạp gói.
+
+- dispute_id: DISP.002
+  field: Spec màn hình HeraLink v2.0 vs HeraHub
+  value_a: {value: "HeraHub 1280x800 · 1800 nits", source: "kernel HC-017 · chốt CEO 16/07", effective_date: 2026-07-16}
+  value_b: {value: "HeraLink v2.0 1920x1200 · 1200 nits", source: "HeraLink_v2.0 doc (CAND.1.007)", effective_date: null}
+  de_xuat: Kernel thắng (chốt CEO mới nhất) · doc HeraLink là thế hệ trước rename · đánh legacy doc
+  trang_thai: DA_XU_Lam_verified_2026-07-27
+  resolution: >
+    Lâm uỷ quyền tự quyết 27/07/2026 · Chủ thầu quyết theo bằng chứng · Lâm verified 27/07/2026. Kernel thắng: HC-017 là chốt CEO 16/07 (mới nhất). HeraLink v2.0 doc là thế hệ trước rename HeraLink sang HeraHub (RENAME-01) · đánh legacy doc. CAND.1.007 chuyển duplicate.
+
+- dispute_id: DISP.003
+  field: HeraHub 2000 nits trong Company KB
+  value_a: {value: "1800 nits", source: "kernel HC-017", effective_date: 2026-07-16}
+  value_b: {value: "2000-nit", source: "RtR_Company_Knowledge_Base.docx 18/05 (CAND.1.009)", effective_date: 2026-05-18}
+  de_xuat: Kernel thắng · nguồn cũ hơn ngày tách spec 16/07 · xử theo lô
+  trang_thai: DA_XU_Lam_verified_2026-07-27
+  resolution: >
+    Lâm uỷ quyền tự quyết 27/07/2026 · Chủ thầu quyết theo bằng chứng · Lâm verified 27/07/2026. Kernel thắng: Company KB 18/05 cũ hơn ngày tách spec 16/07. File đã nằm trong ACT.004 đề xuất archive. CAND.1.009 chuyển duplicate.
+
+- dispute_id: DISP.004
+  field: RMUS exclusive hay non-exclusive US reseller
+  value_a: {value: "Non-exclusive per D6 CEO doctrine · RMUS clarified", source: "kernel SC-015 + D6", effective_date: 2026-06-30}
+  value_b: {value: "RMUS exclusive U.S. reseller", source: "RtR_Company_Knowledge_Base.docx (CAND.1.036)", effective_date: 2026-05-18}
+  de_xuat: Kernel thắng · D6 là CEO doctrine mới hơn · xử theo lô
+  trang_thai: DA_XU_Lam_verified_2026-07-27
+  resolution: >
+    Lâm uỷ quyền tự quyết 27/07/2026 · Chủ thầu quyết theo bằng chứng · Lâm verified 27/07/2026. Kernel thắng: D6 là CEO doctrine 30/06 mới hơn Company KB 18/05, RMUS đã clarified non-exclusive. CAND.1.036 chuyển duplicate.
+
+- dispute_id: DISP.005
+  field: Chuẩn kín nước bụi HERA
+  value_a: {value: "IP54", source: "kernel HC-042 verified_primary", effective_date: null}
+  value_b: {value: "IP43", source: "workbook bảo dưỡng · baseline DCMA doc (CAND.2.013)", effective_date: null}
+  de_xuat: Cần Engineering xác nhận một câu (khả năng rated vs demonstrated khác nhau)
+  trang_thai: DA_XU_Lam_verified_2026-07-27
+  resolution: >
+    Lâm uỷ quyền tự quyết 27/07/2026 · Chủ thầu quyết theo bằng chứng · Lâm verified 27/07/2026. Kernel thắng theo chênh lệch bằng chứng: HC-042 IP54 verified_primary + certified, trong khi workbook tự ghi 'IP43 baseline · cần Engineering chốt với tài liệu IP54 · Cần phê duyệt · Không dùng làm warranty claim'. Phía B tự nhận pending nên không phải counter-claim. IP54 hiện hành. ĐÓNG HOÀN TOÀN 27/07/2026: curator xác định IP43 là số CŨ chưa cập nhật (không phải giá trị bảo thủ cố ý) · file gốc 01_CRM_Bao_Duong_HERA.xlsx đã sửa sang IP54 · gap register 00_Tong_The dòng 1 đã đóng · fact L3R.K.006 nạp gói.
+
+- dispute_id: DISP.006
+  field: Tầm điều khiển HERA
+  value_a: {value: "15 km", source: "kernel HC-001", effective_date: null}
+  value_b: {value: "10 km", source: "workbook bảo dưỡng DCMA baseline (CAND.2.014)", effective_date: null}
+  de_xuat: Cần Engineering xác nhận (khả năng config khác nhau VN vs US)
+  trang_thai: DA_XU_Lam_verified_2026-07-27
+  resolution: >
+    Lâm uỷ quyền tự quyết 27/07/2026 · Chủ thầu quyết theo bằng chứng · Lâm verified 27/07/2026. Kernel thắng: HC-001 15 km có chuỗi chốt CEO 16/07 + questionnaire, workbook tự ghi '10 km · tài liệu khác có 15 km · Cần phê duyệt'. 15 km hiện hành. ĐÓNG HOÀN TOÀN 27/07/2026: curator xác định 10 km là số CŨ chưa cập nhật (KHÔNG phải config conservative) · phát hiện thêm 10 km là tầm của VEGA (HC-002) nên nhiều khả năng lẫn nguồn · file gốc đã sửa sang 15 km · fact L3R.K.007 nạp gói · còn treo: ô 'Tầm truyền 10 km' trong workbook HeraHub đã gắn cờ, chờ Engineering.
+
+- dispute_id: DISP.007
+  field: Nhiệt độ hoạt động thấp nhất HERA
+  value_a: {value: "-30 độ C validated", source: "kernel HC-040", effective_date: null}
+  value_b: {value: "-20 độ C", source: "workbook bảo dưỡng DCMA baseline (CAND.2.016)", effective_date: null}
+  de_xuat: Cần Engineering xác nhận cùng lô DISP.005-006
+  trang_thai: DA_XU_Lam_verified_2026-07-27
+  resolution: >
+    Lâm uỷ quyền tự quyết 27/07/2026 · Chủ thầu quyết theo bằng chứng · Lâm verified 27/07/2026. Tách ngữ cảnh (pattern DISP.009/010): hai fact cùng đúng. Fact A dải nhiệt VẬN HÀNH KHUYẾN CÁO bảo dưỡng -20 đến 45 độ C (baseline 2026-07 · PROPOSED). Fact B năng lực DEMONSTRATED -30 độ C validated US Army Alaska (HC-040). CAND.2.016 relabel theo Fact A · Engineering xác nhận cả hai tại ACT.005.
+
+- dispute_id: DISP.008
+  field: Học vị CEO Lương Việt Quốc
+  value_a: {value: "PhD engineer", source: "kernel OC-001", effective_date: null}
+  value_b: {value: "Tiến sĩ Kinh tế Phát triển · UC Berkeley", source: "HOSO_CEO_TRICH_TU_6DA.xlsx (CAND.3.022)", effective_date: null}
+  de_xuat: HOSO trích từ 6 đề án nhà nước có khả năng đúng hơn · Lâm confirm rồi update kernel + fact-sheet nếu cần
+  trang_thai: DA_XU_Lam_confirm_2026-07-27
+  resolution: >
+    Lâm confirm 27/07: Tiến sĩ Kinh tế Phát triển UC Berkeley là đúng · hành trình học bổng Fulbright, Cornell, UC Berkeley. Kernel OC-001 update (bỏ 'PhD engineer' sai) · fact L3F.RES.002 nạp gói · fact-sheet báo chí đồng bộ ngành khi tái bản.
+
+- dispute_id: DISP.009
+  field: Năm thành lập RtR
+  value_a: {value: "2014", source: "kernel OC-001", effective_date: null}
+  value_b: {value: "2017 (RtR VN)", source: "HOSO_CEO (CAND.3.025)", effective_date: null}
+  de_xuat: Khả năng cả hai đúng (entity US 2014 · pháp nhân VN 2017) · tách thành 2 fact có nhãn rõ thay vì chọn một
+  trang_thai: DA_XU_Lam_verified_2026-07-27
+  resolution: >
+    Áp cách tách-đôi. CAND.3.025 relabel = "pháp nhân VN 2017" (kernel_check new).
+    Thêm CAND.3.030 = "entity Hoa Kỳ 2014" (duplicate OC-001, L3). Hết conflict.
+    Card VN vẫn L2 chờ Lâm xác nhận công khai được thì hạ L3.
+
+- dispute_id: DISP.010
+  field: Trụ sở RtR
+  value_a: {value: "Lot I-4b-4.2 SHTP (facility)", source: "kernel OC-020", effective_date: null}
+  value_b: {value: "40/10 Khổng Tử (ĐKKD)", source: "HOSO_CEO (CAND.3.026)", effective_date: null}
+  de_xuat: Cả hai đúng hai khái niệm · tách 2 fact "địa chỉ ĐKKD" và "nhà máy/văn phòng" · không chọn một
+  trang_thai: DA_XU_Lam_verified_2026-07-27
+  resolution: >
+    Áp cách tách-đôi. CAND.3.026 relabel = "địa chỉ ĐKKD 40/10 Khổng Tử" (new).
+    Thêm CAND.3.031 = "facility SHTP" (duplicate OC-020, L3). Hết conflict.
+    Card ĐKKD vẫn L2 chờ Lâm.
+
+- dispute_id: DISP.011
+  field: Trạng thái Blue UAS của HERA (NẶNG NHẤT · nằm trong hồ sơ nhà nước đã nộp)
+  value_a: {value: "Listing in progress dưới DoW Conditional Approval · CHƯA cleared", source: "kernel SIG.MACRO.BLUE_UAS_LISTING_IN_PROGRESS 22/07 + SC-011 submission v8", effective_date: 2026-07-22}
+  value_b: {value: "Đã trên DCMA Blue UAS Cleared List", source: "6 đề án nhà nước · 24 file BM (CAND.3.028)", effective_date: null}
+  de_xuat: Kernel thắng theo bằng chứng · SAI KÉP (QA phát hiện + verify SC-011 tận gốc 27/07) · submission Blue UAS v8 là VEGA platform trong khi 6 đề án gán cleared cho HERA · vừa sai mức vừa sai nền tảng · ĐỀ NGHỊ escalate CEO đính chính hồ sơ · xem DRAFT_Escalation_CEO_BlueUAS.md
+  trang_thai: DA_XU_Lam_confirm_trang_thai_2026-07-27
+  resolution: >
+    Lâm confirm 27/07: trạng thái đúng là ĐANG XÉT DUYỆT, có cơ sở sẽ được duyệt trong vài tuần, chưa chính thức, cần trung thực. Fact L3F.RES.003 nạp gói để bot trả lời đúng. Việc đính chính 6 đề án nhà nước (gồm điểm nền tảng VEGA/HERA) vẫn theo escalation chờ CEO quyết phương án.
+
+# ---- Action items không phải dispute nhưng cần quyết cùng C2 ----
+
+action_items:
+- id: ACT.001
+  viec: Cụm Control Tower 4 folder loạn danh tính (rtr-quanlyduan · rtr-ctl-fresh · rtr-pm/RtR-ControlTower · controltower rỗng) · cần chỉ định bản canonical
+  nguoi_quyet: Lâm hoặc owner engineering
+- id: ACT.002
+  viec: rtr-mrp vs rtr-mrp-v2 nghi fork white-label VietERP · xác nhận quan hệ để card mô tả đúng
+  nguoi_quyet: Owner MRP
+- id: ACT.003
+  viec: 3 folder rỗng (rtr-twin · controltower · utm) · placeholder xoá được hay dự án sắp có
+  nguoi_quyet: Lâm
+- id: ACT.004
+  viec: RtR_Company_Knowledge_Base.docx (18/05 · tự nhận Source of Truth · chứa 33lbs + 2000nit + RMUS exclusive) · đề xuất archive + để kernel là SOT duy nhất
+  nguoi_quyet: Lâm
+- id: ACT.005
+  viec: Workbook bảo dưỡng còn danh pháp HERA 1-4-15 + toàn bộ mốc bảo dưỡng đang PROPOSED chờ Engineering
+  nguoi_quyet: Engineering
+- id: ACT.006
+  viec: Vega Brochure chứa "33 lbs" copy-paste từ HERA (VEGA đúng là 44 lb) · báo Ethan Vo sửa cùng đợt update brochure
+  nguoi_quyet: Ethan Vo

@@ -1,0 +1,9 @@
+# runtime logs (pilot server writes these)
+gap_log.jsonl
+qa_log.jsonl
+# python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store

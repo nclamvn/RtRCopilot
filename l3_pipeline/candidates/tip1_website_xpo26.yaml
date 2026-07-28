@@ -1,0 +1,806 @@
+candidates:
+- id: CAND.1.001
+  content: 'HeraSight LR có spec chính: camera RGB Sony ILX-LR1 full frame 61MP, camera thermal FLIR Boson+ 640x512,
+    laser rangefinder tầm 1800 m, AI computer NVIDIA Jetson Xavier NX tích hợp, trọng lượng payload 965±20 g (2.13
+    lbs) chưa gồm lens.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/1. HeraSight LR1.xlsx
+  evidence_span: '(xl/sharedStrings.xml · bảng KEY FEATURES + GENERAL) "RGB Camera | Sony ILX-LR1 full frame, 61M
+    pixels. | Thermal Camera | FLIR Boson + 640x512 | Laser Rangefinder | 1800 meter-range laser rangefinder | AI
+    Computer | Built-in Nvidia Jetson Xavier NX" ... "Payload Weight | 965+-20g (2.13 lbs) no lens"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Sensor team / Ethan Vo (marketing brochure)
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: 'Kernel HC-056 ghi nhận product line HeraSight LR tồn tại nhưng "spec chi tiết chưa nạp registry · pending
+    datasheet". File này chính là mô tả spec chi tiết, đáp verify_action của HC-056. Chưa xác nhận được mapping
+    với "HeraSight LRF 125 NDAA" (câu hỏi mở của HC-056).
+
+    '
+- id: CAND.1.002
+  content: 'Tầm laser rangefinder của HeraSight LR chưa thống nhất giữa các nguồn nội bộ (200 m trong Company KB,
+    1800 m trong file product description, 3000 m theo flag audit) và đã được Product Master Canonical đánh dấu
+    CRITICAL cần engineering verify.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/RtR-Product-Master-Canonical-v2.xlsx
+  evidence_span: '(sheet OVERVIEW · dòng HeraSight LR) "⚠️ Tên cần đổi 61T→LR · Laser 200m vs 3000m CRITICAL". Đối
+    chiếu: "1. HeraSight LR1.xlsx" ghi "1800 meter-range laser rangefinder"; RtR_Company_Knowledge_Base.docx mục
+    3.2 ghi "Laser Rangefinder | 200 meters".
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: Engineering + Product team
+  effective_date: null
+  kernel_check: unsure
+  kernel_ref: null
+  note: Conflict giữa các nguồn cùng Vùng B, không phải conflict với kernel. Cần Product team chốt.
+- id: CAND.1.003
+  content: 'Sensor payload trước đây gọi là HeraSight 61T đã được đổi tên thành HeraSight LR theo Product Master
+    Canonical (04-05/2026).
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/RtR-Product-Master-Canonical-v2.xlsx
+  evidence_span: '(sheet OVERVIEW) "HeraSight LR | (formerly 61T) | Sensor / Payload · Professional Imaging" và
+    flag "⚠️ Tên cần đổi 61T→LR".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Sensor team
+  effective_date: null
+  kernel_check: conflict
+  kernel_ref: HC-011
+  note: 'Kernel HC-011 vẫn giữ tên "HeraSight 61T · RGB + Thermal". Nguồn nói 61T đã đổi tên thành LR. Không tự
+    chọn bên · đưa DISPUTED queue.
+
+    '
+- id: CAND.1.004
+  content: 'File HERA Brochure_Quoc_ 250506.xlsx (bản gốc anh Quốc) vẫn ghi HERA nâng được tới 33 lbs, là spec cũ
+    đã bị thay bằng 30 lb / 14 kg từ 28/06/2026.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/2. HERA Brochure_Quoc_ 250506.xlsx
+  evidence_span: '(xl/sharedStrings.xml · GENERAL INTRODUCTION) "Compact enough to fit in a backpack, yet powerful
+    enough to lift up to 33 lbs and spacious enough to carry four simultaneous payloads". Marker cùng folder _CANH_BAO_SPEC_CU_HERA_33LB.md:
+    "Đây là SPEC CŨ. Hiện hành từ 28/06/2026: 30 lb / 14 kg (signature 1-4-14)".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Ethan Vo (update brochure pending per SPEC-SYNC-02)
+  effective_date: null
+  kernel_check: legacy
+  kernel_ref: null
+  note: Legacy theo LEGACY_HERA_15KG_MANIFEST.md mục 2 · không vào DISPUTED. Spec hiện hành tại HC-001.
+- id: CAND.1.005
+  content: 'HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/2. HERA Brochure_Quoc_ 250506.xlsx
+  evidence_span: '(xl/sharedStrings.xml · KEY FEATURES) "HEAVIEST LIFTER | Carries up to 30 lbs (14 kg)—10x more
+    than similar-sized drones"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO/CTO Quốc Lương
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-001
+  note: Trùng payload 14 kg hiện hành của HC-001. Cùng file có chỗ ghi 33 lbs (xem CAND.1.004) · file nội bộ chưa
+    nhất quán.
+- id: CAND.1.006
+  content: 'HERA bay tối đa 56 phút không tải và 40 phút khi mang payload 5.7 lb.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/2. HERA Brochure_Quoc_ 250506.xlsx
+  evidence_span: '(xl/sharedStrings.xml · KEY FEATURES) "TOP FLIGHT TIME | Up to 56 minutes (unloaded), 40 minutes
+    with 5.7 lb payload"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO/CTO Quốc Lương
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-001
+  note: 56 phút trùng HC-001 · chi tiết "40 phút với 5.7 lb" là bổ sung chưa có trong registry.
+- id: CAND.1.007
+  content: 'Tài liệu HeraLink v2.0 mô tả GCS với màn 10.1 inch LCD 1920x1200 độ sáng 1200 nits, chip Qualcomm QCS8550
+    RAM 16GB, Android 13, nặng 2.8 kg, 6 luồng video 1080p đồng thời, pin hot-swap 3 giờ/bộ và RTK base station
+    tích hợp.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/3. HeraLink_v2.0docx.xlsx
+  evidence_span: '(xl/sharedStrings.xml · Specifications) "Screen | 10.1" LCD, 1920×1200, 1200 nits, sunlight readable
+    | Processor | Qualcomm QCS8550 ... RAM 16GB" ... "Video Streams | Supports up to 6 simultaneous 1080p feeds"
+    ... "OS | Android 13 ... Weight | 6.2 lbs (2.8 kg)"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Software team
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-017 + RENAME-01
+  note: "Kernel HC-017 (HeraHub, formerly HeraLink) ghi 1280x800 · 1800 nits (chốt 16/07/2026). Nguồn này ghi 1920x1200\
+    \ · 1200 nits. Ba giá trị nits tồn tại trong Vùng B (1200 · 2000 · kernel 1800) · đưa DISPUTED, không tự chọn\
+    \ bên.\n | DISP.002 resolved 27/07: kernel thắng · doc HeraLink là thế hệ trước rename · legacy doc."
+- id: CAND.1.008
+  content: 'HeraLink được đổi tên thành HeraHub hiệu lực từ tháng 5/2026 vì tên gần với trademark HereLink của Cube
+    Pilot, sau khi Cube Pilot gửi friendly request đề nghị đổi tên.
+
+    '
+  domain: brand
+  source_path: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  evidence_span: '(mục 2 Drone Platforms) "IMPORTANT: HeraLink has been renamed to HeraHub effective May 2026 due
+    to trademark proximity to HereLink (registered trademark of Cube Pilot). Cube Pilot made a friendly request
+    for the name change."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO (directive) + Software team
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: 'Kernel HC-017 đã dùng tên HeraHub ("formerly heralink-v2") nhưng chưa ghi lý do và mốc đổi tên. Ngày cụ
+    thể trong tháng 5/2026 không rõ nên effective_date null. Cùng nội dung tại rtr-website/TIP-066-herahub-rename-deploy.md
+    ("CEO directive · Cube Pilot trademark conflict").
+
+    '
+- id: CAND.1.009
+  content: 'Company Knowledge Base v2.0 vẫn mô tả HeraHub với màn hình 2000-nit, giá trị đã bị kernel thay bằng
+    1800 nits cho HeraHub từ 16/07/2026.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  evidence_span: '(mục 4.1 HeraHub) "Display | 10.1" rugged touchscreen, 2000-nit sunlight-readable"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Software team
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-017
+  note: "Kernel HC-017 ghi rõ \"Spec cũ 2000 nits deprecated cho HERA\" từ 16/07/2026 (2000 nits nay thuộc VegaHub\
+    \ HC-019). Tài liệu nguồn ra đời 18/05/2026, trước ngày tách spec, nhiều khả năng là spec cũ chưa update · vẫn\
+    \ đánh conflict để curator xác nhận thay vì Thợ tự phân xử.\n | DISP.003 resolved 27/07: kernel thắng · nguồn\
+    \ cũ hơn spec split 16/07."
+- id: CAND.1.010
+  content: 'VEGA có trọng lượng cất cánh không tải 38.4 lbs (17.4 kg), MTOW 82.4 lbs (37.4 kg) với 44 lbs payload,
+    bay 60 phút không tải, tầm điều khiển 10 km, chịu gió 13 m/s Beaufort 6.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/Vega Brochure_20260429.xlsx
+  evidence_span: '(xl/sharedStrings.xml · SPECIFICATIONS) "Takeoff weight without payload: 38.4 pounds (17.4kg)
+    Maximum takeoff weight (including 44 pounds of payloads): 82.4 pounds (37.4kg)" ... "Flight time | 60 minutes
+    (without payload)" ... "Control range | 6.2 miles (10km) | Wind tolerance | 31mph (13m/s). Force 6 on Beaufort
+    Scale"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO/CTO Quốc Lương
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-002
+  note: Trùng HC-002 (MTOW 37.4 kg · 20 kg · 60 phút · 10 km · Beaufort 6). Chi tiết empty weight 17.4 kg là bổ
+    sung.
+- id: CAND.1.011
+  content: 'VEGA dùng smart battery 50.4V dung lượng 35000 mAh.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/Vega Brochure_20260429.xlsx
+  evidence_span: '(xl/sharedStrings.xml · SPECIFICATIONS) "Battery | Smart battery: 50.4V, 35000 mAh"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: R&D
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Kernel HC-002 chưa có spec pin. Company KB ghi HERA dùng 44.4V 35000 mAh (khác model pin theo platform).
+- id: CAND.1.012
+  content: 'Mục DEFENSE trong Vega Brochure vẫn chứa câu quảng bá "33 lbs of mission-critical equipment", là text
+    mang signature 33 lb cũ (nghi copy từ brochure HERA) dù VEGA là nền tảng 44 lb.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/Vega Brochure_20260429.xlsx
+  evidence_span: '(xl/sharedStrings.xml · APPLICATIONS · DEFENSE) "The most powerful man-portable combat drone available—capable
+    of carrying 4x ISR payloads, loitering munitions, or 33 lbs of mission-critical equipment—triple the capacity
+    of comparable systems."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Ethan Vo + marketing
+  effective_date: null
+  kernel_check: legacy
+  kernel_ref: null
+  note: 'Claim 33 lb tự động đánh legacy theo luật 2. Điểm đáng chú ý: block text này xuất hiện giống hệt trong
+    HERA Brochure, nghi lỗi copy-paste trong brochure VEGA (VEGA nâng 44 lb, không phải 33 lb) · cần marketing sửa
+    khi update brochure.
+
+    '
+- id: CAND.1.013
+  content: 'OmniSight là gimbal dual-pod AI đầu tiên trên thế giới, mỗi pod mang nhiều sensor EO-IR và laser rangefinder,
+    pan/tilt 360 độ độc lập hoặc đồng bộ, độ rung góc ±0.005 độ, có 3 chế độ vận hành (Wide Horizon, Focus & Context,
+    Independence), nặng 2 kg.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/5. OmniSight Gimbal – Chameleon Eyes.xlsx
+  evidence_span: '(xl/sharedStrings.xml) "It is the world''s first dual-pod, AI-powered gimbal. Each pod carries
+    multiple EO-IR sensors and a laser rangefinder, and each can pan and tilt 360° independently or in perfect sync."
+    ... "Ultra-Precise Motion | ±0.005° angular vibration range". Trọng lượng 2 kg (4.4 lbs) + 3 operating modes
+    theo RtR_Company_Knowledge_Base.docx mục 3.4.
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Sensor team
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-013
+  note: Trùng HC-013 (dual-pod 360 AI on-board). Chi tiết ±0.005° · 2 kg · 3 mode là bổ sung chưa có trong registry.
+- id: CAND.1.014
+  content: 'HeraSight bản base được mô tả là gimbal EO/IR AI-powered nặng 850 g (gồm camera EO-IR và gimbal), zoom
+    RGB 30X optical + 12X digital, thermal 640x512, laser rangefinder cấu hình 2 km hoặc 4 km, có tính năng precision
+    drop dưới 50 cm ở độ cao 50 m.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/4. HeraSight_Brochure 250825.xlsx
+  evidence_span: '(xl/worksheets inline strings) "HeraSight is the world''s first AI-powered EO/IR gimbal built
+    to finish the job in one pass." ... "Weight including EO-IR cameras and gimbal | 850g (1.87 lbs)" ... "Zero-in-Target
+    Precision Drop | Computer vision autonomously guides the drone for deliveries or payload drops with <50 cm accuracy
+    at 50 m." Zoom 30X+12X và LRF 2/4 km theo RtR_Company_Knowledge_Base.docx mục 3.1.
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Sensor team
+  effective_date: null
+  kernel_check: unsure
+  kernel_ref: null
+  note: 'Kernel HC-010 định nghĩa "HeraSight 61MP · RGB sensor" trong khi các tài liệu product mô tả HeraSight base
+    là EO/IR zoom gimbal 850 g (61MP thuộc dòng HeraSight LR). Naming trong kernel và Vùng B lệch nhau · cần Product
+    team phân xử trước khi map kernel_ref.
+
+    '
+- id: CAND.1.015
+  content: 'DualSight có 2 camera RGB Sony FCB-EV9520L (30X optical + 12X digital mỗi camera), 2 thermal FLIR Boson/Boson+
+    640x512 NETD ≤20 mK, nặng 1830±30 g, Edge AI Jetson Orin NX 100 TOPS, laser rangefinder cấu hình 2/4/6 km, real-time
+    stitching với overlap chỉnh 0-100%.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  evidence_span: '(mục 3.3 DualSight) "RGB Cameras | 2x Sony FCB-EV9520L (30X optical + 12X digital each = 360X
+    combined) | Thermal Cameras | 2x FLIR Boson/Boson+ (640 x 512, NETD ≤20 mK)" ... "Weight | 1,830 ± 30g (4.03
+    lbs) | Edge AI | NVIDIA Jetson Orin NX, 100 TOPS compute | Laser Rangefinder | 2 km / 4 km / 6 km configurations
+    (EN60825 Class 1)"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Sensor team
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-012
+  note: Trùng HC-012 (RGB + Thermal · 2x FoV). Toàn bộ spec chi tiết là bổ sung chưa có trong registry.
+- id: CAND.1.016
+  content: 'SkyWatch 360 là một HERA bay tether mang 3 DualSight đồng bộ, cho 6 luồng video đồng thời giám sát 360
+    độ liên tục ở độ cao tối đa 100 m với thời gian bay không giới hạn nhờ nguồn qua dây.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  evidence_span: '(mục 3.5) "A tethered HERA carrying 3 synchronized DualSights for persistent 360° surveillance.
+    Unlimited flight time via tether." ... "Video Feeds | 6 simultaneous" ... "Tether Length | Up to 100 meters
+    altitude"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: R&D
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-014
+  note: Trùng HC-014 (tethered · 100m · 24/7). Cấu hình "3x DualSight" là chi tiết bổ sung.
+- id: CAND.1.017
+  content: 'Loudspeaker LS1 dùng lõi siren-speaker police-grade Whelen WSSC Series, phát 120 dB đo tại 1 m, tầm
+    phủ hiệu quả 300 m, công suất 30W, 10 tone siren Scan-Lock chọn được, gimbal ổn định 2 trục.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/LoudSpeaker LS1 Brochure_20260429 (1).xlsx
+  evidence_span: '(xl/worksheets inline strings) "Whelen WSSC Series police-grade siren-speaker, LS1 brings proven
+    emergency warning technology to UAV public safety missions" ... "Effective Broadcast Distance | 300m | Sound
+    Pressure Level | 120 dB @ 1 m | Siren / Warning Tones | 10 selectable Scan-Lock™ siren tones" ... "Rated Power
+    | 30W" ... "Stabilization System | 2 Axis"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: R&D
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-015
+  note: 'HC-015 ghi "120 dB ở 300m"; brochure ghi 120 dB @ 1 m và tầm phủ 300 m là hai thông số riêng. Cách diễn
+    đạt trong kernel có thể gộp sai 2 spec · curator nên xem lại wording HC-015 khi nạp.
+
+    '
+- id: CAND.1.018
+  content: 'Spotlight S1 chiếu 50 lux tại 50 m và 13 lux tại 100 m, công suất 80W, beam 15 độ, màu 6500K, strobe
+    5 Hz, gimbal ổn định 3 trục, đạt eye safety IEC 62471 Risk Group 1.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/XPO26/Product description V2/Spotlight S1 Brochure_20260429 (2).xlsx
+  evidence_span: '(xl/worksheets inline strings) "Delivers 50 lux at 50 m and 13 lux at 100 m - effective for SAR,
+    law-enforcement scene lighting" ... "Rated Power | 80W" ... "Eye Safety Class | IEC 62471: Risk Group 1" ...
+    "Strobe at 5 Hz" ... "Beam Angle (FOV) | 15°" ... "Stabilization System | 3 Axis"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: R&D
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-016
+  note: Trùng HC-016 (50 lux ở 50m). Các spec còn lại là bổ sung chưa có trong registry.
+- id: CAND.1.019
+  content: 'Kênh liên hệ chính thức của RtR gồm điện thoại Việt Nam +84 909 735 829, điện thoại Mỹ +1 510 457 6280,
+    email chung info@rtrobotics.com, email sales sales@rtrobotics.com và website rtrobotics.com.
+
+    '
+  domain: company
+  source_path: /Users/os/RtR/XPO26/RtR-Product-Master-Canonical-v2.xlsx
+  evidence_span: '(sheet BRAND_POSITION · Contact) "Phone Vietnam | +84 909 735 829 | Phone USA | +1 510 457 6280
+    | Email general | Info@rtrobotics.com | Email sales | sales@rtrobotics.com | Website | rtrobotics.com"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Marketing
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: 'Company KB docx bổ sung support@rtrobotics.com. Đây là contact công ty công khai, không phải contact cá
+    nhân.
+
+    '
+- id: CAND.1.020
+  content: 'Tên brand viết đúng là "Real-time Robotics" với chữ t viết thường (không phải Real-Time), viết tắt cho
+    phép là RtR hoặc RTROBOTICS, và không dùng "RTR" all-caps trong body copy.
+
+    '
+  domain: brand
+  source_path: /Users/os/RtR/XPO26/RtR-Company-Card-Brief.docx
+  evidence_span: '"Tên đầy đủ: Real-time Robotics (chữ t viết thường — KHÔNG phải Real-Time) · Viết tắt cho phép:
+    RtR hoặc RTROBOTICS". Master Canonical BRAND_POSITION rule #3: "Brand ''Real-time Robotics'' (T thường) — không
+    ''Real-Time Robotics'' / ''RTR'' all-caps trong body copy"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Marketing + Lâm Nguyễn (AI Officer)
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.1.021
+  content: 'Trên company card thị trường Mỹ, signature sản phẩm dùng đơn vị pound: HERA 1-4-30 và VEGA 1-4-44.
+
+    '
+  domain: brand
+  source_path: /Users/os/RtR/XPO26/RtR-Company-Card-Brief.docx
+  evidence_span: '(Mặt trước FRONT) "Products | HERA 1-4-30 · VEGA 1-4-44"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn (AI Officer)
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-001
+  note: 'Nhất quán với doctrine signature-unit-per-market: 1-4-14 (kg · VN) = 1-4-30 (lb · US) cho HERA · 1-4-20
+    (kg) = 1-4-44 (lb) cho VEGA (HC-002).
+
+    '
+- id: CAND.1.022
+  content: 'RtR Messaging Framework v1.0 (29/04/2026) là quy định MANDATORY cho mọi nhân sự đứng booth và mọi tài
+    liệu external, với quy tắc lõi: narrative "Vietnamese deeptech goes global" chỉ dành cho audience E/F (báo chí
+    VN, tuyển dụng VN, gov VN/ASEAN), tuyệt đối không dùng với DoD, prime contractor, US/G7 gov hoặc US press.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/XPO26/RtR-MESSAGING-FRAMEWORK.md
+  evidence_span: '"Status: MANDATORY cho mọi nhân sự đứng booth + mọi tài liệu external (landing, NFC, brochure,
+    slide)" ... "Quy tắc đơn giản: nếu không phải audience E hoặc F → KHÔNG dùng narrative ''Vietnamese deeptech
+    goes global''." ... "❌ KHÔNG bao giờ dùng narrative này với DoD buyer, prime contractor, US/G7 gov, US press"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO Quốc Lương (brand custodian)
+  effective_date: 2026-04-29
+  kernel_check: new
+  kernel_ref: null
+  note: Nhất quán với SC-032 (U.S.-aligned positioning) nhưng là quy trình riêng chưa có trong kernel.
+- id: CAND.1.023
+  content: 'Câu trả lời chuẩn khi khách hỏi "where are you guys from?" là: "We''re U.S.-aligned with manufacturing
+    in Vietnam. Full-stack vertical integration in-house. NDAA-compliant." (không trả lời "We''re from Vietnam").
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/XPO26/RtR-MESSAGING-FRAMEWORK.md
+  evidence_span: '(mục 9 The "30-second test") "Đáp đúng: ''We''re U.S.-aligned with manufacturing in Vietnam. Full-stack
+    vertical integration in-house. NDAA-compliant.'' (KHÔNG đáp ''We''re from Vietnam!'' enthusiastically.)"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO Quốc Lương
+  effective_date: 2026-04-29
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.1.024
+  content: 'Claim Tier 3 của CEO ("sole U.S. drone maker to beat DJI on specs + out-efficient every American competitor
+    in manufacturing costs") là thông điệp HIỂU NGẦM, cấm nói công khai với khách; để proof points tự chứng minh
+    và không bash competitor by name.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/XPO26/RtR-MESSAGING-FRAMEWORK.md
+  evidence_span: '"TIER 3 — Sole U.S. drone maker to beat DJI on specs + out-efficient every American competitor
+    in manufacturing costs ⚠️ HIỂU NGẦM, KHÔNG NÓI CÔNG KHAI" ... "Anh Quốc giải thích: ''Mình nói công khai thì
+    hơi "đè" các cty UAV của Mỹ khác.''" ... "(KHÔNG bash competitor by name. KHÔNG claim ''best''.)"
+
+    '
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Quốc Lương
+  effective_date: 2026-04-29
+  kernel_check: new
+  kernel_ref: null
+  note: Đánh L2 vì là competitive positioning nội bộ nhạy cảm (luật 5).
+- id: CAND.1.025
+  content: 'Thẩm quyền báo giá của RtR phân theo tier: Tier A/B (DoD, Federal, Prime) hoặc deal trên 100K USD bắt
+    buộc CEO duyệt, Tier C (State, Police, SAR) BDM được quote price range, Tier D (International, ITAR) cần COO
+    duyệt trước khi chia sẻ spec sheet kèm ITAR compliance review.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  evidence_span: '(mục 7.3 Pricing Authority) "Tier A/B (DoD, Federal, Prime) or any deal >$100K: CEO approval required.
+    No price quote without CEO involvement. Tier C (State, Police, SAR): Business Development Manager can quote
+    price ranges. Tier D (International, ITAR): COO approval required before sharing any spec sheet. ITAR compliance
+    review mandatory."
+
+    '
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Quốc Lương
+  effective_date: 2026-05-18
+  kernel_check: new
+  kernel_ref: null
+  note: 'Là quy trình nội bộ đáng L3 nhưng gắn với governance pricing/deal nên đánh L2 theo luật 5 · curator quyết
+    định hạ xuống L3 hay không.
+
+    '
+- id: CAND.1.026
+  content: 'Ma trận lead time của RtR: hàng có sẵn 2-4 tuần, custom 6-8 tuần, defense 12-16 tuần; OEM MOQ tham chiếu:
+    sensor MOQ 10, battery MOQ 50.
+
+    '
+  domain: company
+  source_path: /Users/os/RtR/XPO26/RtR-Booth-Playbook-EN.pdf
+  evidence_span: '(Page 2/7 · Khanh Vo COO · DOMAIN PREP) "Lead time matrix: stock 2-4w · custom 6-8w · defense
+    12-16w" ... "OEM MOQ + tier pricing (sensors MOQ 10, batteries MOQ 50)"
+
+    '
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: COO Khánh Võ
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Gắn với điều khoản thương mại (MOQ, tier pricing) nên đánh L2 theo luật 5.
+- id: CAND.1.027
+  content: 'RtR tham gia XPONENTIAL 2026 x MDEX (AUVSI / Messe Düsseldorf North America) ngày 11-14/05/2026 tại
+    Huntington Place Convention Center, Detroit MI, với booth #20005 dạng island 20x20 ft (400 sq ft) gần cửa ra
+    vào chính.
+
+    '
+  domain: event
+  source_path: /Users/os/RtR/XPO26/RtR-XPO26-Company-Briefing.docx
+  evidence_span: '(mục 02 SỰ KIỆN TÓM LƯỢC) "Tên sự kiện | XPONENTIAL 2026 × MDEX — AUVSI / Messe Düsseldorf North
+    America | Thời gian | 11 – 14 / 05 / 2026 ... | Địa điểm | Huntington Place Convention Center · Detroit, MI
+    · USA | Booth RtR | #20005 · island 20 × 20 ft (400 sq ft) · gần cửa ra vào chính"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO Quốc Lương (đầu mối nội bộ)
+  effective_date: 2026-04-20
+  kernel_check: new
+  kernel_ref: null
+  note: Sự kiện đã diễn ra · giá trị lịch sử công ty (lần đầu RtR dựng island booth tại show quốc tế).
+- id: CAND.1.028
+  content: 'MDEX (Michigan Defense Expo) hợp nhất với XPONENTIAL chỉ duy nhất năm 2026; năm 2027 MDEX quay về Macomb
+    Community College, nên 2026 là cửa sổ một lần để gặp DoD buyers và NDIA Michigan ecosystem cùng một venue.
+
+    '
+  domain: event
+  source_path: /Users/os/RtR/XPO26/RtR-XPO26-Company-Briefing.docx
+  evidence_span: '(mục 01 GÓC CHIẾN LƯỢC) "MDEX lần đầu tiên hợp nhất với XPONENTIAL — chỉ cho 2026. Năm 2027 MDEX
+    quay về Macomb Community College. Đây là cửa sổ duy nhất để gặp DoD buyers và NDIA Michigan ecosystem cùng một
+    venue."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: null
+  effective_date: 2026-04-20
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.1.029
+  content: 'Quy trình thu lead tại booth RtR gồm 4 bước khoảng 30 giây mỗi khách: quét badge QR (hoặc nhập tay/chụp
+    danh thiếp), phân loại tier A/B/C/F kèm thời gian mua và sản phẩm quan tâm, ghi chú nhanh (gõ hoặc voice-to-text),
+    rồi lưu lead với email cảm ơn tự động.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/rtr-website/docs/booth-staff-guide.md
+  evidence_span: '"## 🎯 THU LEAD (mỗi khách ~30 giây) · Flow: Quét → Phân loại → Ghi chú → Lưu" ... "Tier: 🔥A (muốn
+    mua ngay) → ⭐B (quan tâm cao) → 👀C (tìm hiểu) → ❌F (không phù hợp)" ... "Tap ''Save lead'' → xong! Email cảm
+    ơn tự gửi cho khách"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn (dev booth app)
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.1.030
+  content: 'Booth app RtR là PWA cài lên Home Screen, hoạt động offline với tự động sync, và có 4 chức năng phụ:
+    My Leads (xem/lọc lead), Price Range (tra giá trả khách), Tech Support (search FAQ kỹ thuật) và Export CSV cuối
+    ngày gửi team CRM.
+
+    '
+  domain: system
+  source_path: /Users/os/RtR/rtr-website/docs/booth-staff-guide.md
+  evidence_span: '"Cài app lên Home Screen" ... "| My Leads | Xem lại leads đã thu, lọc theo tier ... | Price Range
+    | Khách hỏi giá → tra nhanh combo/đơn lẻ → copy gửi | Tech Support | Khách hỏi kỹ thuật → search FAQ → đọc câu
+    trả lời chuẩn | Export CSV | Cuối ngày → My Leads → Export CSV → gửi team CRM |" ... "Mất mạng? App lưu offline
+    → icon 🔄 hiện → tự sync khi có mạng"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn (dev)
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Booth app seed sẵn 15 FAQ chuẩn (XPO26/seed-data/faq-items.json) cho chức năng Tech Support.
+- id: CAND.1.031
+  content: 'Luật escalation tại booth: khách Tier A chuyển CEO ngay lập tức, media chuyển CEO cùng Vy (CEO chỉ tiếp
+    media khi được page mã ''E-MEDIA''), CEO là điểm cuối escalation và khi quá tải thì delegate cho COO.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/XPO26/RtR-Booth-Playbook-EN.pdf
+  evidence_span: '(Page 2/7 · ESCALATE) "Tier A → CEO immediately · Media → CEO + Vy". (Page 1/7 · CEO) "Media handle
+    (only when paged ''E-MEDIA'' by Vy)" ... "Endpoint. No escalation. When overloaded → delegate to COO Khanh Vo."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO Quốc Lương
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Playbook v2.0 EN · 29-Apr-2026 · nguyên tắc tái dùng được cho mọi sự kiện sau.
+- id: CAND.1.032
+  content: 'Đội booth XPO26 gồm 7 vai trò có playbook cá nhân hóa (trong đó Founder & CEO, COO, Business Development
+    Manager, Software Manager, Mechanical R&D Team Lead) cộng 2 vai trò remote từ Việt Nam là CEO Assistant & Logistics
+    Manager và AI Officer.
+
+    '
+  domain: company
+  source_path: /Users/os/RtR/XPO26/RtR-Booth-Team-Profiles-EN.docx
+  evidence_span: '"8 personal profile English chuẩn cho team đi Detroit XPO26 (12-14/05/2026)" ... "1. Quốc Lương,
+    Ph.D. — Founder & CEO" ... "2. Khánh Võ — COO" ... "3. Vy Ngô — Business Development Manager" ... "6. Trần Hải
+    Quân — Software Manager" ... "7. Lưu Công Mỹ — Mechanical R&D Team Lead" ... "Remote VN (2 người — không cần
+    profile cho web /team/ landing) - Uyên Đinh — CEO Assistant & Logistics Manager - Cảnh Lâm — AI Officer". Playbook
+    EN ghi "OF 7" (7 playbook cá nhân hóa).
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn (người soạn profiles)
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: 'Chỉ lấy cấu trúc vai trò theo phạm vi TIP · không nạp bio, contact, achievements cá nhân. Doc ghi 8 profile
+    nhưng playbook đánh số OF 7 · 2 vai trò còn lại trong danh sách 8 chưa trích được từ phần đã đọc.
+
+    '
+- id: CAND.1.033
+  content: 'Brand assets của RtR nằm tại rtr-website/content/branding/ (6 file logo PNG+SVG, Brand Identity Guidelines
+    PDF, brochure, namecard); folder content/ là thư viện asset local bị gitignore, còn bản brochure deploy công
+    khai nằm tại rtr-website/public/brochures/ và guidelines tại public/brand/.
+
+    '
+  domain: brand
+  source_path: /Users/os/RtR/rtr-website/content/INVENTORY.md
+  evidence_span: '"├── branding/ │ ├── logos/ 6 files — PNG + SVG logos │ ├── guidelines/ 1 file — Brand identity
+    guidelines PDF │ ├── brochures/ 2 files — Hera brochure + OmniSight press release │ └── namecard/ 2 files —
+    Namecard template + fonts" ... "content/ is gitignored — this is a local asset library, not deployed."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Marketing + Lâm Nguyễn
+  effective_date: 2026-04-21
+  kernel_check: new
+  kernel_ref: null
+  note: 'Bản gốc branding còn ở rtr-website/RtR-Branding/ (Brand Identity Guidelines.pdf + Namecard). INVENTORY.md
+    cảnh báo filename confusion: file hera13xxx là ảnh VEGA, file vegaXxx là ảnh HERA (phân loại theo nội dung ảnh,
+    không theo tên).
+
+    '
+- id: CAND.1.034
+  content: 'RtR-Product-Master-Canonical (XPO26/) là file single source of truth tổng hợp thông tin chuẩn 8 sản
+    phẩm RtR cho mọi tài liệu external, với source priority: file anh Quốc là chuẩn cho USP/slogan, brochure là
+    chuẩn cho spec kỹ thuật, khi conflict thì ghi cả hai và flag PENDING VERIFY.
+
+    '
+  domain: system
+  source_path: /Users/os/RtR/XPO26/RtR-Product-Master-Canonical-v2.xlsx
+  evidence_span: '(sheet README) "Single source of truth tổng hợp toàn bộ thông tin chuẩn về 8 sản phẩm RtR · v1.0
+    · 04/05/2026" ... "Dùng làm canonical reference cho mọi tài liệu external (brochure, landing, NFC, deck, RFP,
+    pitch booth)." ... "3) Khi conflict: ghi cả 2, flag PENDING VERIFY (xem sheet CONFLICTS_PENDING)."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn (Chủ thầu build file) + CEO Quốc (chốt USP)
+  effective_date: 2026-05-04
+  kernel_check: new
+  kernel_ref: null
+  note: 'File này ra đời trước kernel SOT (06/2026). Vai trò SSOT sản phẩm nay thuộc kernel/registry · card này
+    giá trị ở mức "file tồn tại ở đâu, dùng thế nào" và sheet CONFLICTS_PENDING còn 7 spec conflict chưa verify.
+
+    '
+- id: CAND.1.035
+  content: 'RtR_Company_Knowledge_Base.docx v2.0 (18/05/2026, rtr-website/) tự nhận là Source of Truth về product/capability/partnership
+    nhưng vẫn chứa spec HERA payload 33 lbs (15 kg) cũ, nên chỉ được dùng tra cứu lịch sử, không lấy số kỹ thuật.
+
+    '
+  domain: system
+  source_path: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  evidence_span: '"Company Knowledge Base · Source of Truth — Product, Capability & Partnership Reference · Version
+    2.0 | May 18, 2026 · Internal & Confidential" ... (mục 2.1) "Payload Capacity | 33 lbs (15 kg) across 4 simultaneous
+    bays"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: null
+  effective_date: 2026-05-18
+  kernel_check: legacy
+  kernel_ref: null
+  note: 'Claim 33 lb/15 kg tự động legacy theo luật 2. File này CHƯA có trong LEGACY_HERA_15KG_MANIFEST (manifest
+    mục 2 chỉ ghi 2 bản HERA Brochure xlsx) · đề xuất Chủ thầu bổ sung manifest.
+
+    '
+- id: CAND.1.036
+  content: 'Company Knowledge Base v2.0 ghi RMUS là "U.S. exclusive reseller" của RtR.
+
+    '
+  domain: company
+  source_path: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  evidence_span: '(mục 1.2) "U.S. exclusive reseller: RMUS (Robotic Mortar Unmanned Systems)." (mục 9 bảng Partners)
+    "RMUS | U.S. Distribution | Exclusive U.S. reseller"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Sales
+  effective_date: 2026-05-18
+  kernel_check: duplicate
+  kernel_ref: SC-015 + D6
+  note: "Kernel SC-015 (cập nhật theo CEO doctrine D6 · 30/06/2026) khẳng định RMUS là distributor KHÔNG độc quyền.\
+    \ Nguồn 18/05/2026 cũ hơn doctrine · vẫn đánh conflict theo luật 1 để curator xử qua DISPUTED (khả năng cao\
+    \ kernel thắng).\n | DISP.004 resolved 27/07: kernel thắng · D6 CEO doctrine."
+- id: CAND.1.037
+  content: 'Theo bảng certifications trong Company KB v2.0: ISO 9001 certified, FCC certified, IP54 certified, MIL-STD-810
+    tested, DO-160G tested, FIPS 140-2 capable, FAA Part 107 compatible, ITAR controlled.
+
+    '
+  domain: legal
+  source_path: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
+  evidence_span: '(mục 10.3 Certifications) "NDAA Section 889 | Compliant ... FAA Part 107 | Compatible ... IP54
+    Weather Rating | Certified ... FCC (RF/Wireless) | Certified ... DO-160G Environmental | Tested ... ISO 9001
+    Quality | Certified ... MIL-STD-810 Ruggedness | Tested ... FIPS 140-2 Encryption | Capable ... ITAR | Controlled"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Compliance
+  effective_date: 2026-05-18
+  kernel_check: new
+  kernel_ref: null
+  note: 'Kernel SC-013 mới ghi trio NDAA + ITAR + DCMA Blue UAS; ISO 9001, MIL-STD-810, FCC, DO-160G, FIPS 140-2
+    chưa có record riêng. Nguồn là doc chứa spec cũ 15 kg · cần Compliance xác nhận trạng thái cert trước khi nạp
+    L3 chính thức.
+
+    '
+- id: CAND.1.038
+  content: '"Anthracite Discipline" là design philosophy chính thức cho company card RtR với palette Anthracite
+    #262421, Brushed White #F5F2EC, Patina Gold #C9A56C, Hairline #3A3734 và bộ chữ Outfit (display + body) cùng
+    JetBrains Mono (technical).
+
+    '
+  domain: brand
+  source_path: /Users/os/RtR/XPO26/anthracite-discipline.md
+  evidence_span: '"# ANTHRACITE DISCIPLINE · A design philosophy for the Real-time Robotics company card" ... "Palette:
+    Anthracite #262421 · Brushed White #F5F2EC · Patina Gold #C9A56C · Hairline #3A3734 · Type: Outfit (display
+    + body) · JetBrains Mono (technical)"
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Lâm Nguyễn (AI Officer)
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Phạm vi áp dụng là company card · khác với web design system (rtr-website/.claude/skills/rtr-design-system).
+- id: CAND.1.039
+  content: 'Website rtrobotics.com production chạy trên server 171.244.40.23 port 3100 (VPS tại Việt Nam), codebase
+    Next.js tại repo rtr-website.
+
+    '
+  domain: system
+  source_path: /Users/os/RtR/rtr-website/TIP-066-herahub-rename-deploy.md
+  evidence_span: '"- Working directory: `/rtr-website` · Production server: `171.244.40.23` port 3100". Company
+    KB mục 1: "Production Server | 171.244.40.23 (VPS, Vietnam)".
+
+    '
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: Lâm Nguyễn (dev) + IT
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: 'Chi tiết hạ tầng (IP server) đánh L2 theo nguyên tắc nhạy cảm · không đưa vào gói toàn nhân viên.
+
+    '

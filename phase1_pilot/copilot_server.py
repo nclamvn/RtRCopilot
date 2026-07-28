@@ -1,0 +1,474 @@
+#!/usr/bin/env python3
+"""RtR Copilot · pilot server Phase 1 · hai chế độ LIVE (Claude API) và MOCK (retrieval máy).
+
+Zero dependency ngoài Python 3 chuẩn. Chạy:
+
+    export ANTHROPIC_API_KEY=sk-ant-...        # có key = chế độ LIVE (AI trả lời)
+    export COPILOT_PASSCODE=matkhau-noi-bo     # bắt buộc nếu muốn mở cho LAN
+    python3 copilot_server.py
+
+KHÔNG có key server vẫn chạy đủ UI ở chế độ MOCK: trả lời bằng máy tra cứu SOT
+(top record khớp nhất + citation, dán nhãn MOCK rõ ràng). Toàn bộ UI/UX, tra cứu,
+GAP log, audit log test được không cần API. Cắm key vào là LIVE, không sửa gì.
+
+Kiến trúc: GOI_L3.yaml (gói từ kernel) là nguồn duy nhất (NT-1). GAP tự log
+gap_log.jsonl · hỏi đáp log qa_log.jsonl.
+"""
+import json
+import os
+import re
+import sys
+import unicodedata
+import urllib.error
+import urllib.request
+from datetime import datetime
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+PORT = int(os.environ.get("COPILOT_PORT", "8787"))
+MODEL = os.environ.get("COPILOT_MODEL", "claude-sonnet-5")
+API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+PASSCODE = os.environ.get("COPILOT_PASSCODE", "")
+MODE = "LIVE" if API_KEY else "MOCK"
+
+# ---------- Nạp gói (parser YAML tối giản cho đúng format l3_export · zero-dep) ----------
+def find(fname):
+    for p in [HERE / fname, HERE.parent / "l3_pipeline" / fname]:
+        if p.exists():
+            return p
+    sys.exit(f"Không tìm thấy {fname} · đặt cạnh script hoặc trong ../l3_pipeline/")
+
+# ---------- Chọn gói · staff (L3, mặc định) hay leader (L3 + L2 giá + L4 văn phong) ----------
+PACK = os.environ.get("COPILOT_PACK", "staff").lower()
+if PACK not in ("staff", "leader"):
+    sys.exit(f"COPILOT_PACK phải là 'staff' hoặc 'leader', nhận '{PACK}'")
+
+# RÀNG BUỘC CỨNG (allowlist RB.1-RB.3) · khoá bằng code, không bằng quy trình.
+# Gói leader chứa giá bán và chính sách chiết khấu. Chế độ MOCK là máy tra cứu
+# thuần: gặp từ khoá khớp là trả NGUYÊN VĂN record, không có lớp phán đoán nào.
+# Chạy gói leader ở MOCK = nhả thẳng bảng giá ra màn hình.
+if PACK == "leader":
+    if MODE != "LIVE":
+        sys.exit("TỪ CHỐI KHỞI ĐỘNG · gói leader chứa thông tin hạn chế, chỉ chạy được ở chế độ LIVE.\n"
+                 "Chế độ MOCK trả nguyên văn record khớp từ khoá, không có lớp phán đoán.\n"
+                 "Cần: export ANTHROPIC_API_KEY=... rồi chạy lại. (ràng buộc RB.1)")
+    if not PASSCODE:
+        sys.exit("TỪ CHỐI KHỞI ĐỘNG · gói leader bắt buộc có passcode riêng.\n"
+                 "Cần: export COPILOT_PASSCODE=<mã riêng cho nhóm lãnh đạo> · KHÁC mã gói nhân viên. (RB.2, RB.3)")
+
+GOI_PATH = find("GOI_LEADER.yaml" if PACK == "leader" else "GOI_L3.yaml")
+GOI_TEXT = GOI_PATH.read_text(encoding="utf-8")
+
+def _clean(v):
+    """Bỏ quote YAML bao ngoài + unescape '' của single-quote scalar."""
+    v = v.strip()
+    if len(v) >= 2 and v[0] == v[-1] and v[0] in "'\"":
+        v = v[1:-1]
+    elif v.startswith("'") or v.startswith('"'):
+        v = v[1:]
+    elif v.endswith("'") or v.endswith('"'):
+        v = v[:-1]
+    return v.replace("''", "'").strip()
+
+def parse_records(text):
+    """Parse list records từ GOI_L3.yaml (format do l3_export.py sinh · ổn định).
+    Multiline scalar: MỌI dòng thụt >=4 space nối vào key gần nhất (kể cả value cùng dòng)."""
+    recs = []
+    cur = None
+    last_key = None
+    in_records = False
+    for line in text.splitlines():
+        if line.startswith("records:"):
+            in_records = True
+            continue
+        if not in_records:
+            continue
+        m = re.match(r"^- record: (.+)$", line)
+        if m:
+            if cur:
+                recs.append(cur)
+            cur = {"record": _clean(m.group(1)), "content": ""}
+            last_key = None
+            continue
+        if cur is None:
+            continue
+        m = re.match(r"^  (\w+): ?(.*)$", line)
+        if m:
+            last_key = m.group(1)
+            v = m.group(2).strip()
+            cur[last_key] = "" if v in (">", ">-", "|", "|-") else v
+            continue
+        m = re.match(r"^ {4,}(.*)$", line)
+        if m and last_key:
+            cur[last_key] = (cur[last_key] + " " + m.group(1).strip()).strip()
+    if cur:
+        recs.append(cur)
+    for r in recs:
+        for k in list(r):
+            if isinstance(r[k], str):
+                r[k] = _clean(r[k])
+    return recs
+
+RECORDS = parse_records(GOI_TEXT)
+BY_ID = {r["record"]: r for r in RECORDS}
+
+_tip7 = find("TIP7_SYSTEM_PROMPT_ClaudeProject.md").read_text(encoding="utf-8")
+SYSTEM = _tip7.split("---", 1)[-1].strip() + "\n\n## GÓI TRI THỨC L3 (nguồn duy nhất · NT-1)\n\n" + GOI_TEXT
+
+GAP_LOG = HERE / "gap_log.jsonl"
+QA_LOG = HERE / "qa_log.jsonl"
+
+# ---------- Máy tra cứu SOT (deterministic · không cần AI) ----------
+def strip_accents(s):
+    return "".join(c for c in unicodedata.normalize("NFD", s.lower()) if unicodedata.category(c) != "Mn").replace("đ", "d")
+
+STOPWORDS = set("la gi cua cho voi den tu va hay hoac thi ma o trong ngoai bao nhieu the nao khong duoc hien tai dang".split())
+
+def tokens(s):
+    return [t for t in re.findall(r"[a-z0-9]+", strip_accents(s)) if len(t) > 1 and t not in STOPWORDS]
+
+# index sẵn + document frequency (từ hiếm đáng giá hơn từ phổ biến)
+import math
+DF = {}
+for r in RECORDS:
+    blob = " ".join(str(r.get(k, "")) for k in ("record", "content", "domain", "kernel_ref"))
+    r["_tokens"] = set(tokens(blob))
+    r["_blob"] = strip_accents(blob)
+    for t in r["_tokens"]:
+        DF[t] = DF.get(t, 0) + 1
+
+def idf(t):
+    return max(0.25, 3.2 - math.log2(1 + DF.get(t, 0)))
+
+# record mô tả spec/tài liệu thế hệ cũ: down-rank trong MOCK để số stale không đè số hiện hành.
+# Marker hẹp và tường minh: "[spec cu" trong content hoặc rename-01 trong kernel_ref
+# (KHÔNG dùng chữ "legacy" trần: record doctrine legacy 15 kg là câu trả lời hiện hành hợp lệ).
+for r in RECORDS:
+    r["_stale"] = ("[spec cu" in r["_blob"]) or ("rename-01" in strip_accents(str(r.get("kernel_ref", ""))))
+STALE_PENALTY = 0.45  # nhân điểm · đủ tụt dưới record hiện hành cùng chủ đề, vẫn tra cứu được khi hỏi đích danh
+
+# tên sản phẩm/hệ thống · dùng cho neo entity trong search
+ENTITIES = {"hera", "vega", "herahub", "vegahub", "herasight", "vegasight",
+            "omnisight", "dualsight", "heralink", "aerotunnel", "skywatch", "ragas"}
+
+# đồng nghĩa hỏi-đáp → từ vựng trong gói (mở rộng query, không bịa đáp án)
+SYNONYMS = [
+    ("man hinh", ["nits", "lcd"]),
+    ("sang gia bao nhieu nit", ["nits"]),
+    ("tai trong", ["payload"]),
+    ("nang duoc", ["payload", "kg"]),
+    ("patent", ["sang", "che", "patent"]),
+    ("bang sang che", ["patent"]),
+    ("ip rating", ["ip54", "ip43"]),
+    ("chuan kin nuoc", ["ip54"]),
+    ("slogan", ["signature"]),
+    ("nâng", ["payload", "kg"]),  # trigger có dấu: match trên query gốc, tránh nhầm "năng lực"
+    ("tool quan ly", ["control", "tower", "app"]),
+    ("phan mem quan ly", ["control", "tower", "app"]),
+    ("gia ban", ["gia", "duyet", "pricing"]),
+    ("thanh lap", ["thanh", "lap", "nam"]),
+    ("van phong", ["van", "phong", "cong", "van"]),
+]
+
+def expand(q_norm, q_tokens, q_raw=""):
+    out = list(q_tokens)
+    q_raw = q_raw.lower()
+    for trigger, adds in SYNONYMS:
+        hay = q_raw if any(ord(c) > 127 for c in trigger) else q_norm  # trigger có dấu match query gốc
+        if trigger in hay:
+            out.extend(a for a in adds if a not in out)
+    return out
+
+def search(query, top=3):
+    q_norm = strip_accents(query)
+    q_tokens = expand(q_norm, tokens(query), q_raw=query)
+    if not q_tokens:
+        return []
+    triplets = re.findall(r"\d+-\d+-\d+", q_norm)  # dạng 1-4-14
+    q_ents = [e for e in ENTITIES if e in q_tokens]
+    scored = []
+    for r in RECORDS:
+        score = sum(idf(t) for t in q_tokens if t in r["_tokens"])
+        score += sum(4.0 for tri in triplets if tri in r["_blob"])
+        if len(q_norm) > 8 and q_norm in r["_blob"]:
+            score += 3.0
+        # neo entity: hỏi đích danh sản phẩm nào thì record không nhắc sản phẩm đó bị phạt nặng
+        if q_ents and not any(e in r["_tokens"] for e in q_ents):
+            score *= 0.25
+        if r["_stale"]:
+            score *= STALE_PENALTY
+        if score > 0:
+            scored.append((round(score, 2), r))
+    scored.sort(key=lambda x: (-x[0], x[1]["record"]))
+    return scored[:top]
+
+def confident(question, top_rec):
+    """Trả lời hay honest null: theo độ phủ query, không theo điểm tuyệt đối.
+    Đủ tự tin khi (>=2 token khớp và phủ >=60% query) hoặc có 1 token rất hiếm khớp."""
+    q_norm = strip_accents(question)
+    q_tokens = expand(q_norm, tokens(question), q_raw=question)
+    if not q_tokens:
+        return False
+    matched = [t for t in q_tokens if t in top_rec["_tokens"]]
+    coverage = len(matched) / len(q_tokens)
+    if any(idf(t) >= 2.0 for t in matched):
+        return True
+    return len(matched) >= 2 and coverage >= 0.6
+
+def mock_answer(question):
+    hits = search(question)
+    if not hits or not confident(question, hits[0][1]):
+        return (f"[MOCK · máy tra cứu · chưa nối API]\nSOT chưa có thông tin khớp câu hỏi này. "
+                f"Câu hỏi đã được ghi nhận để curator bổ sung.\nGAP: {question.strip()[:150]}")
+    parts = [f"[MOCK · máy tra cứu · chưa nối API · kết quả là record khớp nhất, không phải câu trả lời AI]"]
+    top_score = hits[0][0]
+    for score, r in hits[:2]:
+        if score < 0.6 * top_score:
+            break
+        tag = f"[{r['record']}"
+        if r.get("kernel_ref") and r["kernel_ref"] not in ("null", "None", ""):
+            tag += f" · {r['kernel_ref']}"
+        tag += "]"
+        label = ""
+        if "PROPOSED" in str(r.get("label", "")) + str(r.get("content", "")):
+            label = "\n(PROPOSED · chưa cam kết với khách)"
+        if r.get("_stale"):
+            label += "\n(Cảnh báo: record mô tả spec/tài liệu thế hệ CŨ · không dùng số này làm hiện hành · xác nhận bằng chế độ LIVE)"
+        if r.get("canh_bao"):
+            label += f"\n({r['canh_bao']})"
+        parts.append(f"{r['content']}\n{tag}{label}")
+    return "\n\n".join(parts)
+
+# ---------- LIVE mode ----------
+def call_claude_stream(messages, on_text):
+    """Gọi API ở chế độ chảy dần · trả về toàn văn sau khi xong.
+    on_text(chunk) được gọi mỗi mẩu chữ để server đẩy tiếp cho trình duyệt."""
+    body = json.dumps({"model": MODEL, "max_tokens": 1500, "system": SYSTEM,
+                       "messages": messages, "stream": True}).encode()
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages", data=body,
+        headers={"x-api-key": API_KEY, "anthropic-version": "2023-06-01",
+                 "content-type": "application/json"})
+    full = []
+    with urllib.request.urlopen(req, timeout=180) as r:
+        for raw in r:
+            line = raw.decode("utf-8", "replace").strip()
+            if not line.startswith("data:"):
+                continue
+            payload = line[5:].strip()
+            if not payload or payload == "[DONE]":
+                continue
+            try:
+                ev = json.loads(payload)
+            except json.JSONDecodeError:
+                continue
+            if ev.get("type") == "content_block_delta":
+                t = (ev.get("delta") or {}).get("text", "")
+                if t:
+                    full.append(t)
+                    on_text(t)
+    return "".join(full)
+
+
+def call_claude(messages):
+    body = json.dumps({"model": MODEL, "max_tokens": 1500, "system": SYSTEM, "messages": messages}).encode()
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages", data=body,
+        headers={"x-api-key": API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        data = json.loads(r.read())
+    return "".join(b.get("text", "") for b in data.get("content", []))
+
+# ---------- UI ----------
+# ---------- UI ----------
+# Giao diện dựng theo Design DNA Playbook v1.0, để riêng file cho dễ sửa và soi.
+_ui = HERE / "ui.html"
+if not _ui.exists():
+    sys.exit("Không tìm thấy ui.html cạnh copilot_server.py")
+HTML = _ui.read_text(encoding="utf-8")
+
+
+def group_gaps(rows):
+    """Gom câu hỏi GAP cùng chủ đề · cùng luật với weekly_review (>=2 từ nội dung chung)."""
+    STOP = set("""bao nhieu the nao la gi cua cho voi den tu va hay hoac thi ma trong ngoai khong duoc
+hien tai dang cong ty minh chung toi anh chi em xin hoi cai con nay kia do day ra vao len xuong
+mot hai ba may sao vay nhi nhe oi khi lam sau truoc nua roi chua co phai can biet noi""".split())
+    def toks(q):
+        return set(w for w in re.sub(r"[^a-z0-9 ]", " ", strip_accents(q)).split()
+                   if len(w) > 2 and w not in STOP)
+    items = [(r.get("gap") or r.get("q", ""), toks(r.get("gap") or r.get("q", "")), r.get("t", ""))
+             for r in rows]
+    used, groups = set(), []
+    for i, (q, tk, t) in enumerate(items):
+        if i in used or not tk:
+            continue
+        grp, last = [q], t
+        used.add(i)
+        for j in range(i + 1, len(items)):
+            if j in used or not items[j][1]:
+                continue
+            if len(tk & items[j][1]) >= 2:
+                grp.append(items[j][0]); last = max(last, items[j][2]); used.add(j)
+        variants = [v for v in dict.fromkeys(grp[1:]) if v != grp[0]]
+        groups.append({"q": grp[0], "count": len(grp), "variants": variants,
+                       "last": (last or "")[:10]})
+    groups.sort(key=lambda g: -g["count"])
+    return groups
+
+
+PACK_DATE = (re.search(r"ngay_sinh: '?([\d-]+)'?", GOI_TEXT) or [None, "?"])[1]
+
+
+def read_jsonl(path, limit=None):
+    if not path.exists():
+        return []
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            out.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return out[-limit:] if limit else out
+
+
+class Handler(BaseHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+    def _send(self, code, body, ctype="application/json"):
+        data = body.encode() if isinstance(body, str) else body
+        self.send_response(code)
+        self.send_header("content-type", ctype + "; charset=utf-8")
+        self.send_header("content-length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def do_GET(self):
+        if self.path == "/":
+            return self._send(200, HTML, "text/html")
+        if self.path == "/health":
+            return self._send(200, json.dumps({
+                "ok": True, "mode": MODE, "pack": PACK,
+                "model": MODEL if MODE == "LIVE" else None,
+                "records_loaded": len(RECORDS), "pack_date": PACK_DATE}))
+        if self.path.startswith("/api/search"):
+            q = urllib.request.unquote(self.path.split("q=", 1)[-1]) if "q=" in self.path else ""
+            hits = search(q, top=8)
+            out = [{k: r.get(k) for k in ("record", "content", "domain", "tier", "status")} for _, r in hits]
+            return self._send(200, json.dumps({"results": out}, ensure_ascii=False))
+        if self.path == "/api/gaps":
+            return self._send(200, json.dumps({"groups": group_gaps(read_jsonl(GAP_LOG))},
+                                              ensure_ascii=False))
+        if self.path == "/api/audit":
+            evs = []
+            for r in reversed(read_jsonl(QA_LOG, limit=60)):
+                a = r.get("a", "")
+                gate = "HONEST NULL" if "GAP:" in a else ("MOCK LOOKUP" if r.get("mode") == "MOCK" else "PASS")
+                evs.append({"t": r.get("t", ""), "q": r.get("q", ""), "a": a,
+                            "mode": r.get("mode", ""), "gate": gate})
+            return self._send(200, json.dumps({"events": evs}, ensure_ascii=False))
+        if self.path.startswith("/api/usedby"):
+            rid = urllib.request.unquote(self.path.split("id=", 1)[-1]) if "id=" in self.path else ""
+            uses = []
+            for r in reversed(read_jsonl(QA_LOG, limit=200)):
+                if rid and rid in (r.get("a") or ""):
+                    uses.append({"t": r.get("t", ""), "q": r.get("q", "")})
+                if len(uses) >= 8:
+                    break
+            return self._send(200, json.dumps({"uses": uses}, ensure_ascii=False))
+        if self.path.startswith("/api/record"):
+            rid = urllib.request.unquote(self.path.split("id=", 1)[-1]) if "id=" in self.path else ""
+            r = BY_ID.get(rid)
+            if not r:
+                return self._send(404, json.dumps({"error": "record không tồn tại"}))
+            out = {k: v for k, v in r.items() if not k.startswith("_")}
+            out["stale"] = bool(r.get("_stale"))
+            return self._send(200, json.dumps(out, ensure_ascii=False))
+        return self._send(404, json.dumps({"error": "not found"}))
+
+    def do_POST(self):
+        if self.path != "/api/chat":
+            return self._send(404, json.dumps({"error": "not found"}))
+        if PASSCODE and self.headers.get("x-passcode", "") != PASSCODE:
+            return self._send(403, json.dumps({"error": "Sai mã nội bộ"}))
+        streamed = False
+        try:
+            length = int(self.headers.get("content-length", 0))
+            payload = json.loads(self.rfile.read(length))
+            messages = payload.get("messages", [])[-20:]
+            question = messages[-1]["content"] if messages else ""   # câu hỏi SẠCH · dùng để log
+            note = (payload.get("note") or "").strip()[:2000]
+            if note and messages:
+                # Ghép chỉ cho lần gọi API này. KHÔNG chạm SYSTEM (nguồn tri thức),
+                # KHÔNG lưu vào log: ghi chú là bối cảnh riêng của người hỏi, không
+                # phải fact, và không được lọt vào hàng đợi thu-fact của curator.
+                messages = messages[:-1] + [{
+                    "role": "user",
+                    "content": question + "\n\n[Ghi chú người dùng kèm câu hỏi này · KHÔNG phải fact "
+                               "đã duyệt trong SOT · chỉ dùng làm bối cảnh; nếu mâu thuẫn với SOT thì "
+                               "ưu tiên SOT và nói rõ]\n" + note}]
+            want_stream = bool(payload.get("stream")) and MODE == "LIVE"
+            if MODE == "MOCK":
+                answer = mock_answer(question)
+            elif want_stream:
+                # Chảy dần: mở dòng SSE rồi đẩy từng mẩu. Người dùng thấy chữ hiện
+                # ngay thay vì chờ cả câu · huỷ giữa chừng = trình duyệt ngắt kết nối.
+                self.send_response(200)
+                self.send_header("content-type", "text/event-stream; charset=utf-8")
+                self.send_header("cache-control", "no-cache")
+                self.end_headers()
+                streamed = True
+
+                def push(chunk):
+                    self.wfile.write(b"data: " + json.dumps({"t": chunk}, ensure_ascii=False).encode() + b"\n\n")
+                    self.wfile.flush()
+
+                answer = call_claude_stream(messages, push)
+                self.wfile.write(b"data: " + json.dumps({"done": True}).encode() + b"\n\n")
+                self.wfile.flush()
+            else:
+                answer = call_claude(messages)
+        except (BrokenPipeError, ConnectionResetError):
+            # Người dùng bấm dừng · trình duyệt ngắt kết nối. KHÔNG ghi log, không
+            # phải lỗi hệ thống. Phải đứng TRƯỚC `except Exception` vì nó là lớp con:
+            # đặt sau thì không bao giờ chạy (handler chết).
+            return
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode(errors="replace")[:200]
+            if e.code in (400, 404) and "model" in detail.lower():
+                return self._send(500, json.dumps({"error":
+                    f"Model '{MODEL}' không khả dụng với API key này. Đổi model không sửa code: "
+                    f"tắt server, export COPILOT_MODEL=<model account có> rồi chạy lại."}, ensure_ascii=False))
+            return self._send(500, json.dumps({"error": f"API {e.code}: {detail}"}, ensure_ascii=False))
+        except Exception as e:
+            if streamed:
+                return  # đã mở dòng SSE · không gửi JSON lỗi đè lên nữa
+            return self._send(500, json.dumps({"error": str(e)[:300]}))
+
+        now = datetime.now().isoformat(timespec="seconds")
+        with QA_LOG.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"t": now, "mode": MODE, "q": question, "a": answer}, ensure_ascii=False) + "\n")
+        for gap in re.findall(r"GAP:\s*(.+)", answer):
+            with GAP_LOG.open("a", encoding="utf-8") as f:
+                f.write(json.dumps({"t": now, "gap": gap.strip(), "q": question}, ensure_ascii=False) + "\n")
+        if not streamed:
+            self._send(200, json.dumps({"answer": answer}, ensure_ascii=False))
+
+
+if __name__ == "__main__":
+    HOST = "0.0.0.0" if PASSCODE else "127.0.0.1"
+    if not PASSCODE:
+        print("CHÚ Ý: chưa set COPILOT_PASSCODE · chỉ bind 127.0.0.1 (máy này).")
+        print("Mở cho LAN: export COPILOT_PASSCODE=matma rồi chạy lại.")
+    if PACK == "leader":
+        print("=" * 66)
+        print("GÓI LÃNH ĐẠO · chứa giá bán và chính sách chiết khấu.")
+        print("Chỉ chia sẻ địa chỉ và passcode cho nhóm đã được cấp quyền.")
+        print("=" * 66)
+    print(f"RtR Copilot · http://{HOST}:{PORT} · gói {PACK} · chế độ {MODE}" + (f" · model {MODEL}" if MODE == "LIVE" else " · cắm ANTHROPIC_API_KEY để LIVE"))
+    print(f"Gói: {len(RECORDS)} record · SOT {PACK_DATE}")
+    HTTPServer((HOST, PORT), Handler).serve_forever()

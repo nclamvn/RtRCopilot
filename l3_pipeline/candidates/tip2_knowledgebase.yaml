@@ -1,0 +1,848 @@
+candidates:
+- id: CAND.2.001
+  content: 'RtR có hệ thống Sales Brief gồm workbook chuẩn tiếng Việt (RtR_Sales_Brief_Template_VN.xlsx) và skill
+    sales-brief-fill đặt tại KnowledgeBase/Sales_Brief_System/, cho phép nhân viên sales gửi ghi chép hoặc voice
+    note sau buổi gặp khách để AI tự điền brief, mất khoảng 5 phút thay vì 20 phút điền tay.
+
+    '
+  domain: system
+  source_path: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/README.md
+  evidence_span: 'Nhân viên gửi ghi chép nhanh hoặc voice note sau buổi gặp khách, AI tự điền workbook Sales Brief
+    tiếng Việt. Người dùng mất khoảng 5 phút thay vì 20 phút điền tay.
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm (builder) · Sales team (process owner)
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Kernel capabilities.yaml chưa có record hệ thống Sales Brief.
+- id: CAND.2.002
+  content: 'Quy trình điền Sales Brief có 4 luật cứng: fact điền thẳng còn judgment chỉ đề xuất chờ người bán confirm;
+    thiếu thì hỏi không bịa; số trọng yếu phải đọc lại nguyên văn để xác nhận; chỉ nhận voice note nhân viên tự
+    thuật, không xử lý ghi âm cuộc họp với khách vì vấn đề consent.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/SKILL.md
+  evidence_span: 'Luật 1 · Fact điền thẳng, judgment chỉ đề xuất. [...] Luật 2 · Thiếu thì hỏi, không bịa. [...]
+    Luật 3 · Số trọng yếu phải đọc lại. [...] Luật 4 · Chỉ nhận voice note của nhân viên tự nói. Nếu user gửi file
+    có vẻ là ghi âm buổi gặp với khách (nhiều giọng, hội thoại), dừng và nhắc: skill chỉ xử lý voice note nhân viên
+    tự thuật lại sau buổi gặp, không xử lý ghi âm cuộc họp với khách vì vấn đề consent.
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.003
+  content: 'Quy ước đặt tên file Sales Brief hoàn chỉnh là RTR_[abbr]_Brief_[YYMMDD]_VN.xlsx, trong đó abbr là viết
+    tắt tên khách hàng.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/SKILL.md
+  evidence_span: 'Đặt tên file `RTR_[abbr]_Brief_[YYMMDD]_VN.xlsx`. Present file kèm: điểm cơ hội, khuyến nghị máy
+    in ra (dòng B61), và nhắc copy dòng 67 vào CRM.
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Ví dụ thực tế trong folder · RTR_USAFA_Brief_260722.xlsx.
+- id: CAND.2.004
+  content: 'Workbook Sales Brief tự tính điểm cơ hội tại ô C59, tự báo cảnh báo thiếu dữ liệu tại ô B63, in khuyến
+    nghị tại ô B61, và có dòng 67 định dạng sẵn để copy vào CRM; script fill_brief.py chạy LibreOffice recalc rồi
+    đọc ngược các ô này để verify.
+
+    '
+  domain: system
+  source_path: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/scripts/cell_map.json
+  evidence_span: '"readback": {"warning": "B63", "score": "C59", "recommendation": "B61", "brief_id": "E7"}
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: 'SKILL.md bước 3 mô tả cùng cơ chế: "chạy LibreOffice recalc, đọc ngược ô cảnh báo (B63) và điểm cơ hội
+    (C59)".
+
+    '
+- id: CAND.2.005
+  content: 'Danh mục sản phẩm chuẩn trong dropdown "RtR Product" của Sales Brief gồm 16 giá trị: HERA, VEGA, HERA
+    + VEGA, HeraHub, VegaHub, HeraSight, HeraSight LR, VegaSight, OmniSight, DualSight, SkyWatch 360, LiDAR, RAGAS,
+    AeroTunnel, Dịch vụ, Chưa xác định.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/scripts/cell_map.json
+  evidence_span: '"products": ["HERA", "VEGA", "HERA + VEGA", "HeraHub", "VegaHub", "HeraSight", "HeraSight LR",
+    "VegaSight", "OmniSight", "DualSight", "SkyWatch 360", "LiDAR", "RAGAS", "AeroTunnel", "Dịch vụ", "Chưa xác
+    định"]
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Sales team · Product team
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-056 · HC-057 · HC-058
+  note: 'Kernel đã nạp 3 dòng mới từ chính nguồn Lists này (HeraSight LR, VegaSight, AeroTunnel · Lâm confirm 26/07/2026).
+    Danh mục dropdown đầy đủ 16 giá trị chưa có record riêng; các dòng còn lại khớp HC-001/002/010-019.
+
+    '
+- id: CAND.2.006
+  content: 'RtR có chương trình bảo dưỡng định kỳ cho 8 sản phẩm (HERA, HeraHub, HeraSight, Hera Battery, Hera Charger,
+    Drop System, S1 Spotlight, LS1 Aerial Loudspeaker), mỗi sản phẩm một workbook CRM riêng (01-08), quản trị bằng
+    master workbook 00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  evidence_span: 'Sheet 00_Tong_quan: "RTR — CHƯƠNG TRÌNH BẢO DƯỠNG SẢN PHẨM · Master governance workbook · quản
+    lý 8 product baselines và lộ trình phê duyệt." Bảng liệt kê 8 dòng product_id 1-8: HERA, HeraHub, HeraSight,
+    Hera Battery, Hera Charger, Drop System, S1 Spotlight, LS1 Aerial Loudspeaker.
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: Product Engineering
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.007
+  content: 'Chu kỳ bảo dưỡng chuẩn cho cả 8 sản phẩm RtR là 3/6/12 tháng hoặc theo mức sử dụng (cái nào đến trước),
+    với usage limit 12 tháng đề xuất theo sản phẩm, ví dụ HERA 12.000 km bay tích lũy, HeraHub 1.000 giờ vận hành,
+    HeraSight 500 giờ payload, Battery 200 chu kỳ sạc.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  evidence_span: 'Sheet 00_Tong_quan, dòng HERA: "3/6/12 tháng hoặc mức sử dụng" · usage_limit_12m "12.000 km bay
+    tích lũy" · data_status "Chưa có usage thực tế; nhắc theo thời gian" · approval_status "Chờ Engineering". Dòng
+    HeraHub: "1.000 giờ vận hành". Dòng HeraSight: "500 giờ payload". Dòng Battery: "200 chu kỳ sạc".
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: Product Engineering
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: 'Toàn bộ approval_status là "Chờ Engineering" · mọi mốc là baseline đề xuất PROPOSED, chưa ký duyệt. Khi
+    trình bày cho nhân viên phải kèm nhãn PROPOSED.
+
+    '
+- id: CAND.2.008
+  content: 'Ba mốc bảo dưỡng HERA trong chương trình v1.0-PROPOSED là BD 3 tháng/3.000 km bay tích lũy (kiểm tra
+    nhẹ), BD 6 tháng/6.000 km (kiểm tra trung gian) và BD 12 tháng/12.000 km (đại tu, hiệu chuẩn sâu), điều kiện
+    áp dụng là tháng hoặc usage tùy cái nào đến trước.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  evidence_span: 'Sheet 03_Cau_hinh_BD, bảng MOC_BAO_DUONG: "BD 3 tháng / 3.000 km bay tích lũy · THỜI GIAN + MỨC
+    SỬ DỤNG · THANG_HOAC_USAGE · Kiểm tra nhẹ" · "BD 6 tháng / 6.000 km bay tích lũy · Kiểm tra trung gian" · "BD
+    12 tháng / 12.000 km bay tích lũy · Đại tu/hiệu chuẩn sâu". Bảng GOI_BAO_DUONG: "Chương trình bảo dưỡng HERA
+    · v1.0-PROPOSED · Chờ Engineering phê duyệt · Pilot tối thiểu 90 ngày trước ban hành".
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: Product Engineering
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: 'File ghi hieu_luc_tu 2026-07-23 nhưng trạng thái vẫn "Chờ Engineering phê duyệt" nên không điền effective_date.
+    Hạng mục 3 tháng gồm 7 đầu việc (AIR-CLEAN, AIR-VIS, PROP-VIS, MOTOR-CHECK, FOLD-LOCK, PAYLOAD-PORT, BATT-LOG)
+    với giờ định mức từng việc.
+
+    '
+- id: CAND.2.009
+  content: 'Baseline bảo hành đề xuất theo sản phẩm: HERA 24 tháng/12.000 km bay, HeraHub 24 tháng/1.000 giờ, HeraSight
+    24 tháng/500 giờ payload, Battery 12 tháng/200 chu kỳ sạc, Charger 24 tháng/1.000 lần sạc, Drop System 12 tháng/500
+    lần thả, S1 12 tháng/500 giờ chiếu, LS1 12 tháng/500 giờ phát.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  evidence_span: 'Sheet 00_Tong_quan, cột warranty: "24 tháng / 12.000 km bay tích lũy" (HERA) · "24 tháng / 1.000
+    giờ vận hành" (HeraHub) · "24 tháng / 500 giờ payload" (HeraSight) · "12 tháng / 200 chu kỳ sạc" (Battery) ·
+    "24 tháng / 1.000 lần sạc" (Charger) · "12 tháng / 500 lần thả" (Drop) · "12 tháng / 500 giờ chiếu" (S1) · "12
+    tháng / 500 giờ phát" (LS1).
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: Product Engineering · Quality
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: 'PROPOSED chờ Engineering. Sheet 01_Danh_muc_nen workbook HERA ghi rõ "Không dùng làm warranty claim trước
+    khi ký duyệt" cho thông số chưa chốt. Nhân viên không được cam kết warranty với khách từ số này.
+
+    '
+- id: CAND.2.010
+  content: 'Chính sách baseline chương trình bảo dưỡng: mọi con số chưa ký duyệt giữ trạng thái PROPOSED; 4 chính
+    sách MANDATORY gồm dụng cụ đo phải còn hạn calibration, mỗi work order critical phải có log/ảnh/đo/part trace,
+    recall mức S0 stop-use ngay không chờ cuộc họp, và baseline chỉ thay đổi qua ECO/PCN không sửa im lặng.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  evidence_span: 'Sheet 01_Chinh_sach: "Mọi con số chưa ký duyệt giữ trạng thái PROPOSED." · policy 5 "Dụng cụ đo
+    phải còn hạn calibration · MANDATORY" · policy 6 "Mỗi WO critical có log, ảnh, đo và part trace · MANDATORY"
+    · policy 7 "S0 stop-use ngay; không chờ cuộc họp · MANDATORY" · policy 8 "Baseline thay đổi qua ECO/PCN, không
+    sửa im lặng · MANDATORY".
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: Quality · Engineering
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.011
+  content: 'Chương trình bảo dưỡng triển khai theo lộ trình 90 ngày (pilot, dữ liệu, phê duyệt, vận hành chính thức)
+    với 8 workstream và 4 gate G1-G4, kèm ma trận RACI 9 nhóm chức năng (CTO, Product Eng, Quality, EHS, Service,
+    Supply, Finance, Sales/CSKH, IT/CRM) và bộ KPI portfolio 8 chỉ số có ngưỡng Green/Amber/Red.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+  evidence_span: 'Sheet 03_Rollout_90_ngay: "LỘ TRÌNH TRIỂN KHAI 90 NGÀY · Pilot → dữ liệu → phê duyệt → vận hành
+    chính thức" · gate G1 "8 signed baselines · CTO" đến G4. Sheet 02_RACI: "RACI — CHƯƠNG TRÌNH BẢO DƯỠNG · A =
+    Accountable · R = Responsible". Sheet 04_KPI_Chuong_trinh: 8 KPI gồm "S0 incident · 0" và "On-time maintenance
+    · >=95%".
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: CTO · Quality
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.012
+  content: 'Workbook bảo dưỡng HERA đang dùng danh pháp model "HERA 1-4-15" với tải trọng tối đa 15 kg (Source-confirmed
+    từ hồ sơ DCMA); danh pháp hiện hành của công ty là HERA 1-4-14 payload 14 kg, 15 kg chỉ còn là theoretical payload
+    max trong hồ sơ DCMA.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  evidence_span: 'Sheet 01_Danh_muc_nen, bảng DM_SAN_PHAM: model "HERA 1-4-15". Bảng THONG_SO spec_id 3: "Tải trọng
+    tối đa · 15 kg · Source-confirmed · /Users/os/RtR/KnowledgeBase/DCMA submission compliance questions/Suppo[...]
+    · Baseline 2026-07 · Product Engineering".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Product Engineering
+  effective_date: null
+  kernel_check: legacy
+  kernel_ref: LEGACY_HERA_15KG_MANIFEST
+  note: 'Theo luật cứng 2 TIP-0: claim 15 kg tự đánh legacy, không vào DISPUTED. Việc mở: khi Engineering ký baseline
+    bảo dưỡng cần cập nhật danh pháp về 1-4-14 (bổ sung vào mục "Việc còn mở" của manifest).
+
+    '
+- id: CAND.2.013
+  content: 'Baseline bảo dưỡng HERA ghi kháng bụi/nước IP43 theo HERA Specification và yêu cầu Engineering chốt
+    lại với tài liệu IP54, trong khi kernel HC-042 ghi IP54 weather sealing ở mức provenance verified_primary.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  evidence_span: 'Sheet 01_Danh_muc_nen, THONG_SO spec_id 8: "Kháng bụi/nước baseline · IP43 theo HERA Specification;
+    cần Engineering chốt với tài liệu IP54 · Cần phê duyệt · Không dùng làm warranty claim trước khi ký duyệt".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Product Engineering
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-042
+  note: 'Không tự chọn bên · đưa DISPUTED queue để Engineering chốt IP43 vs IP54. | DISP.005 resolved 27/07: IP54
+    hiện hành (verified_primary) · IP43 baseline tự nhận pending · Engineering đóng vòng ACT.005.'
+- id: CAND.2.014
+  content: 'Baseline bảo dưỡng HERA ghi tầm điều khiển 10 km và ghi chú tài liệu khác có 15 km, trong khi kernel
+    HC-001 ghi range 15 km cho HERA.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  evidence_span: 'Sheet 01_Danh_muc_nen, THONG_SO spec_id 10: "Tầm điều khiển baseline · 10 km; tài liệu khác có
+    15 km · Cần phê duyệt · Không dùng làm warranty claim trước khi ký duyệt".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Product Engineering
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: HC-001
+  note: "Nguồn baseline trích từ DCMA Supporting Document. Có thể là khác biệt điều kiện đo (control range vs mission\
+    \ radius) · cần Engineering phân xử.\n | DISP.006 resolved 27/07: 15 km hiện hành · 10 km baseline pending ·\
+    \ hỏi Engineering ACT.005."
+- id: CAND.2.015
+  content: 'Pin HERA có thông số 44,4 V và 35.000 mAh, trạng thái Source-confirmed từ hồ sơ DCMA Supporting Document,
+    baseline 2026-07.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  evidence_span: 'Sheet 01_Danh_muc_nen, THONG_SO spec_id 6: "Pin · 44,4 V · 35.000 mAh · Source-confirmed · /Users/os/RtR/KnowledgeBase/DCMA
+    submission compliance questions/Suppo[...] · Baseline 2026-07 · Product Engineering".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Product Engineering
+  effective_date: null
+  kernel_check: new
+  kernel_ref: null
+  note: Kernel chưa có record spec pin HERA trong capabilities.yaml.
+- id: CAND.2.016
+  content: 'Dải nhiệt độ vận hành khuyến cáo cho chương trình bảo dưỡng HERA là -20 đến 45 độ C (baseline 2026-07
+    · PROPOSED chờ Engineering duyệt). Năng lực demonstrated riêng: bay ổn định -30 độ C validated US Army Alaska
+    (HC-040) · hai fact hai ngữ cảnh không mâu thuẫn.'
+  domain: product
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
+  evidence_span: 'Sheet 01_Danh_muc_nen, THONG_SO spec_id 7: "Nhiệt độ vận hành · -20°C đến 45°C · Source-confirmed
+    · Baseline 2026-07".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: Product Engineering
+  effective_date: null
+  kernel_check: new
+  kernel_ref: HC-040 (cross-ref ngữ cảnh)
+  note: "Có thể là khác biệt giữa rated spec (-20°C) và demonstrated capability (-30°C Alaska) · không tự chọn bên,\
+    \ cần Engineering ghi rõ hai nhãn.\n | DISP.007 resolved 27/07: tách ngữ cảnh khuyến cáo vs demonstrated · giữ\
+    \ nhãn PROPOSED."
+- id: CAND.2.017
+  content: 'RtR có bộ template làm deck tại KnowledgeBase/RtR_Deck_Templates/ gồm 5 file (01_Deck_Brief, 02_Slide_Card,
+    03_Partner_Brief, 04_Gates_Checklist, 05_Scorecard) với quy trình chuẩn 7 bước; nguồn chuẩn là kernel/_dist/toolkits/RTR_PRESENTATION_STANDARD.md
+    v1.0 ban hành 16/07/2026.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/README.md
+  evidence_span: 'Nguồn chuẩn: `kernel/_dist/toolkits/RTR_PRESENTATION_STANDARD.md` (v1.0 · 16/07/2026). Cách dùng:
+    copy template tương ứng ra file mới theo tên deck, điền, rồi mới bắt đầu thiết kế slide.
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-07-16
+  kernel_check: new
+  kernel_ref: null
+  note: 'Fact về sự tồn tại + vị trí template pack là new; nội dung standard đã nằm trong kernel _dist (không cào
+    lại chi tiết standard từ đây).
+
+    '
+- id: CAND.2.018
+  content: 'Mọi deck RtR phải đi tuần tự Gate 0-10 không nhảy cóc, bắt đầu từ Gate 0 viết một câu quyết định cần
+    xin; cuối checklist có 6 red flag mà chỉ cần dính một cái là dừng phát hành (ví dụ số mô phỏng trình bày như
+    số thực tế, con số lớn không mẫu số, slide cuối chỉ có Cảm ơn).
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/04_Gates_Checklist.md
+  evidence_span: 'Đi tuần tự Gate 0-10. Không nhảy cóc. [...] Gate 0 · Decision definition · Đã viết một câu: "Sau
+    buổi họp, RtR muốn đối tác đồng ý __________." [...] Red flags cuối (một cái là dừng phát hành): Không có quyết
+    định cần xin · Hơn 3 trụ cột giá trị · Số mô phỏng trình bày như số thực tế · "Nghiệm thu" / "đạt chuẩn" / "khách
+    hàng" sai trạng thái · Con số lớn không mẫu số · Slide cuối chỉ có "Cảm ơn".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-07-16
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.019
+  content: 'Deck RtR trước khi phát hành phải chấm scorecard 100 điểm với ngưỡng: từ 85 điểm trở lên mới sẵn sàng
+    trình, 75-84 cần sửa điểm yếu cụ thể, 65-74 chưa đủ thuyết phục, dưới 65 làm lại storyline/fact base.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/05_Scorecard.md
+  evidence_span: 'Ngưỡng phát hành: ≥ 85: sẵn sàng trình · 75–84: cần sửa điểm yếu cụ thể · 65–74: chưa đủ thuyết
+    phục · < 65: làm lại storyline/fact base.
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-07-16
+  kernel_check: new
+  kernel_ref: null
+  note: 'Kèm 2 câu kiểm tra cuối: xóa logo đối tác nội dung vẫn phải rõ là viết riêng cho họ (CÓ) · đổi logo RtR
+    thành hãng khác phong cách phải không còn nhận ra là RtR (KHÔNG).
+
+    '
+- id: CAND.2.020
+  content: 'Luận điểm trong deck RtR được chấm Priority Score theo công thức P = 0,30D + 0,20Pain + 0,20Delta +
+    0,20Proof + 0,10Urgency; chỉ chọn tối đa 3 trụ cột giá trị có P từ 4,0 trở lên lên main deck, luận điểm 2,5
+    đến dưới 3,2 chuyển xuống phụ lục.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/04_Gates_Checklist.md
+  evidence_span: 'Đã chấm Priority Score cho mọi luận điểm (P = 0,30D + 0,20Pain + 0,20Delta + 0,20Proof + 0,10Urgency)
+    · Chọn tối đa 3 trụ cột giá trị (P ≥ 4,0) · Luận điểm 2,5 ≤ P < 3,2 đã chuyển xuống phụ lục.
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-07-16
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.021
+  content: 'RtR có fact-sheet chính thức gửi báo chí (RtR_Factsheet_GuiAnhDong.docx, cập nhật 14/07/2026) tổng hợp
+    thông tin công ty và sản phẩm phục vụ báo cáo về kinh tế tầm thấp, đầu mối là AI Officer Nguyễn Cảnh Lâm, dùng
+    nội bộ cho công tác báo chí và không phổ biến ngoài phạm vi trao đổi.
+
+    '
+  domain: company
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  evidence_span: '"Fact-sheet gửi báo chí · Bản tổng hợp thông tin công ty và sản phẩm phục vụ báo cáo về kinh tế
+    tầm thấp · cập nhật 14/07/2026" [...] "Em Nguyễn Cảnh Lâm · AI Officer, Real-time Robotics · nclamvn@gmail.com
+    · Fact-sheet cập nhật 14/07/2026 · dùng nội bộ cho công tác báo chí, khoa học công nghệ. Không phổ biến ngoài
+    phạm vi trao đổi."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-07-14
+  kernel_check: new
+  kernel_ref: null
+  note: Các claim trong factsheet khớp SC-020/SC-050/SC-051/HC-001/HC-002.
+- id: CAND.2.022
+  content: 'Roadmap Hera 2026-2028 gồm 5 variant: V1 Hera Energy (thermal, dự kiến Q4 2026), V2 Hera Agri (multispectral
+    5 kênh, Q1 2027), V3 Hera Civil (LIDAR solid-state, Q2 2027), V4 Hera Indoor (review 2027 Q2), V5 Hera Maritime
+    (review 2027 Q4); năm nền tảng dùng chung 60 đến 80 phần trăm phần cứng lõi.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  evidence_span: '"Năm nền tảng dùng chung 60 đến 80 phần trăm phần cứng lõi (chassis, pin, multi-link, Edge AI
+    compute, phần mềm điều khiển mặt đất) và khác nhau ở khoang payload cùng firmware." Bảng roadmap: "V1 · Hera
+    Energy · Kiểm tra lưới điện, trạm biến áp và điện mặt trời · payload thermal · dự kiến ra mắt Q4 2026 · V2 ·
+    Hera Agri · dự kiến ra mắt Q1 2027 · V3 · Hera Civil · dự kiến ra mắt Q2 2027 · V4 · Hera Indoor · dự kiến review
+    2027 Q2 · V5 · Hera Maritime · dự kiến review 2027 Q4".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO/CTO Quốc Lương
+  effective_date: 2026-07-14
+  kernel_check: new
+  kernel_ref: null
+  note: 'Kernel capabilities.yaml chưa có record roadmap variant Hera. Ngày ra mắt là "dự kiến" · trình bày cho
+    nhân viên phải giữ chữ dự kiến.
+
+    '
+- id: CAND.2.023
+  content: 'RtR có 4 bằng sáng chế đã được cấp và 10 bằng sáng chế đang trong quá trình xét duyệt (theo factsheet
+    báo chí 14/07/2026).
+
+    '
+  domain: company
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  evidence_span: '"4 bằng sáng chế đã được cấp. · 10 bằng sáng chế đang trong quá trình xét duyệt."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO
+  effective_date: 2026-07-14
+  kernel_check: duplicate
+  kernel_ref: SPEC_CHANGELOG (4 patent đã cấp + 10 đang xét duyệt) · CEO_STRATEGIC_STANCE_2026-07-01
+  note: 'Lưu ý lịch sử: _governance/RtR_Voice_Nuance_v1.md (25/05/2026) từng ghi ma trận chỉ có 3 granted + 2 pending
+    cần clarify; số 4+10 trong kernel là bản mới hơn và thắng.
+
+    '
+- id: CAND.2.024
+  content: 'Ngày 22/06/2026, FCC Hoa Kỳ ban hành quyết định DA-26-616A1 miễn trừ Hera khỏi lệnh cấm nhập khẩu UAV;
+    tại thời điểm ban hành đây là sản phẩm UAV duy nhất tại châu Á được FCC miễn trừ, phân phối được cho cả thị
+    trường dân sự lẫn quốc phòng Hoa Kỳ.
+
+    '
+  domain: legal
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  evidence_span: '"Ngày 22/06/2026, Uỷ ban Truyền thông Liên bang Hoa Kỳ (FCC) ban hành quyết định DA-26-616A1 miễn
+    trừ Hera khỏi lệnh cấm nhập khẩu UAV. Đây là sản phẩm UAV duy nhất tại châu Á được FCC miễn trừ và có thể phân
+    phối cho cả thị trường dân sự lẫn quốc phòng Hoa Kỳ tại thời điểm ban hành. [...] Nguồn chính thức FCC: https://docs.fcc.gov/public/attachments/DA-26-616A1.pdf"
+
+    '
+  extraction: verbatim
+  tier_proposed: L4
+  owner_hint: CEO
+  effective_date: 2026-06-22
+  kernel_check: duplicate
+  kernel_ref: SPEC_CHANGELOG (Hera FCC miễn trừ 22/06/2026) · CEO_STRATEGIC_STANCE_2026-07-01
+  note: Mốc công khai có văn bản gốc FCC · đề xuất L4.
+- id: CAND.2.025
+  content: 'Ngày 22/12/2025, Hoa Kỳ ban hành lệnh cấm nhập khẩu UAV từ tất cả các nước bao gồm mọi đồng minh, xác
+    định phụ thuộc UAV nhập khẩu là rủi ro an ninh quốc gia.
+
+    '
+  domain: legal
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  evidence_span: '"Ngày 22/12/2025, Hoa Kỳ ban hành lệnh cấm nhập khẩu UAV từ tất cả các nước bao gồm mọi đồng minh,
+    xác định phụ thuộc UAV nhập khẩu là rủi ro an ninh quốc gia."
+
+    '
+  extraction: verbatim
+  tier_proposed: L4
+  owner_hint: CEO
+  effective_date: 2025-12-22
+  kernel_check: duplicate
+  kernel_ref: CEO_STRATEGIC_STANCE_2026-07-01 (mục bối cảnh 22/12/2025)
+  note: null
+- id: CAND.2.026
+  content: 'Năm 2027 RtR có kế hoạch mở nhà máy sản xuất Hera tại Hoa Kỳ theo mô hình xuất khẩu công nghệ: phần
+    giá trị cao thiết kế và lập trình đặt tại Việt Nam, phần chế tạo và lắp ráp đặt tại Hoa Kỳ.
+
+    '
+  domain: company
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  evidence_span: '"Năm 2027, RtR có kế hoạch mở nhà máy sản xuất Hera tại Hoa Kỳ theo mô hình xuất khẩu công nghệ.
+    Phần giá trị cao thiết kế và lập trình đặt tại Việt Nam. Phần chế tạo và lắp ráp đặt tại Hoa Kỳ."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO
+  effective_date: null
+  kernel_check: duplicate
+  kernel_ref: POSITIONING_5CHAN_2026-07-03 (chân 7 · nhà máy Hoa Kỳ 2027) · CEO_STRATEGIC_STANCE_2026-07-01
+  note: null
+- id: CAND.2.027
+  content: 'CEO sáng lập RtR là Lương Việt Quốc, Tiến sĩ tại UC Berkeley, từng theo học Cornell (Hoa Kỳ) và Fulbright
+    (Việt Nam), với định hướng sáng lập "vượt thế giới hoặc phá sản".
+
+    '
+  domain: company
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  evidence_span: '"Real-time Robotics do CEO Lương Việt Quốc sáng lập. Ông là Tiến sĩ tại UC Berkeley (Hoa Kỳ).
+    Trong quá trình học tập, ông cũng từng theo học tại Cornell (Hoa Kỳ) và Fulbright (Việt Nam). Định hướng phát
+    triển RtR ngay từ ngày đầu là ''vượt thế giới hoặc phá sản''".
+
+    '
+  extraction: verbatim
+  tier_proposed: L4
+  owner_hint: CEO
+  effective_date: 2026-07-14
+  kernel_check: duplicate
+  kernel_ref: OC-001 · CEO_STRATEGIC_STANCE_2026-07-01
+  note: 'Chi tiết Cornell chưa có trong OC-001 (OC-001 chỉ ghi PhD + Fulbright scholar UC Berkeley, founded 2014)
+    · curator cân nhắc bổ sung OC-001.
+
+    '
+- id: CAND.2.028
+  content: 'Bảng spec HERA trong factsheet báo chí (MTOW 30,5 kg, payload 14 kg 4 khoang, 56 phút, 15 km, Edge AI
+    105 TOPS, gấp 14x, trạng thái đang giao thương mại) khớp spec hiện hành kernel HC-001; bảng VEGA (37,4 kg, 20
+    kg, 60 phút, 10 km, -30 đến +45 độ C, Beaufort 6) khớp HC-002.
+
+    '
+  domain: product
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  evidence_span: 'Bảng Hera: "Trọng lượng cất cánh tối đa | 30,5 kg · Payload tối đa | 14 kg · 4 khoang quick-release
+    đồng thời · Thời gian bay | 56 phút · Bán kính hoạt động | 15 km · Tính toán biên | Edge AI 105 TOPS · Trạng
+    thái | Sản phẩm đang giao thương mại". Bảng VEGA: "Trọng lượng cất cánh tối đa | 37,4 kg · Payload tối đa |
+    20 kg (44 lbs) · 4 khoang · Thời gian bay | 60 phút · Bán kính hoạt động | 10 km · Dải nhiệt độ hoạt động |
+    Từ âm 30 đến cộng 45 độ C · Chịu gió | Cấp Beaufort 6".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO/CTO Quốc Lương
+  effective_date: 2026-07-14
+  kernel_check: duplicate
+  kernel_ref: HC-001 · HC-002
+  note: 'Card xác nhận factsheet đã align đúng spec 1-4-14 hiện hành · không cần nạp lại số, chỉ ghi nhận nguồn
+    press-approved khớp kernel.
+
+    '
+- id: CAND.2.029
+  content: 'Con số "8,5/9 công nghệ lõi do RtR làm chủ" và "5/9 công nghệ lõi trên chuẩn quốc tế" là con số RtR
+    tự đánh giá theo phương pháp so sánh với sản phẩm cùng lớp của Hoa Kỳ và Ukraine, và khi trích dẫn ra ngoài
+    cần chú thích điều này.
+
+    '
+  domain: company
+  source_path: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  evidence_span: '"Con số ''8,5/9 công nghệ lõi'' và ''5/9 công nghệ lõi trên chuẩn quốc tế'' là con số RtR tự đánh
+    giá theo phương pháp so sánh với sản phẩm cùng lớp của Hoa Kỳ và Ukraine, có thể cần chú thích khi trích dẫn."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: CEO
+  effective_date: 2026-07-14
+  kernel_check: duplicate
+  kernel_ref: SC-020
+  note: '8,5/9 tương đương 94% và 5/9 tương đương 56% trong SC-020 · dạng phân số là cách diễn đạt press-approved,
+    kèm caveat tự đánh giá (giá trị chính của card này là caveat).
+
+    '
+- id: CAND.2.030
+  content: 'RtR có khung văn phong chính thức (RtR Voice & Nuance v1.0, 25/05/2026, classification P2 CONFIDENTIAL)
+    chưng cất từ 2 deck CEO soạn, gồm 5 đặc tính Voice DNA, vocabulary signature, và nuance riêng cho 4 nhóm audience
+    (BQP, chính quyền dân sự, thị trường G7, industry).
+
+    '
+  domain: brand
+  source_path: /Users/os/RtR/KnowledgeBase/_governance/RtR_Voice_Nuance_v1.md
+  evidence_span: '"RtR Voice & Nuance · Khung văn phong chính thức · Phiên bản v1.0 · 25 / 05 / 2026 · Owner AI
+    Officer · Lâm Nguyễn [...] Tài liệu này chưng cất DNA đó thành khung văn phong [...] 1 · RtR Voice DNA · Năm
+    đặc tính cốt lõi [...] 5 · Audience-specific nuance: BQP · UBND TP · G7 export market · Industry general".
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm · approver CEO
+  effective_date: 2026-05-25
+  kernel_check: new
+  kernel_ref: null
+  note: 'Fact về sự tồn tại + cấu trúc khung là L3; nội dung chi tiết audience nuance giữ nguyên trong file P2.
+
+    '
+- id: CAND.2.031
+  content: 'Tài liệu RtR không dùng ảnh AI-generated; chỉ dùng ảnh thật (XPO26 brochure assets, báo chí công khai
+    có attribution, ảnh khách cung cấp có consent, ảnh field deployment của RtR) và mọi ảnh hero phải có caption
+    nguồn, không có caption thì không dùng.
+
+    '
+  domain: brand
+  source_path: /Users/os/RtR/KnowledgeBase/_governance/RtR_Voice_Nuance_v1.md
+  evidence_span: '"Voice rule: RtR material không dùng ảnh AI-generated. Chỉ ảnh thật từ: XPO26 brochure assets
+    (đã có 600+ ảnh) · VOV / báo chí công khai (có attribution) · Customer-provided với consent · Field deployment
+    photos của RtR. [...] Voice rule: ảnh hero không có caption attribution = không dùng."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-05-25
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.032
+  content: 'Từ vựng cấm trong mọi tài liệu RtR: em-dash, AI-tell hyphen-fluff (next-generation, world-class, cutting-edge...),
+    tính từ mơ hồ không có số (nhiều, tốt nhất, tiên tiến...) và marketing fluff (đối tác tin cậy, vì một tương
+    lai...).
+
+    '
+  domain: brand
+  source_path: /Users/os/RtR/KnowledgeBase/_governance/RtR_Voice_Nuance_v1.md
+  evidence_span: '"2.4 · Từ vựng KHÔNG BAO GIỜ DÙNG: Em-dash `—` (đã có rule global rule trong skill) · AI-tell
+    hyphen-fluff: next-generation · data-driven · ground-breaking · best-in-class · world-class · cutting-edge ·
+    Generic adjective mơ hồ: rất nhiều · nhiều · đa số · phần lớn (không có số) · Marketing fluff: ''Đối tác tin
+    cậy của bạn'' · ''Vì một tương lai...''".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-05-25
+  kernel_check: duplicate
+  kernel_ref: DOCTRINE_1PAGE rule 4 (KHÔNG em-dash U+2014)
+  note: 'Phần em-dash trùng doctrine kernel; danh sách hyphen-fluff + generic adjective + marketing fluff là mở
+    rộng chưa có record riêng trong kernel.
+
+    '
+- id: CAND.2.033
+  content: 'RtR tổ chức Source of Truth theo doctrine 4 xuất xứ (L1 sự thật lưu sẵn vào registry, L2 sự thật dẫn
+    xuất lưu công thức, L3 nghĩa vụ pháp quy vào obligations, L4 phán xét tự do đứng ngoài đường kiểm) với 3 kho
+    riêng và ID convention dotted hierarchy (PRICE.*, BOM.*, SPEC.*, HC-/SC-/OC-...).
+
+    '
+  domain: system
+  source_path: /Users/os/RtR/KnowledgeBase/_governance/SOT_Reorg_Methodology_v1_0.md
+  evidence_span: '"Bốn xuất xứ · Mỗi tài sản (file, fact, claim) rơi vào đúng MỘT trong bốn: L1 Sự thật lưu sẵn
+    [...] L2 Sự thật dẫn xuất [...] L3 Sinh có ràng buộc [...] L4 Phán xét tự do [...] Ba kho (KHÔNG một SOT) [...]
+    PRICE.<product> .<sku>.<market>.<type> vd: PRICE.HERA.MSRP.US".
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-06-16
+  kernel_check: new
+  kernel_ref: null
+  note: 'CẢNH BÁO NHẦM LẪN: thang L1-L4 trong doctrine SOT (xuất xứ fact) KHÁC hoàn toàn thang tier L1-L4 của gói
+    RtR Copilot (mức phổ biến). Khi đào tạo nhân viên phải nêu rõ hai thang khác nhau.
+
+    '
+- id: CAND.2.034
+  content: 'Trước meeting khách lớn, RtR chạy Adversarial Audit Checklist đóng vai đối tác theo 7 vai audit (CFO,
+    kỹ thuật, pháp chế...); mỗi mục gồm câu hỏi đối tác có khả năng hỏi, trạng thái sẵn sàng của RtR và action item,
+    với doctrine không có câu nào không có hồi đáp thì không trình.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/_governance/RtR_Adversarial_Audit_Checklist_HBC_BKHCN_EVNNPT.md
+  evidence_span: '"Doctrine: mọi câu trong checklist này là câu mà bên đối tác CÓ KHẢ NĂNG hỏi/soi. Không có câu
+    nào không có hồi đáp = không trình. [...] Checklist được tổ chức theo 7 vai audit. Mỗi vai có: (Q) câu hỏi đối
+    tác sẽ hỏi · (R) trạng thái sẵn sàng của RtR (✅ có đủ · ⚠️ một phần · ❌ chưa có) · (Action) action item nếu
+    R ≠ ✅".
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm · CFO/CTO/CEO xác nhận
+  effective_date: 2026-06-12
+  kernel_check: new
+  kernel_ref: null
+  note: 'Chỉ cào quy trình 7 vai (process); nội dung Q/R cụ thể chứa số deal HBC/EVN là L2, không đưa vào card.
+
+    '
+- id: CAND.2.035
+  content: 'RtR đã audit 6 skill nội bộ ngày 07/07/2026 (vibecode-kit, registry-hygiene, refinery, rtr-3d-mission-sim,
+    de-an-cncl-nafosted, de-an-skhcn-audit) bằng cách đối chiếu với vận hành thật; registry-hygiene trưởng thành
+    nhất 8/10, de-an-skhcn-audit thấp nhất 6/10.
+
+    '
+  domain: system
+  source_path: /Users/os/RtR/KnowledgeBase/_governance/RtR_Skill_Audit_6_Skills_2026-07-07.md
+  evidence_span: '"Audit 6 Skill · Đối chiếu với phương pháp trong kernel + KnowledgeBase · Ngày: 2026-07-07 [...]
+    registry-hygiene (SOT) 8/10 [...] de-an-skhcn-audit 6/10 [...] registry-hygiene · 8/10 — trưởng thành nhất".
+
+    '
+  extraction: normalized
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-07-07
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.036
+  content: 'Chiến lược pricing và channel HERA/VEGA v1.0 (tổng hợp quyết định 12-15/06/2026) nằm tại _governance/RtR_Pricing_Channel_Strategy_v1_0.md
+    cùng RtR_Pricing_Master_v1_0.xlsx; CEO Quốc có thẩm quyền final cho MSRP, Khoa là owner channel strategy.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/_governance/RtR_Pricing_Channel_Strategy_v1_0.md
+  evidence_span: '"RtR · Pricing + Channel Strategy v1.0 · Tổng hợp quyết định pricing HERA + VEGA · 12-15/06/2026
+    [...] Trạng thái: v1.0 alignment nội bộ · CEO Quốc có thẩm quyền final cho MSRP · Khoa owner channel strategy".
+
+    '
+  extraction: verbatim
+  tier_proposed: L2
+  owner_hint: CEO Quốc (MSRP) · Khoa (channel)
+  effective_date: 2026-06-15
+  kernel_check: unsure
+  kernel_ref: null
+  note: 'Pricing = L2 theo luật cứng 5 và phạm vi TIP · card chỉ đánh dấu tồn tại + thẩm quyền, KHÔNG cào con số
+    MSRP. Chưa đối chiếu được với registry pricing của kernel (ngoài capabilities.yaml) nên đánh unsure.
+
+    '
+- id: CAND.2.037
+  content: 'RtR có package chuyển giao 4 phương pháp lõi tại KnowledgeBase/PhuongPhap_ChuyenGiao/ (SOT Kernel-in-a-Box,
+    Refinery, Vibecode Kit, Văn bản Nhà nước), license CC BY-SA 4.0 cho tài liệu và MIT cho code, theo mô hình chuyển
+    giao 3 tầng trong đó package là tầng 2 (engine + phương pháp).
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/PhuongPhap_ChuyenGiao/README.md
+  evidence_span: '"Bốn phương pháp lõi · Package chuyển giao · Phiên bản: 2026-07-12 · License: CC BY-SA 4.0 cho
+    tài liệu · MIT cho code [...] 01_SOT_KernelInABox · 02_Refinery_MethodBox · 03_Vibecode_MethodBox · 04_VanBanNhaNuoc_MethodBox
+    [...] Package này là tầng 2 trong mô hình 3 tầng [...] Chuyển giao đúng nghĩa · trao tầng 2 + huấn luyện đủ
+    để bên nhận tự dựng tầng 3."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-07-12
+  kernel_check: new
+  kernel_ref: null
+  note: 'Theo phạm vi TIP chỉ lấy fact "công ty có phương pháp X, package ở đâu" · không cào nội dung chi tiết từng
+    method box.
+
+    '
+- id: CAND.2.038
+  content: 'Ba nguyên tắc chung xuyên suốt 4 phương pháp lõi của RtR: fail-loud thay vì fail-silent; tin cổng sau
+    khi thấy nó cắn (cổng phải tự chứng minh bắt được lỗi); trung thực về độ tin cậy quan trọng hơn trông có vẻ
+    đầy đủ.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/PhuongPhap_ChuyenGiao/README.md
+  evidence_span: '"1 · Fail-loud thay vì fail-silent. Mọi cổng kiểm trả exit code rõ ràng, không có chế độ ''cảnh
+    báo rồi cho qua''. [...] 2 · Tin cổng sau khi thấy nó cắn. Cổng chưa từng chứng minh bắt được lỗi thì chưa được
+    tin. [...] 3 · Trung thực về độ tin cậy quan trọng hơn trông có vẻ đầy đủ."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-07-12
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.039
+  content: 'RtR có gói "Em gửi anh Đông" v1.0 (14/07/2026) tại KnowledgeBase/Gui_Anh_Dong/: bộ công cụ hướng dẫn
+    người ngoài dùng AI viết bản thảo và kiểm chứng dữ liệu, gồm 4 tập PDF và 2 skill (ai-viet, loc-va-kiem-chung),
+    license CC BY-SA 4.0, với nguyên tắc lõi mọi con số AI đưa ra phải kiểm chứng từ nguồn thứ hai và trách nhiệm
+    cuối thuộc người ký tên.
+
+    '
+  domain: process
+  source_path: /Users/os/RtR/KnowledgeBase/Gui_Anh_Dong/README.md
+  evidence_span: '"Em gửi anh Đông · bộ công cụ AI viết và đối chiếu · Phiên bản 1.0 · 2026-07-14 [...] ai-viet.skill
+    · loc-va-kiem-chung.skill [...] AI có thể bịa. Mọi con số và mọi trích dẫn AI đưa ra phải kiểm chứng lại từ
+    nguồn thứ hai. Trách nhiệm cuối cùng luôn thuộc về người ký tên. Không có ngoại lệ."
+
+    '
+  extraction: verbatim
+  tier_proposed: L3
+  owner_hint: AI Officer Lâm
+  effective_date: 2026-07-14
+  kernel_check: new
+  kernel_ref: null
+  note: null
+- id: CAND.2.040
+  content: 'KnowledgeBase có folder "DCMA submission compliance questions" chứa hồ sơ VEGA DCMA Blue List Submission
+    v8 (15/05/2026) và Supporting Document; vùng nhạy cảm US, chỉ đánh dấu tồn tại, không cào nội dung.
+
+    '
+  domain: legal
+  source_path: /Users/os/RtR/KnowledgeBase/DCMA submission compliance questions/
+  evidence_span: 'Danh sách file trong folder: "20260515 DCMA submission compliance questions.xlsx · 20260515 VEGA_DCMA_Blue_List_Submission_v8.docx
+    · Appendix (SW) · Supporting Document".
+
+    '
+  extraction: normalized
+  tier_proposed: L2
+  owner_hint: CEO + Compliance
+  effective_date: 2026-05-15
+  kernel_check: duplicate
+  kernel_ref: SC-011
+  note: 'Theo phạm vi TIP: DCMA đánh dấu tồn tại thôi. SC-011 đã ghi submission v8 finalized 15/05/2026. Folder
+    này cũng là nguồn gốc các baseline 15 kg / IP43 / 10 km xuất hiện trong workbook bảo dưỡng (CAND.2.012-014).
+
+    '
