@@ -8,8 +8,8 @@ luat_su_dung:
 - Mọi câu trả lời kèm mã record (NT-3)
 - Record label PROPOSED không được dùng cam kết với khách
 thong_ke:
-  tong_record: 110
-  approved: 78
+  tong_record: 111
+  approved: 79
   kernel_confirmed: 32
 records:
 - record: L3F.1.001
@@ -927,6 +927,21 @@ records:
   status: approved
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
+  effective_date: null
+- record: L3F.CMP.001
+  content: 'Ưu thế cạnh tranh định lượng của HERA so với UAV tactical/thương mại thông thường (gồm lớp DJI): (1)
+    Signature 1-4-14 — 1 chiến sĩ triển khai, 4 payload đồng thời một chuyến bay, 14 kg full-load (US: 30 lb); baseline
+    cùng class thường cần 2-4 người + cẩu và chỉ mang 1-2 payload (xem L3R.K.001). (2) Edge AI 105 TOPS on-board,
+    ~≥5× so với drone tactical thông thường 4-21 TOPS (Jetson Xavier NX) → AI inference real-time không phụ thuộc
+    đường truyền. (3) Multi-link 5 kênh song song (Starlink LEO + 4G + 5G + RF P2P + LoRa fallback) so với thông
+    thường 1-2 kênh → mất 1 kênh không mất link. (4) Endurance 56 phút không tải (xem L3R.1.006). LƯU Ý: các con
+    số đối sánh là benchmark nội bộ RtR (trạng thái INT), CẦN engineering verify trước khi cite chính thức cho khách
+    hàng; không dùng để cam kết hợp đồng khi chưa sign-off.'
+  domain: product
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/kernel/source_canonical/RtR_Product_Quantitative_Advantages.xlsx
   effective_date: null
 - record: CAND.1.005
   content: 'HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.

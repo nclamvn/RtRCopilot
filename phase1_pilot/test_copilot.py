@@ -120,6 +120,18 @@ check("catalog không đè spec: 'HeraSight LR là gì?' → spec thật L3F.1.0
       bool(_hl) and _hl[0][1]["record"] == "L3F.1.001",
       f"top={_hl[0][1]['record'] if _hl else 'NULL'}")
 
+# QA 28/07: "HERA hơn DJI?" từng match record FCC (CAND.2.024) lạc đề vì gói không có fact cạnh
+# tranh nào có token DJI/đối thủ. Thêm L3F.CMP.001 (positioning từ differentiator đã có, provenance
+# claim). Regression: câu cạnh tranh → fact cạnh tranh; câu FCC vẫn về đúng record FCC (không lẫn).
+_hd = cs.search("HERA hơn DJI ở điểm nào?")
+check("competitive: 'HERA hơn DJI?' → L3F.CMP.001, không phải record FCC lạc đề",
+      bool(_hd) and _hd[0][1]["record"] == "L3F.CMP.001",
+      f"top={_hd[0][1]['record'] if _hd else 'NULL'}")
+_hf = cs.search("FCC exemption Hera ngày nào?")
+check("không lẫn ngược: câu FCC vẫn → record FCC (CAND.2.024)",
+      bool(_hf) and _hf[0][1]["record"] == "CAND.2.024",
+      f"top={_hf[0][1]['record'] if _hf else 'NULL'}")
+
 # ---------- 3 · Leak scan Phần B · toàn gói không chứa nội dung L2 ----------
 print("\n[3] Leak scan Phần B · quét toàn gói")
 PACK = norm(cs.GOI_TEXT)
