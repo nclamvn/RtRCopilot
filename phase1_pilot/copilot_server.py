@@ -154,13 +154,29 @@ def who(handler):
     return True, None, ""
 
 # ---------- Máy tra cứu SOT (deterministic · không cần AI) ----------
+def _deaccent(s):
+    return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn").replace("đ", "d").replace("Đ", "D")
+
 def strip_accents(s):
-    return "".join(c for c in unicodedata.normalize("NFD", s.lower()) if unicodedata.category(c) != "Mn").replace("đ", "d")
+    return _deaccent(s.lower())
 
 STOPWORDS = set("la gi cua cho voi den tu va hay hoac thi ma o trong ngoai bao nhieu the nao khong duoc hien tai dang".split())
 
+# Tách token: tên CamelCase (OmniSight, HeraHub, DualSight, SkyWatch...) trong nguồn dính thành
+# 1 chữ, người dùng lại gõ tách rời ("Omni Sight") → cũ không khớp → honest-null oan (giấu tri
+# thức đã có). Sửa GỐC: tách tại ranh giới thường→HOA / chữ→số TRƯỚC khi lowercase, phát CẢ phần
+# tách LẪN dạng dính → cả "Omni Sight" và "OmniSight" đều khớp record. Generative (không hard-list
+# tên sản phẩm — thêm sản phẩm mới tự khớp). Guard: chỉ phát segment tách khi len>=3 nên acronym
+# ngắn (RtR→{rtr}, IP54→{ip54}) giữ nguyên dạng dính, không vỡ.
+_CAMEL = re.compile(r"[A-Z]?[a-z]+|[A-Z]+(?![a-z])|[0-9]+")
 def tokens(s):
-    return [t for t in re.findall(r"[a-z0-9]+", strip_accents(s)) if len(t) > 1 and t not in STOPWORDS]
+    out = []
+    for word in re.findall(r"[A-Za-z0-9]+", _deaccent(s)):   # giữ hoa-thường để thấy ranh giới case
+        segs = _CAMEL.findall(word)
+        if len(segs) > 1:
+            out.extend(seg.lower() for seg in segs if len(seg) >= 3)
+        out.append(word.lower())                             # luôn giữ dạng dính (giữ acronym + entity)
+    return [t for t in out if len(t) > 1 and t not in STOPWORDS]
 
 # index sẵn + document frequency (từ hiếm đáng giá hơn từ phổ biến)
 import math
@@ -196,6 +212,15 @@ STALE_PENALTY = 0.45  # nhân điểm · đủ tụt dưới record hiện hành
 ENTITIES = {"hera", "vega", "herahub", "vegahub", "herasight", "vegasight",
             "omnisight", "dualsight", "heralink", "aerotunnel", "skywatch", "ragas"}
 
+# record "catalog": nhắc NHIỀU sản phẩm cùng lúc (danh mục dropdown, bảng bảo dưỡng-mọi-sản-phẩm...)
+# → khớp gần MỌI query sản phẩm nên hay thắng oan record spec tập trung khi hòa điểm (tie-break id).
+# Đếm số entity mỗi record; khi người dùng hỏi ĐÍCH DANH 1 sản phẩm thì phạt catalog để spec thật lên.
+# Generative (đếm entity, không hard-list id). Query hỏi "có những sản phẩm nào" không neo entity nên
+# không dính phạt — catalog vẫn ra đúng lúc cần.
+CATALOG_MIN = 4
+for r in RECORDS:
+    r["_nent"] = sum(1 for e in ENTITIES if e in r["_tokens"])
+
 # đồng nghĩa hỏi-đáp → từ vựng trong gói (mở rộng query, không bịa đáp án)
 SYNONYMS = [
     ("man hinh", ["nits", "lcd"]),
@@ -230,7 +255,11 @@ def search(query, top=3):
     if not q_tokens:
         return []
     triplets = re.findall(r"\d+-\d+-\d+", q_norm)  # dạng 1-4-14
-    q_ents = [e for e in ENTITIES if e in q_tokens]
+    # neo entity nhận cả tên gõ TÁCH RỜI: "Dual Sight"/"Omni Sight" → bỏ dấu cách thành "dualsight"
+    # để entity ghép hiện ra (nếu chỉ so token thì "dual"+"sight" mất neo, thua record OmniSight
+    # cũng chứa "dual-pod"). Bỏ dấu cách trên query đã chuẩn hoá, entity nào là chuỗi con thì neo.
+    q_despaced = q_norm.replace(" ", "")
+    q_ents = [e for e in ENTITIES if e in q_tokens or e in q_despaced]
     scored = []
     for r in RECORDS:
         score = sum(idf(t) for t in q_tokens if t in r["_tokens"])
@@ -240,6 +269,9 @@ def search(query, top=3):
         # neo entity: hỏi đích danh sản phẩm nào thì record không nhắc sản phẩm đó bị phạt nặng
         if q_ents and not any(e in r["_tokens"] for e in q_ents):
             score *= 0.25
+        # catalog: hỏi đích danh 1 sản phẩm mà record là danh mục nhiều-sản-phẩm → phạt để spec thật lên
+        if q_ents and len(q_ents) < CATALOG_MIN and r["_nent"] >= CATALOG_MIN:
+            score *= 0.5
         if r["_stale"]:
             score *= STALE_PENALTY
         if score > 0:

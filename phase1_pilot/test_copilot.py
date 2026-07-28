@@ -99,6 +99,27 @@ check("must-not-junk: 'RtR là ai?' không confident vào record lạc đề",
       or _hj[0][1]["record"] not in {"CAND.2.032", "L3F.2.001"},
       f"top={_hj[0][1]['record'] if _hj else 'NULL'}")
 
+# Regression CamelCase (ca 'Omni Sight là gì?' của Lâm 28/07): nguồn viết dính "OmniSight",
+# người dùng gõ tách rời "Omni Sight" — tokens() cũ lowercase TRƯỚC nên "omni"+"sight" không khớp
+# token dính "omnisight" → honest-null oan (giấu tri thức đã có). Fix: tách CamelCase trước lowercase,
+# phát cả phần tách lẫn dạng dính → hai cách gõ đồng nhất. Regression hai chiều: must-find + tách==dính.
+for spaced, glued in [("Omni Sight là gì?", "OmniSight là gì?"),
+                      ("Sky Watch là gì?", "SkyWatch là gì?"),
+                      ("Dual Sight là gì?", "DualSight là gì?")]:
+    _hs, _hg = cs.search(spaced), cs.search(glued)
+    _ts = _hs[0][1]["record"] if _hs else None
+    check(f"must-find CamelCase tách: '{spaced}' không honest-null",
+          bool(_hs) and cs.confident(spaced, _hs[0][1]), f"top={_ts}")
+    check(f"gõ tách == gõ dính: '{spaced}'",
+          _ts == (_hg[0][1]["record"] if _hg else None), f"{_ts}")
+
+# Catalog (danh mục nhiều-sản-phẩm, vd CAND.2.005 liệt kê 16 sản phẩm) không được thắng oan record
+# spec khi hỏi ĐÍCH DANH 1 sản phẩm — hòa điểm thì tie-break id "CAND" < "L3F" kéo danh mục lên trên.
+_hl = cs.search("HeraSight LR là gì?")
+check("catalog không đè spec: 'HeraSight LR là gì?' → spec thật L3F.1.001, không phải danh mục",
+      bool(_hl) and _hl[0][1]["record"] == "L3F.1.001",
+      f"top={_hl[0][1]['record'] if _hl else 'NULL'}")
+
 # ---------- 3 · Leak scan Phần B · toàn gói không chứa nội dung L2 ----------
 print("\n[3] Leak scan Phần B · quét toàn gói")
 PACK = norm(cs.GOI_TEXT)
