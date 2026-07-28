@@ -137,3 +137,141 @@ templates:
     required: true
     multiline: true
     cell: B14
+
+- id: factsheet
+  name: Fact-sheet sản phẩm
+  desc: Một trang thông số hiện hành · MỌI số liệu là fact khoá từ SOT, không sửa tay
+  file: FactSheet_SanPham.docx
+  kind: docx
+  category: Sản phẩm
+  version: v1.0
+  fields:
+  - key: ten_san_pham
+    label: Tên sản phẩm
+    type: user
+    required: true
+    default: "HERA"
+    hint: "HERA · VEGA · HeraHub…"
+  - key: mo_ta_ngan
+    label: Mô tả một câu
+    type: user
+    required: true
+    hint: "UAV đa nhiệm 4 khoang quick-release cho nhiệm vụ ISR và nông nghiệp chính xác"
+  - key: ghi_chu
+    label: Ghi chú thêm
+    type: user
+    required: false
+    multiline: true
+  - key: ngay_lap
+    label: Ngày lập
+    type: user
+    required: true
+    format: date
+  - key: ngay
+    type: derived
+    from: ngay_lap
+    part: day
+    label: Ngày
+  - key: thang
+    type: derived
+    from: ngay_lap
+    part: month
+    label: Tháng
+  - key: nam
+    type: derived
+    from: ngay_lap
+    part: year
+    label: Năm
+  - key: ten_phap_nhan
+    label: Tên pháp nhân
+    type: locked
+    record: L3F.ENT.001
+    extract: 'REAL-TIME ROBOTICS VIỆT NAM'
+    value: "REAL-TIME ROBOTICS VIỆT NAM"
+  - key: payload
+    label: Tải trọng
+    type: locked
+    record: CAND.1.005
+    extract: '14 kg'
+    value: "14 kg (30 lbs) · 4 khoang quick-release"
+  - key: tam_dieu_khien
+    label: Tầm điều khiển
+    type: locked
+    record: L3R.K.007
+    extract: '15 km'
+    value: "15 km"
+  - key: thoi_gian_bay
+    label: Thời gian bay
+    type: locked
+    record: CAND.1.006
+    extract: '56 phút'
+    value: "56 phút không tải · 40 phút khi mang payload"
+  - key: ip_rating
+    label: Kháng bụi nước
+    type: locked
+    record: L3F.1.037
+    extract: 'IP54'
+    value: "IP54"
+
+- id: slidecard
+  name: Slide card cho deck
+  desc: Một slide theo chuẩn trình bày RtR · số liệu khoá từ SOT
+  file: SlideCard_RtR.docx
+  kind: docx
+  category: Trình bày
+  version: v1.0
+  fields:
+  - key: ten_deck
+    label: Tên deck
+    type: user
+    required: true
+  - key: so_slide
+    label: Số thứ tự slide
+    type: user
+    required: true
+    hint: "ví dụ: 04 / 18"
+  - key: tieu_de_slide
+    label: Tiêu đề slide
+    type: user
+    required: true
+    hint: "Nhãn mô tả kỹ sư · KHÔNG dùng tiêu đề giật"
+  - key: thong_diep
+    label: Thông điệp một câu
+    type: user
+    required: true
+    multiline: true
+  - key: y_chinh
+    label: Ba ý chính
+    type: user
+    required: true
+    multiline: true
+    hint: "Mỗi ý một dòng"
+  - key: ghi_chu_trinh_bay
+    label: Ghi chú người trình bày
+    type: user
+    required: false
+    multiline: true
+  - key: ten_phap_nhan
+    label: Tên pháp nhân
+    type: locked
+    record: L3F.ENT.001
+    extract: 'REAL-TIME ROBOTICS VIỆT NAM'
+    value: "REAL-TIME ROBOTICS VIỆT NAM"
+  - key: payload
+    label: Tải trọng
+    type: locked
+    record: CAND.1.005
+    extract: '14 kg'
+    value: "14 kg"
+  - key: tam_dieu_khien
+    label: Tầm điều khiển
+    type: locked
+    record: L3R.K.007
+    extract: '15 km'
+    value: "15 km"
+  - key: thoi_gian_bay
+    label: Thời gian bay
+    type: locked
+    record: CAND.1.006
+    extract: '56 phút'
+    value: "56 phút"

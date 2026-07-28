@@ -24,11 +24,29 @@ Trạng thái hiện ở góc phải: `READY` · `PASS` · `FAIL-LOUD` · `BLOCK
 
 Mỗi lần xuất đều ghi vào nhật ký kèm danh sách record đã dùng, nên truy ngược được tài liệu nào lấy số từ đâu.
 
-## Hai bản mẫu hiện có
+## Điền nhanh từ mô tả (cần chế độ LIVE)
+
+Ô trên cùng của form: tả bằng lời việc cần làm, bấm **Điền sẵn giúp tôi**. Model đọc yêu cầu rồi điền vào các trường người nhập.
+
+Ba ràng buộc, đúng NT-4:
+
+- Model **chỉ bóc tham số**, không tạo file. Bộ render vẫn là thứ sinh ra tài liệu.
+- Trường nào bác không nói rõ thì **để trống** — không suy đoán, không bịa số công văn hay ngày tháng.
+- Model **không được lấy thông tin từ gói tri thức** để điền vào đây; fact khoá đi đường riêng.
+
+Điền xong vẫn phải soát rồi mới bấm xuất. Ở chế độ MOCK nút này báo rõ là chưa dùng được, không giả vờ làm.
+
+## Bốn bản mẫu hiện có
 
 **Công văn gửi cơ quan nhà nước** — rút từ công văn thật đã gửi Bộ KH&CN, giữ nguyên thể thức Nghị định 30/2020. Fact khoá: tên pháp nhân, người ký.
 
 **Sales brief sau buổi gặp** — workbook tiếng Việt, tự tính điểm cơ hội. Vá vào đúng ô nên **giữ nguyên công thức** đã có trong file.
+
+**Fact-sheet sản phẩm** — một trang thông số. Đáng chú ý: **mọi số liệu đều là fact khoá**, truy về 5 record. Người dùng chỉ nhập tên sản phẩm, mô tả một câu và ngày lập. Không có cách nào gõ sai một con số vào đây.
+
+**Slide card** — một slide theo chuẩn trình bày RtR, số liệu dẫn chứng cũng khoá từ nguồn.
+
+*Hạn chế đã biết:* hai bản mẫu mới mượn khung định dạng của công văn nên phần đầu trang còn bố cục hai cột hơi lệch với dạng fact-sheet. Đủ dùng nội bộ; nếu cần gửi khách thì phải dựng bản mẫu riêng do người thiết kế.
 
 ## Thêm bản mẫu mới
 
@@ -40,5 +58,6 @@ Mỗi lần xuất đều ghi vào nhật ký kèm danh sách record đã dùng,
 
 ## Còn thiếu
 
-- Chưa có bản mẫu fact-sheet sản phẩm và bản mẫu deck.
-- Chưa bóc tham số tự động từ câu hỏi (hiện nhân viên tự điền form). Khi có API, bước này để LLM đọc yêu cầu rồi điền sẵn, người soát lại — đúng NT-4: model bóc tham số, máy render.
+- Bản mẫu deck đầy đủ (hiện mới có slide card lẻ).
+- Bố cục đầu trang của fact-sheet và slide card còn mượn khung công văn.
+- Chưa có bản mẫu nào cho hợp đồng hay báo giá — đó là vùng cần fact khoá từ gói lãnh đạo, phải cân nhắc riêng.

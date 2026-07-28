@@ -11,3 +11,4 @@ __pycache__/
 
 # generated documents (scratch)
 _rendered/
+users.yaml

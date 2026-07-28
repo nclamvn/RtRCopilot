@@ -1,0 +1,31 @@
+# Danh sách người dùng RtR Copilot · chép thành users.yaml rồi sửa
+#
+#   cp users.example.yaml users.yaml
+#
+# users.yaml KHÔNG vào git (đã có trong .gitignore) vì chứa mã đăng nhập.
+#
+# Vì sao cần: passcode chung cả nhóm thì không đếm được người dùng thực (ô bắt buộc
+# trong sổ theo dõi 4 tuần), không biết ai báo sai để hỏi lại, và không phân quyền
+# cá nhân được — ai có mã là vào được gói lãnh đạo.
+#
+# Mã đăng nhập KHÔNG phải mật khẩu mạnh. Đây là pilot nội bộ trong mạng LAN:
+# mã đủ để nhận diện người và chặn người ngoài, không đủ để chống tấn công có chủ đích.
+# Đừng dùng lại mã của bất kỳ hệ thống nào khác.
+
+schema_version: '1.0'
+
+users:
+- ma: lam-2607
+  ten: Nguyễn Cảnh Lâm
+  phong: AI Officer
+  quyen: leader          # leader = xem được gói lãnh đạo · staff = chỉ gói nhân viên
+
+- ma: quoc-8842
+  ten: Lương Việt Quốc
+  phong: CEO
+  quyen: leader
+
+- ma: nv-mau-1234
+  ten: Nhân viên mẫu
+  phong: Kinh doanh
+  quyen: staff

@@ -395,6 +395,32 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
 #rec .use{border:1px solid var(--rtr-line);padding:9px 11px;font-size:10.5px;margin-bottom:6px;
   color:var(--rtr-muted);line-height:1.5}
 
+/* ---- đăng nhập ---- */
+#login{position:fixed;inset:0;z-index:100;background:var(--rtr-bg);display:none;
+  align-items:center;justify-content:center;padding:24px}
+#login.on{display:flex}
+#login .box{width:min(380px,92vw);border:1px solid var(--rtr-line);background:var(--rtr-panel);padding:26px}
+#login .mark{width:34px;height:34px;background:var(--rtr-logo,var(--rtr-signal));margin-bottom:18px}
+#login h2{font-size:19px;font-weight:650;margin:0 0 6px;letter-spacing:-.02em}
+#login p{font-size:12px;color:var(--rtr-muted);margin:0 0 18px;line-height:1.6}
+#login input{width:100%;padding:11px 12px;background:var(--rtr-panel-2);
+  border:1px solid var(--rtr-line);outline:0;font-size:14px}
+#login input:focus{border-color:var(--rtr-signal)}
+#login button{width:100%;height:36px;margin-top:10px;background:var(--rtr-signal);
+  color:var(--rtr-signal-ink);border:0;font-weight:700;font-size:12.5px;cursor:pointer}
+#login .err{font-size:11.5px;color:var(--rtr-danger);margin-top:10px;min-height:16px;line-height:1.5}
+.whochip{font-size:10px;color:var(--rtr-muted);white-space:nowrap}
+.whochip b{color:var(--rtr-text);font-weight:600}
+
+/* ---- bóc tham số tự động ---- */
+.extract{margin:0 14px 14px;border:1px solid var(--rtr-line);border-left:2px solid var(--rtr-signal);padding:12px}
+.extract .hd{font-size:9px;text-transform:uppercase;letter-spacing:.13em;color:var(--rtr-signal);margin-bottom:8px}
+.extract textarea{width:100%;height:70px;padding:9px 10px;background:var(--rtr-panel-2);
+  border:1px solid var(--rtr-line);resize:vertical;outline:0;font:inherit;font-size:12px}
+.extract textarea:focus{border-color:var(--rtr-signal)}
+.extract .row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.extract .msg{font-size:10px;color:var(--rtr-muted);line-height:1.5}
+
 /* ---- báo sai · hộp nhập ngay dưới câu trả lời ---- */
 .issuebox{border:1px solid var(--rtr-line);border-left:3px solid var(--rtr-warning);
   padding:12px;margin-top:12px}
@@ -545,6 +571,7 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
       </button>
       <div class="crumb">RtR Copilot / <b id="crumb">Tổng quan</b></div>
       <div class="spacer"></div>
+      <div class="chip" id="whoChip" style="display:none"><span class="whochip" id="whoTxt"></span></div>
       <div class="chip"><span class="dot" id="syncDot"></span><span id="syncTxt">SOT SYNC</span></div>
       <div id="scrim"></div>
       <button class="iconbtn" id="btnLang" title="Ngôn ngữ giao diện"><span id="langTxt" style="font-size:10px;font-weight:700;letter-spacing:.06em">VI</span></button>
@@ -630,7 +657,7 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
                   <button class="mini" id="btnAttach" title="Đính kèm ghi chú cho câu hỏi này">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                     Ghi chú</button>
-                  <input id="pass" type="password" placeholder="Mã nội bộ" autocomplete="current-password">
+                  <input id="pass" type="hidden">
                   <span class="note">Copilot chỉ trả lời từ SOT</span>
                   <span class="kbd">⌘ + Enter để gửi</span>
                   <button class="send" id="btnSend" title="Gửi">
@@ -735,6 +762,15 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
   </div>
 </div>
 
+<div id="login"><div class="box">
+  <div class="mark" role="img" aria-label="RtR"></div>
+  <h2>RtR Copilot</h2>
+  <p>Nhập mã đăng nhập cá nhân. Mã do anh Lâm cấp, không dùng chung.</p>
+  <input id="loginCode" type="password" placeholder="Mã đăng nhập" autocomplete="off">
+  <button id="loginBtn">Vào</button>
+  <div class="err" id="loginErr"></div>
+</div></div>
+
 <div id="cmd"><div class="box">
   <input id="cmdq" placeholder="Gõ để tìm lệnh, màn hình hoặc record…" autocomplete="off">
   <div class="list" id="cmdList"></div>
@@ -778,6 +814,37 @@ const CRUMB = {home:"Tổng quan", copilot:"Hỏi đáp", sot:"Tra cứu SOT", g
                audit:"Nhật ký", studio:"Tạo tài liệu"};
 let HEALTH = {}, hist = [], evidence = [], CUR = "home";
 
+/* ---------- đăng nhập · nhận diện người, không phải mã chung ---------- */
+function setCode(c){ $("pass").value = c; try { sessionStorage.setItem("rtr-code", c); } catch(e){} }
+(function(){ try { $("pass").value = sessionStorage.getItem("rtr-code") || ""; } catch(e){} })();
+
+async function checkWho(){
+  try {
+    const r = await fetch("/api/whoami", {headers:{"x-passcode": $("pass").value}});
+    const d = await r.json();
+    if (!d.can_dang_nhap) return true;          // chưa khai users.yaml · dùng như cũ
+    if (d.ok && d.user) {
+      $("whoChip").style.display = "";
+      $("whoTxt").innerHTML = "<b>" + esc(d.user.ten) + "</b>"
+        + (d.user.phong ? " · " + esc(d.user.phong) : "")
+        + (d.user.quyen === "leader" ? " · lãnh đạo" : "");
+      return true;
+    }
+    return false;
+  } catch(e) { return true; }                   // mất mạng thì không chặn màn hình
+}
+async function boot(){
+  if (await checkWho()) { $("login").classList.remove("on"); start(); }
+  else { $("login").classList.add("on"); $("loginCode").focus(); }
+}
+$("loginBtn").onclick = async () => {
+  setCode($("loginCode").value.trim());
+  $("loginErr").textContent = "";
+  if (await checkWho()) { $("login").classList.remove("on"); start(); }
+  else { $("loginErr").textContent = "Mã không đúng, hoặc tài khoản không có quyền vào gói này."; }
+};
+$("loginCode").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+
 /* ---------- theme ---------- */
 const savedTheme = (()=>{ try { return localStorage.getItem("rtr-theme"); } catch(e){ return null; } })();
 if (savedTheme) document.documentElement.dataset.theme = savedTheme;
@@ -815,6 +882,7 @@ document.querySelectorAll(".qa button").forEach(b => b.onclick = () => {
 });
 
 /* ---------- health ---------- */
+function start(){
 fetch("/health").then(r => r.json()).then(h => {
   HEALTH = h;
   const leader = h.pack === "leader";
@@ -846,6 +914,8 @@ fetch("/health").then(r => r.json()).then(h => {
     $("mGap").textContent = d.groups.length;
   }).catch(()=>{});
 });
+}
+boot();
 
 /* ---------- gợi ý ---------- */
 ["Payload Hera hiện tại bao nhiêu?","FCC exemption là gì?","Quy trình sales brief sau buổi gặp?",
@@ -1346,7 +1416,11 @@ function pickTpl(i){
   curTpl = TPLS[i];
   $("tplList").querySelectorAll(".tmpl").forEach((el, j) => el.classList.toggle("on", j === i));
   $("st1").classList.remove("on"); $("st2").classList.add("on"); $("st3").classList.remove("on");
-  let h = "";
+  let h = '<div class="extract"><div class="hd">Điền nhanh từ mô tả</div>'
+    + '<textarea id="exTxt" placeholder="Tả bằng lời việc bác cần, ví dụ: gửi Sở Nông nghiệp Hải Phòng đề nghị phối hợp khảo sát UAV, ký ngày 28/7…"></textarea>'
+    + '<div class="row"><button class="mini" id="btnExtract">Điền sẵn giúp tôi</button>'
+    + '<span class="msg" id="exMsg">Copilot chỉ bóc thông tin từ lời bác, không tự bịa. '
+    + "Fact khoá vẫn lấy từ nguồn sự thật. Điền xong bác soát lại rồi mới xuất.</span></div></div>";
   curTpl.fields.forEach(f => {
     if (f.type === "locked") {
       h += `<div class="field"><div class="lb">${esc(f.label)} · fact khoá từ SOT</div>`
@@ -1368,6 +1442,11 @@ function pickTpl(i){
      + '<div id="renderMsg" style="font-size:10.5px;color:var(--rtr-muted);margin-top:8px;line-height:1.5"></div></div>';
   $("tplForm").innerHTML = h;
   $("btnRender").onclick = doRender;
+  if ($("btnExtract")) $("btnExtract").onclick = doExtract;
+  if (HEALTH.mode !== "LIVE" && $("exMsg")) {
+    $("exMsg").textContent = "Điền nhanh cần chế độ LIVE (có API key). Hiện chưa nối · điền tay như thường.";
+    if ($("btnExtract")) $("btnExtract").disabled = true;
+  }
   curTpl.fields.forEach(f => {
     const el = $("fld_" + f.key);
     if (el) el.addEventListener("input", () => { clearTimeout(window._dry); window._dry = setTimeout(dryRun, 400); });
@@ -1385,6 +1464,34 @@ function pickTpl(i){
   }
   updatePaper();
   dryRun();
+}
+
+async function doExtract(){
+  const txt = $("exTxt").value.trim();
+  if (!txt) { $("exMsg").textContent = "Tả một câu về việc cần làm rồi bấm lại."; return; }
+  $("btnExtract").disabled = true;
+  $("exMsg").textContent = "Đang đọc yêu cầu…";
+  try {
+    const r = await fetch("/api/extract", {method:"POST",
+      headers:{"content-type":"application/json","x-passcode":$("pass").value},
+      body: JSON.stringify({template: curTpl.id, text: txt})});
+    const d = await r.json();
+    if (d.ok) {
+      let n = 0;
+      Object.entries(d.params || {}).forEach(([k, v]) => {
+        const el = $("fld_" + k);
+        if (el && v) { el.value = v; n++; }
+      });
+      $("exMsg").innerHTML = n
+        ? "Đã điền sẵn <b>" + n + "/" + d.so_truong + "</b> trường. "
+          + "Trường nào bác không nói rõ thì để trống — Copilot không đoán. Soát lại rồi xuất."
+        : "Không bóc được trường nào từ mô tả này. Điền tay giúp em.";
+      dryRun();
+    } else {
+      $("exMsg").textContent = d.reason || d.error || "Không bóc được.";
+    }
+  } catch(e) { $("exMsg").textContent = "Lỗi: " + e; }
+  $("btnExtract").disabled = false;
 }
 
 function collect(){

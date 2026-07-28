@@ -120,6 +120,39 @@ GAP_LOG = HERE / "gap_log.jsonl"
 QA_LOG = HERE / "qa_log.jsonl"
 ISSUE_LOG = HERE / "issue_log.jsonl"   # ca người dùng báo bot trả lời sai
 
+# ---------- Người dùng · thay passcode chung bằng mã riêng từng người ----------
+# Passcode chung không đếm được người dùng thực, không biết ai báo sai, và ai có mã
+# là vào được gói lãnh đạo. Mã riêng giải cả ba. Vẫn giữ passcode như đường lùi:
+# chưa khai users.yaml thì server chạy y như cũ.
+USERS = {}
+_ufile = HERE / "users.yaml"
+if _ufile.exists():
+    try:
+        import yaml as _yaml
+        for u in (_yaml.safe_load(_ufile.read_text(encoding="utf-8")) or {}).get("users", []):
+            if u.get("ma"):
+                USERS[str(u["ma"]).strip()] = {"ten": u.get("ten", "?"),
+                                               "phong": u.get("phong", ""),
+                                               "quyen": u.get("quyen", "staff")}
+    except Exception as _e:
+        print(f"CHÚ Ý: đọc users.yaml lỗi ({_e}) · quay về dùng passcode chung")
+
+def who(handler):
+    """Nhận diện người gọi. Trả về (ok, user|None, loi)."""
+    code = (handler.headers.get("x-passcode", "") or "").strip()
+    if USERS:
+        u = USERS.get(code)
+        if not u:
+            return False, None, "Mã đăng nhập không đúng · hỏi anh Lâm"
+        if PACK == "leader" and u["quyen"] != "leader":
+            # Gói lãnh đạo chứa giá bán · người quyền staff KHÔNG được vào,
+            # kể cả khi họ có mã hợp lệ của gói nhân viên.
+            return False, u, "Tài khoản này không có quyền vào gói lãnh đạo"
+        return True, u, ""
+    if PASSCODE and code != PASSCODE:
+        return False, None, "Sai mã nội bộ"
+    return True, None, ""
+
 # ---------- Máy tra cứu SOT (deterministic · không cần AI) ----------
 def strip_accents(s):
     return "".join(c for c in unicodedata.normalize("NFD", s.lower()) if unicodedata.category(c) != "Mn").replace("đ", "d")
@@ -364,7 +397,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, HTML, "text/html")
         if self.path == "/health":
             return self._send(200, json.dumps({
-                "ok": True, "mode": MODE, "pack": PACK,
+                "ok": True, "mode": MODE, "pack": PACK, "dang_nhap": bool(USERS),
                 "model": MODEL if MODE == "LIVE" else None,
                 "records_loaded": len(RECORDS), "pack_date": PACK_DATE}))
         if self.path.startswith("/api/search"):
@@ -397,6 +430,11 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(data)
             return
+        if self.path == "/api/whoami":
+            ok, user, err = who(self)
+            return self._send(200, json.dumps(
+                {"ok": ok, "can_dang_nhap": bool(USERS), "user": user, "error": err},
+                ensure_ascii=False))
         if self.path == "/api/issues":
             rows = read_jsonl(ISSUE_LOG)
             for i, r in enumerate(rows):
@@ -436,8 +474,9 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/issue":
             # Báo sai phải thành DỮ LIỆU, không phải một thông báo rồi thôi.
             # Sổ theo dõi 4 tuần có ô "số ca báo sai" · đây là đường đổ vào ô đó.
-            if PASSCODE and self.headers.get("x-passcode", "") != PASSCODE:
-                return self._send(403, json.dumps({"error": "Sai mã nội bộ"}))
+            ok, user, err = who(self)
+            if not ok:
+                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
             try:
                 length = int(self.headers.get("content-length", 0))
                 b = json.loads(self.rfile.read(length))
@@ -447,6 +486,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not q and not a:
                     return self._send(400, json.dumps({"error": "Thiếu nội dung câu trả lời bị báo sai"}))
                 rec = {"t": datetime.now().isoformat(timespec="seconds"), "mode": MODE, "pack": PACK,
+                       "nguoi": (user or {}).get("ten", "không rõ"),
                        "q": q, "a": a, "why": why,
                        "records": re.findall(r"\[((?:HC|OC|SC|STRAT|L3F|L3R|CAND|SPEC|DISP|PRICE)[-.][^\]\s·]*)", a),
                        "trang_thai": "moi"}
@@ -456,6 +496,54 @@ class Handler(BaseHTTPRequestHandler):
                                                   ensure_ascii=False))
             except Exception as e:
                 return self._send(500, json.dumps({"error": str(e)[:200]}))
+        if self.path == "/api/extract":
+            # NT-4: model CHỈ bóc tham số từ lời người dùng · không tạo file, không
+            # đụng fact khoá. Kết quả đổ vào form để NGƯỜI soát rồi mới bấm xuất.
+            ok, user, err = who(self)
+            if not ok:
+                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            if MODE != "LIVE":
+                return self._send(200, json.dumps(
+                    {"ok": False, "reason": "Bóc tham số cần chế độ LIVE · chưa nối API key. "
+                                            "Điền tay như thường."}, ensure_ascii=False))
+            try:
+                length = int(self.headers.get("content-length", 0))
+                b = json.loads(self.rfile.read(length))
+                tid = b.get("template", "")
+                yeu_cau = (b.get("text") or "").strip()[:4000]
+                tpl = next((t for t in TEMPLATES if t["id"] == tid), None)
+                if not tpl or not yeu_cau:
+                    return self._send(400, json.dumps({"error": "Thiếu bản mẫu hoặc nội dung yêu cầu"}))
+                fields = [f for f in tpl["fields"] if f["type"] == "user"]
+                mota = "\n".join(f"- {f['key']}: {f['label']}"
+                                 + (f" · {f['hint']}" if f.get("hint") else "")
+                                 + (" · dạng ngày YYYY-MM-DD" if f.get("format") == "date" else "")
+                                 for f in fields)
+                prompt = (
+                    "Bóc tham số từ yêu cầu của người dùng để điền vào biểu mẫu. "
+                    "Trả về DUY NHẤT một khối JSON, không giải thích.\n\n"
+                    f"Các trường cần điền:\n{mota}\n\n"
+                    "Luật:\n"
+                    "- Trường nào yêu cầu KHÔNG nói rõ thì để chuỗi rỗng. TUYỆT ĐỐI không suy đoán, "
+                    "không bịa số công văn, không bịa ngày, không bịa tên cơ quan.\n"
+                    "- Không lấy thông tin từ gói tri thức để điền vào đây; chỉ lấy từ lời người dùng.\n"
+                    "- Giữ nguyên văn phong tiếng Việt của người dùng cho các trường nội dung dài.\n\n"
+                    f"Yêu cầu của người dùng:\n{yeu_cau}")
+                raw = call_claude([{"role": "user", "content": prompt}])
+                m = re.search(r"\{.*\}", raw, re.S)
+                data = json.loads(m.group(0)) if m else {}
+                keys = {f["key"] for f in fields}
+                out = {k: str(v) for k, v in data.items() if k in keys and str(v).strip()}
+                with QA_LOG.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps({"t": datetime.now().isoformat(timespec="seconds"),
+                                        "mode": MODE, "nguoi": (user or {}).get("ten", "không rõ"),
+                                        "q": f"[BÓC THAM SỐ] {tid}: {yeu_cau[:120]}",
+                                        "a": f"điền sẵn {len(out)}/{len(fields)} trường"},
+                                       ensure_ascii=False) + "\n")
+                return self._send(200, json.dumps(
+                    {"ok": True, "params": out, "so_truong": len(fields)}, ensure_ascii=False))
+            except Exception as e:
+                return self._send(500, json.dumps({"error": str(e)[:250]}, ensure_ascii=False))
         if self.path == "/api/render":
             if PASSCODE and self.headers.get("x-passcode", "") != PASSCODE:
                 return self._send(403, json.dumps({"error": "Sai mã nội bộ"}))
@@ -492,8 +580,9 @@ class Handler(BaseHTTPRequestHandler):
                     {"state": "FAIL-LOUD", "issues": [str(e)[:300]]}, ensure_ascii=False))
         if self.path != "/api/chat":
             return self._send(404, json.dumps({"error": "not found"}))
-        if PASSCODE and self.headers.get("x-passcode", "") != PASSCODE:
-            return self._send(403, json.dumps({"error": "Sai mã nội bộ"}))
+        ok, user, err = who(self)
+        if not ok:
+            return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
         streamed = False
         try:
             length = int(self.headers.get("content-length", 0))
@@ -550,7 +639,8 @@ class Handler(BaseHTTPRequestHandler):
 
         now = datetime.now().isoformat(timespec="seconds")
         with QA_LOG.open("a", encoding="utf-8") as f:
-            f.write(json.dumps({"t": now, "mode": MODE, "q": question, "a": answer}, ensure_ascii=False) + "\n")
+            f.write(json.dumps({"t": now, "mode": MODE, "nguoi": (user or {}).get("ten", "không rõ"),
+                                "q": question, "a": answer}, ensure_ascii=False) + "\n")
         for gap in re.findall(r"GAP:\s*(.+)", answer):
             with GAP_LOG.open("a", encoding="utf-8") as f:
                 f.write(json.dumps({"t": now, "gap": gap.strip(), "q": question}, ensure_ascii=False) + "\n")
@@ -568,6 +658,8 @@ if __name__ == "__main__":
         print("GÓI LÃNH ĐẠO · chứa giá bán và chính sách chiết khấu.")
         print("Chỉ chia sẻ địa chỉ và passcode cho nhóm đã được cấp quyền.")
         print("=" * 66)
+    print(f"Đăng nhập: {len(USERS)} người trong users.yaml" if USERS
+          else "Đăng nhập: chưa khai users.yaml · dùng passcode chung (không đếm được người dùng thực)")
     print(f"RtR Copilot · http://{HOST}:{PORT} · gói {PACK} · chế độ {MODE}" + (f" · model {MODEL}" if MODE == "LIVE" else " · cắm ANTHROPIC_API_KEY để LIVE"))
     print(f"Gói: {len(RECORDS)} record · SOT {PACK_DATE}")
     HTTPServer((HOST, PORT), Handler).serve_forever()

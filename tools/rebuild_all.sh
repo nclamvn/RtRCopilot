@@ -47,8 +47,8 @@ rm -f "$ROOT/Phase1_Pilot_Kit.zip"
 zip -j -q "$ROOT/Phase1_Pilot_Kit.zip" \
   01_Setup_API_Server.md 01_Setup_Claude_Project.md 02_Huong_Dan_Nhom_Pilot.md \
   03_Bo_Cau_Test_Acceptance.md 04_So_Theo_Doi_4_Tuan.md 05_Van_Hanh_Lien_Tuc.md \
-  06_Thu_Moi_Nhom_Pilot.md 07_Goi_Lanh_Dao.md 08_Tao_Tai_Lieu.md com.rtr.copilot.plist \
-  copilot_server.py ui.html test_copilot.py start_copilot.sh weekly_review.py \
+  06_Thu_Moi_Nhom_Pilot.md 07_Goi_Lanh_Dao.md 08_Tao_Tai_Lieu.md 09_Dang_Nhap_Nguoi_Dung.md com.rtr.copilot.plist \
+  copilot_server.py ui.html test_copilot.py start_copilot.sh weekly_review.py users.example.yaml \
   "$ROOT/l3_pipeline/TIP7_SYSTEM_PROMPT_ClaudeProject.md" \
   "$ROOT/l3_pipeline/GOI_L3.yaml" \
   "$ROOT/l3_pipeline/l3_export.py" \
@@ -59,6 +59,8 @@ zip -j -q "$ROOT/Phase1_Pilot_Kit.zip" \
   "$ROOT/templates/registry.yaml" \
   "$ROOT/templates/CongVan_RTR.docx" \
   "$ROOT/templates/SalesBrief_VN.xlsx" \
+  "$ROOT/templates/FactSheet_SanPham.docx" \
+  "$ROOT/templates/SlideCard_RtR.docx" \
   "$KERNEL/registry/leader_allowlist.yaml"
 echo "      $(unzip -l "$ROOT/Phase1_Pilot_Kit.zip" | tail -1 | tr -s ' ')"
 

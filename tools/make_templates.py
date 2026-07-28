@@ -115,6 +115,77 @@ def copy_salesbrief():
     print("CẢNH BÁO: không thấy workbook Sales Brief")
 
 
+def build_from_congvan(out_name, replace_map, body_slots):
+    """Dựng bản mẫu mới bằng cách mượn khung định dạng của công văn gốc.
+
+    Vì sao mượn: file gốc đã có font tiếng Việt, cỡ chữ, lề, và các kiểu đoạn
+    hợp lệ. Dựng docx từ trống thì phải tự viết styles.xml, dễ lệch font
+    tiếng Việt và tốn công gấp nhiều lần cho cùng một kết quả.
+    """
+    z = zipfile.ZipFile(SRC)
+    names = z.namelist()
+    xml = z.read("word/document.xml").decode()
+    paras = list(re.finditer(r"<w:p[ >].*?</w:p>", xml, re.S))
+    n = len(paras)
+    new_xml, cursor, slot = [], 0, 0
+    for i, m in enumerate(paras):
+        new_xml.append(xml[cursor:m.start()])
+        p = m.group(0)
+        if i in replace_map:
+            p = set_para_text(p, replace_map[i])
+        elif 12 <= i < n - 6:
+            p = set_para_text(p, body_slots[slot]) if slot < len(body_slots) else ""
+            slot += 1
+        elif i >= n - 6:
+            p = ""      # bỏ khối nơi nhận + chữ ký của công văn
+        new_xml.append(p)
+        cursor = m.end()
+    new_xml.append(xml[cursor:])
+    doc = "".join(new_xml)
+    out = OUT / out_name
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zo:
+        for nm in names:
+            zo.writestr(nm, doc.encode() if nm == "word/document.xml" else z.read(nm))
+    toks = sorted(set(re.findall(r"\{\{(\w+)\}\}", doc)))
+    print(f"{out_name} · ô trống: {', '.join(toks)}")
+
+
+def build_factsheet():
+    build_from_congvan("FactSheet_SanPham.docx",
+        {0: "", 1: "{{ten_phap_nhan}}", 2: "", 3: "", 4: "", 5: "",
+         6: "FACT-SHEET SẢN PHẨM", 7: "{{ten_san_pham}}", 8: "",
+         9: "Cập nhật {{ngay}}/{{thang}}/{{nam}} · nguồn: SOT nội bộ",
+         10: "{{mo_ta_ngan}}", 11: ""},
+        ["THÔNG SỐ CHÍNH",
+         "Tải trọng: {{payload}}",
+         "Tầm điều khiển: {{tam_dieu_khien}}",
+         "Thời gian bay: {{thoi_gian_bay}}",
+         "Kháng bụi nước: {{ip_rating}}",
+         "GHI CHÚ",
+         "{{ghi_chu}}",
+         "Mọi số liệu trong tài liệu này lấy từ nguồn sự thật nội bộ và không sửa tay được. "
+         "Số nào cần cập nhật thì sửa ở nguồn rồi tạo lại tài liệu."])
+
+
+def build_slidecard():
+    build_from_congvan("SlideCard_RtR.docx",
+        {0: "", 1: "{{ten_phap_nhan}}", 2: "", 3: "", 4: "", 5: "",
+         6: "SLIDE CARD", 7: "{{tieu_de_slide}}", 8: "",
+         9: "Deck: {{ten_deck}} · slide {{so_slide}}", 10: "", 11: ""},
+        ["THÔNG ĐIỆP MỘT CÂU",
+         "{{thong_diep}}",
+         "BA Ý CHÍNH",
+         "{{y_chinh}}",
+         "SỐ LIỆU DẪN CHỨNG",
+         "Tải trọng {{payload}} · tầm {{tam_dieu_khien}} · thời gian bay {{thoi_gian_bay}}",
+         "NGUỒN",
+         "Số liệu lấy từ nguồn sự thật nội bộ · mã record ghi trong phần ghi chú slide.",
+         "GHI CHÚ NGƯỜI TRÌNH BÀY",
+         "{{ghi_chu_trinh_bay}}"])
+
+
 if __name__ == "__main__":
     build_congvan()
+    build_factsheet()
+    build_slidecard()
     copy_salesbrief()

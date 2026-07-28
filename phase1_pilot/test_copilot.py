@@ -120,7 +120,12 @@ check("15 kg/33 lb: mọi record đều gắn legacy",
 
 # ---------- 4 · Server MOCK end-to-end (HTTP thật) ----------
 print("\n[4] Server MOCK end-to-end")
+# Test tự làm chủ trạng thái xác thực. Nếu không, máy nào đã tạo users.yaml
+# (tức là máy production) sẽ chạy test ra 403 hàng loạt — bộ test phải chạy
+# được ở mọi cấu hình, không chỉ trên máy chưa cấu hình gì.
 cs.PASSCODE = ""
+_USERS_THAT = dict(cs.USERS)
+cs.USERS = {}
 server = cs.HTTPServer(("127.0.0.1", 8790), cs.Handler)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 time.sleep(0.3)
@@ -260,12 +265,50 @@ check("UI: bỏ nút gửi-yêu-cầu-bổ-sung trùng chức năng GAP tự ghi
       'data-act="gap"' not in html and "đã tự động" in html)
 check("weekly_review đếm ca báo sai", "ISSUE_LOG" in (HERE / "weekly_review.py").read_text(encoding="utf-8"))
 
+# ---------- 4d · Đăng nhập theo người + bóc tham số ----------
+print("\n[4d] Đăng nhập theo người · phân quyền · bóc tham số")
+check("có file mẫu users.example.yaml", (HERE / "users.example.yaml").exists())
+check("users.yaml nằm trong .gitignore",
+      "users.yaml" in (HERE.parent / ".gitignore").read_text(encoding="utf-8"))
+s_, w = get("/api/whoami")
+w = json.loads(w)
+check("whoami trả trạng thái đăng nhập", "can_dang_nhap" in w, str(w)[:100])
+
+# Nạp danh sách người dùng giả rồi kiểm phân quyền hai chiều
+cs.USERS = {"nv-1": {"ten": "Nhân viên A", "phong": "Kinh doanh", "quyen": "staff"},
+            "ld-1": {"ten": "Lãnh đạo B", "phong": "CEO", "quyen": "leader"}}
+class _H:  # giả handler chỉ để gọi who()
+    def __init__(self, code): self.headers = {"x-passcode": code}
+ok, u, err = cs.who(_H("nv-1"));   check("mã đúng thì vào được", ok and u["ten"] == "Nhân viên A")
+ok, u, err = cs.who(_H("sai-be"));  check("mã sai bị chặn", not ok, err)
+cs.PACK = "leader"
+ok, u, err = cs.who(_H("nv-1"))
+check("CHẶN: nhân viên không vào được gói lãnh đạo dù mã hợp lệ", not ok, err)
+ok, u, err = cs.who(_H("ld-1"))
+check("CHO: lãnh đạo vào được gói lãnh đạo", ok, err)
+cs.PACK = "staff"; cs.USERS = {}
+
+check("log ghi tên người, không chỉ câu hỏi",
+      '"nguoi"' in (HERE / "copilot_server.py").read_text(encoding="utf-8"))
+
+# bóc tham số: ở MOCK phải từ chối rõ ràng, không giả vờ làm được
+s_, d = post("/api/extract", {"template": "congvan", "text": "gửi Sở Nông nghiệp Hải Phòng"})
+check("bóc tham số ở MOCK: từ chối rõ ràng, không bịa", d.get("ok") is False and "LIVE" in d.get("reason", ""),
+      str(d)[:110])
+check("prompt bóc tham số CẤM suy đoán",
+      "TUYỆT ĐỐI không suy đoán" in (HERE / "copilot_server.py").read_text(encoding="utf-8"))
+check("prompt bóc tham số cấm lấy từ gói tri thức",
+      "chỉ lấy từ lời người dùng" in (HERE / "copilot_server.py").read_text(encoding="utf-8"))
+check("UI có màn đăng nhập + nút điền nhanh",
+      'id="login"' in html and 'id="btnExtract"' in html and 'id="whoChip"' in html)
+
 # ---------- 6b · Bộ sinh tài liệu · gate NT-4 hai chiều ----------
 print("\n[6b] Tạo tài liệu · vá bản mẫu + gate")
 s, tp = get("/api/templates")
 tp = json.loads(tp)
-check("có bản mẫu công văn + sales brief",
-      tp["ready"] and {t["id"] for t in tp["templates"]} >= {"congvan", "salesbrief"}, str(tp)[:120])
+check("có đủ 4 bản mẫu",
+      tp["ready"] and {t["id"] for t in tp["templates"]} >= {"congvan", "salesbrief", "factsheet", "slidecard"},
+      str({t["id"] for t in tp["templates"]}))
 _cv = next(t for t in tp["templates"] if t["id"] == "congvan")
 check("bản mẫu khai fact khoá kèm mã record",
       any(f["type"] == "locked" and f.get("record") for f in _cv["fields"]))
@@ -295,6 +338,25 @@ if d.get("filename"):
     check("nội dung nhiều dòng thành nhiều đoạn", "Dòng hai" in _x)
     check("fact khoá có mặt trong file", "REAL-TIME ROBOTICS" in _x.upper())
     _f.unlink(missing_ok=True)
+
+# fact-sheet: MỌI số liệu phải là fact khoá truy được về record
+s, d = post("/api/render", {"template": "factsheet", "params": {
+    "ten_san_pham": "HERA", "mo_ta_ngan": "UAV đa nhiệm", "ngay_lap": "2026-07-28"}})
+check("fact-sheet xuất được", d["state"] == "PASS", str(d)[:120])
+check("fact-sheet truy về >=4 record (số liệu đều khoá)", len(d.get("records") or []) >= 4,
+      str(d.get("records")))
+if d.get("filename"):
+    _f = HERE.parent / "_rendered" / d["filename"]
+    _x = __import__("zipfile").ZipFile(_f).read("word/document.xml").decode()
+    check("fact-sheet có số hiện hành, không có số cũ",
+          "14 kg" in _x and "15 km" in _x and "IP54" in _x and "IP43" not in _x and "10 km" not in _x)
+    _f.unlink(missing_ok=True)
+s, d = post("/api/render", {"template": "slidecard", "params": {
+    "ten_deck": "Deck thử", "so_slide": "01 / 10", "tieu_de_slide": "Năng lực nền tảng",
+    "thong_diep": "Một câu", "y_chinh": "Ý 1\nÝ 2\nÝ 3"}})
+check("slide card xuất được", d["state"] == "PASS", str(d)[:120])
+if d.get("filename"):
+    (HERE.parent / "_rendered" / d["filename"]).unlink(missing_ok=True)
 
 # xlsx: vá bản mẫu KHÔNG được làm mất giá trị công thức đã tính
 s, d = post("/api/render", {"template": "salesbrief",
@@ -452,12 +514,13 @@ if _zip.exists():
     # thiếu file cũng là lệch pha · kiểm danh sách chứ không chỉ kiểm file có mặt
     _must = {"01_Setup_API_Server.md", "02_Huong_Dan_Nhom_Pilot.md", "03_Bo_Cau_Test_Acceptance.md",
              "04_So_Theo_Doi_4_Tuan.md", "05_Van_Hanh_Lien_Tuc.md", "06_Thu_Moi_Nhom_Pilot.md",
-             "07_Goi_Lanh_Dao.md", "08_Tao_Tai_Lieu.md", "copilot_server.py", "ui.html", "test_copilot.py",
+             "07_Goi_Lanh_Dao.md", "08_Tao_Tai_Lieu.md", "09_Dang_Nhap_Nguoi_Dung.md", "copilot_server.py", "ui.html", "test_copilot.py",
              "start_copilot.sh", "weekly_review.py", "l3_export.py", "leader_export.py",
              "GOI_L3.yaml", "TIP7_SYSTEM_PROMPT_ClaudeProject.md",
              "RtR_Copilot_UI_Preview.html", "leader_allowlist.yaml", "com.rtr.copilot.plist",
              "render_doc.py", "xlsx_patch.py", "registry.yaml",
-             "CongVan_RTR.docx", "SalesBrief_VN.xlsx"}
+             "CongVan_RTR.docx", "SalesBrief_VN.xlsx",
+             "FactSheet_SanPham.docx", "SlideCard_RtR.docx", "users.example.yaml"}
     _have = set(zipfile.ZipFile(_zip).namelist())
     check("zip có đủ file bắt buộc", _must <= _have, "thiếu: " + ", ".join(sorted(_must - _have)))
     check("zip KHÔNG chứa gói lãnh đạo", "GOI_LEADER.yaml" not in zipfile.ZipFile(_zip).namelist())
@@ -465,6 +528,7 @@ shutil.rmtree(_wd, ignore_errors=True)
 
 # Server phục vụ tới đây mới tắt. KHÔNG tắt giữa bài: thêm test sau dòng tắt
 # thì nó treo tới timeout rồi chết, và thông báo lỗi không nói gì về nguyên nhân.
+cs.USERS = dict(_USERS_THAT)   # trả lại trạng thái ban đầu
 server.shutdown()
 
 # ---------- Kết ----------
