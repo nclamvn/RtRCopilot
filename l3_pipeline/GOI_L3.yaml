@@ -8,8 +8,8 @@ luat_su_dung:
 - Mọi câu trả lời kèm mã record (NT-3)
 - Record label PROPOSED không được dùng cam kết với khách
 thong_ke:
-  tong_record: 111
-  approved: 79
+  tong_record: 113
+  approved: 81
   kernel_confirmed: 32
 records:
 - record: L3F.1.001
@@ -942,6 +942,27 @@ records:
   status: approved
   kernel_ref: null
   source: /Users/os/RtR/kernel/source_canonical/RtR_Product_Quantitative_Advantages.xlsx
+  effective_date: null
+- record: L3F.REC.001
+  content: 'RtR có các dấu công nhận và cột mốc công khai: (1) được Phó Thủ tướng Chính phủ công nhận là "cánh chim
+    đầu đàn" của hệ sinh thái drone Việt Nam (phát biểu chính thức 2024, báo chí TW + địa phương); (2) Giải Vàng
+    Bộ Khoa học & Công nghệ 12/2025; (3) là doanh nghiệp Việt Nam đầu tiên xuất khẩu UAV sang Mỹ và thị trường G7.
+    Đây là các dấu công nhận công khai, dùng làm credential khi giới thiệu năng lực công ty.'
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: null
+- record: L3F.BRD.002
+  content: 'Sứ mệnh và triết lý thương hiệu RtR: sứ mệnh "Drone Innovation to Advance Humanity" (đổi mới drone vì
+    tiến bộ nhân loại); doctrine thương hiệu "Invent. Build. Prove." (Sáng chế · Chế tạo · Chứng minh); định vị
+    thương hiệu kết hợp chuẩn Mỹ (U.S.-aligned) với năng lực R&D và sản xuất tại Việt Nam.'
+  domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: null
 - record: CAND.1.005
   content: 'HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.

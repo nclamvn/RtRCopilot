@@ -132,6 +132,25 @@ check("không lẫn ngược: câu FCC vẫn → record FCC (CAND.2.024)",
       bool(_hf) and _hf[0][1]["record"] == "CAND.2.024",
       f"top={_hf[0][1]['record'] if _hf else 'NULL'}")
 
+# QA 28/07 · lô năng lực CÔNG KHAI (SC-001/002/003 recognition, SC-030/031/032 brand/mission).
+# Chỉ nạp dấu công nhận công khai; KHÔNG đụng năng lực quốc phòng/nội bộ.
+_hr = cs.search("RtR có giải thưởng gì?")
+check("recognition: 'RtR có giải thưởng gì?' → L3F.REC.001 (Giải Vàng BKHCN...)",
+      bool(_hr) and _hr[0][1]["record"] == "L3F.REC.001",
+      f"top={_hr[0][1]['record'] if _hr else 'NULL'}")
+_hm = cs.search("sứ mệnh RtR là gì?")
+check("brand: 'sứ mệnh RtR?' → L3F.BRD.002 (không còn honest-null)",
+      bool(_hm) and _hm[0][1]["record"] == "L3F.BRD.002",
+      f"top={_hm[0][1]['record'] if _hm else 'NULL'}")
+
+# LANDMINE Blue UAS: ma trận năng lực (SC-011) chứa claim SAI "on DCMA Blue UAS list" đang escalation.
+# Bất kỳ harvest năng lực nào cũng KHÔNG được kéo claim đã-cleared vào; câu hỏi trực tiếp phải về
+# record trạng thái thật (L3F.RES.003 · "đang trong quy trình"), KHÔNG khẳng định đã trên list.
+_hb = cs.search("RtR Blue UAS cleared chưa?")
+check("landmine Blue UAS: câu trạng thái → L3F.RES.003 (in-progress), không claim đã-cleared",
+      bool(_hb) and _hb[0][1]["record"] == "L3F.RES.003" and "quy trinh" in norm(_hb[0][1]["content"]),
+      f"top={_hb[0][1]['record'] if _hb else 'NULL'}")
+
 # ---------- 3 · Leak scan Phần B · toàn gói không chứa nội dung L2 ----------
 print("\n[3] Leak scan Phần B · quét toàn gói")
 PACK = norm(cs.GOI_TEXT)

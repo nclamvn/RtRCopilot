@@ -795,7 +795,7 @@ return __RECS.map(r=>[t.filter(x=>x.length>2&&__n(r.content+' '+r.record).includ
 .filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);}
 window.fetch=async(u,o)=>{const j=x=>({json:async()=>x,status:200,headers:{get:()=>'application/json'}});
 if(u.startsWith('/health'))return j({ok:true,mode:'MOCK',pack:'staff',model:null,
-  records_loaded:111,pack_date:'2026-07-27 · preview '+__RECS.length+' record mẫu'});
+  records_loaded:113,pack_date:'2026-07-27 · preview '+__RECS.length+' record mẫu'});
 if(u.startsWith('/api/gaps'))return j({groups:__GAPS});
 if(u.startsWith('/api/audit'))return j({events:__AUDIT});
 if(u.startsWith('/api/usedby'))return j({uses:[{t:'2026-07-27T09:14:02',q:'Payload Hera hiện tại bao nhiêu?'}]});
