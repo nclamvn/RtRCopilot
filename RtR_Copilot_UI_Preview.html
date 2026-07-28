@@ -689,39 +689,23 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
         <div class="page">
           <div class="phead">
             <div><div class="k">Deliver</div><h2>Tạo tài liệu</h2>
-              <p>Tài liệu sinh ra từ template và fact đã khoá. Fact khoá không sửa tay được; thiếu trường bắt buộc thì chặn, không xuất bản nháp.</p></div>
+              <p>Tài liệu sinh ra bằng cách điền vào bản mẫu thật, giữ nguyên thể thức. Fact khoá lấy thẳng từ nguồn sự thật và không sửa tay được; thiếu trường bắt buộc thì chặn, không xuất bản nháp.</p></div>
           </div>
           <div class="studio">
             <div class="panel">
-              <div class="sub">Template</div>
-              <div class="tmpl on"><div class="ic">DOC</div><div><div class="t">Fact-sheet sản phẩm</div>
-                <div class="d">Một trang thông số hiện hành, số lấy từ record đã khoá.</div><div class="v">v1.0 · Sản phẩm</div></div></div>
-              <div class="tmpl"><div class="ic">DOC</div><div><div class="t">Công văn cơ quan nhà nước</div>
-                <div class="d">Thể thức Nghị định 30/2020 · văn phong chuẩn RtR.</div><div class="v">v1.0 · Đối ngoại</div></div></div>
-              <div class="tmpl"><div class="ic">XLS</div><div><div class="t">Sales brief sau buổi gặp</div>
-                <div class="d">Điền từ ghi chép nhanh, tự tính điểm cơ hội.</div><div class="v">v2.1 · Kinh doanh</div></div></div>
+              <div class="sub">Bản mẫu</div>
+              <div id="tplList"><div style="padding:14px;font-size:11px;color:var(--rtr-faint)">Đang nạp…</div></div>
             </div>
             <div class="panel">
-              <div class="steps"><div class="on">1 · Đọc yêu cầu</div><div>2 · Điền trường</div><div>3 · Soát và xuất</div></div>
-              <div style="padding:14px 0 4px">
-                <div class="field"><div class="lb">Tên khách hàng · trường người nhập</div>
-                  <input placeholder="Ví dụ: Sở Nông nghiệp Hải Phòng"></div>
-                <div class="field"><div class="lb">Payload HERA · fact khoá từ SOT</div>
-                  <div class="locked">14 kg · signature 1-4-14<div class="rid">HC-001</div></div></div>
-                <div class="field"><div class="lb">Tầm điều khiển · fact khoá từ SOT</div>
-                  <div class="locked">15 km<div class="rid">HC-001</div></div></div>
-              </div>
+              <div class="steps"><div class="on" id="st1">1 · Chọn bản mẫu</div><div id="st2">2 · Điền trường</div><div id="st3">3 · Soát và xuất</div></div>
+              <div id="tplForm" style="padding:14px 0 4px"><div style="padding:0 14px;font-size:11px;color:var(--rtr-faint)">Chọn một bản mẫu bên trái.</div></div>
             </div>
             <div class="preview-col">
-              <div class="paper">
-                <h5>Fact-sheet HERA</h5>
-                <div>Payload 14 kg · 4 khoang quick-release</div>
-                <div>Tầm điều khiển 15 km</div>
-                <div>Thời gian bay 56 phút</div>
-                <div style="margin-top:14px;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#666">
-                  Nguồn: HC-001 · bản nháp chưa đóng dấu</div>
+              <div class="paper" id="docPaper">
+                <h5>Chưa chọn bản mẫu</h5>
+                <div>Trang này hiện tóm tắt tài liệu sắp xuất: bản mẫu, trường đã điền, và fact khoá lấy từ record nào.</div>
               </div>
-              <div class="gate-state">FAIL-LOUD · render service chưa nối</div>
+              <div class="gate-state" id="docGate">CHƯA SẴN SÀNG</div>
             </div>
           </div>
         </div>
@@ -755,7 +739,7 @@ return __RECS.map(r=>[t.filter(x=>x.length>2&&__n(r.content+' '+r.record).includ
 .filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);}
 window.fetch=async(u,o)=>{const j=x=>({json:async()=>x,status:200,headers:{get:()=>'application/json'}});
 if(u.startsWith('/health'))return j({ok:true,mode:'MOCK',pack:'staff',model:null,
-  records_loaded:108,pack_date:'2026-07-27 · preview '+__RECS.length+' record mẫu'});
+  records_loaded:109,pack_date:'2026-07-27 · preview '+__RECS.length+' record mẫu'});
 if(u.startsWith('/api/gaps'))return j({groups:__GAPS});
 if(u.startsWith('/api/audit'))return j({events:__AUDIT});
 if(u.startsWith('/api/usedby'))return j({uses:[{t:'2026-07-27T09:14:02',q:'Payload Hera hiện tại bao nhiêu?'}]});
@@ -1268,6 +1252,127 @@ async function loadGaps(){
       + `<div class="lab" style="margin-top:14px">Lần gần nhất</div><div class="li">${g.last}</div>`
       + '<button class="btn-primary">Đưa vào lịch thu fact tuần sau</button>';
   });
+}
+
+/* ---------- 19 · Document Studio · vá bản mẫu, gate NT-4 ---------- */
+let TPLS = [], curTpl = null;
+
+fetch("/api/templates").then(r => r.json()).then(d => {
+  TPLS = d.templates || [];
+  if (!d.ready || !TPLS.length) {
+    $("tplList").innerHTML = '<div style="padding:14px;font-size:11px;color:var(--rtr-danger)">'
+      + "Bộ sinh tài liệu chưa nạp được bản mẫu nào.</div>";
+    return;
+  }
+  $("tplList").innerHTML = TPLS.map((t, i) =>
+    `<div class="tmpl${i===0?" on":""}" data-i="${i}"><div class="ic">`
+    + (t.kind === "docx" ? "DOC" : "XLS") + "</div><div>"
+    + `<div class="t">${esc(t.name)}</div><div class="d">${esc(t.desc||"")}</div>`
+    + `<div class="v">${esc(t.version||"")} · ${esc(t.category||"")}</div></div></div>`).join("");
+  $("tplList").querySelectorAll(".tmpl").forEach(el => el.onclick = () => pickTpl(+el.dataset.i));
+  pickTpl(0);
+}).catch(() => {
+  $("tplList").innerHTML = '<div style="padding:14px;font-size:11px;color:var(--rtr-danger)">Không gọi được server.</div>';
+});
+
+function pickTpl(i){
+  curTpl = TPLS[i];
+  $("tplList").querySelectorAll(".tmpl").forEach((el, j) => el.classList.toggle("on", j === i));
+  $("st1").classList.remove("on"); $("st2").classList.add("on"); $("st3").classList.remove("on");
+  let h = "";
+  curTpl.fields.forEach(f => {
+    if (f.type === "locked") {
+      h += `<div class="field"><div class="lb">${esc(f.label)} · fact khoá từ SOT</div>`
+        + `<div class="locked">${esc(f.value || "")}`
+        + `<div class="rid">${esc(f.record || "")}</div></div></div>`;
+    } else {
+      const id = "fld_" + f.key;
+      const req = f.required ? ' <span style="color:var(--rtr-signal)">bắt buộc</span>' : "";
+      h += `<div class="field"><div class="lb">${esc(f.label)}${req}</div>`;
+      h += f.multiline
+        ? `<textarea id="${id}" style="width:100%;min-height:84px;padding:10px;background:var(--rtr-panel-2);border:1px solid var(--rtr-line);outline:0;font:inherit;font-size:12px;resize:vertical"
+             placeholder="${esc(f.hint||"")}"></textarea>`
+        : `<input id="${id}" type="${f.format === "date" ? "date" : "text"}"
+             value="${esc(f.default||"")}" placeholder="${esc(f.hint||"")}">`;
+      h += "</div>";
+    }
+  });
+  h += '<div class="field"><button class="btn-primary" id="btnRender">Kiểm và xuất tài liệu</button>'
+     + '<div id="renderMsg" style="font-size:10.5px;color:var(--rtr-muted);margin-top:8px;line-height:1.5"></div></div>';
+  $("tplForm").innerHTML = h;
+  $("btnRender").onclick = doRender;
+  curTpl.fields.forEach(f => {
+    const el = $("fld_" + f.key);
+    if (el) el.addEventListener("input", () => { clearTimeout(window._dry); window._dry = setTimeout(dryRun, 400); });
+  });
+  updatePaper();
+  dryRun();
+}
+
+function collect(){
+  const p = {};
+  curTpl.fields.forEach(f => { const el = $("fld_" + f.key); if (el) p[f.key] = el.value; });
+  return p;
+}
+function setGate(state, cls){
+  const g = $("docGate");
+  g.textContent = state;
+  g.style.borderColor = cls === "ok" ? "var(--rtr-success)" : "var(--rtr-danger)";
+  g.style.color = cls === "ok" ? "var(--rtr-success)" : "var(--rtr-danger)";
+  g.style.background = "transparent";
+}
+function updatePaper(vals){
+  const p = collect();
+  let h = `<h5>${esc(curTpl.name)}</h5>`;
+  h += `<div style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#666;margin-bottom:8px">`
+     + `${esc(curTpl.version||"")} · ${curTpl.kind.toUpperCase()}</div>`;
+  curTpl.fields.filter(f => f.type !== "locked").slice(0, 5).forEach(f => {
+    if (p[f.key]) h += `<div><b>${esc(f.label)}:</b> ${esc(String(p[f.key]).slice(0,70))}</div>`;
+  });
+  const locked = curTpl.fields.filter(f => f.type === "locked");
+  if (locked.length) {
+    h += '<div style="margin-top:12px;padding-top:8px;border-top:1px solid #ddd">'
+      + '<div style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#666">Fact khoá từ SOT</div>';
+    locked.forEach(f => h += `<div>${esc(f.value||"")} <span style="color:#888">[${esc(f.record||"")}]</span></div>`);
+    h += "</div>";
+  }
+  $("docPaper").innerHTML = h;
+}
+async function dryRun(){
+  if (!curTpl) return;
+  updatePaper();
+  try {
+    const r = await fetch("/api/render", {method:"POST",
+      headers:{"content-type":"application/json","x-passcode":$("pass").value},
+      body: JSON.stringify({template: curTpl.id, params: collect(), dry_run: true})});
+    const d = await r.json();
+    setGate(d.state === "READY" ? "READY" : d.state, d.state === "READY" ? "ok" : "bad");
+    $("renderMsg").innerHTML = d.issues && d.issues.length
+      ? d.issues.map(i => "· " + esc(i)).join("<br>")
+      : "Đủ điều kiện xuất. Fact khoá đã giải được từ gói SOT đang phục vụ.";
+  } catch(e) { setGate("KHÔNG GỌI ĐƯỢC SERVER", "bad"); }
+}
+async function doRender(){
+  if (!curTpl) return;
+  $("btnRender").disabled = true;
+  $("renderMsg").textContent = "Đang xuất…";
+  try {
+    const r = await fetch("/api/render", {method:"POST",
+      headers:{"content-type":"application/json","x-passcode":$("pass").value},
+      body: JSON.stringify({template: curTpl.id, params: collect()})});
+    const d = await r.json();
+    if (d.state === "PASS") {
+      setGate("PASS", "ok");
+      $("st3").classList.add("on");
+      $("renderMsg").innerHTML = "Đã xuất <b>" + esc(d.filename) + "</b>"
+        + (d.records && d.records.length ? " · fact khoá từ " + d.records.map(esc).join(", ") : "")
+        + '<br><a href="' + d.download + '" style="color:var(--rtr-signal)">Tải tài liệu</a>';
+    } else {
+      setGate(d.state, "bad");
+      $("renderMsg").innerHTML = (d.issues || ["Không xuất được"]).map(i => "· " + esc(i)).join("<br>");
+    }
+  } catch(e) { setGate("LỖI", "bad"); $("renderMsg").textContent = String(e); }
+  $("btnRender").disabled = false;
 }
 
 /* ---------- 22 · audit ---------- */

@@ -6,8 +6,8 @@ nguon: kernel/registry/leader_allowlist.yaml (fail-closed) + l3_facts.yaml + pri
   style/
 duyet_boi: Lâm (AI Officer · SOT curator)
 thong_ke:
-  tong_record: 128
-  l3_nen: 108
+  tong_record: 129
+  l3_nen: 109
   l2_han_che: 18
   l4_van_phong: 2
   giu_ngoai_goi: 5
@@ -907,6 +907,16 @@ records:
   kernel_ref: null
   source: Lâm confirm 27/07/2026 · DISP.011 · kernel SIG.MACRO.BLUE_UAS_LISTING_IN_PROGRESS
   effective_date: '2026-07-27'
+- record: L3F.ENT.001
+  content: 'Tên pháp nhân Việt Nam dùng trên văn bản chính thức: CÔNG TY CỔ PHẦN REAL-TIME ROBOTICS VIỆT NAM (viết
+    tắt RTR). Đây là tên đứng trên phần tiêu đề công văn gửi cơ quan nhà nước. Phân biệt với pháp nhân Hoa Kỳ (xem
+    CAND.3.030). Thông tin công khai, xuất hiện trên mọi văn bản đã gửi đi.'
+  domain: company
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/HoSo_CNCL_2_Cay_Che_SauRieng/00_GUI_DI/A_Gui_Vinatea/00_CongVan_1906_2026_CV_RTR.docx
+  effective_date: null
 - record: CAND.1.005
   content: 'HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.
 

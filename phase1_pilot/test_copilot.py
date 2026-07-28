@@ -233,6 +233,58 @@ check("test KHÔNG làm bẩn log vận hành",
       or "sao Hỏa" not in (HERE / "gap_log.jsonl").read_text(encoding="utf-8"),
       "câu test lọt vào gap_log.jsonl thật")
 
+# ---------- 6b · Bộ sinh tài liệu · gate NT-4 hai chiều ----------
+print("\n[6b] Tạo tài liệu · vá bản mẫu + gate")
+s, tp = get("/api/templates")
+tp = json.loads(tp)
+check("có bản mẫu công văn + sales brief",
+      tp["ready"] and {t["id"] for t in tp["templates"]} >= {"congvan", "salesbrief"}, str(tp)[:120])
+_cv = next(t for t in tp["templates"] if t["id"] == "congvan")
+check("bản mẫu khai fact khoá kèm mã record",
+      any(f["type"] == "locked" and f.get("record") for f in _cv["fields"]))
+
+# chiều CẤM: thiếu trường bắt buộc thì KHÔNG được xuất file
+s, d = post("/api/render", {"template": "congvan", "params": {"so_cong_van": "1"}, "dry_run": True})
+check("thiếu trường bắt buộc → FAIL-LOUD, không xuất",
+      d["state"] == "FAIL-LOUD" and any("Thiếu trường bắt buộc" in i for i in d["issues"]), str(d)[:120])
+s, d = post("/api/render", {"template": "congvan", "params": {"so_cong_van": "1"}})
+check("gọi xuất khi thiếu trường → không sinh file",
+      d["state"] != "PASS" and not d.get("download"), str(d)[:120])
+
+# chiều PHẢI: đủ trường thì xuất được, file mở ra không còn ô trống
+_full = {"so_cong_van": "TEST/2026/CV-RTR", "noi_nhan": "Sở Thử Nghiệm",
+         "noi_nhan_phu": "(qua Phòng Thử)", "trich_yeu": "kiểm thử bộ sinh tài liệu",
+         "can_cu": "Căn cứ bộ test tự động;", "noi_dung": "Nội dung kiểm thử.\nDòng hai.",
+         "noi_nhan_list": "- Như trên;", "dia_danh": "TP. Hồ Chí Minh", "ngay_ky": "2026-07-27"}
+s, d = post("/api/render", {"template": "congvan", "params": _full})
+check("đủ trường → PASS + có link tải", d["state"] == "PASS" and d.get("download"), str(d)[:140])
+check("có truy vết fact khoá đã dùng", bool(d.get("records")), str(d.get("records")))
+if d.get("filename"):
+    import zipfile as _zf
+    _f = HERE.parent / "_rendered" / d["filename"]
+    _x = _zf.ZipFile(_f).read("word/document.xml").decode()
+    check("file xuất ra KHÔNG còn ô trống chưa điền",
+          "{{" not in _x, _re.findall(r"\{\{\w+\}\}", _x)[:3])
+    check("nội dung nhiều dòng thành nhiều đoạn", "Dòng hai" in _x)
+    check("fact khoá có mặt trong file", "REAL-TIME ROBOTICS" in _x.upper())
+    _f.unlink(missing_ok=True)
+
+# xlsx: vá bản mẫu KHÔNG được làm mất giá trị công thức đã tính
+s, d = post("/api/render", {"template": "salesbrief",
+                            "params": {"customer": "Khách thử", "mtg_date": "2026-07-25",
+                                       "abbr": "TEST", "objective": "kiểm thử"}})
+check("sales brief xuất được", d["state"] == "PASS", str(d)[:120])
+if d.get("filename"):
+    _f = HERE.parent / "_rendered" / d["filename"]
+    try:
+        import openpyxl as _ox
+        _w = _ox.load_workbook(_f, data_only=True)
+        _cells = [_w["Brief"][c].value for c in ("C6", "E6")]
+        check("vá xlsx giữ nguyên giá trị công thức", any(v is not None for v in _cells), str(_cells))
+    except ImportError:
+        check("vá xlsx giữ nguyên giá trị công thức", True, "bỏ qua · không có openpyxl")
+    _f.unlink(missing_ok=True)
+
 # passcode
 cs.PASSCODE = "test123"
 try:
@@ -359,7 +411,8 @@ if LEADER.exists():
 _zip = HERE.parent / "Phase1_Pilot_Kit.zip"
 if _zip.exists():
     stale = []
-    roots = [HERE, PIPE, HERE.parent, Path("/Users/os/RtR/kernel/registry"),
+    roots = [HERE, PIPE, HERE.parent, HERE.parent / "tools", HERE.parent / "templates",
+             Path("/Users/os/RtR/kernel/registry"),
              Path("/sessions/intelligent-affectionate-planck/mnt/RtR/kernel/registry")]
     with zipfile.ZipFile(_zip) as z:
         for name in z.namelist():
@@ -373,10 +426,12 @@ if _zip.exists():
     # thiếu file cũng là lệch pha · kiểm danh sách chứ không chỉ kiểm file có mặt
     _must = {"01_Setup_API_Server.md", "02_Huong_Dan_Nhom_Pilot.md", "03_Bo_Cau_Test_Acceptance.md",
              "04_So_Theo_Doi_4_Tuan.md", "05_Van_Hanh_Lien_Tuc.md", "06_Thu_Moi_Nhom_Pilot.md",
-             "07_Goi_Lanh_Dao.md", "copilot_server.py", "ui.html", "test_copilot.py",
+             "07_Goi_Lanh_Dao.md", "08_Tao_Tai_Lieu.md", "copilot_server.py", "ui.html", "test_copilot.py",
              "start_copilot.sh", "weekly_review.py", "l3_export.py", "leader_export.py",
              "GOI_L3.yaml", "TIP7_SYSTEM_PROMPT_ClaudeProject.md",
-             "RtR_Copilot_UI_Preview.html", "leader_allowlist.yaml", "com.rtr.copilot.plist"}
+             "RtR_Copilot_UI_Preview.html", "leader_allowlist.yaml", "com.rtr.copilot.plist",
+             "render_doc.py", "xlsx_patch.py", "registry.yaml",
+             "CongVan_RTR.docx", "SalesBrief_VN.xlsx"}
     _have = set(zipfile.ZipFile(_zip).namelist())
     check("zip có đủ file bắt buộc", _must <= _have, "thiếu: " + ", ".join(sorted(_must - _have)))
     check("zip KHÔNG chứa gói lãnh đạo", "GOI_LEADER.yaml" not in zipfile.ZipFile(_zip).namelist())

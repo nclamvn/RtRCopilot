@@ -319,6 +319,17 @@ mot hai ba may sao vay nhi nhe oi khi lam sau truoc nua roi chua co phai can bie
 
 PACK_DATE = (re.search(r"ngay_sinh: '?([\d-]+)'?", GOI_TEXT) or [None, "?"])[1]
 
+# ---------- Document Studio · vá bản mẫu (NT-4) ----------
+sys.path.insert(0, str(HERE.parent / "tools"))
+try:
+    import render_doc
+    TEMPLATES = render_doc.load_yaml(HERE.parent / "templates" / "registry.yaml")["templates"]
+except Exception as _e:          # thiếu bản mẫu thì màn Tạo tài liệu báo rõ, không sập server
+    render_doc, TEMPLATES = None, []
+    print(f"CHÚ Ý: chưa nạp được bộ sinh tài liệu ({_e}) · màn Tạo tài liệu sẽ báo chưa sẵn sàng")
+
+RENDER_DIR = HERE.parent / "_rendered"
+
 
 def read_jsonl(path, limit=None):
     if not path.exists():
@@ -360,6 +371,31 @@ class Handler(BaseHTTPRequestHandler):
             hits = search(q, top=8)
             out = [{k: r.get(k) for k in ("record", "content", "domain", "tier", "status")} for _, r in hits]
             return self._send(200, json.dumps({"results": out}, ensure_ascii=False))
+        if self.path == "/api/templates":
+            out = [{k: t.get(k) for k in ("id", "name", "desc", "kind", "category", "version")}
+                   | {"fields": [{kk: f.get(kk) for kk in
+                                  ("key", "label", "type", "required", "multiline", "hint",
+                                   "format", "default", "record", "value", "note")}
+                                 for f in t["fields"] if f["type"] != "derived"]}
+                   for t in TEMPLATES]
+            return self._send(200, json.dumps({"ready": bool(TEMPLATES), "templates": out},
+                                              ensure_ascii=False))
+        if self.path.startswith("/api/download"):
+            name = urllib.request.unquote(self.path.split("f=", 1)[-1]) if "f=" in self.path else ""
+            f = (RENDER_DIR / Path(name).name)          # chặn đi ra ngoài thư mục
+            if not f.exists() or f.parent != RENDER_DIR:
+                return self._send(404, json.dumps({"error": "không có file"}))
+            ctype = ("application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                     if f.suffix == ".docx" else
+                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            data = f.read_bytes()
+            self.send_response(200)
+            self.send_header("content-type", ctype)
+            self.send_header("content-disposition", f'attachment; filename="{f.name}"')
+            self.send_header("content-length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
         if self.path == "/api/gaps":
             return self._send(200, json.dumps({"groups": group_gaps(read_jsonl(GAP_LOG))},
                                               ensure_ascii=False))
@@ -391,6 +427,40 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(404, json.dumps({"error": "not found"}))
 
     def do_POST(self):
+        if self.path == "/api/render":
+            if PASSCODE and self.headers.get("x-passcode", "") != PASSCODE:
+                return self._send(403, json.dumps({"error": "Sai mã nội bộ"}))
+            if not render_doc:
+                return self._send(500, json.dumps(
+                    {"state": "FAIL-LOUD", "issues": ["Bộ sinh tài liệu chưa nạp được"]},
+                    ensure_ascii=False))
+            try:
+                length = int(self.headers.get("content-length", 0))
+                body = json.loads(self.rfile.read(length))
+                tid = body.get("template", "")
+                params = body.get("params", {}) or {}
+                dry = bool(body.get("dry_run"))
+                if dry:
+                    state, values, issues, _ = render_doc.resolve(tid, params)
+                    return self._send(200, json.dumps(
+                        {"state": state, "issues": issues,
+                         "locked": {k: v for k, v in values.items() if v != ""}},
+                        ensure_ascii=False))
+                r = render_doc.render(tid, params, out_dir=RENDER_DIR)
+                if r.get("file"):
+                    r["download"] = "/api/download?f=" + urllib.request.quote(Path(r["file"]).name)
+                    r["filename"] = Path(r["file"]).name
+                    r.pop("file", None)
+                    with QA_LOG.open("a", encoding="utf-8") as f:
+                        f.write(json.dumps({"t": datetime.now().isoformat(timespec="seconds"),
+                                            "mode": MODE, "q": f"[TẠO TÀI LIỆU] {tid}",
+                                            "a": f"{r['state']} · {r['filename']} · record: "
+                                                 f"{', '.join(r.get('records') or []) or 'không có fact khoá'}"},
+                                           ensure_ascii=False) + "\n")
+                return self._send(200, json.dumps(r, ensure_ascii=False))
+            except Exception as e:
+                return self._send(500, json.dumps(
+                    {"state": "FAIL-LOUD", "issues": [str(e)[:300]]}, ensure_ascii=False))
         if self.path != "/api/chat":
             return self._send(404, json.dumps({"error": "not found"}))
         if PASSCODE and self.headers.get("x-passcode", "") != PASSCODE:

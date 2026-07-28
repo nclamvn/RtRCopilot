@@ -1,0 +1,139 @@
+# Danh mục bản mẫu · RtR Copilot Document Studio
+#
+# Nguyên tắc NT-4: tài liệu sinh ra một cách xác định. LLM chỉ bóc tham số từ
+# yêu cầu người dùng; bộ render mới là thứ tạo file; fact khoá lấy thẳng từ gói
+# SOT và KHÔNG sửa tay được. Thiếu trường bắt buộc thì CHẶN, không xuất bản nháp.
+#
+# Ba loại trường:
+#   user    · người nhập
+#   locked  · lấy từ gói SOT theo record + biểu thức bóc · không sửa tay
+#   derived · tính từ trường khác (ví dụ ngày tách thành ngày/tháng/năm)
+
+schema_version: '1.0'
+last_updated: '2026-07-27'
+
+templates:
+
+- id: congvan
+  name: Công văn gửi cơ quan nhà nước
+  desc: Thể thức Nghị định 30/2020 · rút từ công văn thật đã gửi Bộ KH&CN
+  file: CongVan_RTR.docx
+  kind: docx
+  category: Đối ngoại
+  version: v1.0
+  fields:
+  - key: so_cong_van
+    label: Số công văn
+    type: user
+    required: true
+    hint: "Dạng 1906/2026/CV-RTR"
+  - key: noi_nhan
+    label: Nơi nhận
+    type: user
+    required: true
+    hint: "Bộ Khoa học và Công nghệ"
+  - key: noi_nhan_phu
+    label: Đơn vị chuyển tiếp
+    type: user
+    required: false
+    hint: "(qua Vụ ... - địa chỉ)"
+  - key: trich_yeu
+    label: Trích yếu (sau chữ V/v)
+    type: user
+    required: true
+  - key: can_cu
+    label: Phần căn cứ
+    type: user
+    required: true
+    multiline: true
+    hint: "Mỗi căn cứ một dòng, bắt đầu bằng 'Căn cứ ...'"
+  - key: noi_dung
+    label: Nội dung
+    type: user
+    required: true
+    multiline: true
+  - key: dia_danh
+    label: Địa danh
+    type: user
+    required: true
+    default: "TP. Hồ Chí Minh"
+  - key: ngay_ky
+    label: Ngày ký
+    type: user
+    required: true
+    format: date
+  - key: ngay
+    label: Ngày
+    type: derived
+    from: ngay_ky
+    part: day
+  - key: thang
+    label: Tháng
+    type: derived
+    from: ngay_ky
+    part: month
+  - key: nam
+    label: Năm
+    type: derived
+    from: ngay_ky
+    part: year
+  - key: noi_nhan_list
+    label: Nơi nhận (danh sách cuối công văn)
+    type: user
+    required: true
+    multiline: true
+    hint: "Mỗi dòng một nơi, bắt đầu bằng dấu gạch: - Như trên;"
+  - key: nguoi_ky
+    label: Người ký
+    type: locked
+    record: L3F.RES.002
+    extract: 'Lương Việt Quốc'
+    value: "TS. Lương Việt Quốc"
+    note: Lấy từ hồ sơ CEO trong SOT · không sửa trong luồng tạo tài liệu
+  - key: ten_phap_nhan
+    label: Tên pháp nhân
+    type: locked
+    record: L3F.ENT.001
+    extract: 'REAL-TIME ROBOTICS VIỆT NAM'
+    value: "REAL-TIME ROBOTICS VIỆT NAM"
+    note: >
+      Trỏ vào fact độc lập về tên pháp nhân VN. Trước đây bám vào dòng tham chiếu
+      chéo trong CAND.3.030 (record về pháp nhân Hoa Kỳ) · QA chỉ ra là mong manh:
+      ai dọn record đó bỏ dòng tham chiếu là chặn luôn việc soạn công văn.
+
+- id: salesbrief
+  name: Sales brief sau buổi gặp
+  desc: Workbook tiếng Việt · tự tính điểm cơ hội · điền trong 24h sau buổi gặp
+  file: SalesBrief_VN.xlsx
+  kind: xlsx
+  sheet: Brief
+  category: Kinh doanh
+  version: v2.1
+  fields:
+  - key: customer
+    label: Tên khách hàng
+    type: user
+    required: true
+    cell: C6
+  - key: mtg_date
+    label: Ngày gặp
+    type: user
+    required: true
+    format: date
+    cell: E6
+  - key: abbr
+    label: Mã khách hàng
+    type: user
+    required: true
+    cell: C7
+  - key: location
+    label: Địa điểm
+    type: user
+    required: false
+    cell: C11
+  - key: objective
+    label: Mục tiêu buổi gặp
+    type: user
+    required: true
+    multiline: true
+    cell: B14
