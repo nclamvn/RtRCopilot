@@ -75,10 +75,11 @@ def main():
             "effective_date": f.get("effective_date"),
         })
 
-    # ---- GIÁ BÁN + GIÁ VỐN + ĐỊNH VỊ + VOICE · một gói nội bộ (Lâm chốt 28/07: "nội bộ không gì mật") ----
-    # Mọi nhân viên nội bộ thấy hết: giá bán (prices.yaml), giá vốn BOM (boms.yaml), định vị
-    # (derived_costs, chỉ id đã khai), văn phong CEO (style/). Đăng nhập từng người giữ để TRUY VẾT.
-    # Vẫn giữ ngoài gói: margin chưa-kiểm (derived DRAFT/FLAG · doctrine A3) + deal/intel bên thứ ba.
+    # ---- GIÁ BÁN + ĐỊNH VỊ + VOICE · gói nền cho MỌI nhân viên ----
+    # Nhân viên thấy: giá BÁN (prices.yaml), định vị (derived_costs · chỉ id đã khai), văn phong CEO.
+    # KHÔNG có ở đây (ranh giới khôi phục 28/07/2026): giá VỐN linh kiện + nhà cung cấp (boms.yaml) —
+    # chỉ vào gói LÃNH ĐẠO qua leader_export (mục l2_cost). Nhân viên thấy giá mình BÁN, không thấy giá mình MUA.
+    # Cũng ngoài gói: margin chưa-kiểm (derived DRAFT/FLAG · doctrine A3) + deal/intel bên thứ ba.
     allow = yaml.safe_load((K / "leader_allowlist.yaml").read_text()) or {}
 
     def take_l2(section_key, reg_file, domain):
@@ -106,23 +107,12 @@ def main():
     take_l2("l2_pricing", "prices.yaml", "pricing")
     take_l2("l2_positioning", "derived_costs.yaml", "positioning")
 
-    # Giá vốn linh kiện (BOM) · nội bộ-không-mật (Lâm 28/07): gộp cho mọi nhân viên.
-    boms = yaml.safe_load((K / "boms.yaml").read_text()) or {}
-    for f in boms.get("facts", []):
-        vendor = f.get("vendor") or "?"
-        country = f.get("country") or ""
-        unit = f.get("unit") or ""
-        records.append({
-            "record": f["id"],
-            "content": (f"Giá vốn linh kiện · {f.get('key', f['id'])}: {f.get('cost_usd')} USD"
-                        + (f"/{unit}" if unit and unit != "USD" else "")
-                        + f" · nhà cung cấp: {vendor}"
-                        + (f" ({country})" if country else "")
-                        + (f" · NDAA {f['ndaa_status']}" if f.get("ndaa_status") else "")),
-            "domain": "cost", "tier": "L2", "status": "noi_bo", "kernel_ref": None,
-            "source": (f.get("source") or {}).get("file") if isinstance(f.get("source"), dict) else f.get("source"),
-            "effective_date": None,
-        })
+    # GIÁ VỐN cố ý KHÔNG ở gói nhân viên (leader-only · mục l2_cost trong allowlist).
+    # Chống trôi ngược: chặn MỌI id nguồn boms.yaml (không chỉ tiền tố BOM.* — còn 9 SKU.* giá vốn).
+    _cost_ids = {f["id"] for f in (yaml.safe_load((K / "boms.yaml").read_text()) or {}).get("facts", [])}
+    for r in records:
+        if r.get("record") in _cost_ids:
+            errors.append(f"giá vốn (boms.yaml) không được vào gói nhân viên · leader-only: {r['record']}")
 
     # Văn phong CEO (L4) · để soạn thảo đúng giọng công ty. (allowlist path là kernel-root-relative)
     for rel in (allow.get("l4_voice") or {}).get("allow_files", []):

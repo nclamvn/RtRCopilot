@@ -5,8 +5,9 @@ Nguyên tắc fail-closed: chỉ id nào có trong `kernel/registry/leader_allow
 mới được vào gói. Fact mới trong kernel KHÔNG tự động ra ngoài. Quên khai báo =
 fact không ra (an toàn), ngược với kiểu lọc-bỏ (quên lọc = rò).
 
-Gói này chứa thông tin HẠN CHẾ (giá bán, chiết khấu). Xem ràng buộc RB.1-RB.4
-trong allowlist: chỉ chạy được ở chế độ LIVE, bắt buộc passcode riêng.
+Gói này chứa thông tin HẠN CHẾ: giá bán, chiết khấu, VÀ giá vốn linh kiện + nhà cung
+cấp (l2_cost · leader-only · nhân viên không có). Xem ràng buộc RB.1-RB.4 trong
+allowlist: chỉ chạy được ở chế độ LIVE, bắt buộc passcode riêng.
 
 Usage: python3 leader_export.py [--out GOI_LEADER.yaml]
 """
@@ -95,15 +96,43 @@ def main():
                 denied_hits.append(f"{reg_file}:{fid} (không trong allowlist · giữ ngoài gói)")
         return out
 
-    # Nội bộ-không-mật (Lâm 28/07): giá bán + định vị đã gộp vào GÓI NỀN (l3_export) cho mọi nhân
-    # viên → leader nhận QUA base, KHÔNG take() lại ở đây (tránh nhân đôi + xung đột nhãn). Cổng leak
-    # 4a/4b bên dưới vẫn quét TOÀN gói (gồm base) nên giá vốn BOM/margin chưa-kiểm vẫn bị chặn.
-    l2 = []
+    # Giá bán + định vị + voice: đã ở GÓI NỀN (base, từ l3_export) cho mọi nhân viên → leader nhận
+    # qua base, không take() lại (tránh nhân đôi). Leader THÊM đúng một lớp: giá VỐN BOM (l2_cost),
+    # thứ đã rời khỏi gói nhân viên khi khôi phục ranh giới 28/07/2026 (nhân viên thấy BÁN, leader thấy MUA).
+    def take_cost():
+        sec = allow.get("l2_cost") or {}
+        if not sec.get("include_all"):
+            return []
+        reg = load(K / "registry/boms.yaml")
+        out = []
+        for f in reg.get("facts", []):
+            vendor = f.get("vendor") or "?"
+            country = f.get("country") or ""
+            unit = f.get("unit") or ""
+            # Doctrine A3: fact giá vốn chưa kiểm chứng (provenance claim/flagged · vd SKU.* từ worksheet
+            # Almo) phải mang nhãn CHƯA KIỂM — không cite ra ngoài khi chưa CFO duyệt.
+            chua_kiem = f.get("provenance_level") not in ("verified_primary", "verified")
+            out.append({
+                "record": f["id"],
+                "content": (f"Giá vốn linh kiện · {f.get('key', f['id'])}: {f.get('cost_usd')} USD"
+                            + (f"/{unit}" if unit and unit != "USD" else "")
+                            + f" · nhà cung cấp: {vendor}"
+                            + (f" ({country})" if country else "")
+                            + (f" · NDAA {f['ndaa_status']}" if f.get("ndaa_status") else "")
+                            + (" · CHƯA KIỂM CHỨNG · CFO duyệt trước khi cite" if chua_kiem else "")),
+                "domain": "cost", "tier": "L2", "status": "restricted", "kernel_ref": f["id"],
+                "source": (f.get("source") or {}).get("file") if isinstance(f.get("source"), dict) else f.get("source"),
+                "effective_date": None,
+                "canh_bao": "THÔNG TIN HẠN CHẾ · giá vốn + nhà cung cấp · chỉ nhóm lãnh đạo · không chuyển tiếp",
+            })
+        return out
+
+    l2 = take_cost()
 
     # ---- 3 · L4 văn phong: giờ nằm trong base (l3_export gộp · một gói nội bộ 28/07) ----
     l4 = []
 
-    records = base + l2 + l4  # = base (một gói: mọi thứ đã ở base, GOI_LEADER == GOI_L3)
+    records = base + l2 + l4  # base (gói nhân viên) + l2 (giá vốn BOM leader-only) · GOI_LEADER ⊋ GOI_L3
 
     # ---- 4 · CỔNG TỰ KIỂM · chứng minh gói KHÔNG chứa thứ bị cấm ----
     # Không đủ nếu chỉ "không đọc tới": phải quét thành phẩm tìm dấu vết dữ liệu cấm.
@@ -116,7 +145,7 @@ def main():
     #  · quét CON SỐ chỉ trên record GIÁ có cấu trúc (một dòng do exporter sinh),
     #    không quét văn xuôi tự do: số nhỏ như 400 va vào bất kỳ đoạn văn nào.
     added = l2 + l4
-    if "--selftest" in sys.argv:   # chứng minh cổng MARGIN còn cắn (giá vốn BOM giờ hợp lệ · nội bộ 28/07)
+    if "--selftest" in sys.argv:   # tiêm 1 record margin chưa-kiểm để chứng minh cổng 4b còn cắn
         added = added + [{"record": "SELFTEST.INJECT", "tier": "L2", "domain": "positioning",
                           "content": "DERIVED.ALMO.MARGIN.HERA_VN · biên lợi nhuận chưa kiểm 42%", "canh_bao": "x"}]
     pack_text = yaml.dump(records + (added[-1:] if "--selftest" in sys.argv else []), allow_unicode=True)
@@ -128,8 +157,16 @@ def main():
         import re as _re
         return bool(_re.search(r"(?<![\d.,])%s(?![\d.,])" % _re.escape(str(n)), hay))
 
-    # 4a · GIÁ VỐN BOM: Lâm chốt 28/07 "nội bộ không gì mật" → giá vốn giờ HỢP LỆ trong gói chung
-    #       (gộp qua l3_export). Không còn quét chặn BOM. Truy vết bằng đăng nhập từng người.
+    # 4a · GIÁ VỐN leader-only (ranh giới khôi phục 28/07/2026): base = gói NHÂN VIÊN, KHÔNG được
+    #      chứa id nào của boms.yaml. Canh theo TẬP ID NGUỒN (25 fact: 16 BOM.* linh kiện + 9 SKU.*
+    #      giá vốn thành phẩm), KHÔNG theo tiền tố "BOM." — tiền tố sót 9 SKU. Leader tự thêm qua l2.
+    cost_ids = {f["id"] for f in (load(K / "registry/boms.yaml") or {}).get("facts", [])}
+    scan_base = list(base)
+    if "--selftest" in sys.argv and cost_ids:
+        scan_base.append({"record": sorted(cost_ids)[0]})   # tiêm 1 id giá vốn THẬT vào base
+    for r in scan_base:
+        if r.get("record") in cost_ids:
+            leaks.append(f"giá vốn lọt vào GÓI NHÂN VIÊN (base): {r['record']}")
 
     # 4b · fact chi phí phái sinh CHƯA KIỂM (margin DRAFT/FLAG) · doctrine A3 vẫn cấm phơi số chưa kiểm
     derived = load(K / "registry/derived_costs.yaml")
@@ -150,12 +187,14 @@ def main():
             leaks.append(f"record hạn chế thiếu nhãn cảnh báo: {r['record']}")
 
     if "--selftest" in sys.argv:
-        if leaks:
-            print("SELFTEST OK · cổng còn cắn · bắt được bản tiêm:")
+        bom_bit = any("giá vốn lọt vào" in l for l in leaks)       # cổng 4a (giá vốn vào gói nhân viên)
+        margin_bit = any("chi phí bị cấm" in l for l in leaks)     # cổng 4b (margin chưa kiểm)
+        if bom_bit and margin_bit:
+            print("SELFTEST OK · cả hai cổng còn cắn (4a giá vốn leader-only + 4b margin chưa kiểm):")
             for l in leaks:
                 print("   !", l)
             sys.exit(0)
-        print("SELFTEST FAIL · ĐÃ TIÊM GIÁ VỐN MÀ CỔNG KHÔNG BẮT · cổng hỏng, không dùng gói này")
+        print(f"SELFTEST FAIL · cổng không bắt đủ bản tiêm · 4a(BOM)={bom_bit} 4b(margin)={margin_bit} · không dùng gói này")
         sys.exit(3)
 
     if leaks:
@@ -172,11 +211,12 @@ def main():
 
     doc = {
         "goi": "RtR Copilot · GÓI LÃNH ĐẠO",
-        "canh_bao_dau_goi": ("GÓI HẠN CHẾ · chứa giá bán và chính sách chiết khấu. "
+        "canh_bao_dau_goi": ("GÓI HẠN CHẾ · chứa giá bán, chính sách chiết khấu VÀ giá vốn linh kiện "
+                             "+ tên nhà cung cấp (leader-only · nhân viên không có). "
                              "Chỉ phục vụ nhóm lãnh đạo đã được cấp quyền. "
                              "Bắt buộc chạy chế độ LIVE + passcode riêng (RB.1-RB.3)."),
         "ngay_sinh": "2026-07-27",
-        "nguon": "kernel/registry/leader_allowlist.yaml (fail-closed) + l3_facts.yaml + prices.yaml + derived_costs.yaml + style/",
+        "nguon": "kernel/registry/leader_allowlist.yaml (fail-closed) + l3_facts.yaml + prices.yaml + derived_costs.yaml + boms.yaml (l2_cost leader-only) + style/",
         "duyet_boi": allow.get("approved_by"),
         "thong_ke": {
             "tong_record": len(records),

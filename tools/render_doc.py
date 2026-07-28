@@ -161,7 +161,11 @@ def render(tid, params, out_dir=None):
     tpl = meta["tpl"]
     out_dir = Path(out_dir or (ROOT / "_rendered"))
     out_dir.mkdir(exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    # Tên file phải duy nhất kể cả khi nhiều người bấm xuất trong CÙNG MỘT GIÂY.
+    # Tester ảo 28/07: 5 người xuất đồng thời → 4 file trùng tên, người sau tải về
+    # tài liệu của người trước. Thêm hậu tố ngẫu nhiên ngắn + kiểm tồn tại.
+    import secrets
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + secrets.token_hex(3)
     ext = ".docx" if tpl["kind"] == "docx" else ".xlsx"
     out = out_dir / f"{tpl['id']}_{stamp}{ext}"
     src = TPL_DIR / tpl["file"]

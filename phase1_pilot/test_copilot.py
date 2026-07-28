@@ -447,6 +447,16 @@ s, d = post("/api/render", {"template": "salesbrief",
                             "params": {"customer": "Khách thử", "mtg_date": "2026-07-25",
                                        "abbr": "TEST", "objective": "kiểm thử"}})
 check("sales brief xuất được", d["state"] == "PASS", str(d)[:120])
+# Regression tester-ảo 28/07: 5 người xuất cùng giây → file KHÔNG được trùng tên
+_ten = set()
+for _i in range(5):
+    _s, _r = post("/api/render", {"template": "salesbrief", "params": {
+        "customer": f"KH{_i}", "mtg_date": "2026-07-28", "abbr": f"A{_i}", "objective": "x"}})
+    if _r.get("filename"):
+        _ten.add(_r["filename"])
+        (HERE.parent / "_rendered" / _r["filename"]).unlink(missing_ok=True)
+check("5 lần xuất liên tiếp KHÔNG trùng tên file", len(_ten) == 5,
+      f"chỉ có {len(_ten)}/5 tên khác nhau · người sau tải về file người trước")
 if d.get("filename"):
     _f = HERE.parent / "_rendered" / d["filename"]
     try:
@@ -516,20 +526,33 @@ import subprocess
 PIPE = HERE.parent / "l3_pipeline"
 LEADER = PIPE / "GOI_LEADER.yaml"
 
-# MỘT GÓI nội bộ (Lâm 28/07 "nội bộ không gì mật"): mọi nhân viên thấy giá bán + giá VỐN BOM + voice.
-# GIỮ NGOÀI gói (khác bản chất "mật"): margin chưa-kiểm (doctrine A3 cấm phơi số chưa kiểm). Truy vết
-# bằng đăng nhập từng người. GOI_LEADER giờ == GOI_L3 (mọi thứ ở base).
-check("gói chung CÓ giá bán", all(x in norm(cs.GOI_TEXT) for x in ("msrp", "discount")), "thiếu giá bán")
-check("gói chung CÓ giá vốn BOM (nội bộ-không-mật)",
-      any(t in cs.GOI_TEXT for t in ("BOM.HERA", "BOM.VEGA")), "thiếu giá vốn (đáng lẽ có)")
-check("gói chung VẪN KHÔNG chứa margin chưa kiểm (doctrine A3)",
+# RANH GIỚI KHÔI PHỤC (28/07/2026 · đảo "nội bộ không gì mật" đúng MỘT lớp): nhân viên thấy giá
+# BÁN + chiết khấu + định vị, KHÔNG thấy giá VỐN (boms.yaml · 25 fact = 16 BOM.* + 9 SKU.*). Chỉ
+# gói lãnh đạo có giá vốn + nhà cung cấp. Ngoài MỌI gói: margin chưa-kiểm (doctrine A3). Khoá 2 chiều.
+# Kiểm theo RECORD ID chứ không phải text: có fact mô tả schema chứa chuỗi "BOM.*" và fact UI nói "cây BOM".
+import yaml
+def _cost_ids_src():
+    for _b in (Path("/Users/os/RtR/kernel/registry"),
+               Path("/sessions/intelligent-affectionate-planck/mnt/RtR/kernel/registry")):
+        if (_b / "boms.yaml").exists():
+            return {f["id"] for f in (yaml.safe_load((_b / "boms.yaml").read_text()) or {}).get("facts", [])}
+    return set()
+_staff_ids = {r["record"] for r in cs.RECORDS}
+_cost_ids = _cost_ids_src()
+check("nạp được tập id giá vốn nguồn (boms.yaml)", len(_cost_ids) >= 16, f"chỉ thấy {len(_cost_ids)} id")
+check("gói nhân viên CÓ giá bán", all(x in norm(cs.GOI_TEXT) for x in ("msrp", "discount")), "thiếu giá bán")
+check("gói nhân viên KHÔNG có giá vốn (leader-only · ranh giới khôi phục)",
+      not (_staff_ids & _cost_ids), "LỘ giá vốn vào gói nhân viên: " + ", ".join(sorted(_staff_ids & _cost_ids)[:3]))
+check("gói nhân viên VẪN KHÔNG chứa margin chưa kiểm (doctrine A3)",
       not any(t in cs.GOI_TEXT for t in ("ALMO.MARGIN", "BASE_BUILD_COST")), "lộ margin chưa kiểm")
 
 if LEADER.exists():
     lead = LEADER.read_text(encoding="utf-8")
     ln = norm(lead)
-    check("gói lãnh đạo (== gói chung) CÓ giá bán + giá vốn",
-          "msrp" in ln and any(t in lead for t in ("BOM.HERA", "BOM.VEGA")))
+    _lead_ids = {r["record"] for r in (yaml.safe_load(lead) or {}).get("records", [])}
+    check("gói lãnh đạo CÓ giá bán + ĐỦ giá vốn (25 fact boms.yaml)",
+          "msrp" in ln and _cost_ids and _cost_ids <= _lead_ids,
+          "gói lãnh đạo thiếu giá vốn: " + ", ".join(sorted(_cost_ids - _lead_ids)[:3]))
     check("gói lãnh đạo VẪN KHÔNG chứa margin chưa kiểm",
           "ALMO.MARGIN" not in lead and "BASE_BUILD_COST" not in lead, "lộ margin/claim")
     # cổng của exporter phải tự chứng minh còn cắn
@@ -553,6 +576,55 @@ r = subprocess.run([sys.executable, str(HERE / "copilot_server.py")],
                    capture_output=True, text=True, env=env, timeout=20)
 check("server TỪ CHỐI gói lãnh đạo khi không có passcode (RB.2)",
       r.returncode != 0 and "passcode" in (r.stdout + r.stderr).lower(), (r.stdout + r.stderr)[:100])
+
+# ---------- 6c · Chống trôi CHÍNH SÁCH · văn bản nói gì thì gói phải đúng thế ----------
+# Tester ảo 28/07 bắt được: allowlist ghi "deny toàn bộ 25 fact giá vốn BOM" trong khi
+# gói thật chứa đủ 25 fact đó. KHÔNG phải rò rỉ (Lâm đã đổi chính sách 28/07) mà là
+# VĂN BẢN NÓI MỘT ĐẰNG CODE LÀM MỘT NẺO — người đọc allowlist sau này tin nhầm.
+# Cổng này so trực tiếp: mục deny còn hiệu lực → id của nguồn đó KHÔNG được có trong gói.
+print("\n[6c] Chính sách viết ra == gói thật")
+_alw = None
+for _b in (Path("/Users/os/RtR/kernel/registry"),
+           Path("/sessions/intelligent-affectionate-planck/mnt/RtR/kernel/registry")):
+    if (_b / "leader_allowlist.yaml").exists():
+        _alw = _b
+        break
+if _alw:
+    import yaml as _y
+    _a = _y.safe_load((_alw / "leader_allowlist.yaml").read_text(encoding="utf-8")) or {}
+    _pack_ids = {r["record"] for r in cs.RECORDS}
+    _allowed = set()
+    for _sec in ("l2_pricing", "l2_positioning"):
+        _allowed |= set((_a.get(_sec) or {}).get("allow", []))
+    _drift = []
+    for _d in _a.get("deny", []):
+        _what = str(_d.get("what", ""))
+        if _what.startswith("[LỊCH SỬ"):
+            continue                      # giữ làm vết lịch sử · không còn ràng buộc
+        _m = _re.search(r"registry/(\w+\.yaml)", _what)
+        if not _m:
+            continue                      # mục deny mô tả bằng lời (deal, insight) · kiểm ở persona
+        _f = _alw / _m.group(1)
+        if not _f.exists():
+            continue
+        _reg = _y.safe_load(_f.read_text(encoding="utf-8")) or {}
+        _cam = {x["id"] for x in _reg.get("facts", [])} - _allowed
+        _lot = sorted(_cam & _pack_ids)
+        if _lot:
+            _drift.append(f"{_m.group(1)}: {len(_lot)} id bị deny vẫn nằm trong gói "
+                          f"({', '.join(_lot[:3])}…)")
+    check("mục 'deny' còn hiệu lực khớp với gói thật", not _drift, " | ".join(_drift))
+
+    _docs = HERE / "07_Goi_Lanh_Dao.md"
+    if _docs.exists():
+        _t = _docs.read_text(encoding="utf-8")
+        # Ranh giới HIỆN HÀNH: giá vốn leader-only. Tài liệu phải nói ĐÚNG thế (marker ổn định ở đầu).
+        # Bắt cả hai chiều trôi: (a) thiếu khối ranh giới hiện hành; (b) còn khẳng định "một gói chung...
+        # giá vốn" như hiện hành mà không gắn nhãn lịch sử.
+        _stale_merge = "chỉ còn **một gói chung**" in _t and "mô tả ranh giới CŨ" not in _t
+        check("tài liệu 07 mô tả ĐÚNG ranh giới hiện hành (giá vốn leader-only)",
+              "RANH GIỚI HIỆN HÀNH" in _t and "giá vốn" in _t.lower() and not _stale_merge,
+              "07 chưa ghi rõ ranh giới hiện hành, hoặc còn khẳng định gói-chung-có-giá-vốn")
 
 # ---------- 7 · Chống lệch pha · artefact dẫn xuất phải khớp kernel ----------
 # Ba lần liên tiếp mắc cùng lỗi: sửa kernel xong quên regen một artefact dẫn xuất
@@ -602,7 +674,7 @@ if _zip.exists():
     _must = {"01_Setup_API_Server.md", "02_Huong_Dan_Nhom_Pilot.md", "03_Bo_Cau_Test_Acceptance.md",
              "04_So_Theo_Doi_4_Tuan.md", "05_Van_Hanh_Lien_Tuc.md", "06_Thu_Moi_Nhom_Pilot.md",
              "07_Goi_Lanh_Dao.md", "08_Tao_Tai_Lieu.md", "09_Dang_Nhap_Nguoi_Dung.md", "copilot_server.py", "ui.html", "test_copilot.py",
-             "start_copilot.sh", "weekly_review.py", "l3_export.py", "leader_export.py",
+             "start_copilot.sh", "weekly_review.py", "e2e_tester.py", "l3_export.py", "leader_export.py",
              "GOI_L3.yaml", "TIP7_SYSTEM_PROMPT_ClaudeProject.md",
              "RtR_Copilot_UI_Preview.html", "leader_allowlist.yaml", "com.rtr.copilot.plist",
              "render_doc.py", "xlsx_patch.py", "registry.yaml",
