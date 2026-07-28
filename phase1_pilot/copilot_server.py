@@ -118,6 +118,7 @@ SYSTEM = _tip7.split("---", 1)[-1].strip() + "\n\n## GÓI TRI THỨC L3 (nguồn
 
 GAP_LOG = HERE / "gap_log.jsonl"
 QA_LOG = HERE / "qa_log.jsonl"
+ISSUE_LOG = HERE / "issue_log.jsonl"   # ca người dùng báo bot trả lời sai
 
 # ---------- Máy tra cứu SOT (deterministic · không cần AI) ----------
 def strip_accents(s):
@@ -396,6 +397,11 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(data)
             return
+        if self.path == "/api/issues":
+            rows = read_jsonl(ISSUE_LOG)
+            for i, r in enumerate(rows):
+                r["idx"] = i
+            return self._send(200, json.dumps({"issues": list(reversed(rows))}, ensure_ascii=False))
         if self.path == "/api/gaps":
             return self._send(200, json.dumps({"groups": group_gaps(read_jsonl(GAP_LOG))},
                                               ensure_ascii=False))
@@ -427,6 +433,29 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(404, json.dumps({"error": "not found"}))
 
     def do_POST(self):
+        if self.path == "/api/issue":
+            # Báo sai phải thành DỮ LIỆU, không phải một thông báo rồi thôi.
+            # Sổ theo dõi 4 tuần có ô "số ca báo sai" · đây là đường đổ vào ô đó.
+            if PASSCODE and self.headers.get("x-passcode", "") != PASSCODE:
+                return self._send(403, json.dumps({"error": "Sai mã nội bộ"}))
+            try:
+                length = int(self.headers.get("content-length", 0))
+                b = json.loads(self.rfile.read(length))
+                q = (b.get("q") or "").strip()[:500]
+                a = (b.get("a") or "").strip()[:2000]
+                why = (b.get("why") or "").strip()[:1000]
+                if not q and not a:
+                    return self._send(400, json.dumps({"error": "Thiếu nội dung câu trả lời bị báo sai"}))
+                rec = {"t": datetime.now().isoformat(timespec="seconds"), "mode": MODE, "pack": PACK,
+                       "q": q, "a": a, "why": why,
+                       "records": re.findall(r"\[((?:HC|OC|SC|STRAT|L3F|L3R|CAND|SPEC|DISP|PRICE)[-.][^\]\s·]*)", a),
+                       "trang_thai": "moi"}
+                with ISSUE_LOG.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                return self._send(200, json.dumps({"ok": True, "records": rec["records"]},
+                                                  ensure_ascii=False))
+            except Exception as e:
+                return self._send(500, json.dumps({"error": str(e)[:200]}))
         if self.path == "/api/render":
             if PASSCODE and self.headers.get("x-passcode", "") != PASSCODE:
                 return self._send(403, json.dumps({"error": "Sai mã nội bộ"}))

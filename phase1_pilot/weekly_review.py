@@ -22,6 +22,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 QA_LOG = HERE / "qa_log.jsonl"
 GAP_LOG = HERE / "gap_log.jsonl"
+ISSUE_LOG = HERE / "issue_log.jsonl"
 OUTDIR = HERE / "bao_cao_tuan"
 
 
@@ -140,6 +141,7 @@ def main():
 
     qa = [r for r in load(QA_LOG) if in_range(r, start, end)]
     gaps = [r for r in load(GAP_LOG) if in_range(r, start, end)]
+    issues = [r for r in load(ISSUE_LOG) if in_range(r, start, end)]
 
     total = len(qa)
     live = sum(1 for r in qa if r.get("mode") == "LIVE")
@@ -161,7 +163,8 @@ def main():
     L.append(f"| Tỷ lệ trả lời được từ gói | {rate} % | {answered}/{total} câu không rơi vào GAP |")
     L.append(f"| Số GAP mới | {gap_q} | gom thành {len(gap_groups)} nhóm lặp + {len(gap_singles)} câu lẻ |")
     L.append("| Số người dùng thực (unique) | | server pilot không định danh · đếm tay hoặc hỏi nhóm |")
-    L.append("| Số ca báo SAI | | CHỈ người ghi được · mỗi ca kèm mã record + trace nguồn |")
+    _rate = f"{100*len(issues)/total:.1f} %" if total else "—"
+    L.append(f"| Số ca báo SAI | {len(issues)} | {_rate} số câu hỏi · ngưỡng chịu được dưới 2% |")
     L.append("| Fact nạp bổ sung trong tuần | | đếm entry mới trong l3_facts.yaml |\n")
 
     L.append("## GAP xếp theo tần suất · đây là lịch thu fact tuần sau\n")
@@ -185,6 +188,21 @@ def main():
         L.append("\n_Gate Phase 2 cần ít nhất 3 use case LẶP hàng tuần. Nhóm nào xuất hiện đủ 3 tuần liên tiếp thì tính là một use case._")
     else:
         L.append("_Chưa có chủ đề nào lặp lại._")
+    L.append("")
+
+    L.append("## Ca báo sai · phải trace về record gốc\n")
+    if issues:
+        for i, x in enumerate(issues, 1):
+            L.append(f"{i}. **{x.get('q','(không rõ câu hỏi)')}**")
+            if x.get("why"):
+                L.append(f"   - người báo: {x['why']}")
+            recs = x.get("records") or []
+            L.append("   - record liên quan: " + (", ".join(recs) if recs
+                     else "KHÔNG có mã record trong câu trả lời · đáng chú ý hơn cả nội dung sai"))
+            L.append("   - [ ] đã trace nguồn · [ ] đã sửa kernel · [ ] đã báo lại người dùng")
+    else:
+        L.append("_Không có ca nào trong kỳ._ Nếu tuần nào cũng bằng 0 mà usage cao thì đáng ngờ: "
+                 "có thể người dùng thấy sai nhưng ngại báo. Hỏi trực tiếp vài người.")
     L.append("")
 
     L.append("## Việc curator tuần sau\n")

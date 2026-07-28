@@ -395,6 +395,22 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
 #rec .use{border:1px solid var(--rtr-line);padding:9px 11px;font-size:10.5px;margin-bottom:6px;
   color:var(--rtr-muted);line-height:1.5}
 
+/* ---- báo sai · hộp nhập ngay dưới câu trả lời ---- */
+.issuebox{border:1px solid var(--rtr-line);border-left:3px solid var(--rtr-warning);
+  padding:12px;margin-top:12px}
+.issuebox .hd{font-size:9px;text-transform:uppercase;letter-spacing:.13em;color:var(--rtr-warning);margin-bottom:8px}
+.issuebox textarea{width:100%;height:60px;padding:9px 10px;background:var(--rtr-panel);
+  border:1px solid var(--rtr-line);resize:none;outline:0;font:inherit;font-size:12px}
+.issuebox textarea:focus{border-color:var(--rtr-signal)}
+.issuebox .row{display:flex;gap:6px;margin-top:8px;align-items:center}
+.issuebox .note{font-size:9.5px;color:var(--rtr-muted);line-height:1.5}
+.irow{display:grid;grid-template-columns:80px minmax(0,1fr);gap:12px;padding:13px;
+  border-bottom:1px solid var(--rtr-line)}
+.irow .d{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--rtr-faint)}
+.irow .q{font-size:12px;line-height:1.5}
+.irow .w{font-size:10.5px;color:var(--rtr-warning);margin-top:5px;line-height:1.5}
+.irow .r{font-size:9px;color:var(--rtr-signal);margin-top:5px;letter-spacing:.06em}
+
 /* ---- 39 · desktop trung bình và tablet ngang · 901-1150 px ---- */
 @media (max-width:1150px){
   .copilot{grid-template-columns:minmax(0,1fr) var(--rtr-evidence-w-medium)}
@@ -670,6 +686,10 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
             <div class="panel"><div class="sub">Chi tiết</div><div class="gdetail" id="gapDetail">
               <div class="dock-empty">Chọn một khoảng trống để xem các cách hỏi đã ghi nhận.</div></div></div>
           </div>
+          <div class="panel" style="margin-top:12px">
+            <div class="sub">Báo sai · ca người dùng báo bot trả lời sai <span id="issueCount" style="margin-left:auto;font-weight:400;color:var(--rtr-muted);font-size:10px"></span></div>
+            <div id="issueList"></div>
+          </div>
         </div>
       </section>
 
@@ -783,7 +803,7 @@ function go(s){
   document.querySelectorAll(".screen").forEach(x => x.classList.toggle("on", x.id === "s-" + s));
   CUR = s;
   $("crumb").textContent = (typeof I18N !== "undefined" ? I18N[LANG]["nav." + s] : null) || CRUMB[s] || s;
-  if (s === "gaps") loadGaps();
+  if (s === "gaps") { loadGaps(); loadIssues(); }
   if (s === "audit") loadAudit();
   if (s === "copilot" && innerWidth > 640) $("msg").focus();
   drawer(false);
@@ -872,9 +892,9 @@ function renderAnswer(box, text){
   if (state === "null") {
     const gap = (body.match(/GAP:\s*(.+)/) || [])[1] || "";
     html += '<div class="nullbox"><div class="t">SOT chưa có thông tin này.</div>'
-          + '<div class="s">Câu hỏi đã được ghi nhận vào danh sách khoảng trống để curator bổ sung.'
+          + '<div class="s">Câu hỏi <b>đã tự động</b> vào danh sách khoảng trống để curator bổ sung, không cần gửi thêm.'
           + (gap ? "<br>Ghi nhận: " + esc(gap) : "") + '</div></div>'
-          + '<div class="acts"><button data-act="gap">Gửi yêu cầu bổ sung fact</button></div>';
+          + '<div class="acts"><button data-act="seegap">Xem hàng đợi bổ sung</button></div>';
   } else {
     const paras = body.replace(RID, "").split(/\n{2,}/).filter(x => x.trim());
     const first = paras.shift() || body;
@@ -891,16 +911,63 @@ function renderAnswer(box, text){
 
   box.innerHTML = html;
   box.querySelectorAll(".cite").forEach(c => c.onclick = () => { openRec(c.dataset.rid, true); openRecDrawer(c.dataset.rid); });
-  box.querySelectorAll("[data-act]").forEach(b => b.onclick = () => act(b.dataset.act, body));
+  box.querySelectorAll("[data-act]").forEach(b => b.onclick = () => act(b.dataset.act, body, box));
   if (uniq.length) loadEvidence(uniq);
 }
 
-function act(kind, text){
+function act(kind, text, box){
   if (kind === "copy") { navigator.clipboard?.writeText(text); toast("Đã sao chép câu trả lời"); }
-  if (kind === "doc") { go("studio"); }
-  if (kind === "issue") { toast("Báo sai: nhắn anh Lâm kèm mã record trong câu trả lời"); }
-  if (kind === "gap") { toast("Đã ghi nhận · xem tại màn Khoảng trống"); }
+  if (kind === "seegap") { go("gaps"); }
+  if (kind === "doc") { useInDoc(text); }
+  if (kind === "issue") { openIssue(box, text); }
 }
+
+/* ---------- báo sai · thành DỮ LIỆU, không phải thông báo ---------- */
+function openIssue(box, answer){
+  if (box.querySelector(".issuebox")) { box.querySelector(".issuebox textarea").focus(); return; }
+  const q = lastQuestion(box);
+  const d = document.createElement("div");
+  d.className = "issuebox";
+  d.innerHTML = '<div class="hd">Báo câu trả lời này sai</div>'
+    + '<textarea placeholder="Sai chỗ nào? Số đúng là gì nếu bác biết?"></textarea>'
+    + '<div class="row"><button class="btn-primary" style="width:auto;margin:0;height:29px;padding:0 12px">Gửi báo sai</button>'
+    + '<button class="mini" type="button">Huỷ</button></div>'
+    + '<div class="note">Ca báo sai được ghi lại kèm câu hỏi, câu trả lời và mã record liên quan. '
+    + "Curator xem tại màn Khoảng trống, mục Báo sai.</div>";
+  box.appendChild(d);
+  const ta = d.querySelector("textarea"); ta.focus();
+  d.querySelector(".mini").onclick = () => d.remove();
+  d.querySelector(".btn-primary").onclick = async () => {
+    try {
+      const r = await fetch("/api/issue", {method:"POST",
+        headers:{"content-type":"application/json","x-passcode":$("pass").value},
+        body: JSON.stringify({q: q, a: answer, why: ta.value.trim()})});
+      const j = await r.json();
+      if (j.ok) {
+        d.innerHTML = '<div class="hd">Đã ghi nhận</div><div class="note">Cảm ơn bác. '
+          + (j.records && j.records.length ? "Record liên quan: " + j.records.map(esc).join(", ") + ". " : "")
+          + "Ca này vào sổ theo dõi và hiện ở màn Khoảng trống.</div>";
+      } else { d.querySelector(".note").textContent = "Không gửi được: " + (j.error || "lỗi"); }
+    } catch(e) { d.querySelector(".note").textContent = "Không gửi được: " + e; }
+  };
+}
+function lastQuestion(box){
+  let el = box.closest(".msg");
+  while (el) {
+    el = el.previousElementSibling;
+    const q = el && el.querySelector(".q-row div");
+    if (q) return q.textContent;
+  }
+  return "";
+}
+
+/* ---------- dùng câu trả lời trong tài liệu ---------- */
+function useInDoc(text){
+  PENDING_DOC = text;
+  go("studio");
+  toast("Đã mang nội dung câu trả lời sang · kiểm lại trước khi xuất");
+}
+let PENDING_DOC = null;
 function toast(m){
   const d = document.createElement("div");
   d.style.cssText = "position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:90;"
@@ -1305,6 +1372,17 @@ function pickTpl(i){
     const el = $("fld_" + f.key);
     if (el) el.addEventListener("input", () => { clearTimeout(window._dry); window._dry = setTimeout(dryRun, 400); });
   });
+  if (PENDING_DOC) {
+    // Mang nội dung câu trả lời sang: đổ vào ô nhiều dòng đầu tiên (thường là "Nội dung"),
+    // KHÔNG tự xuất — người phải soát lại vì câu trả lời có thể kèm ghi chú, citation.
+    const tgt = curTpl.fields.find(f => f.type === "user" && f.multiline);
+    if (tgt && $("fld_" + tgt.key)) {
+      $("fld_" + tgt.key).value = PENDING_DOC.replace(/\[[^\]]*\]/g, "").trim();
+      $("renderMsg").innerHTML = "Đã mang nội dung từ câu trả lời sang ô <b>" + esc(tgt.label)
+        + "</b>. Mã nguồn gốc đã được lược bỏ · soát lại trước khi xuất.";
+    }
+    PENDING_DOC = null;
+  }
   updatePaper();
   dryRun();
 }
@@ -1373,6 +1451,29 @@ async function doRender(){
     }
   } catch(e) { setGate("LỖI", "bad"); $("renderMsg").textContent = String(e); }
   $("btnRender").disabled = false;
+}
+
+/* ---------- báo sai · danh sách cho curator ---------- */
+async function loadIssues(){
+  let d;
+  try { d = await (await fetch("/api/issues")).json(); }
+  catch(e) { $("issueList").innerHTML = '<div style="padding:16px;font-size:11px;color:var(--rtr-danger)">Không đọc được.</div>'; return; }
+  $("issueCount").textContent = d.issues.length ? d.issues.length + " ca" : "";
+  if (!d.issues.length) {
+    $("issueList").innerHTML = '<div style="padding:16px;font-size:11px;color:var(--rtr-faint);line-height:1.6">'
+      + "Chưa có ca nào. Mục này đầy lên khi nhân viên bấm <b>Báo sai</b> dưới một câu trả lời.<br>"
+      + "Ngưỡng chịu được theo sổ theo dõi: dưới 2% số câu hỏi. Mỗi ca là một sự cố phải trace về record gốc.</div>";
+    return;
+  }
+  $("issueList").innerHTML = d.issues.map(x =>
+    '<div class="irow"><div class="d">' + esc((x.t||"").slice(0,10)) + "<br>" + esc((x.t||"").slice(11,16)) + "</div>"
+    + '<div><div class="q">' + esc(x.q || "(không rõ câu hỏi)") + "</div>"
+    + (x.why ? '<div class="w">' + esc(x.why) + "</div>" : "")
+    + (x.records && x.records.length
+        ? '<div class="r">' + x.records.map(r => `<span class="cite" data-rid="${esc(r)}" style="padding:2px 6px;margin-right:5px"><b>${esc(r)}</b></span>`).join("") + "</div>"
+        : '<div class="r" style="color:var(--rtr-faint)">câu trả lời không kèm mã record · đáng chú ý</div>')
+    + "</div></div>").join("");
+  $("issueList").querySelectorAll(".cite").forEach(c => c.onclick = () => openRecDrawer(c.dataset.rid));
 }
 
 /* ---------- 22 · audit ---------- */

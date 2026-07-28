@@ -14,6 +14,7 @@ import sys
 import threading
 import time
 import unicodedata
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -233,6 +234,32 @@ check("test KHÔNG làm bẩn log vận hành",
       or "sao Hỏa" not in (HERE / "gap_log.jsonl").read_text(encoding="utf-8"),
       "câu test lọt vào gap_log.jsonl thật")
 
+# ---------- 4c · Ba nút không được là nút suông ----------
+print("\n[4c] Nút hành động phải tạo ra dữ liệu")
+cs.ISSUE_LOG = _tmp / "issue_log.jsonl"
+_i0 = cs.ISSUE_LOG.read_text(encoding="utf-8") if cs.ISSUE_LOG.exists() else ""
+s, d = post("/api/issue", {"q": "Tầm điều khiển Hera?", "a": "HERA tầm 10 km [CAND.2.014]",
+                           "why": "Phải là 15 km"})
+check("báo sai ghi thành dữ liệu, không phải thông báo suông", d.get("ok") is True, str(d)[:120])
+check("báo sai tự bóc mã record từ câu trả lời", d.get("records") == ["CAND.2.014"], str(d.get("records")))
+s, lst = get("/api/issues")
+lst = json.loads(lst)
+check("ca báo sai đọc lại được cho curator",
+      any("15 km" in (x.get("why") or "") for x in lst["issues"]), str(lst)[:120])
+try:
+    post("/api/issue", {"q": "", "a": "", "why": "trống"})
+    check("báo sai rỗng bị từ chối", False, "server nhận cả ca rỗng")
+except urllib.error.HTTPError as e:
+    check("báo sai rỗng bị từ chối", e.code == 400, f"mã {e.code}")
+
+check("UI: nút báo sai mở hộp nhập, không chỉ hiện thông báo",
+      "function openIssue" in html and "/api/issue" in html)
+check("UI: dùng-trong-tài-liệu mang nội dung sang",
+      "function useInDoc" in html and "PENDING_DOC" in html)
+check("UI: bỏ nút gửi-yêu-cầu-bổ-sung trùng chức năng GAP tự ghi",
+      'data-act="gap"' not in html and "đã tự động" in html)
+check("weekly_review đếm ca báo sai", "ISSUE_LOG" in (HERE / "weekly_review.py").read_text(encoding="utf-8"))
+
 # ---------- 6b · Bộ sinh tài liệu · gate NT-4 hai chiều ----------
 print("\n[6b] Tạo tài liệu · vá bản mẫu + gate")
 s, tp = get("/api/templates")
@@ -293,7 +320,6 @@ try:
 except urllib.error.HTTPError as e:
     check("passcode sai bị chặn 403", e.code == 403, str(e.code))
 cs.PASSCODE = ""
-server.shutdown()
 
 # ---------- 5 · Gom nhóm câu hỏi (weekly_review) ----------
 # Đây là dụng cụ đo để quyết gate Phase 2: gom sai thì curator đọc sai tín hiệu nhu cầu.
@@ -436,6 +462,10 @@ if _zip.exists():
     check("zip có đủ file bắt buộc", _must <= _have, "thiếu: " + ", ".join(sorted(_must - _have)))
     check("zip KHÔNG chứa gói lãnh đạo", "GOI_LEADER.yaml" not in zipfile.ZipFile(_zip).namelist())
 shutil.rmtree(_wd, ignore_errors=True)
+
+# Server phục vụ tới đây mới tắt. KHÔNG tắt giữa bài: thêm test sau dòng tắt
+# thì nó treo tới timeout rồi chết, và thông báo lỗi không nói gì về nguyên nhân.
+server.shutdown()
 
 # ---------- Kết ----------
 print(f"\n{'='*46}\nKẾT QUẢ: {PASS} pass · {len(FAIL)} fail")

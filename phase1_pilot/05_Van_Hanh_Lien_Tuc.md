@@ -39,7 +39,11 @@ python3 weekly_review.py --tuan 1
 
 Đọc `qa_log.jsonl` + `gap_log.jsonl` (server tự ghi), in ra báo cáo markdown và lưu vào `bao_cao_tuan/`. Nó tự tính: số câu hỏi, tỷ lệ trả lời được từ gói, GAP gom theo nhóm lặp, chủ đề được hỏi nhiều nhất.
 
-Ba ô nó **cố tình để trống** vì máy không biết: số người dùng thực, số ca báo sai, số fact nạp thêm. Bác điền tay — đó đúng là phần cần mắt người.
+Hai ô nó **cố tình để trống** vì máy không biết: số người dùng thực và số fact nạp thêm. Bác điền tay — đó đúng là phần cần mắt người.
+
+**Số ca báo sai giờ máy đếm được:** nhân viên bấm "Báo sai" dưới câu trả lời, ca đó vào `issue_log.jsonl` kèm câu hỏi, câu trả lời và mã record liên quan. Báo cáo tuần liệt kê từng ca kèm checklist trace nguồn. Xem tại màn Khoảng trống, mục Báo sai.
+
+**Một tín hiệu đáng ngờ:** tuần nào cũng 0 ca báo sai mà lượng hỏi cao thì không phải bot đúng hết — nhiều khả năng người dùng thấy sai nhưng ngại báo. Hỏi trực tiếp vài người.
 
 **Khi thấy nó gom nhóm chưa đúng:** hai câu cùng chủ đề mà bị tách, thường vì dùng hai từ đồng nghĩa chưa có trong từ điển. Mở `weekly_review.py`, thêm cặp vào `CANON` (ví dụ `"tam bay": "tambay"`), rồi chạy `python3 test_copilot.py` — bộ test có 8 ca khoá cả hai chiều (phải gom / cấm gom) nên thêm sai sẽ đỏ ngay. Thêm dè: từ điển rộng quá thì gom nhầm hai chủ đề khác nhau, hại hơn tách nhầm.
 

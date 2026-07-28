@@ -1,6 +1,7 @@
 # runtime logs (pilot server writes these)
-gap_log.jsonl
-qa_log.jsonl
+# Liệt kê theo mẫu chứ không liệt từng tên: thêm log mới mà quên khai ở đây
+# là dữ liệu vận hành lọt vào repo. issue_log.jsonl từng suýt lọt vì lý do đó.
+*.jsonl
 # python
 __pycache__/
 *.pyc

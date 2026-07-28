@@ -28,6 +28,8 @@ Hỏi bất kỳ điều gì về công ty: spec sản phẩm hiện hành, quy 
 
 ## Thấy sai thì làm gì
 
-Bot trả lời khác với điều anh chị em biết chắc → nhắn anh Lâm ngay kèm câu hỏi + mã record. Mỗi báo cáo sai là đóng góp giá trị nhất trong pilot này.
+Bot trả lời khác với điều anh chị em biết chắc → bấm **Báo sai** ngay dưới câu trả lời đó, ghi một dòng sai chỗ nào. Hệ thống tự lưu câu hỏi, câu trả lời và mã record liên quan nên anh chị em không phải chép lại gì.
+
+Mỗi ca báo sai là đóng góp giá trị nhất trong pilot này — nó chỉ ra một chỗ nguồn sự thật đang lệch, và mỗi ca đều được truy về record gốc.
 
 Sau 4 tuần sẽ có khảo sát ngắn 5 câu. Cảm ơn anh chị em.
