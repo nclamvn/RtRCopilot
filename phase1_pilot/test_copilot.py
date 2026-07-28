@@ -90,6 +90,15 @@ for q, kws in PART_A:
         print(f"        miss: '{q}' → top={top}")
 check(f"retrieval A: {a_pass}/20 (ngưỡng 16)", a_pass >= 16, f"{a_pass}/20")
 
+# Regression QA "RtR là ai?": token phông nền "rtr" (ở ~nửa gói) + va chạm "ai"/"AI"
+# từng kéo record lạc đề (CAND.2.032 doctrine, L3F.2.001 sales-brief) lên top với confident.
+# Fix: confident theo KHỐI LƯỢNG discrimination, bỏ token phông nền → phải honest-null.
+_hj = cs.search("RtR là ai?")
+check("must-not-junk: 'RtR là ai?' không confident vào record lạc đề",
+      (not _hj) or (not cs.confident("RtR là ai?", _hj[0][1]))
+      or _hj[0][1]["record"] not in {"CAND.2.032", "L3F.2.001"},
+      f"top={_hj[0][1]['record'] if _hj else 'NULL'}")
+
 # ---------- 3 · Leak scan Phần B · toàn gói không chứa nội dung L2 ----------
 print("\n[3] Leak scan Phần B · quét toàn gói")
 PACK = norm(cs.GOI_TEXT)
@@ -220,6 +229,10 @@ check("chat MOCK câu ngoài gói: honest null + GAP", "GAP:" in d["answer"], d[
 gap_after = cs.GAP_LOG.read_text().count("\n") if cs.GAP_LOG.exists() else 0
 check("GAP tự ghi vào gap_log.jsonl", gap_after == gap_before + 1, f"{gap_before}→{gap_after}")
 check("qa_log.jsonl có ghi", cs.QA_LOG.exists() and cs.QA_LOG.stat().st_size > 0)
+s, dj = post("/api/chat", {"messages": [{"role": "user", "content": "RtR là ai?"}]})
+check("chat MOCK 'RtR là ai?': trả hồ sơ tổng quan (L3F.ENT.002), không nhả record lạc đề",
+      "L3F.ENT.002" in dj["answer"]
+      and "CAND.2.032" not in dj["answer"] and "L3F.2.001" not in dj["answer"], dj["answer"][:150])
 # Ghi chú kèm câu hỏi (16.4) · hai tính chất phải giữ:
 #  (a) không đầu độc câu trả lời · (b) KHÔNG lọt vào log để đi vào hàng đợi thu-fact
 _before = cs.QA_LOG.read_text(encoding="utf-8") if cs.QA_LOG.exists() else ""

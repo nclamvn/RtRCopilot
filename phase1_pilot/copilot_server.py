@@ -172,14 +172,24 @@ for r in RECORDS:
     for t in r["_tokens"]:
         DF[t] = DF.get(t, 0) + 1
 
+N = len(RECORDS)
+UBIQ_DF = 0.30 * N              # token ở >30% record là "phông nền" · không phân biệt được record nào
+def is_ubiq(t):
+    return DF.get(t, 0) > UBIQ_DF
+
 def idf(t):
-    return max(0.25, 3.2 - math.log2(1 + DF.get(t, 0)))
+    return max(0.0, math.log((N + 1) / (DF.get(t, 0) + 1)) + 0.1)
 
 # record mô tả spec/tài liệu thế hệ cũ: down-rank trong MOCK để số stale không đè số hiện hành.
 # Marker hẹp và tường minh: "[spec cu" trong content hoặc rename-01 trong kernel_ref
 # (KHÔNG dùng chữ "legacy" trần: record doctrine legacy 15 kg là câu trả lời hiện hành hợp lệ).
 for r in RECORDS:
     r["_stale"] = ("[spec cu" in r["_blob"]) or ("rename-01" in strip_accents(str(r.get("kernel_ref", ""))))
+
+# Hồ sơ tổng quan công ty: record định danh "RtR ... là công ty ..." · tìm theo mẫu content, KHÔNG hardcode id
+# (nếu Lâm đổi wording bỏ "là công ty" thì fallback tự tắt, quay về honest-null — degrade an toàn).
+OVERVIEW = next((r for r in RECORDS
+                 if r.get("domain") == "company" and "la cong ty" in r["_blob"]), None)
 STALE_PENALTY = 0.45  # nhân điểm · đủ tụt dưới record hiện hành cùng chủ đề, vẫn tra cứu được khi hỏi đích danh
 
 # tên sản phẩm/hệ thống · dùng cho neo entity trong search
@@ -238,21 +248,39 @@ def search(query, top=3):
     return scored[:top]
 
 def confident(question, top_rec):
-    """Trả lời hay honest null: theo độ phủ query, không theo điểm tuyệt đối.
-    Đủ tự tin khi (>=2 token khớp và phủ >=60% query) hoặc có 1 token rất hiếm khớp."""
+    """Trả lời hay honest null theo KHỐI LƯỢNG phân biệt, không đếm token thô.
+    Token "phông nền" (ubiquitous, ở gần mọi record như 'rtr') KHÔNG tính — nếu câu
+    hỏi chỉ khớp bằng token phông nền thì honest-null, không trả bừa record lạc đề.
+    Ba cửa OR: khớp entity đích danh · 1 token rất hiếm · >=2 discriminator đủ khối lượng."""
     q_norm = strip_accents(question)
     q_tokens = expand(q_norm, tokens(question), q_raw=question)
-    if not q_tokens:
+    q_disc = [t for t in q_tokens if not is_ubiq(t)]   # token người dùng gõ, trừ phông nền
+    if not q_disc:
         return False
-    matched = [t for t in q_tokens if t in top_rec["_tokens"]]
-    coverage = len(matched) / len(q_tokens)
-    if any(idf(t) >= 2.0 for t in matched):
+    matched = [t for t in q_disc if t in top_rec["_tokens"]]
+    cov = len(matched) / len(q_disc)
+    if not matched or cov < 0.5:
+        return False
+    if any(e in matched for e in ENTITIES):            # khớp entity đích danh (hera, vega...) · tín hiệu mạnh
         return True
-    return len(matched) >= 2 and coverage >= 0.6
+    if any(idf(t) >= 3.0 for t in matched):            # 1 token rất hiếm khớp · tín hiệu mạnh
+        return True
+    # không entity, không token hiếm → chỉ khớp bằng token vừa-hiếm → đòi phủ cao hơn để
+    # chặn va chạm coincidental (vd "thời/Hỏa" đụng "thời điểm/Hoa Kỳ" trong record FCC)
+    return len(matched) >= 2 and sum(idf(t) for t in matched) >= 3.0 and cov >= 0.66
 
 def mock_answer(question):
     hits = search(question)
     if not hits or not confident(question, hits[0][1]):
+        # Fallback định danh: câu hỏi CHỈ về "công ty là ai/gì" (không thuộc tính cụ thể nào)
+        # → trả hồ sơ tổng quan thay vì honest-null. Bot công ty phải nói được mình là ai.
+        # Chỉ kích hoạt khi query nhắc chính công ty VÀ không còn token nội dung nào ngoài "ai"
+        # (who) — không đụng câu hỏi thuộc tính (giá, spec...) vốn phải honest-null nếu thiếu.
+        qt = tokens(question)
+        qd = [t for t in qt if not is_ubiq(t)]
+        if OVERVIEW and ("rtr" in qt or "robotics" in qt) and set(qd) <= {"ai"}:
+            return (f"[MOCK · máy tra cứu · chưa nối API · hồ sơ tổng quan công ty]\n"
+                    f"{OVERVIEW['content']}\n[{OVERVIEW['record']}]")
         return (f"[MOCK · máy tra cứu · chưa nối API]\nSOT chưa có thông tin khớp câu hỏi này. "
                 f"Câu hỏi đã được ghi nhận để curator bổ sung.\nGAP: {question.strip()[:150]}")
     parts = [f"[MOCK · máy tra cứu · chưa nối API · kết quả là record khớp nhất, không phải câu trả lời AI]"]

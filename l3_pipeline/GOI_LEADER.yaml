@@ -6,8 +6,8 @@ nguon: kernel/registry/leader_allowlist.yaml (fail-closed) + l3_facts.yaml + pri
   style/
 duyet_boi: Lâm (AI Officer · SOT curator)
 thong_ke:
-  tong_record: 129
-  l3_nen: 109
+  tong_record: 130
+  l3_nen: 110
   l2_han_che: 18
   l4_van_phong: 2
   giu_ngoai_goi: 5
@@ -916,6 +916,17 @@ records:
   status: approved
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/HoSo_CNCL_2_Cay_Che_SauRieng/00_GUI_DI/A_Gui_Vinatea/00_CongVan_1906_2026_CV_RTR.docx
+  effective_date: null
+- record: L3F.ENT.002
+  content: 'Real-time Robotics (RtR) là công ty Việt Nam nghiên cứu, phát triển và sản xuất hệ thống UAV (drone)
+    cùng giải pháp trí tuệ nhân tạo biên (Edge AI). Hai nền tảng chính: HERA (ISR đa nhiệm · xem L3R.K.001) và VEGA
+    (tactical heavy-lift · xem L3R.K.002). Người sáng lập là TS. Lương Việt Quốc (xem CAND.3.030); pháp nhân Việt
+    Nam xem L3F.ENT.001.'
+  domain: company
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: null
 - record: CAND.1.005
   content: 'HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.
