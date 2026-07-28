@@ -7,10 +7,10 @@ nguon: kernel/registry/leader_allowlist.yaml (fail-closed) + l3_facts.yaml + pri
 duyet_boi: Lâm (AI Officer · SOT curator)
 thong_ke:
   tong_record: 135
-  l3_nen: 115
-  l2_han_che: 18
+  l3_nen: 133
+  l2_han_che: 0
   l4_van_phong: 2
-  giu_ngoai_goi: 5
+  giu_ngoai_goi: 0
 records:
 - record: L3F.1.001
   content: 'HeraSight LR có spec chính: camera RGB Sony ILX-LR1 full frame 61MP, camera thermal FLIR Boson+ 640x512,
@@ -1357,176 +1357,181 @@ records:
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: '2026-07-27'
 - record: PRICE.HERA.MSRP.US
-  content: 'HERA US list price: 64900 USD · ghi chú: Stay competitive vs IF1200 ($60-62K)'
+  content: 'Giá bán nội bộ · HERA US list price: 64900 USD · ghi chú: Stay competitive vs IF1200 ($60-62K)'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: PRICE.HERA.MSRP.US
   source: _governance/RtR_Pricing_Master_v1_0.xlsx
   effective_date: '2026-06-14'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.HERA.MSRP.VN
-  content: 'HERA VN list price: 69900 USD · ghi chú: VN no competitor anchor, premium positioning'
+  content: 'Giá bán nội bộ · HERA VN list price: 69900 USD · ghi chú: VN no competitor anchor, premium positioning'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: PRICE.HERA.MSRP.VN
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: '2026-06-15'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.VEGA.MSRP.US
-  content: 'VEGA US list price: 109900 USD · ghi chú: Per Khoa pricing draft. Market: US/G7 export quân sự.'
+  content: 'Giá bán nội bộ · VEGA US list price: 109900 USD · ghi chú: Per Khoa pricing draft. Market: US/G7 export
+    quân sự.'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: PRICE.VEGA.MSRP.US
   source: _governance/RtR_Pricing_Master_v1_0.xlsx
   effective_date: '2026-06-14'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.VEGA.MSRP.VN
-  content: 'VEGA VN list price: None USD · TRẠNG THÁI verify_pending · chưa chốt, không dùng để cam kết · ghi chú:
-    Decision #5 = C: VEGA US/G7 first 12 tháng, sau đó eval VN. Tạm giữ TBD.'
+  content: 'Giá bán nội bộ · VEGA VN list price: None USD · TRẠNG THÁI verify_pending · chưa chốt, không dùng để
+    cam kết · ghi chú: Decision #5 = C: VEGA US/G7 first 12 tháng, sau đó eval VN. Tạm giữ TBD.'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: PRICE.VEGA.MSRP.VN
   source: _governance/RtR_Pricing_Master_v1_0.xlsx
   effective_date: null
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.HERA.BUNDLE.MSRP
-  content: 'HERA bundle MSRP (Almo composition): 64320 USD · ghi chú: 9 thành phần: drone + 1 battery + drop + speaker
-    + Starlink + hardcase + backpack'
+  content: 'Giá bán nội bộ · HERA bundle MSRP (Almo composition): 64320 USD · ghi chú: 9 thành phần: drone + 1 battery
+    + drop + speaker + Starlink + hardcase + backpack'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: PRICE.HERA.BUNDLE.MSRP
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: '2026-05-12'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.VEGA.BUNDLE.MSRP
-  content: 'VEGA bundle MSRP: 109938 USD'
+  content: 'Giá bán nội bộ · VEGA bundle MSRP: 109938 USD'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: PRICE.VEGA.BUNDLE.MSRP
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: '2026-05-12'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.HERA.BUNDLE.DIST
-  content: 'HERA bundle distributor price: 48220 USD · ghi chú: 30% discount from MSRP for Almo (stocking distributor)'
+  content: 'Giá bán nội bộ · HERA bundle distributor price: 48220 USD · ghi chú: 30% discount from MSRP for Almo
+    (stocking distributor)'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: PRICE.HERA.BUNDLE.DIST
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: '2026-05-12'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.VEGA.BUNDLE.DIST
-  content: 'VEGA bundle distributor price: 71460 USD'
+  content: 'Giá bán nội bộ · VEGA bundle distributor price: 71460 USD'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: PRICE.VEGA.BUNDLE.DIST
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: '2026-05-12'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DISCOUNT.TIER.STANDARD
-  content: 'Standard Partner discount: 25.0% · ghi chú: Sales/Channel Lead approves. Default tier.'
+  content: 'Chiết khấu đại lý · Standard Partner discount: 25.0% · ghi chú: Sales/Channel Lead approves. Default
+    tier.'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: DISCOUNT.TIER.STANDARD
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: '2026-06-15'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DISCOUNT.TIER.PREFERRED
-  content: 'Preferred VAR/Integrator discount: 30.0% · ghi chú: Distributor default (Almo). Có demo/training/integration.'
+  content: 'Chiết khấu đại lý · Preferred VAR/Integrator discount: 30.0% · ghi chú: Distributor default (Almo).
+    Có demo/training/integration.'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: DISCOUNT.TIER.PREFERRED
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: '2026-06-15'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DISCOUNT.TIER.STRATEGIC
-  content: 'Strategic Cap discount: 35.0% · ghi chú: CEO/VP approves. Hard cap. Stocking, volume, competitive swap,
-    strategic.'
+  content: 'Chiết khấu đại lý · Strategic Cap discount: 35.0% · ghi chú: CEO/VP approves. Hard cap. Stocking, volume,
+    competitive swap, strategic.'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: DISCOUNT.TIER.STRATEGIC
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: '2026-06-15'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DISCOUNT.TIER.MIN
-  content: 'Min discount distributor non-contribute: 3.0% · ghi chú: Range 3-5%. Cover inventory cost + maintenance
-    relationship.'
+  content: 'Chiết khấu đại lý · Min discount distributor non-contribute: 3.0% · ghi chú: Range 3-5%. Cover inventory
+    cost + maintenance relationship.'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: DISCOUNT.TIER.MIN
   source: chat team RtR 14/06
   effective_date: null
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: FX.RATE.REF
-  content: 'Tỷ giá tham chiếu: 25000 VND/USD · TRẠNG THÁI INT · chưa chốt, không dùng để cam kết · ghi chú: Update
-    theo VCB ngày trình. Cần Finance define cadence (Queue A #12).'
+  content: 'Tỷ giá tham chiếu · Tỷ giá tham chiếu: 25000 VND/USD · TRẠNG THÁI INT · chưa chốt, không dùng để cam
+    kết · ghi chú: Update theo VCB ngày trình. Cần Finance define cadence (Queue A #12).'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: FX.RATE.REF
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: '2026-06-11'
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: REG.HOLD_TIME
-  content: 'Deal Registration hold time: 90 days · ghi chú: Standard quote validity. Có thể extend 180 ngày cho
-    gov classified.'
+  content: 'Chính sách giá · Deal Registration hold time: 90 days · ghi chú: Standard quote validity. Có thể extend
+    180 ngày cho gov classified.'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: REG.HOLD_TIME
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: null
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: REG.SLA.APPROVAL
-  content: 'REG approval SLA target: 24 hours · ghi chú: For in-policy REG. Exception (>35%) chậm hơn (CEO approval).'
+  content: 'Chính sách giá · REG approval SLA target: 24 hours · ghi chú: For in-policy REG. Exception (>35%) chậm
+    hơn (CEO approval).'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: REG.SLA.APPROVAL
   source: _governance/hera_vietnam_channel_policy_Chính Sách Bán HÀNG VN_June15-26.docx
   effective_date: null
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: PRICE.RMUS.LEGACY.HERA
-  content: 'RMUS legacy HERA listing: 37000 USD · TRẠNG THÁI LEGACY · chưa chốt, không dùng để cam kết · ghi chú:
-    CONFLICT với MSRP hiện tại. HERA 1.0 legacy. Queue A #2 PENDING Khánh + CEO.'
+  content: 'Giá bán nội bộ · RMUS legacy HERA listing: 37000 USD · TRẠNG THÁI LEGACY · chưa chốt, không dùng để
+    cam kết · ghi chú: CONFLICT với MSRP hiện tại. HERA 1.0 legacy. Queue A #2 PENDING Khánh + CEO.'
   domain: pricing
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: PRICE.RMUS.LEGACY.HERA
   source: RMUS website (live)
   effective_date: null
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DERIVED.HERA.PREMIUM_VS_IF1200
-  content: 'HERA US premium vs IF1200: 6.4% · ghi chú: 6.4% thực, KHÔNG khớp narrative 10-15%. QUEUE B #4: Khoa
-    verify IF1200 primary source.'
+  content: 'Định vị giá so đối thủ · HERA US premium vs IF1200: 6.4% · ghi chú: 6.4% thực, KHÔNG khớp narrative
+    10-15%. QUEUE B #4: Khoa verify IF1200 primary source.'
   domain: positioning
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: DERIVED.HERA.PREMIUM_VS_IF1200
   source: _governance/RtR_Pricing_Master_v1_0.xlsx
   effective_date: null
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: DERIVED.HERA.PREMIUM_VS_VN
-  content: 'HERA VN premium vs IF1200 (theoretical): 14.6% · ghi chú: VN không có IF1200 competitor, premium theo
-    theoretical only'
+  content: 'Định vị giá so đối thủ · HERA VN premium vs IF1200 (theoretical): 14.6% · ghi chú: VN không có IF1200
+    competitor, premium theo theoretical only'
   domain: positioning
   tier: L2
-  status: restricted
+  status: noi_bo
   kernel_ref: DERIVED.HERA.PREMIUM_VS_VN
   source: null
   effective_date: null
-  canh_bao: THÔNG TIN HẠN CHẾ · chỉ nhóm lãnh đạo · không chuyển tiếp ra ngoài
+  canh_bao: NỘI BỘ RtR · không chuyển tiếp ra ngoài công ty
 - record: VOICE.VOICE_CEO
   content: "# Voice CEO · Pointer Document\n\n**Loại:** L4.Style · pointer doc · KHÔNG atomize facts.\n\n**Doctrine:**\
     \ Voice CEO là phán xét tự do, đứng NGOÀI đường kiểm registry. Không có ID atomic. Đây là input để sinh, không\

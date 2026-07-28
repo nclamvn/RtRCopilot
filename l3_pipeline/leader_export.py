@@ -95,8 +95,10 @@ def main():
                 denied_hits.append(f"{reg_file}:{fid} (không trong allowlist · giữ ngoài gói)")
         return out
 
-    l2 = take("l2_pricing", "registry/prices.yaml", "L2")
-    l2 += take("l2_positioning", "registry/derived_costs.yaml", "L2")
+    # Nội bộ-không-mật (Lâm 28/07): giá bán + định vị đã gộp vào GÓI NỀN (l3_export) cho mọi nhân
+    # viên → leader nhận QUA base, KHÔNG take() lại ở đây (tránh nhân đôi + xung đột nhãn). Cổng leak
+    # 4a/4b bên dưới vẫn quét TOÀN gói (gồm base) nên giá vốn BOM/margin chưa-kiểm vẫn bị chặn.
+    l2 = []
 
     # ---- 3 · L4 văn phong ----
     l4 = []

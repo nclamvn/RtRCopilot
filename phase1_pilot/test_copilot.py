@@ -165,6 +165,14 @@ check("năng lực: 'phân phối ở Mỹ?' → L3F.CAP.002 (RMUS/đối tác)"
       bool(_hp) and _hp[0][1]["record"] == "L3F.CAP.002",
       f"top={_hp[0][1]['record'] if _hp else 'NULL'}")
 
+# Nội bộ-không-mật (28/07): giá BÁN vào gói chung → câu giá phải trả record giá (trước honest-null ở staff).
+for q, pref in [("giá bán HERA bao nhiêu?", "PRICE.HERA"), ("giá list VEGA?", "PRICE.VEGA"),
+                ("chiết khấu đại lý bao nhiêu?", "DISCOUNT")]:
+    _hq = cs.search(q)
+    check(f"nội bộ giá: '{q}' → record giá ({pref}*)",
+          bool(_hq) and _hq[0][1]["record"].startswith(pref) and cs.confident(q, _hq[0][1]),
+          f"top={_hq[0][1]['record'] if _hq else 'NULL'}")
+
 # ---------- 3 · Leak scan Phần B · toàn gói không chứa nội dung L2 ----------
 print("\n[3] Leak scan Phần B · quét toàn gói")
 PACK = norm(cs.GOI_TEXT)
@@ -511,15 +519,22 @@ import subprocess
 PIPE = HERE.parent / "l3_pipeline"
 LEADER = PIPE / "GOI_LEADER.yaml"
 
-check("gói nhân viên KHÔNG chứa giá bán", not any(
-    x in norm(cs.GOI_TEXT) for x in ("msrp", "list price", "discount.tier")),
-    "gói staff lộ giá")
+# Nội bộ-không-mật (Lâm 28/07): gói chung CÓ giá BÁN cho mọi nhân viên. NHƯNG giá VỐN (BOM) +
+# margin chưa-kiểm để tới lúc dựng pilot → vẫn NGOÀI gói. Khoá hai chiều: có giá bán, không giá vốn.
+check("gói chung CÓ giá bán (nội bộ)", all(x in norm(cs.GOI_TEXT) for x in ("msrp", "discount")),
+      "thiếu giá bán trong gói chung")
+check("gói chung KHÔNG chứa giá vốn BOM (để tới pilot)",
+      not any(t in cs.GOI_TEXT for t in ("BOM.HERA", "BOM.VEGA", "cost_usd")), "lộ giá vốn")
+check("gói chung KHÔNG chứa margin chưa kiểm",
+      not any(t in cs.GOI_TEXT for t in ("ALMO.MARGIN", "BASE_BUILD_COST")), "lộ margin chưa kiểm")
+check("record giá mang nhãn nội bộ", "khong chuyen tiep ra ngoai" in norm(cs.GOI_TEXT),
+      "record giá thiếu nhãn nội bộ")
 
 if LEADER.exists():
     lead = LEADER.read_text(encoding="utf-8")
     ln = norm(lead)
-    check("gói lãnh đạo CÓ giá bán (phải-trả)", "msrp" in ln and "discount" in ln)
-    check("gói lãnh đạo CÓ nhãn hạn chế trên record giá", "thong tin han che" in ln)
+    check("gói lãnh đạo CÓ giá bán (qua base)", "msrp" in ln and "discount" in ln)
+    check("gói lãnh đạo CÓ nhãn nội bộ trên record giá", "khong chuyen tiep ra ngoai" in ln)
     check("gói lãnh đạo KHÔNG chứa giá vốn linh kiện",
           not any(t in lead for t in ("BOM.HERA", "BOM.VEGA", "cost_usd")), "lộ BOM")
     check("gói lãnh đạo KHÔNG chứa biên lợi nhuận chưa kiểm chứng",
