@@ -6,8 +6,8 @@ nguon: kernel/registry/leader_allowlist.yaml (fail-closed) + l3_facts.yaml + pri
   style/
 duyet_boi: Lâm (AI Officer · SOT curator)
 thong_ke:
-  tong_record: 133
-  l3_nen: 113
+  tong_record: 135
+  l3_nen: 115
   l2_han_che: 18
   l4_van_phong: 2
   giu_ngoai_goi: 5
@@ -959,6 +959,29 @@ records:
     tiến bộ nhân loại); doctrine thương hiệu "Invent. Build. Prove." (Sáng chế · Chế tạo · Chứng minh); định vị
     thương hiệu kết hợp chuẩn Mỹ (U.S.-aligned) với năng lực R&D và sản xuất tại Việt Nam.'
   domain: brand
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: null
+- record: L3F.CAP.001
+  content: 'Năng lực quốc phòng và định vị allied của RtR (nội bộ): (1) hợp tác/triển khai với US Army 11th Airborne
+    (sự kiện training 01/2026); (2) khách quốc phòng Israel qua Protrack; (3) được chính phủ chọn cho nhiệm vụ chiến
+    lược; (4) đủ bộ compliance allied-tier (NDAA + quy trình chứng nhận); (5) tự chủ ~94% công nghệ lõi, không dùng
+    linh kiện Trung Quốc (doctrine CEO, hướng NDAA). LƯU Ý: thông tin quan hệ nhạy — chỉ dùng nội bộ, KHÔNG chuyển
+    ra ngoài. (Trạng thái chứng nhận DCMA/Blue UAS: xem riêng L3F.RES.003.)'
+  domain: company
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: null
+- record: L3F.CAP.002
+  content: 'Hệ sinh thái đối tác và kênh của RtR (nội bộ): phân phối Mỹ qua RMUS (non-exclusive); mạng đối tác 12+
+    nhà cung cấp công nghệ; các MoU và dự án trong hệ sinh thái Việt Nam; khả năng hợp tác với đơn vị nhà nước (Z115).
+    Đội ngũ: founding team tốt nghiệp UC Berkeley, 80+ kỹ sư (chủ yếu người Việt trẻ), năng lực kỹ thuật in-house
+    + team AI/ML; cơ sở R&D và sản xuất tại SHTP TP.HCM, HQ Mỹ tại Castro Valley, California.'
+  domain: company
   tier: L3
   status: approved
   kernel_ref: null

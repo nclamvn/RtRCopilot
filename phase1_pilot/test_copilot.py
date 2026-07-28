@@ -151,6 +151,20 @@ check("landmine Blue UAS: câu trạng thái → L3F.RES.003 (in-progress), khô
       bool(_hb) and _hb[0][1]["record"] == "L3F.RES.003" and "quy trinh" in norm(_hb[0][1]["content"]),
       f"top={_hb[0][1]['record'] if _hb else 'NULL'}")
 
+# QA 28/07 · Lâm chốt "nội bộ không gì mật" → năng lực quốc phòng/đối tác (trước đề xuất leader) nạp staff.
+# CỐ Ý loại SC-011 (Blue UAS claim sai): fact năng lực KHÔNG được khẳng định "đã trên Blue UAS list".
+_hc = cs.search("RtR hợp tác quốc phòng với ai?")
+check("năng lực: 'hợp tác quốc phòng?' → L3F.CAP.001 (US Army/Israel...)",
+      bool(_hc) and _hc[0][1]["record"] == "L3F.CAP.001",
+      f"top={_hc[0][1]['record'] if _hc else 'NULL'}")
+check("năng lực KHÔNG lan claim sai: L3F.CAP.001 không khẳng định đã-cleared Blue UAS",
+      "blue uas" not in norm(_hc[0][1]["content"]) or "rieng" in norm(_hc[0][1]["content"]),
+      "CAP.001 chỉ trỏ L3F.RES.003, không khẳng định")
+_hp = cs.search("RtR phân phối ở Mỹ qua ai?")
+check("năng lực: 'phân phối ở Mỹ?' → L3F.CAP.002 (RMUS/đối tác)",
+      bool(_hp) and _hp[0][1]["record"] == "L3F.CAP.002",
+      f"top={_hp[0][1]['record'] if _hp else 'NULL'}")
+
 # ---------- 3 · Leak scan Phần B · toàn gói không chứa nội dung L2 ----------
 print("\n[3] Leak scan Phần B · quét toàn gói")
 PACK = norm(cs.GOI_TEXT)
