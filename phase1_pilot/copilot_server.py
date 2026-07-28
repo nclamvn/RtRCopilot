@@ -264,6 +264,8 @@ def search(query, top=3):
     # tài liệu văn phong (voice) là free-text rất dài → khớp gần mọi câu, thắng oan record fact.
     # Chỉ để nó nổi khi hỏi ĐÚNG về văn phong/giọng; còn lại phạt nặng như phông nền.
     q_voice = any(k in q_norm for k in ("van phong", "giong", "voice", "soan thao", "phong cach", "van phogn"))
+    # giá vốn (BOM) chỉ nên DẪN khi hỏi đúng về giá vốn/chi phí; hỏi "X là gì" phải ra spec, không phải cost.
+    q_cost = any(k in q_norm for k in ("gia von", "chi phi", "cost", "bom", "gia thanh", "gia linh kien"))
     scored = []
     for r in RECORDS:
         score = sum(idf(t) for t in q_tokens if t in r["_tokens"])
@@ -271,6 +273,8 @@ def search(query, top=3):
         if len(q_norm) > 8 and q_norm in r["_blob"]:
             score += 3.0
         if r.get("domain") == "voice" and not q_voice:
+            score *= 0.15
+        if r.get("domain") == "cost" and not q_cost:
             score *= 0.15
         # neo entity: hỏi đích danh sản phẩm nào thì record không nhắc sản phẩm đó bị phạt nặng
         if q_ents and not any(e in r["_tokens"] for e in q_ents):

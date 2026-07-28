@@ -1511,144 +1511,144 @@ records:
   source: null
   effective_date: null
 - record: BOM.HERA.AIRFRAME
-  content: 'Giá vốn linh kiện · HERA airframe (carbon foldable): 35000 1 unit · nhà cung cấp: RtR SHTP TP.HCM (VN)
-    · NDAA compliant'
+  content: 'Giá vốn linh kiện · HERA airframe (carbon foldable): 35000 USD/1 unit · nhà cung cấp: RtR SHTP TP.HCM
+    (VN) · NDAA compliant'
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: BOM.HERA.AIRFRAME
+  kernel_ref: null
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: null
 - record: BOM.HERA.GCS
-  content: 'Giá vốn linh kiện · HeraHub GCS (Ground Control Station): 8000 1 unit · nhà cung cấp: RtR build (VN)
+  content: 'Giá vốn linh kiện · HeraHub GCS (Ground Control Station): 8000 USD/1 unit · nhà cung cấp: RtR build
+    (VN) · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: null
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.HERA.BATTERY
+  content: 'Giá vốn linh kiện · Battery pack × 8 (LiFePO4 -30°C): 4000 USD/8 packs · nhà cung cấp: RtR custom (VN)
     · NDAA compliant'
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: BOM.HERA.GCS
+  kernel_ref: null
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: null
-- record: BOM.HERA.BATTERY
-  content: 'Giá vốn linh kiện · Battery pack × 8 (LiFePO4 -30°C): 4000 8 packs · nhà cung cấp: RtR custom (VN) ·
+- record: BOM.HERA.BACKPACK
+  content: 'Giá vốn linh kiện · Backpack ruggedized + deploy kit: 1500 USD/1 set · nhà cung cấp: RtR build (VN)
+    · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: null
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.HERA.EDGE_AI
+  content: 'Giá vốn linh kiện · Edge AI compute (105 TOPS Jetson class): 3500 USD/1 unit · nhà cung cấp: NVIDIA
+    Jetson Xavier (USA) · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: null
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.HERA.COMM
+  content: 'Giá vốn linh kiện · HeraHub comm module (5-link RF+4G+5G+tether+P2P): 2500 USD/1 set · nhà cung cấp:
+    RtR + partners (VN/USA) · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: null
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.HERASIGHT_61T
+  content: 'Giá vốn linh kiện · HeraSight 61T Thermal LWIR: 18000 USD/1 unit · nhà cung cấp: RtR/OEM partner (VN/Allied)
+    · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: null
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.HERASIGHT_61MP
+  content: 'Giá vốn linh kiện · HeraSight 61MP High-res RGB: 22000 USD/1 unit · nhà cung cấp: Phase One ecosystem
+    (Denmark) · NDAA allied'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: null
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.OFIL_UV
+  content: 'Giá vốn linh kiện · OFIL CORONA UV camera: 38000 USD/1 unit · nhà cung cấp: OFIL Systems (Israel) ·
+    NDAA allied'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: null
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.DUALSIGHT
+  content: 'Giá vốn linh kiện · DualSight RGB + Thermal combo: 24000 USD/1 unit · nhà cung cấp: RtR custom (VN)
+    · NDAA compliant'
+  domain: cost
+  tier: L2
+  status: noi_bo
+  kernel_ref: null
+  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+  effective_date: null
+- record: BOM.SENSOR.VELODYNE
+  content: 'Giá vốn linh kiện · Velodyne mini LiDAR: 22000 USD/1 unit · nhà cung cấp: Velodyne (Ouster) (USA) ·
     NDAA compliant'
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: BOM.HERA.BATTERY
+  kernel_ref: null
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: null
-- record: BOM.HERA.BACKPACK
-  content: 'Giá vốn linh kiện · Backpack ruggedized + deploy kit: 1500 1 set · nhà cung cấp: RtR build (VN) · NDAA
-    compliant'
+- record: BOM.SENSOR.RIEGL_VUX
+  content: 'Giá vốn linh kiện · RIEGL miniVUX LiDAR: 65000 USD/1 unit · nhà cung cấp: RIEGL (Austria) · NDAA allied'
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: BOM.HERA.BACKPACK
+  kernel_ref: null
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: null
-- record: BOM.HERA.EDGE_AI
-  content: 'Giá vốn linh kiện · Edge AI compute (105 TOPS Jetson class): 3500 1 unit · nhà cung cấp: NVIDIA Jetson
-    Xavier (USA) · NDAA compliant'
-  domain: cost
-  tier: L2
-  status: noi_bo
-  kernel_ref: BOM.HERA.EDGE_AI
-  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
-  effective_date: null
-- record: BOM.HERA.COMM
-  content: 'Giá vốn linh kiện · HeraHub comm module (5-link RF+4G+5G+tether+P2P): 2500 1 set · nhà cung cấp: RtR
-    + partners (VN/USA) · NDAA compliant'
-  domain: cost
-  tier: L2
-  status: noi_bo
-  kernel_ref: BOM.HERA.COMM
-  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
-  effective_date: null
-- record: BOM.SENSOR.HERASIGHT_61T
-  content: 'Giá vốn linh kiện · HeraSight 61T Thermal LWIR: 18000 1 unit · nhà cung cấp: RtR/OEM partner (VN/Allied)
-    · NDAA compliant'
-  domain: cost
-  tier: L2
-  status: noi_bo
-  kernel_ref: BOM.SENSOR.HERASIGHT_61T
-  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
-  effective_date: null
-- record: BOM.SENSOR.HERASIGHT_61MP
-  content: 'Giá vốn linh kiện · HeraSight 61MP High-res RGB: 22000 1 unit · nhà cung cấp: Phase One ecosystem (Denmark)
+- record: BOM.SENSOR.PHASEONE_IXM
+  content: 'Giá vốn linh kiện · Phase One iXM-150 (150MP): 75000 USD/1 unit · nhà cung cấp: Phase One (Denmark)
     · NDAA allied'
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: BOM.SENSOR.HERASIGHT_61MP
-  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
-  effective_date: null
-- record: BOM.SENSOR.OFIL_UV
-  content: 'Giá vốn linh kiện · OFIL CORONA UV camera: 38000 1 unit · nhà cung cấp: OFIL Systems (Israel) · NDAA
-    allied'
-  domain: cost
-  tier: L2
-  status: noi_bo
-  kernel_ref: BOM.SENSOR.OFIL_UV
-  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
-  effective_date: null
-- record: BOM.SENSOR.DUALSIGHT
-  content: 'Giá vốn linh kiện · DualSight RGB + Thermal combo: 24000 1 unit · nhà cung cấp: RtR custom (VN) · NDAA
-    compliant'
-  domain: cost
-  tier: L2
-  status: noi_bo
-  kernel_ref: BOM.SENSOR.DUALSIGHT
-  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
-  effective_date: null
-- record: BOM.SENSOR.VELODYNE
-  content: 'Giá vốn linh kiện · Velodyne mini LiDAR: 22000 1 unit · nhà cung cấp: Velodyne (Ouster) (USA) · NDAA
-    compliant'
-  domain: cost
-  tier: L2
-  status: noi_bo
-  kernel_ref: BOM.SENSOR.VELODYNE
-  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
-  effective_date: null
-- record: BOM.SENSOR.RIEGL_VUX
-  content: 'Giá vốn linh kiện · RIEGL miniVUX LiDAR: 65000 1 unit · nhà cung cấp: RIEGL (Austria) · NDAA allied'
-  domain: cost
-  tier: L2
-  status: noi_bo
-  kernel_ref: BOM.SENSOR.RIEGL_VUX
-  source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
-  effective_date: null
-- record: BOM.SENSOR.PHASEONE_IXM
-  content: 'Giá vốn linh kiện · Phase One iXM-150 (150MP): 75000 1 unit · nhà cung cấp: Phase One (Denmark) · NDAA
-    allied'
-  domain: cost
-  tier: L2
-  status: noi_bo
-  kernel_ref: BOM.SENSOR.PHASEONE_IXM
+  kernel_ref: null
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: null
 - record: BOM.SENSOR.MICASENSE_ALTUM
-  content: 'Giá vốn linh kiện · MicaSense Altum multispectral: 14000 1 unit · nhà cung cấp: MicaSense (USA) · NDAA
-    compliant'
+  content: 'Giá vốn linh kiện · MicaSense Altum multispectral: 14000 USD/1 unit · nhà cung cấp: MicaSense (USA)
+    · NDAA compliant'
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: BOM.SENSOR.MICASENSE_ALTUM
+  kernel_ref: null
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: null
 - record: BOM.SENSOR.LS1_LASER
-  content: 'Giá vốn linh kiện · LS1 Laser Spotter: 8500 1 unit · nhà cung cấp: RtR custom (VN) · NDAA compliant'
+  content: 'Giá vốn linh kiện · LS1 Laser Spotter: 8500 USD/1 unit · nhà cung cấp: RtR custom (VN) · NDAA compliant'
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: BOM.SENSOR.LS1_LASER
+  kernel_ref: null
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: null
 - record: BOM.PAYLOAD.DROP_MODULE
-  content: 'Giá vốn linh kiện · Payload drop module: 4500 1 unit · nhà cung cấp: RtR custom (VN) · NDAA compliant'
+  content: 'Giá vốn linh kiện · Payload drop module: 4500 USD/1 unit · nhà cung cấp: RtR custom (VN) · NDAA compliant'
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: BOM.PAYLOAD.DROP_MODULE
+  kernel_ref: null
   source: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
   effective_date: null
 - record: SKU.HERA.DRONE_ONLY
@@ -1656,7 +1656,7 @@ records:
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: SKU.HERA.DRONE_ONLY
+  kernel_ref: null
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: null
 - record: SKU.HERA.CONTROLLER
@@ -1664,7 +1664,7 @@ records:
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: SKU.HERA.CONTROLLER
+  kernel_ref: null
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: null
 - record: SKU.HERA.BATTERY_SPARE
@@ -1672,7 +1672,7 @@ records:
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: SKU.HERA.BATTERY_SPARE
+  kernel_ref: null
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: null
 - record: SKU.HERA.CHARGER
@@ -1680,7 +1680,7 @@ records:
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: SKU.HERA.CHARGER
+  kernel_ref: null
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: null
 - record: SKU.HERA.DROP
@@ -1688,7 +1688,7 @@ records:
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: SKU.HERA.DROP
+  kernel_ref: null
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: null
 - record: SKU.HERA.SPEAKER
@@ -1696,7 +1696,7 @@ records:
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: SKU.HERA.SPEAKER
+  kernel_ref: null
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: null
 - record: SKU.HERA.HARDCASE
@@ -1704,7 +1704,7 @@ records:
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: SKU.HERA.HARDCASE
+  kernel_ref: null
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: null
 - record: SKU.HERA.BACKPACK_LITE
@@ -1712,7 +1712,7 @@ records:
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: SKU.HERA.BACKPACK_LITE
+  kernel_ref: null
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: null
 - record: SKU.STARLINK_MOUNT
@@ -1720,7 +1720,7 @@ records:
   domain: cost
   tier: L2
   status: noi_bo
-  kernel_ref: SKU.STARLINK_MOUNT
+  kernel_ref: null
   source: _governance/Pricing to Almo - emj updates 260512.xlsx
   effective_date: null
 - record: VOICE.VOICE_CEO

@@ -111,13 +111,15 @@ def main():
     for f in boms.get("facts", []):
         vendor = f.get("vendor") or "?"
         country = f.get("country") or ""
+        unit = f.get("unit") or ""
         records.append({
             "record": f["id"],
-            "content": (f"Giá vốn linh kiện · {f.get('key', f['id'])}: {f.get('cost_usd')} "
-                        f"{f.get('unit', 'USD')} · nhà cung cấp: {vendor}"
+            "content": (f"Giá vốn linh kiện · {f.get('key', f['id'])}: {f.get('cost_usd')} USD"
+                        + (f"/{unit}" if unit and unit != "USD" else "")
+                        + f" · nhà cung cấp: {vendor}"
                         + (f" ({country})" if country else "")
                         + (f" · NDAA {f['ndaa_status']}" if f.get("ndaa_status") else "")),
-            "domain": "cost", "tier": "L2", "status": "noi_bo", "kernel_ref": f["id"],
+            "domain": "cost", "tier": "L2", "status": "noi_bo", "kernel_ref": None,
             "source": (f.get("source") or {}).get("file") if isinstance(f.get("source"), dict) else f.get("source"),
             "effective_date": None,
         })
