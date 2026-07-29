@@ -7,8 +7,8 @@ nguon: kernel/registry/leader_allowlist.yaml (fail-closed) + l3_facts.yaml + pri
   boms.yaml (l2_cost leader-only) + style/
 duyet_boi: Lâm (AI Officer · SOT curator)
 thong_ke:
-  tong_record: 160
-  l3_nen: 135
+  tong_record: 162
+  l3_nen: 137
   l2_han_che: 25
   l4_van_phong: 0
   giu_ngoai_goi: 0
@@ -910,7 +910,7 @@ records:
 - record: L3F.ENT.001
   content: 'Tên pháp nhân Việt Nam dùng trên văn bản chính thức: CÔNG TY CỔ PHẦN REAL-TIME ROBOTICS VIỆT NAM (viết
     tắt RTR). Đây là tên đứng trên phần tiêu đề công văn gửi cơ quan nhà nước. Phân biệt với pháp nhân Hoa Kỳ (xem
-    CAND.3.030). Thông tin công khai, xuất hiện trên mọi văn bản đã gửi đi.'
+    CAND.3.030 · pháp nhân Hoa Kỳ). Thông tin công khai, xuất hiện trên mọi văn bản đã gửi đi.'
   domain: company
   tier: L3
   status: approved
@@ -919,10 +919,10 @@ records:
   effective_date: null
 - record: L3F.ENT.002
   content: 'Real-time Robotics (RtR) là công ty Việt Nam nghiên cứu, phát triển và sản xuất hệ thống UAV (drone)
-    cùng giải pháp trí tuệ nhân tạo biên (Edge AI). Hai nền tảng chính: HERA (ISR đa nhiệm · xem L3R.K.001) và VEGA
-    (tactical heavy-lift · xem L3R.K.002). Người sáng lập là TS. Lương Việt Quốc (xem CAND.3.030); pháp nhân Việt
-    Nam xem L3F.ENT.001.'
-  domain: company
+    cùng giải pháp trí tuệ nhân tạo biên (Edge AI). Hai nền tảng chính: HERA (ISR đa nhiệm · xem L3F.PRD.001) và
+    VEGA (tactical heavy-lift · xem L3R.K.002 và L3F.PRD.001). Người sáng lập là TS. Lương Việt Quốc (xem L3F.RES.004);
+    pháp nhân Việt Nam xem L3F.ENT.001.'
+  domain: dinh_nghia
   tier: L3
   status: approved
   kernel_ref: null
@@ -931,10 +931,10 @@ records:
 - record: L3F.CMP.001
   content: 'Ưu thế cạnh tranh định lượng của HERA so với UAV tactical/thương mại thông thường (gồm lớp DJI): (1)
     Signature 1-4-14 — 1 chiến sĩ triển khai, 4 payload đồng thời một chuyến bay, 14 kg full-load (US: 30 lb); baseline
-    cùng class thường cần 2-4 người + cẩu và chỉ mang 1-2 payload (xem L3R.K.001). (2) Edge AI 105 TOPS on-board,
+    cùng class thường cần 2-4 người + cẩu và chỉ mang 1-2 payload (xem L3F.PRD.001). (2) Edge AI 105 TOPS on-board,
     ~≥5× so với drone tactical thông thường 4-21 TOPS (Jetson Xavier NX) → AI inference real-time không phụ thuộc
     đường truyền. (3) Multi-link 5 kênh song song (Starlink LEO + 4G + 5G + RF P2P + LoRa fallback) so với thông
-    thường 1-2 kênh → mất 1 kênh không mất link. (4) Endurance 56 phút không tải (xem L3R.1.006).'
+    thường 1-2 kênh → mất 1 kênh không mất link. (4) Endurance 56 phút không tải (xem CAND.1.006).'
   domain: product
   tier: L3
   status: approved
@@ -983,6 +983,36 @@ records:
   status: approved
   kernel_ref: null
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
+  effective_date: null
+- record: L3F.PRD.001
+  content: 'HERA là nền tảng UAV đa nhiệm chủ lực của Real-time Robotics, dùng cho ISR (trinh sát, giám sát) và
+    các nhiệm vụ dân sự. Đặc điểm định danh là signature 1-4-14: MỘT người triển khai, BỐN payload mang đồng thời
+    trong một chuyến bay nhờ 4 khoang quick-release, và 14 kg tải trọng ở bản Việt Nam (xem L3F.CMP.001, CAND.1.005).
+    Bản Hoa Kỳ theo FAA Part 107 có payload 9 kg, không tải 16 kg (xem L3R.K.002). Thông số nền: bay 56 phút không
+    tải và 40 phút khi mang payload (CAND.1.006), tầm điều khiển 15 km (L3R.K.007), kháng bụi nước IP54 (L3F.1.037),
+    Edge AI 105 TOPS on-board và 5 kênh truyền song song (L3F.CMP.001). HERA đã chính thức trên danh sách DCMA Blue
+    UAS cleared (L3F.RES.003). Quanh HERA là một họ sản phẩm dùng chung nền tảng: HeraHub (bộ điều khiển), HeraSight
+    (dòng cảm biến RGB + thermal), pin, sạc và các module nhiệm vụ (L3F.2.006). Roadmap 2026-2028 có 5 biến thể
+    chuyên ngành dùng chung 60-80% phần cứng lõi (L3F.2.022).'
+  domain: dinh_nghia
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: (tổng hợp trong kernel · không có nguồn ngoài mới)
+  effective_date: null
+- record: L3F.RES.004
+  content: 'Người đứng đầu Real-time Robotics là TS. Lương Việt Quốc, nhà sáng lập kiêm CEO (Founder & CEO). Ông
+    là Tiến sĩ Kinh tế Phát triển tại UC Berkeley, đi lên bằng học bổng Fulbright rồi Cornell rồi UC Berkeley (L3F.RES.002,
+    CAND.2.027). Ông sáng lập pháp nhân Hoa Kỳ năm 2014; pháp nhân Việt Nam là Công ty Cổ phần Real-time Robotics
+    Việt Nam (CAND.3.030, L3F.ENT.001). Định hướng sáng lập ông đặt ra cho công ty: "vượt thế giới hoặc phá sản"
+    (CAND.2.027). Trong vận hành, CEO là điểm cuối của chuỗi escalation và uỷ quyền cho COO khi quá tải (L3F.1.031).
+    Văn bản chính thức gửi cơ quan nhà nước do CEO ký. Ban điều hành còn có COO, Business Development Manager, Software
+    Manager, Mechanical R&D Team Lead và AI Officer (L3F.1.032).'
+  domain: dinh_nghia
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: (tổng hợp trong kernel · không có nguồn ngoài mới)
   effective_date: null
 - record: CAND.1.005
   content: 'HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.

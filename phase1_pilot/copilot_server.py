@@ -222,7 +222,11 @@ def _deaccent(s):
 def strip_accents(s):
     return _deaccent(s.lower())
 
-STOPWORDS = set("la gi cua cho voi den tu va hay hoac thi ma o trong ngoai bao nhieu the nao khong duoc hien tai dang".split())
+# Thêm tiểu từ lịch sự tiếng Việt: người thật gõ "… bao nhiêu vậy ạ?", "… nhé", "… nhỉ".
+# Đó là phép lịch sự, không phải nội dung — để lọt vào là thành từ hiếm chưa khớp và
+# chặn oan chính câu hỏi lễ phép nhất.
+STOPWORDS = set(("la gi cua cho voi den tu va hay hoac thi ma o trong ngoai bao nhieu the nao "
+                 "khong duoc hien tai dang a ah nhe nhi vay day nao co the xin vui long").split())
 
 # Tách token: tên CamelCase (OmniSight, HeraHub, DualSight, SkyWatch...) trong nguồn dính thành
 # 1 chữ, người dùng lại gõ tách rời ("Omni Sight") → cũ không khớp → honest-null oan (giấu tri
@@ -300,6 +304,14 @@ def correct_typos(q_tokens):
         cands = [v for v in CORRECT_VOCAB if _within1(t, v)]
         if len(cands) == 1 and cands[0] not in out:  # duy nhất một ứng viên → gõ nhầm rõ ràng
             out.append(cands[0])
+            # Bỏ luôn chữ gõ sai. Nó không có trong bất kỳ record nào (DF=0) nên giữ lại
+            # không giúp khớp thêm gì, mà lại bị luật "từ hiếm chưa khớp" hiểu nhầm là
+            # khái niệm gói không có → chặn oan chính câu vừa sửa được.
+            # Bỏ CẢ mảnh vụn của nó: bộ tách CamelCase cắt "HeraSght" thành hera + sght,
+            # mà "sght" ngắn hơn ngưỡng sửa lỗi nên không tự sửa được. Chỉ bỏ mảnh nào
+            # DF=0 (không khớp gì) và thật sự nằm trong chữ gõ sai — "hera" giữ nguyên.
+            out = [x for x in out
+                   if x != t and not (x != cands[0] and x in t and DF.get(x, 0) == 0)]
     return out
 
 # record mô tả spec/tài liệu thế hệ cũ: down-rank trong MOCK để số stale không đè số hiện hành.
@@ -328,7 +340,78 @@ for r in RECORDS:
     r["_nent"] = sum(1 for e in ENTITIES if e in r["_tokens"])
 
 # đồng nghĩa hỏi-đáp → từ vựng trong gói (mở rộng query, không bịa đáp án)
+# Câu hỏi ĐỊNH NGHĨA · "X là gì", "X là ai", "giới thiệu về X".
+# Người mới hỏi kiểu này trước tiên, mà gói xây từ dưới lên (spec, số đo) thì đầy
+# record VỀ X nhưng không record nào NÓI X LÀ GÌ. Đánh dấu record định nghĩa rồi ưu
+# tiên nó cho đúng loại câu hỏi này — không đụng xếp hạng của câu hỏi tra số.
+_HOI_DINH_NGHIA = re.compile(
+    r"\b(la\s+(gi|ai|nhu\s+the\s+nao)|gioi\s+thieu|tong\s+quan|the\s+nao\s+la|"
+    r"lam\s+(gi|nghe\s+gi)|ai\s+la)\b")
+
+
+def la_cau_dinh_nghia(q_norm):
+    return bool(_HOI_DINH_NGHIA.search(" " + q_norm + " "))
+
+
+# Từ để hỏi trong câu định nghĩa · KHÔNG phải nội dung, nên không được tính là
+# "từ khoá bị bỏ sót" khi xét độ tin. Thiếu chỗ này thì "Giới thiệu về HERA" bị
+# chặn vì record định nghĩa không chứa chữ "giới thiệu" — mà nó có bao giờ chứa đâu.
+TU_HOI = {"gioi", "thieu", "tong", "quan", "ai", "gi", "nao", "ve", "la", "the",
+          # "bên" trong "bên mình" chỉ để xưng hô. CHỈ thêm đúng từ này.
+          # Đã thử thêm cả minh/ta/chung/lam/cua/co: bộ test đơn vị vẫn xanh nhưng
+          # persona nhân viên mới TỤT 93%→80% — "Mình có bao nhiêu người?" và
+          # "Mình bán cho ai?" mất hết từ phân biệt. Bài học: mỗi từ bỏ khỏi tập phân
+          # biệt là một câu hỏi khác mất khả năng trả lời; phải đo bằng persona, không
+          # phải bằng câu đang sửa.
+          "ben"}
+
+
+def chu_ngu_dinh_nghia(content):
+    """Record định nghĩa NÓI VỀ AI/CÁI GÌ · lấy từ chủ ngữ câu đầu.
+
+    Suy ra từ dữ liệu thay vì khai tay một bảng: thêm record định nghĩa cho sản phẩm
+    mới thì tự có chủ ngữ, không ai phải nhớ cập nhật bảng.
+    """
+    dau = strip_accents(content[:90])
+    for e in ENTITIES:
+        if re.search(r"\b" + e + r"\b.{0,40}\bla\b", dau):
+            return e
+    if re.search(r"\b(rtr|real ?time robotics)\b.{0,40}\bla\b", dau):
+        return "rtr"
+    return None                      # định nghĩa về người/khái niệm · không neo entity
+
+
+# Gắn chủ ngữ ngay sau khi hàm tồn tại · phải nằm SAU cả RECORDS lẫn hàm.
+for _r in RECORDS:
+    _r["_chu_ngu"] = (chu_ngu_dinh_nghia(_r.get("content", ""))
+                      if _r.get("domain") == "dinh_nghia" else None)
+
+
 SYNONYMS = [
+    # Từ đời thường ↔ từ trong tài liệu. Nguồn sự thật viết "CEO", "Founder",
+    # "người sáng lập"; nhân viên gõ "sếp", "ông chủ", "lãnh đạo". Không bắc cầu thì
+    # câu hỏi phổ biến nhất của người mới rơi vào honest-null oan.
+    ("sep", ["ceo", "sang", "lap", "founder"]),
+    # "công ty mình / công ty ta / bên mình" = RtR. Nhân viên gần như không bao giờ gõ
+    # tên công ty khi hỏi về chính công ty mình.
+    # Tài liệu viết "nền tảng", nhân viên nói "sản phẩm". Bắc cầu từ vựng, không bịa.
+    ("san pham", ["nen", "tang", "platform"]),
+    # "drone của mình / máy bay bên mình" = hai nền tảng của công ty.
+    ("drone cua minh", ["hera", "vega"]),
+    ("drone cua ta", ["hera", "vega"]),
+    ("drone ben minh", ["hera", "vega"]),
+    ("may bay cua minh", ["hera", "vega"]),
+    ("bay duoc bao lau", ["phut", "endurance", "bay"]),
+    ("bay bao lau", ["phut", "endurance", "bay"]),
+    ("cong ty minh", ["rtr", "robotics"]),
+    ("cong ty ta", ["rtr", "robotics"]),
+    ("cong ty chung ta", ["rtr", "robotics"]),
+    ("ben minh", ["rtr", "robotics"]),
+    ("cty minh", ["rtr", "robotics"]),
+    ("ong chu", ["ceo", "sang", "lap"]),
+    ("lanh dao", ["ceo", "coo", "founder"]),
+    ("giam doc", ["ceo", "coo"]),
+    ("nguoi sang lap", ["ceo", "founder", "sang", "lap"]),
     ("man hinh", ["nits", "lcd"]),
     ("sang gia bao nhieu nit", ["nits"]),
     ("tai trong", ["payload"]),
@@ -350,6 +433,11 @@ SYNONYMS = [
 def expand(q_norm, q_tokens, q_raw=""):
     out = correct_typos(q_tokens)                    # dung sai gõ sai trước, rồi mới nở đồng nghĩa
     q_raw = q_raw.lower()
+    # "ai" nghĩa NGƯỜI NÀO khác "AI" nghĩa trí tuệ nhân tạo. Không tách thì "Sếp là ai?"
+    # đi khớp mấy record Edge AI / AI computer và trả lời lạc đề một cách rất tự tin.
+    # Chỉ bỏ khi nó đứng ở vị trí từ để hỏi ("là ai", "ai là", "ai phụ trách").
+    if re.search(r"\b(la ai|ai la|ai phu trach|ai lam|ai chiu)\b", q_norm) and "ai" in out:
+        out = [t for t in out if t != "ai"]
     # đồng nghĩa (khớp theo chuỗi) cũng phải thấy token đã sửa lỗi gõ — nếu không, "Payloat"→token
     # "payload" khớp record được nhưng trigger "payload"→["kg"] không nổ (chuỗi vẫn là "payloat"),
     # câu gõ sai lệch xếp hạng khỏi câu gõ đúng. Ghép token đã sửa vào chuỗi để hai đường đồng nhất.
@@ -358,6 +446,11 @@ def expand(q_norm, q_tokens, q_raw=""):
         hay = q_raw if any(ord(c) > 127 for c in trigger) else q_norm_x  # trigger có dấu match query gốc
         if trigger in hay:
             out.extend(a for a in adds if a not in out)
+            # Từ đời thường đã bắc cầu xong ("sếp"→ceo) thì bỏ khỏi danh sách nếu nó
+            # không tồn tại trong gói · cùng lý do với chữ gõ sai ở trên.
+            for w in trigger.split():
+                if DF.get(w, 0) == 0:
+                    out = [x for x in out if x != w]
     return out
 
 def search(query, top=3):
@@ -376,6 +469,7 @@ def search(query, top=3):
     q_voice = any(k in q_norm for k in ("van phong", "giong", "voice", "soan thao", "phong cach", "van phogn"))
     # giá vốn (BOM) chỉ nên DẪN khi hỏi đúng về giá vốn/chi phí; hỏi "X là gì" phải ra spec, không phải cost.
     q_cost = any(k in q_norm for k in ("gia von", "chi phi", "cost", "bom", "gia thanh", "gia linh kien"))
+    q_dinh_nghia = la_cau_dinh_nghia(q_norm)
     scored = []
     for r in RECORDS:
         score = sum(idf(t) for t in q_tokens if t in r["_tokens"])
@@ -392,6 +486,24 @@ def search(query, top=3):
         # catalog: hỏi đích danh 1 sản phẩm mà record là danh mục nhiều-sản-phẩm → phạt để spec thật lên
         if q_ents and len(q_ents) < CATALOG_MIN and r["_nent"] >= CATALOG_MIN:
             score *= 0.5
+        # Record ĐỊNH NGHĨA nổi lên khi và chỉ khi người ta hỏi câu định nghĩa. Không có
+        # luật này thì "HERA là gì?" trả về record payload — đúng về HERA, nhưng không
+        # trả lời câu được hỏi. Hệ số vừa phải (2.2) để nó thắng trong nhóm cùng entity
+        # chứ không đủ sức kéo một record lạc entity lên đầu.
+        if r.get("domain") == "dinh_nghia":
+            # CỘNG thẳng chứ không nhân: record định nghĩa hầu như không chứa chữ
+            # "giới thiệu"/"là gì" nên điểm nền gần 0, nhân hệ số vào 0 vẫn là 0.
+            # NHƯNG chỉ cộng cho record ĐÚNG CHỦ NGỮ — không thì hỏi "HERA là gì?" ra
+            # định nghĩa công ty, vì mọi record định nghĩa cùng được nâng như nhau.
+            cn = r.get("_chu_ngu")
+            # Lấy entity DÀI NHẤT câu hỏi neo vào: "HeraSight LR là gì?" neo cả "hera"
+            # (chuỗi con) lẫn "herasight", mà định nghĩa đúng phải là của herasight.
+            # Không chọn dài nhất thì định nghĩa HERA cướp chỗ mọi câu hỏi họ Hera.
+            ent_chinh = max(q_ents, key=len) if q_ents else None
+            if q_dinh_nghia and (cn == ent_chinh if q_ents else cn in (None, "rtr")):
+                score += 6.0
+            elif not q_dinh_nghia:
+                score *= 0.6      # hỏi tra số thì record định nghĩa lùi, nhường record spec
         if r["_stale"]:
             score *= STALE_PENALTY
         if score > 0:
@@ -406,14 +518,35 @@ def confident(question, top_rec):
     Ba cửa OR: khớp entity đích danh · 1 token rất hiếm · >=2 discriminator đủ khối lượng."""
     q_norm = strip_accents(question)
     q_tokens = expand(q_norm, tokens(question), q_raw=question)
-    q_disc = [t for t in q_tokens if not is_ubiq(t)]   # token người dùng gõ, trừ phông nền
+    # Entity đích danh LUÔN là token phân biệt, kể cả khi nó có mặt ở gần hết gói.
+    # Trước đây lọc phông nền chạy trước nên "hera" và "rtr" bị vứt khỏi q_disc, làm
+    # luật "khớp entity thì tin" ngay dưới đây thành CODE CHẾT đúng với hai cái tên
+    # trung tâm nhất. Hệ quả người dùng thấy: "HERA là gì?" honest-null, trong khi
+    # "HeraHub là gì?" trả lời được — càng trung tâm càng không hỏi được.
+    # "rtr" là entity khi ĐI HỎI (câu "RtR là ai?" phải trả lời được) nhưng KHÔNG đưa
+    # vào ENTITIES chung, vì ENTITIES còn dùng để phạt record lạc sản phẩm trong search —
+    # thêm rtr vào đó sẽ phạt oan gần cả gói.
+    ent_hoi = ENTITIES | {"rtr"}
+    q_disc = [t for t in q_tokens if (not is_ubiq(t) or t in ent_hoi) and t not in TU_HOI]
     if not q_disc:
         return False
     matched = [t for t in q_disc if t in top_rec["_tokens"]]
     cov = len(matched) / len(q_disc)
     if not matched or cov < 0.5:
         return False
-    if any(e in matched for e in ENTITIES):            # khớp entity đích danh (hera, vega...) · tín hiệu mạnh
+    # Khớp entity đích danh là tín hiệu mạnh — NHƯNG chỉ khi không bỏ sót từ khoá hiếm nào.
+    # "Giá vốn HERA?" khớp được [gia, hera] mà TRƯỢT "von" (từ mang toàn bộ ý câu hỏi):
+    # trả lời lúc đó là đưa một record về HERA nhưng lạc đề, tệ hơn nói không biết.
+    # Ngưỡng 2.5 ≈ token có mặt ở dưới ~10% record.
+    # LUẬT CHUNG, đứng trước mọi cửa cho phép: câu hỏi có một từ RẤT hiếm mà record
+    # không chứa từ đó thì record không thể đang nói về thứ được hỏi. "Biên lợi nhuận
+    # HERA là gì?" khớp được [bien, loi, hera] hoàn toàn ngẫu nhiên ("biến thể", "lõi")
+    # trong khi "nhuận" — từ mang cả ý câu hỏi — vắng mặt. Record tổng hợp càng dài thì
+    # bề mặt va chạm càng lớn, nên luật này càng cần từ khi có record định nghĩa.
+    if any(t not in matched and idf(t) >= 4.0 for t in q_disc):
+        return False
+    bo_sot = [t for t in q_disc if t not in matched and t not in ent_hoi and idf(t) >= 2.5]
+    if any(e in matched for e in ent_hoi) and not bo_sot:
         return True
     if any(idf(t) >= 3.0 for t in matched):            # 1 token rất hiếm khớp · tín hiệu mạnh
         return True

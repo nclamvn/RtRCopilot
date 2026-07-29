@@ -847,6 +847,77 @@ check("CẤM: nhân viên chỉ thấy nhật ký của chính mình", _a_nv["ph
 check("CHO: lãnh đạo vẫn thấy TOÀN BỘ lượt hỏi (chỉ khuyết tên)",
       _a_ld["pham_vi"] == "tat_ca" and len(_a_ld["events"]) >= len(_a_nv["events"]))
 
+# ---------- 4e · Câu ĐỊNH NGHĨA · câu người mới hỏi đầu tiên ----------
+# Lâm 29/07: "HERA là gì và Sếp là ai mà bạn không trả lời được — thông tin này ai
+# cũng phải biết". Đúng: thông tin CÓ trong gói, chỉ là truy hồi không tới. Ba lỗi
+# cấu trúc đã sửa, mỗi lỗi khoá bằng test cả hai chiều.
+print("\n[4e] Câu định nghĩa · người mới hỏi")
+
+# Chiều XUÔI · phải trả lời được, và phải ra ĐÚNG record chủ đề
+for _q, _mong in [("HERA là gì?", "L3F.PRD.001"), ("Sếp là ai?", "L3F.RES.004"),
+                  ("RtR là ai?", "L3F.ENT.002"), ("Ai là người sáng lập?", "L3F.RES.004"),
+                  ("Giới thiệu về HERA", "L3F.PRD.001"), ("Công ty mình làm gì?", "L3F.ENT.002"),
+                  ("Sản phẩm chính là gì?", "L3F.ENT.002")]:
+    _a = cs.mock_answer(_q)
+    _h = cs.search(_q, top=1)
+    check(f"định nghĩa: '{_q}' ra {_mong}",
+          "GAP:" not in _a and _h and _h[0][1]["record"] == _mong,
+          "KHÔNG BIẾT" if "GAP:" in _a else (_h[0][1]["record"] if _h else "-"))
+
+# Chiều NGƯỢC · nới cho câu định nghĩa KHÔNG được kéo theo trả lời bừa
+# "Giá vốn HERA?" là ca thật: khớp được [gia, hera] nhưng TRƯỢT "von" — token mang
+# toàn bộ ý câu hỏi. Trả lời lúc đó là đưa record về HERA nhưng lạc đề.
+for _q in ["Giá vốn HERA?", "zxqwerty là gì?", "Biên lợi nhuận HERA là gì?"]:
+    check(f"CẤM: '{_q}' vẫn phải honest-null", "GAP:" in cs.mock_answer(_q),
+          cs.mock_answer(_q)[:90])
+# Câu tra số KHÔNG được bị record định nghĩa cướp chỗ
+for _q, _khong in [("Payload Hera bao nhiêu?", "L3F.PRD.001"),
+                   ("Tầm điều khiển Hera?", "L3F.PRD.001"),
+                   ("IP rating Hera?", "L3F.PRD.001")]:
+    _h = cs.search(_q, top=1)
+    check(f"CẤM: '{_q}' không bị record định nghĩa cướp chỗ",
+          _h and _h[0][1]["record"] != _khong, _h[0][1]["record"] if _h else "-")
+# "ai" nghĩa NGƯỜI NÀO không được đi khớp "AI" nghĩa trí tuệ nhân tạo
+# Đo THẲNG cơ chế, không đo qua kết quả cuối. Bản trước chỉ kiểm câu trả lời không
+# chứa OmniSight — nhưng record định nghĩa thắng sẵn nên phép thử đó xanh kể cả khi
+# gỡ luật đi, tức là nó không khoá gì. Test phải chạm đúng thứ nó bảo vệ.
+def _co_ai(q):
+    return "ai" in cs.expand(cs.strip_accents(q), cs.tokens(q), q_raw=q)
+check("'ai' nghĩa NGƯỜI NÀO bị loại khỏi token", not _co_ai("Sếp là ai?"))
+check("'ai' nghĩa NGƯỜI NÀO bị loại · dạng 'ai phụ trách'", not _co_ai("Ai phụ trách kỹ thuật?"))
+check("'AI' nghĩa CÔNG NGHỆ được giữ lại", _co_ai("Edge AI bao nhiêu TOPS?"))
+check("CẤM: 'ai' để hỏi người không kéo record Edge AI",
+      "OmniSight" not in cs.mock_answer("Sếp là ai?") and "DualSight" not in cs.mock_answer("Sếp là ai?"))
+# Chủ ngữ record định nghĩa phải SUY RA được, không khai tay
+_cn = {r["record"]: r["_chu_ngu"] for r in cs.RECORDS if r.get("domain") == "dinh_nghia"}
+check("chủ ngữ record định nghĩa suy từ dữ liệu",
+      _cn.get("L3F.PRD.001") == "hera" and _cn.get("L3F.ENT.002") == "rtr", str(_cn))
+
+# Từ vựng đời thường ↔ từ vựng tài liệu · và phép lịch sự tiếng Việt
+for _q in ["Drone của mình bay được bao lâu?", "Hera bay bao lâu ạ?",
+           "Payload HERA bao nhiêu vậy ạ?", "Công ty mình làm gì?"]:
+    check(f"đời thường: '{_q}' trả lời được", "GAP:" not in cs.mock_answer(_q))
+# Chiều ngược: tiểu từ lịch sự thành stopword KHÔNG được biến câu vô nghĩa thành có nghĩa
+check("CẤM: câu chỉ có tiểu từ lịch sự vẫn honest-null",
+      "GAP:" in cs.mock_answer("vậy ạ nhé nhỉ?"))
+check("CẤM: hỏi thứ gói cố ý không có vẫn honest-null (doctrine A3)",
+      "GAP:" in cs.mock_answer("Biên lợi nhuận bao nhiêu ạ?"))
+
+# CỔNG · mọi mã record được TRÍCH trong nội dung phải có thật trong gói.
+# Trích một mã không tồn tại thì người dùng bấm vào chip citation là rơi vào hư không,
+# và cổng khoá fact của bộ sinh tài liệu cũng trỏ vào chỗ trống. Ba mã dưới đây là nợ
+# cũ đã biết (record nguồn nằm ngoài gói nhân viên), khoá lại để KHÔNG phát sinh thêm.
+_NO_CU = {"CAND.3.025", "CAND.3.026", "SPEC.HERA"}
+_ids = {r["record"] for r in cs.RECORDS}
+_treo = {}
+for _r in cs.RECORDS:
+    for _ref in _re.findall(r"\b((?:L3F|L3R|CAND|HC|OC|SC|SPEC|DISP|PRICE|BOM|SKU|DERIVED)\.[A-Za-z0-9._]*[A-Za-z0-9])",
+                            _r.get("content", "")):
+        if _ref not in _ids:
+            _treo.setdefault(_ref, set()).add(_r["record"])
+check("không phát sinh tham chiếu treo MỚI", set(_treo) <= _NO_CU,
+      "treo mới: " + ", ".join(sorted(set(_treo) - _NO_CU)))
+
 # --- 8h2 · băm mật khẩu chạy được trên MỌI máy, kể cả máy không có scrypt
 # macOS bản hệ thống dựng trên LibreSSL, mà LibreSSL KHÔNG có scrypt. Bộ test cũ
 # chạy xanh ở sandbox Linux rồi chết ở đúng cái máy chạy pilot. Ba phép dưới đây
