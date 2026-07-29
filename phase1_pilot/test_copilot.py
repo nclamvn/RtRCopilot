@@ -973,6 +973,18 @@ check("hệ số provenance nhẹ, không lật kết quả khác chủ đề",
       cs.search("Payload Hera bao nhiêu?", top=1)[0][1]["record"].startswith("CAND"),
       cs.search("Payload Hera bao nhiêu?", top=1)[0][1]["record"])
 
+# Viết tắt hành chính · người Việt gõ MSDN/MST/ĐKKD, tài liệu viết đủ chữ
+for _q in ["MSDN của RtR?", "MST công ty mình?", "ĐKKD số bao nhiêu?",
+           "giấy phép kinh doanh của công ty?"]:
+    _h = cs.search(_q, top=1)
+    check(f"viết tắt hành chính: '{_q}' ra ENT.001",
+          "GAP:" not in cs.mock_answer(_q) and _h and _h[0][1]["record"] == "L3F.ENT.001",
+          _h[0][1]["record"] if _h else "-")
+check("CẤM: viết tắt lạ vẫn honest-null", "GAP:" in cs.mock_answer("XYZW của RtR?"))
+check("số ĐKKD có trong gói phục vụ và mang verified_primary",
+      "0314718578" in cs.BY_ID["L3F.ENT.001"]["content"]
+      and cs.BY_ID["L3F.ENT.001"].get("provenance_level") == "verified_primary")
+
 # CỔNG · mọi mã record được TRÍCH trong nội dung phải có thật trong gói.
 # Trích một mã không tồn tại thì người dùng bấm vào chip citation là rơi vào hư không,
 # và cổng khoá fact của bộ sinh tài liệu cũng trỏ vào chỗ trống. Ba mã dưới đây là nợ

@@ -447,6 +447,11 @@ SYNONYMS = [
     # tên công ty khi hỏi về chính công ty mình.
     # Tài liệu viết "nền tảng", nhân viên nói "sản phẩm". Bắc cầu từ vựng, không bịa.
     ("san pham", ["nen", "tang", "platform"]),
+    # Viết tắt hành chính người Việt gõ hằng ngày · tài liệu viết đủ chữ.
+    ("msdn", ["ma", "so", "doanh", "nghiep", "dkkd"]),
+    ("mst", ["ma", "so", "thue", "doanh", "nghiep"]),
+    ("dkkd", ["dang", "ky", "kinh", "doanh"]),
+    ("giay phep kinh doanh", ["dang", "ky", "kinh", "doanh"]),
     # tài liệu viết "ưu thế cạnh tranh so với", nhân viên nói "khác đối thủ"
     ("doi thu", ["canh", "tranh", "uu", "the", "so"]),
     ("khac gi so voi", ["canh", "tranh", "uu", "the"]),
