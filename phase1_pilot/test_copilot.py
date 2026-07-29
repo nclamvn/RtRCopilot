@@ -206,20 +206,52 @@ print("\n[4] Server MOCK end-to-end")
 cs.PASSCODE = ""
 _USERS_THAT = dict(cs.USERS)
 cs.USERS = {}
+# Cách ly kho tài khoản NGAY TỪ ĐẦU tầng này, không phải giữa chừng. Máy nào đã có
+# accounts.json thật (tức là máy production, và cả máy vừa chạy thử tay) sẽ khiến
+# mọi lượt gọi không token ăn 403 hàng loạt. Đây đúng là lỗi đã gặp một lần với
+# users.yaml — cùng một hình dạng: bộ test giả định môi trường sạch.
+import tempfile
+import auth as _auth
+_ACC_THAT, _SEC_THAT = _auth.ACCOUNTS, _auth.SECRET_FILE
+_tmpdir = tempfile.mkdtemp(prefix="rtr-acc-")
+_auth.ACCOUNTS = Path(_tmpdir) / "accounts.json"
+_auth.SECRET_FILE = Path(_tmpdir) / ".secret"
+os.environ["COPILOT_MAIL_DEV"] = "1"
+assert not _auth.co_tai_khoan(), "kho tài khoản chưa sạch khi vào tầng 4"
 server = cs.HTTPServer(("127.0.0.1", 8790), cs.Handler)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 time.sleep(0.3)
 B = "http://127.0.0.1:8790"
 
-def get(path):
-    with urllib.request.urlopen(B + path, timeout=10) as r:
+# Token phiên dùng cho các lượt gọi cần vai cao. Mặc định rỗng: chế độ mã chung,
+# server cấp vai THẤP NHẤT cho người gọi không nhận diện được — nên phần lớn test
+# dưới đây chạy đúng như một nhân viên thường, và đó là điều nên kiểm mặc định.
+TOK = ""
+
+def get(path, tok=None):
+    req = urllib.request.Request(B + path, headers={"x-token": tok if tok is not None else TOK})
+    with urllib.request.urlopen(req, timeout=10) as r:
         return r.status, r.read().decode()
 
-def post(path, obj):
+def post(path, obj, tok=None):
     req = urllib.request.Request(B + path, data=json.dumps(obj).encode(),
-                                 headers={"content-type": "application/json"})
+                                 headers={"content-type": "application/json",
+                                          "x-token": tok if tok is not None else TOK})
     with urllib.request.urlopen(req, timeout=10) as r:
         return r.status, json.loads(r.read())
+
+def post_ma(path, obj, tok=None):
+    """Như post nhưng TRẢ VỀ mã lỗi thay vì ném · dùng để kiểm cổng cấm."""
+    try:
+        return post(path, obj, tok)
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read())
+
+def get_ma(path, tok=None):
+    try:
+        return get(path, tok)
+    except urllib.error.HTTPError as e:
+        return e.code, e.read().decode()
 
 s, html = get("/")
 check("GET / trả UI", s == 200 and "RT ROBOTICS" in html and "Ask." in html)
@@ -397,11 +429,42 @@ _cv = next(t for t in tp["templates"] if t["id"] == "congvan")
 check("bản mẫu khai fact khoá kèm mã record",
       any(f["type"] == "locked" and f.get("record") for f in _cv["fields"]))
 
+# --- Tài khoản tạm cho phần công văn -----------------------------------------
+# Công văn mang tư cách pháp nhân nên từ 29/07 chỉ vai lãnh đạo trở lên tạo được.
+# Test dựng một kho tài khoản TẠM ở thư mục khác để không đụng accounts.json thật
+# trên máy production — bộ test phải chạy được ở mọi cấu hình.
+def _tao_tk(email, ten, vai):
+    acc = {"email": email, "ten": ten, "pw": _auth.bam("matkhaudumanh"), "quyen": vai,
+           "trang_thai": "hoat_dong", "ver": 1, "ma_kich_hoat": None, "han_kich_hoat": None,
+           "tao_luc": _auth.iso(), "kich_hoat_luc": _auth.iso(), "lan_cuoi": None,
+           "nguoi_phan_vai": "test", "phan_vai_luc": None, "ghi_chu": ""}
+    _auth._luu(acc)
+    return _auth.tao_token(acc)
+
+
+TOK_LD = _tao_tk("ld@rtrobotics.com", "Lãnh đạo Test", "lanhdao")
+TOK_NV = _tao_tk("nv@rtrobotics.com", "Nhân viên Test", "nhanvien")
+TOK_AD = _tao_tk("ad@rtrobotics.com", "Quản trị Test", "quantri")
+
+# Từ đây trở đi server đã có tài khoản thật nên KHÔNG còn đường ẩn danh: mọi lượt
+# gọi phải mang token. Đặt mặc định là NHÂN VIÊN — vai thấp nhất — để phần còn lại
+# của bộ test vô tình trở thành phép thử "người thường có làm được việc thường không".
+TOK = TOK_NV
+
+# CẤM · nhân viên không tạo được công văn. Đặt TRƯỚC chiều cho phép: nếu cổng hỏng
+# theo hướng mở toang thì test này đỏ ngay, trước khi các test dưới vô tình xanh.
+_s, _d = post_ma("/api/render", {"template": "congvan", "params": {}, "dry_run": True}, TOK_NV)
+check("CẤM: nhân viên KHÔNG tạo được công văn", _s == 403, str(_d)[:120])
+_s, _d = post_ma("/api/render", {"template": "factsheet", "params": {}, "dry_run": True}, TOK_NV)
+check("CHO: nhân viên VẪN tạo được fact-sheet", _s == 200, str(_d)[:120])
+check("danh sách bản mẫu pháp nhân suy ra từ registry, không viết tay",
+      cs.CONG_VAN_IDS == {"congvan"}, str(cs.CONG_VAN_IDS))
+
 # chiều CẤM: thiếu trường bắt buộc thì KHÔNG được xuất file
-s, d = post("/api/render", {"template": "congvan", "params": {"so_cong_van": "1"}, "dry_run": True})
+s, d = post("/api/render", {"template": "congvan", "params": {"so_cong_van": "1"}, "dry_run": True}, TOK_LD)
 check("thiếu trường bắt buộc → FAIL-LOUD, không xuất",
       d["state"] == "FAIL-LOUD" and any("Thiếu trường bắt buộc" in i for i in d["issues"]), str(d)[:120])
-s, d = post("/api/render", {"template": "congvan", "params": {"so_cong_van": "1"}})
+s, d = post("/api/render", {"template": "congvan", "params": {"so_cong_van": "1"}}, TOK_LD)
 check("gọi xuất khi thiếu trường → không sinh file",
       d["state"] != "PASS" and not d.get("download"), str(d)[:120])
 
@@ -410,7 +473,7 @@ _full = {"so_cong_van": "TEST/2026/CV-RTR", "noi_nhan": "Sở Thử Nghiệm",
          "noi_nhan_phu": "(qua Phòng Thử)", "trich_yeu": "kiểm thử bộ sinh tài liệu",
          "can_cu": "Căn cứ bộ test tự động;", "noi_dung": "Nội dung kiểm thử.\nDòng hai.",
          "noi_nhan_list": "- Như trên;", "dia_danh": "TP. Hồ Chí Minh", "ngay_ky": "2026-07-27"}
-s, d = post("/api/render", {"template": "congvan", "params": _full})
+s, d = post("/api/render", {"template": "congvan", "params": _full}, TOK_LD)
 check("đủ trường → PASS + có link tải", d["state"] == "PASS" and d.get("download"), str(d)[:140])
 check("có truy vết fact khoá đã dùng", bool(d.get("records")), str(d.get("records")))
 if d.get("filename"):
@@ -469,13 +532,20 @@ if d.get("filename"):
     _f.unlink(missing_ok=True)
 
 # passcode
+# Đường lùi mã chung · vẫn phải chặn được. Phải TẠM CẤT kho tài khoản: hễ còn một
+# tài khoản hoạt động là server đi đường token và bỏ qua passcode — đúng thiết kế,
+# nhưng khiến phép thử này xanh giả nếu không cất đi.
+_acc_tam = _auth.ACCOUNTS
+_auth.ACCOUNTS = Path(_tmpdir) / "khong-ton-tai.json"
 cs.PASSCODE = "test123"
-try:
-    post("/api/chat", {"messages": [{"role": "user", "content": "x"}]})
-    check("passcode sai bị chặn 403", False, "không chặn")
-except urllib.error.HTTPError as e:
-    check("passcode sai bị chặn 403", e.code == 403, str(e.code))
+_s, _d = post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]}, "")
+check("mã chung sai bị chặn 403", _s == 403, str(_s))
+_s, _d = post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]}, TOK_NV)
+check("token hợp lệ KHÔNG cứu được khi kho tài khoản đã tắt", _s == 403, str(_s))
 cs.PASSCODE = ""
+_auth.ACCOUNTS = _acc_tam
+_s, _d = post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]}, TOK_NV)
+check("bật kho tài khoản trở lại thì token dùng được ngay", _s == 200, str(_s))
 
 # ---------- 5 · Gom nhóm câu hỏi (weekly_review) ----------
 # Đây là dụng cụ đo để quyết gate Phase 2: gom sai thì curator đọc sai tín hiệu nhu cầu.
@@ -630,6 +700,167 @@ if _alw:
 # Ba lần liên tiếp mắc cùng lỗi: sửa kernel xong quên regen một artefact dẫn xuất
 # (gói lãnh đạo, gói trong zip). Kỷ luật con người không chặn được, nên đưa thành cổng.
 # Kiểm bằng NỘI DUNG (regen ra thư mục tạm rồi so), không dùng mtime vì mtime dễ đánh lừa.
+# ---------- 8 · Tài khoản và phân quyền ba vai ----------
+# Nguyên tắc "test cả hai chiều": mỗi luật khoá CẢ phải-làm-được LẪN cấm-làm.
+# Chỉ khoá một chiều thì nới quyền quá tay vẫn xanh, mà đó mới là lỗi đắt.
+print("\n[8] Tài khoản · đăng ký, kích hoạt, ba vai")
+
+# --- 8a · cổng email
+for _e, _ok, _vi in [
+        ("ky.su@rtrobotics.com", True,  "email công ty .com"),
+        ("ky.su@rtrobotics.me",  True,  "email công ty .me"),
+        ("ai.do@gmail.com",      False, "email ngoài công ty"),
+        ("info@rtrobotics.com",  False, "hộp thư dùng chung info@"),
+        ("sales@rtrobotics.com", False, "hộp thư dùng chung sales@"),
+        ("sales+ai@rtrobotics.com", False, "hộp thư chung lách bằng dấu +"),
+        ("KY.SU@RTROBOTICS.COM", True,  "email viết hoa vẫn nhận"),
+        ("khong-phai-email",     False, "chuỗi không phải email")]:
+    check(f"cổng email · {_vi}", _auth.kiem_email(_e)[0] is _ok, _e)
+
+# --- 8b · vòng đời tài khoản
+import io as _io, contextlib as _ctx
+_buf = _io.StringIO()
+with _ctx.redirect_stdout(_buf):
+    _r_ok, _r_msg = _auth.dang_ky("moi.vao@rtrobotics.com", "Người Mới", "matkhaudumanh", "http://t")
+check("đăng ký email công ty thành công", _r_ok, _r_msg)
+_ma = _re.search(r"kichhoat\?ma=(\S+)", _buf.getvalue()).group(1)
+_acc = _auth.tim("moi.vao@rtrobotics.com")
+check("CẤM: chưa kích hoạt thì chưa đăng nhập được",
+      _auth.dang_nhap("moi.vao@rtrobotics.com", "matkhaudumanh")[0] is None)
+check("mật khẩu KHÔNG lưu dạng đọc được", "matkhaudumanh" not in _acc["pw"] and _acc["pw"].startswith("scrypt$"))
+check("CHO: kích hoạt bằng link trong thư", _auth.kich_hoat(_ma)[0])
+check("CẤM: dùng lại link kích hoạt đã tiêu", _auth.kich_hoat(_ma)[0] is False)
+check("người mới vào với vai THẤP NHẤT", _auth.tim("moi.vao@rtrobotics.com")["quyen"] == "nhanvien")
+check("CẤM: mật khẩu quá ngắn",
+      _auth.dang_ky("ngan@rtrobotics.com", "X", "123", "http://t")[0] is False)
+
+# link kích hoạt quá hạn thì chết, không "gia hạn ngầm"
+with _ctx.redirect_stdout(_io.StringIO()) as _b3:
+    _auth.dang_ky("het.han@rtrobotics.com", "Hết Hạn", "matkhaudumanh", "http://t")
+_ma3 = _re.search(r"kichhoat\?ma=(\S+)", _b3.getvalue()).group(1)
+_a3 = _auth.tim("het.han@rtrobotics.com")
+from datetime import timedelta as _td
+_a3["han_kich_hoat"] = _auth.iso(_auth.now() - _td(hours=1)); _auth._luu(_a3)
+check("CẤM: link kích hoạt quá hạn", _auth.kich_hoat(_ma3)[0] is False)
+
+# --- 8c · token · thứ duy nhất được tin là chữ ký
+check("CẤM: token bịa", _auth.doc_token("aaa.bbb")[0] is None)
+check("CẤM: token rỗng", _auth.doc_token("")[0] is None)
+_p, _sig = TOK_NV.split(".")
+import base64 as _b64m
+_gia = _auth._b64(b"ad@rtrobotics.com|quantri|1|99999999999") + "." + _sig
+check("CẤM: sửa ruột token để tự nâng vai", _auth.doc_token(_gia)[0] is None)
+
+# --- 8d · ba vai · bảng quyền
+_nv = _auth.tim("nv@rtrobotics.com"); _ld = _auth.tim("ld@rtrobotics.com"); _ad = _auth.tim("ad@rtrobotics.com")
+for _acc_, _ten_, _cho, _cam in [
+        (_nv, "nhân viên", ["hoi", "tra_cuu", "bao_sai", "sinh_tai_lieu", "de_xuat_fact"],
+                           ["doc_han_che", "sinh_cong_van", "duyet_bao_sai", "xem_thong_ke",
+                            "xem_ten_nguoi_hoi", "quan_tri_nguoi_dung", "ghi_kernel"]),
+        (_ld, "lãnh đạo",  ["hoi", "doc_han_che", "sinh_cong_van", "duyet_bao_sai", "xem_thong_ke"],
+                           ["xem_ten_nguoi_hoi", "quan_tri_nguoi_dung", "ghi_kernel"]),
+        (_ad, "quản trị",  list(_auth.QUYEN), [])]:
+    check(f"CHO: {_ten_} làm được {len(_cho)} việc của vai",
+          all(_auth.duoc(_acc_, x) for x in _cho),
+          str([x for x in _cho if not _auth.duoc(_acc_, x)]))
+    check(f"CẤM: {_ten_} KHÔNG làm được {len(_cam)} việc trên vai",
+          not any(_auth.duoc(_acc_, x) for x in _cam),
+          str([x for x in _cam if _auth.duoc(_acc_, x)]))
+check("hành động chưa khai trong bảng = CẤM (fail-closed)", not _auth.duoc(_ad, "xoa_toan_bo_kernel"))
+
+# --- 8e · cổng HTTP · đúng mã lỗi, đúng người
+check("CẤM: nhân viên gọi API quản trị", get_ma("/api/admin/users", TOK_NV)[0] == 403)
+check("CẤM: LÃNH ĐẠO cũng không gọi được API quản trị", get_ma("/api/admin/users", TOK_LD)[0] == 403)
+check("CHO: quản trị viên đọc được danh sách", get_ma("/api/admin/users", TOK_AD)[0] == 200)
+check("CẤM: nhân viên tự nâng vai mình",
+      post_ma("/api/admin/vai", {"email": "nv@rtrobotics.com", "vai": "quantri"}, TOK_NV)[0] == 403)
+_s8, _d8 = get_ma("/api/admin/users", TOK_AD)
+check("danh sách tài khoản KHÔNG lộ hash mật khẩu hay mã kích hoạt",
+      "scrypt$" not in _d8 and "ma_kich_hoat" not in _d8)
+
+# --- 8f · đổi vai làm CHẾT phiên cũ
+_tok_tam = _auth.tao_token(_auth.tim("moi.vao@rtrobotics.com"))
+check("CHO: phiên mới dùng được", post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]}, _tok_tam)[0] == 200)
+_auth.dat_vai("moi.vao@rtrobotics.com", "lanhdao", "test")
+check("CẤM: phiên CŨ chết ngay khi vai đổi",
+      post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]}, _tok_tam)[0] == 403)
+_tok_moi = _auth.tao_token(_auth.tim("moi.vao@rtrobotics.com"))
+check("CHO: đăng nhập lại là dùng được vai mới",
+      post_ma("/api/render", {"template": "congvan", "params": {}, "dry_run": True}, _tok_moi)[0] == 200)
+_auth.dat_khoa("moi.vao@rtrobotics.com", True, "test")
+check("CẤM: khoá tài khoản là phiên chết ngay",
+      post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]},
+              _auth.tao_token(_auth.tim("moi.vao@rtrobotics.com")))[0] == 403)
+check("CẤM: tài khoản bị khoá không đăng nhập lại được",
+      _auth.dang_nhap("moi.vao@rtrobotics.com", "matkhaudumanh")[0] is None)
+
+# --- 8g · không tự khoá mình ra ngoài
+check("CẤM: hạ vai quản trị viên DUY NHẤT còn hoạt động",
+      _auth.dat_vai("ad@rtrobotics.com", "nhanvien", "test")[0] is False)
+check("CẤM: khoá quản trị viên DUY NHẤT còn hoạt động",
+      _auth.dat_khoa("ad@rtrobotics.com", True, "test")[0] is False)
+_auth.dat_vai("ld@rtrobotics.com", "quantri", "test")
+check("CHO: có quản trị viên thứ hai rồi thì hạ được người thứ nhất",
+      _auth.dat_vai("ad@rtrobotics.com", "lanhdao", "test")[0] is True)
+_auth.dat_vai("ad@rtrobotics.com", "quantri", "test"); _auth.dat_vai("ld@rtrobotics.com", "lanhdao", "test")
+TOK_LD = _auth.tao_token(_auth.tim("ld@rtrobotics.com"))
+TOK_AD = _auth.tao_token(_auth.tim("ad@rtrobotics.com"))
+
+# --- 8h · riêng tư người hỏi · quyết định của Lâm 29/07
+post("/api/chat", {"messages": [{"role": "user", "content": "Payload Hera bao nhieu"}]}, TOK_NV)
+_a_ad = json.loads(get("/api/audit", TOK_AD)[1])
+_a_ld = json.loads(get("/api/audit", TOK_LD)[1])
+_a_nv = json.loads(get("/api/audit", TOK_NV)[1])
+check("CHO: quản trị viên thấy tên người hỏi", _a_ad["co_ten"] is True)
+check("CẤM: lãnh đạo KHÔNG thấy tên người hỏi",
+      _a_ld["co_ten"] is False and not any("nguoi" in e for e in _a_ld["events"]))
+check("CẤM: nhân viên chỉ thấy nhật ký của chính mình", _a_nv["pham_vi"] == "chi_cua_toi")
+check("CHO: lãnh đạo vẫn thấy TOÀN BỘ lượt hỏi (chỉ khuyết tên)",
+      _a_ld["pham_vi"] == "tat_ca" and len(_a_ld["events"]) >= len(_a_nv["events"]))
+
+# --- 8i · đường MỜI TAY · chạy được khi công ty chưa có Workspace
+# Đường này cố ý KHÔNG dựa vào email: thứ chứng minh danh tính là việc quản trị viên
+# tự tay gõ tên người đó vào. Nên phải khoá đúng hai chiều: mời được người ngoài
+# tên miền, NHƯNG chỉ quản trị viên mới mời được.
+_ok_m, _msg_m, _ex = _auth.moi("ks.ngoai@gmail.com", "Kỹ Sư Ngoài", "nhanvien", "test", "http://t")
+check("CHO: mời tay được cả email ngoài tên miền công ty", _ok_m, _msg_m)
+_ma_m = _ex["link"].split("ma=")[1]
+check("CẤM: người được mời chưa đặt mật khẩu thì chưa vào được",
+      _auth.dang_nhap("ks.ngoai@gmail.com", "")[0] is None)
+_loai, _a_m, _ = _auth.trang_thai_ma(_ma_m)
+check("mở link mời chỉ để XEM thì không tiêu mã", _loai == "dat_mat_khau")
+check("mở lại lần nữa vẫn còn dùng được", _auth.trang_thai_ma(_ma_m)[0] == "dat_mat_khau")
+check("CẤM: đặt mật khẩu quá ngắn", _auth.kich_hoat(_ma_m, "123")[0] is False)
+check("CHO: đặt mật khẩu đủ dài thì kích hoạt", _auth.kich_hoat(_ma_m, "matkhaudumanh")[0])
+check("CẤM: link mời chỉ dùng được MỘT lần",
+      _auth.kich_hoat(_ma_m, "matkhaudumanh")[0] is False)
+_tok_m = _auth.dang_nhap("ks.ngoai@gmail.com", "matkhaudumanh")[0]
+check("CHO: người được mời hỏi được",
+      post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]}, _tok_m)[0] == 200)
+check("CẤM: người được mời vai nhân viên KHÔNG sinh được công văn",
+      post_ma("/api/render", {"template": "congvan", "params": {}, "dry_run": True}, _tok_m)[0] == 403)
+check("CẤM: nhân viên KHÔNG mời được ai",
+      post_ma("/api/admin/moi", {"ten": "X", "email": "x@rtrobotics.me", "vai": "quantri"}, TOK_NV)[0] == 403)
+check("CẤM: LÃNH ĐẠO cũng KHÔNG mời được ai",
+      post_ma("/api/admin/moi", {"ten": "X", "email": "x@rtrobotics.me", "vai": "quantri"}, TOK_LD)[0] == 403)
+check("CHO: quản trị viên mời được",
+      post_ma("/api/admin/moi", {"ten": "Người Mới 2", "email": "m2@rtrobotics.me", "vai": "nhanvien"}, TOK_AD)[0] == 200)
+check("CẤM: mời với vai không hợp lệ", _auth.moi("z@rtrobotics.me", "Z", "sieu_admin", "t", "http://t")[0] is False)
+check("CẤM: mời người đã có tài khoản hoạt động",
+      _auth.moi("nv@rtrobotics.com", "NV", "quantri", "test", "http://t")[0] is False)
+check("thư mời chuẩn có cam kết chỉ quản trị viên đọc được tên",
+      "Chỉ mình đọc được phần kèm tên" in (HERE / "10_Thu_Moi_Nhan_Vien.md").read_text(encoding="utf-8"))
+
+# --- 8j · bí mật trên đĩa
+_gi = (HERE.parent / ".gitignore").read_text(encoding="utf-8")
+for _f in ("accounts.json", ".session_secret", "users.yaml"):
+    check(f"{_f} nằm trong .gitignore", _f in _gi)
+_auth._luu(_auth.tim("nv@rtrobotics.com"))
+check("accounts.json ghi ra với quyền 0600 (chỉ chủ máy đọc)",
+      oct(_auth.ACCOUNTS.stat().st_mode)[-3:] == "600", oct(_auth.ACCOUNTS.stat().st_mode)[-3:])
+check("tài liệu 09 mô tả luồng đăng ký bằng email công ty",
+      "rtrobotics" in (HERE / "09_Dang_Nhap_Nguoi_Dung.md").read_text(encoding="utf-8").lower())
+
 print("\n[7] Chống lệch pha · kernel → gói → zip")
 import shutil, zipfile, hashlib
 
@@ -679,15 +910,28 @@ if _zip.exists():
              "RtR_Copilot_UI_Preview.html", "leader_allowlist.yaml", "com.rtr.copilot.plist",
              "render_doc.py", "xlsx_patch.py", "registry.yaml",
              "CongVan_RTR.docx", "SalesBrief_VN.xlsx",
-             "FactSheet_SanPham.docx", "SlideCard_RtR.docx", "users.example.yaml"}
+             "FactSheet_SanPham.docx", "SlideCard_RtR.docx", "users.example.yaml",
+             "auth.py", "10_Thu_Moi_Nhan_Vien.md"}
+    # Kiểm luôn chiều ngược: bí mật vận hành TUYỆT ĐỐI không được nằm trong kit gửi đi.
+    _cam_zip = {"users.yaml", "accounts.json", ".session_secret", "GOI_LEADER.yaml"}
     _have = set(zipfile.ZipFile(_zip).namelist())
     check("zip có đủ file bắt buộc", _must <= _have, "thiếu: " + ", ".join(sorted(_must - _have)))
+    check("zip KHÔNG chứa bí mật vận hành", not (_cam_zip & _have),
+          "LỌT: " + ", ".join(sorted(_cam_zip & _have)))
+    # Mọi tài liệu vận hành trên đĩa phải có mặt trong kit · bắt đúng lỗi "thêm doc mới,
+    # quên bỏ vào zip" mà danh sách viết tay không bao giờ tự phát hiện.
+    _doc_dia = {f.name for f in HERE.glob("[0-9][0-9]_*.md")}
+    check("mọi tài liệu 0x_*.md trên đĩa đều có trong kit", _doc_dia <= _have,
+          "thiếu: " + ", ".join(sorted(_doc_dia - _have)))
     check("zip KHÔNG chứa gói lãnh đạo", "GOI_LEADER.yaml" not in zipfile.ZipFile(_zip).namelist())
 shutil.rmtree(_wd, ignore_errors=True)
 
 # Server phục vụ tới đây mới tắt. KHÔNG tắt giữa bài: thêm test sau dòng tắt
 # thì nó treo tới timeout rồi chết, và thông báo lỗi không nói gì về nguyên nhân.
 cs.USERS = dict(_USERS_THAT)   # trả lại trạng thái ban đầu
+import shutil as _sh
+_auth.ACCOUNTS, _auth.SECRET_FILE = _ACC_THAT, _SEC_THAT
+_sh.rmtree(_tmpdir, ignore_errors=True)
 server.shutdown()
 
 # ---------- Kết ----------

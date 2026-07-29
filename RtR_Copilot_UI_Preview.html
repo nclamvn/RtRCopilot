@@ -319,6 +319,8 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
 .tmpl{margin:8px;padding:12px;display:flex;gap:11px;border:1px solid transparent;cursor:pointer}
 .tmpl:hover{background:var(--rtr-panel-2)}
 .tmpl.on{border-color:var(--rtr-line-2);background:var(--rtr-panel-2)}
+.tmpl.locked{opacity:.5}
+.tmpl.locked .ic{border-style:dashed}
 .tmpl .ic{width:32px;height:38px;border:1px solid var(--rtr-line);flex-shrink:0;
   display:grid;place-items:center;font-size:8px;color:var(--rtr-faint)}
 .tmpl .t{font-size:11px;font-weight:600}
@@ -409,6 +411,31 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
 #login button{width:100%;height:36px;margin-top:10px;background:var(--rtr-signal);
   color:var(--rtr-signal-ink);border:0;font-weight:700;font-size:12.5px;cursor:pointer}
 #login .err{font-size:11.5px;color:var(--rtr-danger);margin-top:10px;min-height:16px;line-height:1.5}
+#login .ok{font-size:11.5px;color:var(--rtr-ok,#4ea87b);margin-top:2px;line-height:1.5}
+#login .tabs{display:flex;gap:2px;margin:0 0 16px;border-bottom:1px solid var(--rtr-line)}
+#login .tab{width:auto;flex:1;height:32px;margin:0;background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--rtr-muted);font-size:12.5px;font-weight:550;cursor:pointer;padding:0}
+#login .tab.on{color:var(--rtr-fg);border-bottom-color:var(--rtr-signal)}
+#login .fine{font-size:11px;color:var(--rtr-faint);margin:14px 0 0;line-height:1.65}
+
+/* --- màn quản trị người dùng --- */
+.utbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.utbl th{text-align:left;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--rtr-faint);font-weight:600;padding:0 12px 8px;border-bottom:1px solid var(--rtr-line)}
+.utbl td{padding:11px 12px;border-bottom:1px solid var(--rtr-line);vertical-align:middle}
+.utbl tr:hover td{background:var(--rtr-panel-2)}
+.utbl .nm{font-weight:550}
+.utbl .em{font-size:11.5px;color:var(--rtr-muted);font-variant-numeric:tabular-nums}
+.vaisel{background:var(--rtr-panel-2);border:1px solid var(--rtr-line);color:var(--rtr-fg);
+  padding:5px 8px;font-size:12px;font-family:inherit;border-radius:3px}
+.tt{display:inline-block;font-size:10.5px;padding:2px 7px;border:1px solid var(--rtr-line);
+  color:var(--rtr-muted);letter-spacing:.03em}
+.tt.on{color:var(--rtr-ok,#4ea87b);border-color:currentColor}
+.tt.wait{color:var(--rtr-warn,#c89b3c);border-color:currentColor}
+.tt.off{color:var(--rtr-danger);border-color:currentColor}
+.ubtn{background:none;border:1px solid var(--rtr-line);color:var(--rtr-muted);font-size:11.5px;
+  padding:5px 10px;cursor:pointer;font-family:inherit}
+.ubtn:hover{color:var(--rtr-fg);border-color:var(--rtr-fg)}
 .whochip{font-size:10px;color:var(--rtr-muted);white-space:nowrap}
 .whochip b{color:var(--rtr-text);font-weight:600}
 
@@ -553,6 +580,9 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
       <button data-s="audit">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="8"/></svg>
         <span class="txt">Nhật ký</span></button>
+      <button data-s="admin" id="navAdmin" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M17 7h5M19.5 4.5v5"/></svg>
+        <span class="txt">Người dùng</span><span class="count" id="cntUser">—</span></button>
     </nav>
 
     <div class="identity">
@@ -725,9 +755,57 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
         <div class="page">
           <div class="phead">
             <div><div class="k">Kiểm chứng</div><h2>Nhật ký</h2>
-              <p>Mọi lượt hỏi đáp được ghi lại kèm thời gian và chế độ. Đây là vết kiểm chứng, không phải công cụ theo dõi nhân viên.</p></div>
+              <p>Mọi lượt hỏi đáp được ghi lại kèm thời gian và chế độ. Đây là vết kiểm chứng, không phải công cụ theo dõi nhân viên.</p>
+              <p id="auditNote" style="color:var(--rtr-signal)"></p></div>
           </div>
           <div class="timeline" id="auditList"></div>
+        </div>
+      </section>
+
+      <!-- ---------- 23 · QUẢN TRỊ NGƯỜI DÙNG · chỉ vai quản trị ---------- -->
+      <section class="screen" id="s-admin">
+        <div class="page">
+          <div class="phead">
+            <div><div class="k">Quản trị</div><h2>Người dùng</h2>
+              <p>Nhân viên tự đăng ký bằng email công ty và vào với quyền thấp nhất. Việc của bạn ở đây là nâng vai cho đúng người, và khoá tài khoản của người đã nghỉ.</p></div>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+              <button class="ubtn" id="admMoiMo">Mời người mới</button>
+              <button class="ubtn" id="admReload">Tải lại</button>
+            </div>
+          </div>
+
+          <div class="panel" id="admMoi" style="display:none;padding:16px;margin-bottom:18px">
+            <div class="sub" style="padding:0 0 10px">Mời tay · dùng khi người đó chưa có hộp thư công ty</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <input id="moiTen" placeholder="Họ và tên" style="flex:1;min-width:150px">
+              <input id="moiEmail" type="email" placeholder="email liên lạc" style="flex:1.4;min-width:190px">
+              <select id="moiVai" class="vaisel">
+                <option value="nhanvien">nhân viên</option>
+                <option value="lanhdao">lãnh đạo</option>
+                <option value="quantri">quản trị viên</option>
+              </select>
+              <button class="ubtn" id="moiGui">Tạo lời mời</button>
+            </div>
+            <div id="moiKq" style="margin-top:12px"></div>
+            <p style="font-size:11.5px;color:var(--rtr-faint);line-height:1.7;margin:12px 0 0;max-width:66ch">
+              Ở đường này email <b>không chứng minh gì cả</b> — thứ chứng minh danh tính là việc
+              bạn tự tay gõ tên người đó vào. Link sống 72 giờ và chỉ dùng được một lần.
+            </p>
+          </div>
+
+          <div id="admWarn" style="display:none"></div>
+          <div class="cards" id="admStats" style="margin-bottom:18px"></div>
+          <div class="panel" style="padding:0">
+            <table class="utbl"><thead><tr>
+              <th style="width:34%">Người</th><th style="width:14%">Trạng thái</th>
+              <th style="width:20%">Vai</th><th style="width:20%">Hoạt động</th><th></th>
+            </tr></thead><tbody id="admRows"></tbody></table>
+          </div>
+          <p style="font-size:11.5px;color:var(--rtr-faint);line-height:1.7;margin-top:18px;max-width:62ch">
+            Nâng vai hay khoá tài khoản đều làm <b>chết ngay</b> phiên đang mở của người đó — họ phải
+            đăng nhập lại. Email công ty còn dùng được không có nghĩa người đó còn làm ở công ty:
+            danh sách này phải được rà bằng mắt, không có cách nào tự biết.
+          </p>
         </div>
       </section>
 
@@ -765,10 +843,42 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
 <div id="login"><div class="box">
   <div class="mark" role="img" aria-label="RtR"></div>
   <h2>RtR Copilot</h2>
-  <p>Nhập mã đăng nhập cá nhân. Mã do anh Lâm cấp, không dùng chung.</p>
-  <input id="loginCode" type="password" placeholder="Mã đăng nhập" autocomplete="off">
-  <button id="loginBtn">Vào</button>
+
+  <!-- Chế độ TÀI KHOẢN · email công ty, tự đăng ký, admin phân vai -->
+  <div id="lgAcc" style="display:none">
+    <div class="tabs">
+      <button class="tab on" data-lg="in">Đăng nhập</button>
+      <button class="tab" data-lg="up">Đăng ký</button>
+    </div>
+
+    <div data-pane="in">
+      <p>Dùng email công ty của bạn.</p>
+      <input id="lgEmail" type="email" placeholder="ten.ban@rtrobotics.com" autocomplete="username">
+      <input id="lgPw" type="password" placeholder="Mật khẩu" autocomplete="current-password">
+      <button id="lgInBtn">Vào</button>
+    </div>
+
+    <div data-pane="up" style="display:none">
+      <p>Đăng ký bằng email công ty. Một thư kích hoạt sẽ gửi về hộp thư đó.
+         Vào lần đầu bạn có quyền <b>nhân viên</b>; quyền cao hơn do quản trị viên cấp.</p>
+      <input id="upTen" placeholder="Họ và tên" autocomplete="name">
+      <input id="upEmail" type="email" placeholder="ten.ban@rtrobotics.com" autocomplete="username">
+      <input id="upPw" type="password" placeholder="Mật khẩu · tối thiểu 10 ký tự" autocomplete="new-password">
+      <button id="lgUpBtn">Gửi thư kích hoạt</button>
+      <p class="fine">Câu hỏi của bạn có ghi lại kèm tên, và <b>chỉ quản trị viên</b> đọc được phần
+         kèm tên. Lãnh đạo chỉ thấy số liệu tổng hợp.</p>
+    </div>
+  </div>
+
+  <!-- Chế độ MÃ · đường lùi cho pilot cũ -->
+  <div id="lgCode" style="display:none">
+    <p>Nhập mã đăng nhập cá nhân. Mã do anh Lâm cấp, không dùng chung.</p>
+    <input id="loginCode" type="password" placeholder="Mã đăng nhập" autocomplete="off">
+    <button id="loginBtn">Vào</button>
+  </div>
+
   <div class="err" id="loginErr"></div>
+  <div class="ok" id="loginOk"></div>
 </div></div>
 
 <div id="cmd"><div class="box">
@@ -811,32 +921,116 @@ return j({error:'preview không có endpoint này'});};
 <script>
 const $ = id => document.getElementById(id);
 const CRUMB = {home:"Tổng quan", copilot:"Hỏi đáp", sot:"Tra cứu SOT", gaps:"Khoảng trống",
-               audit:"Nhật ký", studio:"Tạo tài liệu"};
+               audit:"Nhật ký", studio:"Tạo tài liệu", admin:"Người dùng"};
 let HEALTH = {}, hist = [], evidence = [], CUR = "home";
 
-/* ---------- đăng nhập · nhận diện người, không phải mã chung ---------- */
+/* ---------- đăng nhập · tài khoản email công ty, hoặc mã riêng (đường lùi) ----------
+   AUTH() là chỗ DUY NHẤT gắn danh tính vào mọi lời gọi. Rải header ra từng chỗ gọi
+   là cách chắc chắn nhất để một endpoint mới quên gắn rồi chạy như người ẩn danh. */
+let TOKEN = "", ME = null, CAN = {};
+try { TOKEN = sessionStorage.getItem("rtr-token") || ""; } catch(e){}
+const AUTH = () => ({"x-passcode": $("pass").value, "x-token": TOKEN});
+const AUTHJ = () => ({"content-type":"application/json", ...AUTH()});
+
 function setCode(c){ $("pass").value = c; try { sessionStorage.setItem("rtr-code", c); } catch(e){} }
 (function(){ try { $("pass").value = sessionStorage.getItem("rtr-code") || ""; } catch(e){} })();
+function setToken(t){ TOKEN = t || ""; try { sessionStorage.setItem("rtr-token", TOKEN); } catch(e){} }
+
+const NHAN_VAI = {nhanvien:"nhân viên", lanhdao:"lãnh đạo", quantri:"quản trị viên"};
+
+function apDungQuyen(){
+  // Ẩn nút chỉ là phép lịch sự với mắt người dùng. Cổng thật nằm ở server —
+  // mở DevTools gọi thẳng API vẫn 403.
+  $("navAdmin").style.display = CAN.quan_tri_nguoi_dung ? "" : "none";
+  document.querySelectorAll("[data-can]").forEach(el => {
+    el.style.display = CAN[el.dataset.can] ? "" : "none";
+  });
+}
 
 async function checkWho(){
   try {
-    const r = await fetch("/api/whoami", {headers:{"x-passcode": $("pass").value}});
+    const r = await fetch("/api/whoami", {headers: AUTH()});
     const d = await r.json();
-    if (!d.can_dang_nhap) return true;          // chưa khai users.yaml · dùng như cũ
+    MODE_DANGNHAP = d.che_do_dang_nhap || "ma_chung";
+    if (!d.can_dang_nhap && !d.ok) return true;   // mã chung · vào thẳng như cũ
     if (d.ok && d.user) {
+      ME = d.user; CAN = d.lam_duoc || {};
       $("whoChip").style.display = "";
       $("whoTxt").innerHTML = "<b>" + esc(d.user.ten) + "</b>"
         + (d.user.phong ? " · " + esc(d.user.phong) : "")
-        + (d.user.quyen === "leader" ? " · lãnh đạo" : "");
+        + (d.user.quyen && d.user.quyen !== "nhanvien"
+            ? ' · <span style="color:var(--rtr-signal)">' + NHAN_VAI[d.user.quyen] + "</span>" : "");
+      apDungQuyen();
       return true;
     }
     return false;
   } catch(e) { return true; }                   // mất mạng thì không chặn màn hình
 }
-async function boot(){
-  if (await checkWho()) { $("login").classList.remove("on"); start(); }
-  else { $("login").classList.add("on"); $("loginCode").focus(); }
+
+let MODE_DANGNHAP = "ma_chung";
+function veManDangNhap(loi){
+  $("login").classList.add("on");
+  const tk = MODE_DANGNHAP === "tai_khoan";
+  $("lgAcc").style.display  = tk ? "" : "none";
+  $("lgCode").style.display = tk ? "none" : "";
+  $("loginErr").textContent = loi || "";
+  (tk ? $("lgEmail") : $("loginCode")).focus();
 }
+
+async function boot(){
+  // Hỏi server trước để biết máy này đang chạy chế độ nào, rồi mới quyết định
+  // hiện form nào. Đoán ở phía trình duyệt là cách hiện nhầm form cho nửa số người.
+  try {
+    const d = await (await fetch("/api/whoami", {headers: AUTH()})).json();
+    MODE_DANGNHAP = d.che_do_dang_nhap || "ma_chung";
+  } catch(e){}
+  if (await checkWho()) { $("login").classList.remove("on"); start(); }
+  else veManDangNhap("");
+}
+
+document.querySelectorAll("#login .tab").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#login .tab").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("#lgAcc [data-pane]").forEach(p =>
+    p.style.display = p.dataset.pane === b.dataset.lg ? "" : "none");
+  $("loginErr").textContent = ""; $("loginOk").textContent = "";
+});
+
+async function guiDangNhap(){
+  $("loginErr").textContent = ""; $("loginOk").textContent = "";
+  const email = $("lgEmail").value.trim(), pw = $("lgPw").value;
+  if (!email || !pw) { $("loginErr").textContent = "Nhập email và mật khẩu."; return; }
+  $("lgInBtn").disabled = true;
+  try {
+    const r = await fetch("/api/dangnhap", {method:"POST", headers:{"content-type":"application/json"},
+      body: JSON.stringify({email, mat_khau: pw})});
+    const d = await r.json();
+    if (!r.ok) { $("loginErr").textContent = d.error || "Không đăng nhập được."; return; }
+    setToken(d.token); $("lgPw").value = "";
+    if (await checkWho()) { $("login").classList.remove("on"); start(); }
+  } catch(e) { $("loginErr").textContent = "Không nối được máy chủ."; }
+  finally { $("lgInBtn").disabled = false; }
+}
+
+async function guiDangKy(){
+  $("loginErr").textContent = ""; $("loginOk").textContent = "";
+  const ten = $("upTen").value.trim(), email = $("upEmail").value.trim(), pw = $("upPw").value;
+  $("lgUpBtn").disabled = true;
+  try {
+    const r = await fetch("/api/dangky", {method:"POST", headers:{"content-type":"application/json"},
+      body: JSON.stringify({ten, email, mat_khau: pw})});
+    const d = await r.json();
+    if (!r.ok) { $("loginErr").textContent = d.error || "Không đăng ký được."; return; }
+    $("loginOk").textContent = d.thong_bao;
+    $("upPw").value = "";
+  } catch(e) { $("loginErr").textContent = "Không nối được máy chủ."; }
+  finally { $("lgUpBtn").disabled = false; }
+}
+
+$("lgInBtn").onclick = guiDangNhap;
+$("lgUpBtn").onclick = guiDangKy;
+["lgEmail","lgPw"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") guiDangNhap(); }));
+["upTen","upEmail","upPw"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") guiDangKy(); }));
+
 $("loginBtn").onclick = async () => {
   setCode($("loginCode").value.trim());
   $("loginErr").textContent = "";
@@ -844,6 +1038,103 @@ $("loginBtn").onclick = async () => {
   else { $("loginErr").textContent = "Mã không đúng, hoặc tài khoản không có quyền vào gói này."; }
 };
 $("loginCode").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+
+/* Phiên hết hạn giữa chừng · đưa về màn đăng nhập thay vì để người dùng bấm mãi
+   vào nút không phản ứng. 403 ở đây luôn là vấn đề danh tính, không phải mạng. */
+function ktPhien(res, data){
+  if (res && res.status === 403 && MODE_DANGNHAP === "tai_khoan") {
+    const msg = (data && data.error) || "";
+    if (/phiên|đăng nhập|khoá|quyền đã thay đổi/i.test(msg)) {
+      setToken(""); ME = null; CAN = {}; apDungQuyen(); veManDangNhap(msg); return true;
+    }
+  }
+  return false;
+}
+
+/* ---------- quản trị người dùng ---------- */
+async function napAdmin(){
+  const r = await fetch("/api/admin/users", {headers: AUTH()});
+  const d = await r.json();
+  if (ktPhien(r, d)) return;
+  if (!r.ok) { $("admRows").innerHTML = '<tr><td colspan="5" style="color:var(--rtr-danger)">'
+      + esc(d.error || "Không đọc được danh sách") + "</td></tr>"; return; }
+  const tk = d.thong_ke || {}, vai = tk.theo_vai || {};
+  $("cntUser").textContent = tk.hoat_dong ?? "—";
+  $("admStats").innerHTML = [
+    ["Đang hoạt động", tk.hoat_dong ?? 0, ""],
+    ["Chờ kích hoạt", tk.cho_kich_hoat ?? 0, "chưa bấm link trong thư"],
+    ["Lãnh đạo", vai.lanhdao ?? 0, "đọc được giá vốn"],
+    ["Quản trị viên", vai.quantri ?? 0, "phân quyền được cho người khác"],
+  ].map(([k, v, s]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div>`
+      + (s ? `<div class="s">${s}</div>` : "") + "</div>").join("");
+
+  $("admWarn").innerHTML = d.smtp ? "" :
+    '<div class="mockbar" style="margin-bottom:16px">Máy chủ chưa cấu hình gửi thư · '
+    + 'người mới KHÔNG tự đăng ký được. Khai COPILOT_SMTP_HOST / USER / PASS rồi khởi động lại.</div>';
+
+  $("admRows").innerHTML = (d.users || []).map(u => {
+    const tt = u.trang_thai === "hoat_dong" ? ['on','hoạt động']
+             : u.trang_thai === "cho_kich_hoat" ? ['wait','chờ kích hoạt'] : ['off','đã khoá'];
+    const toi = ME && ME.email === u.email;
+    const lan = u.lan_cuoi ? u.lan_cuoi.slice(0,10).split("-").reverse().join("/") : "chưa vào lần nào";
+    return `<tr data-em="${esc(u.email)}">
+      <td><div class="nm">${esc(u.ten)}${toi ? ' <span class="tt">bạn</span>' : ''}</div>
+          <div class="em">${esc(u.email)}</div></td>
+      <td><span class="tt ${tt[0]}">${tt[1]}</span></td>
+      <td><select class="vaisel" data-vai="${esc(u.email)}"${toi ? " disabled title='Không tự đổi vai của chính mình'" : ""}>
+        ${["nhanvien","lanhdao","quantri"].map(v =>
+          `<option value="${v}"${u.quyen===v?" selected":""}>${NHAN_VAI[v]}</option>`).join("")}
+      </select></td>
+      <td class="em">${lan}</td>
+      <td style="text-align:right">${toi ? "" :
+        `<button class="ubtn" data-khoa="${esc(u.email)}" data-v="${u.trang_thai==='khoa'?0:1}">
+           ${u.trang_thai==='khoa' ? "Mở khoá" : "Khoá"}</button>`}</td></tr>`;
+  }).join("") || '<tr><td colspan="5" style="color:var(--rtr-faint)">Chưa có ai đăng ký.</td></tr>';
+
+  document.querySelectorAll("[data-vai]").forEach(s => s.onchange = async () => {
+    await adminGoi("/api/admin/vai", {email: s.dataset.vai, vai: s.value});
+  });
+  document.querySelectorAll("[data-khoa]").forEach(b => b.onclick = async () => {
+    await adminGoi("/api/admin/khoa", {email: b.dataset.khoa, khoa: b.dataset.v === "1"});
+  });
+}
+
+async function adminGoi(path, body){
+  const r = await fetch(path, {method:"POST", headers: AUTHJ(), body: JSON.stringify(body)});
+  const d = await r.json();
+  if (ktPhien(r, d)) return;
+  if (!r.ok) alert(d.error || "Không thực hiện được");
+  napAdmin();
+}
+$("admReload").onclick = napAdmin;
+$("admMoiMo").onclick = () => {
+  const m = $("admMoi");
+  m.style.display = m.style.display === "none" ? "" : "none";
+  if (m.style.display === "") $("moiTen").focus();
+};
+$("moiGui").onclick = async () => {
+  const body = {ten: $("moiTen").value.trim(), email: $("moiEmail").value.trim(), vai: $("moiVai").value};
+  const r = await fetch("/api/admin/moi", {method:"POST", headers: AUTHJ(), body: JSON.stringify(body)});
+  const d = await r.json();
+  if (ktPhien(r, d)) return;
+  if (!r.ok) {
+    $("moiKq").innerHTML = '<div style="font-size:12px;color:var(--rtr-danger)">' + esc(d.error) + "</div>";
+    return;
+  }
+  // Hiện link để copy kể cả khi thư đã gửi được: hộp thư công ty chưa chuẩn thì thư
+  // hay rơi vào spam, và người quản trị cần đường trao tay làm dự phòng.
+  $("moiKq").innerHTML =
+    '<div style="font-size:12px;color:var(--rtr-ok,#4ea87b);margin-bottom:8px">' + esc(d.thong_bao) + "</div>"
+    + '<div style="display:flex;gap:8px;align-items:center">'
+    + '<input id="moiLink" readonly value="' + esc(d.link) + '" style="flex:1;font-size:11.5px">'
+    + '<button class="ubtn" id="moiCopy">Chép link</button></div>';
+  $("moiCopy").onclick = () => {
+    const i = $("moiLink"); i.select(); i.setSelectionRange(0, 999);
+    try { document.execCommand("copy"); $("moiCopy").textContent = "Đã chép"; } catch(e){}
+  };
+  $("moiTen").value = ""; $("moiEmail").value = "";
+  napAdmin();
+};
 
 /* ---------- theme ---------- */
 const savedTheme = (()=>{ try { return localStorage.getItem("rtr-theme"); } catch(e){ return null; } })();
@@ -872,6 +1163,7 @@ function go(s){
   $("crumb").textContent = (typeof I18N !== "undefined" ? I18N[LANG]["nav." + s] : null) || CRUMB[s] || s;
   if (s === "gaps") { loadGaps(); loadIssues(); }
   if (s === "audit") loadAudit();
+  if (s === "admin") napAdmin();
   if (s === "copilot" && innerWidth > 640) $("msg").focus();
   drawer(false);
 }
@@ -1010,7 +1302,7 @@ function openIssue(box, answer){
   d.querySelector(".btn-primary").onclick = async () => {
     try {
       const r = await fetch("/api/issue", {method:"POST",
-        headers:{"content-type":"application/json","x-passcode":$("pass").value},
+        headers:AUTHJ(),
         body: JSON.stringify({q: q, a: answer, why: ta.value.trim()})});
       const j = await r.json();
       if (j.ok) {
@@ -1110,7 +1402,7 @@ async function send(){
   const useStream = HEALTH.mode === "LIVE";
   try {
     const r = await fetch("/api/chat", {method:"POST", signal: controller.signal,
-      headers:{"content-type":"application/json","x-passcode":$("pass").value},
+      headers:AUTHJ(),
       body: JSON.stringify({messages: hist, note: note, stream: useStream})});
 
     if (useStream && (r.headers.get("content-type") || "").includes("event-stream")) {
@@ -1402,16 +1694,25 @@ fetch("/api/templates").then(r => r.json()).then(d => {
     return;
   }
   $("tplList").innerHTML = TPLS.map((t, i) =>
-    `<div class="tmpl${i===0?" on":""}" data-i="${i}"><div class="ic">`
+    `<div class="tmpl${i===0?" on":""}${khoaTpl(t)?" locked":""}" data-i="${i}"><div class="ic">`
     + (t.kind === "docx" ? "DOC" : "XLS") + "</div><div>"
     + `<div class="t">${esc(t.name)}</div><div class="d">${esc(t.desc||"")}</div>`
-    + `<div class="v">${esc(t.version||"")} · ${esc(t.category||"")}</div></div></div>`).join("");
+    + `<div class="v">${esc(t.version||"")} · ${esc(t.category||"")}`
+    + (khoaTpl(t) ? ' · <span style="color:var(--rtr-warn,#c89b3c)">cần quyền lãnh đạo</span>' : "")
+    + "</div></div></div>").join("");
   $("tplList").querySelectorAll(".tmpl").forEach(el => el.onclick = () => pickTpl(+el.dataset.i));
   pickTpl(0);
 }).catch(() => {
   $("tplList").innerHTML = '<div style="padding:14px;font-size:11px;color:var(--rtr-danger)">Không gọi được server.</div>';
 });
 
+/* Bản mẫu mang tư cách pháp nhân nhận ra bằng trường khoá "người ký" — cùng một
+   dấu hiệu server dùng ở CONG_VAN_IDS. Hai nơi đọc cùng một đặc điểm của dữ liệu,
+   nên thêm bản mẫu mới không phải sửa cả hai. */
+function khoaTpl(t){
+  const kyTen = (t.fields||[]).some(f => f.key === "nguoi_ky" && f.type === "locked");
+  return kyTen && CAN.sinh_cong_van === false;
+}
 function pickTpl(i){
   curTpl = TPLS[i];
   $("tplList").querySelectorAll(".tmpl").forEach((el, j) => el.classList.toggle("on", j === i));
@@ -1473,7 +1774,7 @@ async function doExtract(){
   $("exMsg").textContent = "Đang đọc yêu cầu…";
   try {
     const r = await fetch("/api/extract", {method:"POST",
-      headers:{"content-type":"application/json","x-passcode":$("pass").value},
+      headers:AUTHJ(),
       body: JSON.stringify({template: curTpl.id, text: txt})});
     const d = await r.json();
     if (d.ok) {
@@ -1528,7 +1829,7 @@ async function dryRun(){
   updatePaper();
   try {
     const r = await fetch("/api/render", {method:"POST",
-      headers:{"content-type":"application/json","x-passcode":$("pass").value},
+      headers:AUTHJ(),
       body: JSON.stringify({template: curTpl.id, params: collect(), dry_run: true})});
     const d = await r.json();
     setGate(d.state === "READY" ? "READY" : d.state, d.state === "READY" ? "ok" : "bad");
@@ -1543,7 +1844,7 @@ async function doRender(){
   $("renderMsg").textContent = "Đang xuất…";
   try {
     const r = await fetch("/api/render", {method:"POST",
-      headers:{"content-type":"application/json","x-passcode":$("pass").value},
+      headers:AUTHJ(),
       body: JSON.stringify({template: curTpl.id, params: collect()})});
     const d = await r.json();
     if (d.state === "PASS") {
@@ -1563,9 +1864,10 @@ async function doRender(){
 /* ---------- báo sai · danh sách cho curator ---------- */
 async function loadIssues(){
   let d;
-  try { d = await (await fetch("/api/issues")).json(); }
+  try { d = await (await fetch("/api/issues", {headers: AUTH()})).json(); }
   catch(e) { $("issueList").innerHTML = '<div style="padding:16px;font-size:11px;color:var(--rtr-danger)">Không đọc được.</div>'; return; }
-  $("issueCount").textContent = d.issues.length ? d.issues.length + " ca" : "";
+  $("issueCount").textContent = (d.issues && d.issues.length) ? d.issues.length + " ca"
+    + (d.chi_cua_toi ? " của bạn" : (d.an_danh ? " · ẩn tên" : "")) : "";
   if (!d.issues.length) {
     $("issueList").innerHTML = '<div style="padding:16px;font-size:11px;color:var(--rtr-faint);line-height:1.6">'
       + "Chưa có ca nào. Mục này đầy lên khi nhân viên bấm <b>Báo sai</b> dưới một câu trả lời.<br>"
@@ -1585,8 +1887,17 @@ async function loadIssues(){
 
 /* ---------- 22 · audit ---------- */
 async function loadAudit(){
-  const d = await (await fetch("/api/audit")).json();
-  if (!d.events.length) {
+  const r = await fetch("/api/audit", {headers: AUTH()});
+  const d = await r.json();
+  if (ktPhien(r, d)) return;
+  // Nói thẳng cho người đọc biết họ đang nhìn phạm vi nào. Một màn "Nhật ký" không
+  // ghi chú gì dễ bị hiểu là toàn công ty, trong khi nhân viên chỉ thấy phần mình.
+  const ghi = d.pham_vi === "chi_cua_toi"
+    ? "Bạn đang xem lượt hỏi của chính bạn. Lãnh đạo xem được toàn bộ nhưng không kèm tên; chỉ quản trị viên thấy ai hỏi gì."
+    : (d.co_ten ? "Bạn là quản trị viên nên thấy tên người hỏi. Đây là quyền để dọn nguồn sự thật, không phải để chấm điểm nhân viên."
+                : "Toàn bộ lượt hỏi, không kèm tên người hỏi. Chỉ quản trị viên đọc được phần kèm tên.");
+  $("auditNote").textContent = ghi;
+  if (!(d.events || []).length) {
     $("auditList").innerHTML = '<div style="font-size:11px;color:var(--rtr-faint);padding-left:30px">Chưa có lượt hỏi nào được ghi.</div>';
     return;
   }
@@ -1594,7 +1905,8 @@ async function loadAudit(){
     `<div class="ev"><div class="tm">${e.t.replace("T"," ")}</div>`
     + `<div class="ti">${esc(e.q.slice(0,110))}</div>`
     + `<div class="card">${esc((e.a||"").slice(0,180))}…`
-    + `<div style="margin-top:7px;display:flex;gap:10px"><span class="gate">${e.gate}</span>`
+    + `<div style="margin-top:7px;display:flex;gap:10px;align-items:center"><span class="gate">${e.gate}</span>`
+    + (e.nguoi ? `<span class="tt">${esc(e.nguoi)}</span>` : "")
     + `<span style="margin-left:auto;font-size:9px;color:var(--rtr-faint)">chế độ ${e.mode}</span></div></div></div>`
   ).join("");
 }

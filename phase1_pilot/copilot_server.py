@@ -20,6 +20,7 @@ import re
 import sys
 import unicodedata
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -120,10 +121,18 @@ GAP_LOG = HERE / "gap_log.jsonl"
 QA_LOG = HERE / "qa_log.jsonl"
 ISSUE_LOG = HERE / "issue_log.jsonl"   # ca người dùng báo bot trả lời sai
 
-# ---------- Người dùng · thay passcode chung bằng mã riêng từng người ----------
-# Passcode chung không đếm được người dùng thực, không biết ai báo sai, và ai có mã
-# là vào được gói lãnh đạo. Mã riêng giải cả ba. Vẫn giữ passcode như đường lùi:
-# chưa khai users.yaml thì server chạy y như cũ.
+# ---------- Người dùng · ba tầng nhận diện, ưu tiên từ chặt tới lỏng ----------
+# 1. TÀI KHOẢN (auth.py) · người tự đăng ký bằng email công ty, admin phân vai.
+#    Đây là đường chính từ 29/07/2026. Hễ đã có một tài khoản hoạt động là
+#    server dùng đường này và BỎ QUA hai đường dưới.
+# 2. users.yaml · mã riêng từng người, Lâm gõ tay. Đường lùi cho pilot cũ.
+# 3. COPILOT_PASSCODE · mã chung. Không đếm được người thực, chỉ để chạy thử.
+try:
+    import auth
+except Exception as _e:                       # pragma: no cover
+    auth = None
+    print(f"CHÚ Ý: không nạp được auth.py ({_e}) · quay về mã chung")
+
 USERS = {}
 _ufile = HERE / "users.yaml"
 if _ufile.exists():
@@ -137,21 +146,74 @@ if _ufile.exists():
     except Exception as _e:
         print(f"CHÚ Ý: đọc users.yaml lỗi ({_e}) · quay về dùng passcode chung")
 
+# Từ vựng vai CŨ (staff/leader) sang vai MỚI (nhanvien/lanhdao/quantri). Giữ bảng
+# dịch thay vì sửa users.yaml để hai đường cũ chạy tiếp không cần đụng file.
+_VAI_CU = {"staff": "nhanvien", "leader": "lanhdao", "admin": "quantri"}
+
+
+def _chuan_vai(u):
+    if not u:
+        return None
+    q = u.get("quyen", "")
+    u["quyen"] = _VAI_CU.get(q, q if q in ("nhanvien", "lanhdao", "quantri") else "nhanvien")
+    return u
+
+
+def dung_tai_khoan():
+    return bool(auth and auth.co_tai_khoan())
+
+
 def who(handler):
-    """Nhận diện người gọi. Trả về (ok, user|None, loi)."""
+    """Nhận diện người gọi. Trả về (ok, user|None, loi).
+
+    user luôn có `quyen` thuộc nhanvien|lanhdao|quantri sau khi qua đây, nên phần
+    còn lại của server chỉ cần biết một từ vựng vai duy nhất.
+    """
+    tok = (handler.headers.get("x-token", "") or "").strip()
     code = (handler.headers.get("x-passcode", "") or "").strip()
+
+    if dung_tai_khoan():
+        acc, err = auth.doc_token(tok)
+        if not acc:
+            return False, None, err or "Chưa đăng nhập"
+        u = {"ten": acc["ten"], "email": acc["email"], "quyen": acc["quyen"], "phong": ""}
+        if PACK == "leader" and not auth.duoc(acc, "doc_han_che"):
+            # Gói lãnh đạo chứa giá VỐN linh kiện + tên nhà cung cấp. Tài khoản vai
+            # nhân viên KHÔNG vào được, kể cả khi đăng nhập hợp lệ ở gói chung.
+            return False, u, "Tài khoản vai nhân viên không vào được gói lãnh đạo"
+        return True, u, ""
+
     if USERS:
-        u = USERS.get(code)
+        u = _chuan_vai(dict(USERS.get(code) or {})) if code in USERS else None
         if not u:
             return False, None, "Mã đăng nhập không đúng · hỏi anh Lâm"
-        if PACK == "leader" and u["quyen"] != "leader":
-            # Gói lãnh đạo chứa giá bán · người quyền staff KHÔNG được vào,
-            # kể cả khi họ có mã hợp lệ của gói nhân viên.
+        if PACK == "leader" and u["quyen"] == "nhanvien":
             return False, u, "Tài khoản này không có quyền vào gói lãnh đạo"
         return True, u, ""
+
     if PASSCODE and code != PASSCODE:
         return False, None, "Sai mã nội bộ"
-    return True, None, ""
+    # Chế độ mã chung: không biết người gọi là ai, nên cấp vai theo GÓI đang phục vụ.
+    # Gói lãnh đạo đã bị chặn ở tầng khởi động nếu không có passcode (RB.2).
+    return True, {"ten": "không rõ", "email": "", "phong": "",
+                  "quyen": "lanhdao" if PACK == "leader" else "nhanvien"}, ""
+
+
+BAC_VAI = {"nhanvien": 1, "lanhdao": 2, "quantri": 3}
+BANG_QUYEN = (auth.QUYEN if auth else {
+    "hoi": "nhanvien", "tra_cuu": "nhanvien", "bao_sai": "nhanvien",
+    "de_xuat_fact": "nhanvien", "sinh_tai_lieu": "nhanvien",
+    "doc_han_che": "lanhdao", "sinh_cong_van": "lanhdao", "duyet_bao_sai": "lanhdao",
+    "xem_thong_ke": "lanhdao", "xem_ten_nguoi_hoi": "quantri",
+    "quan_tri_nguoi_dung": "quantri", "ghi_kernel": "quantri"})
+
+
+def duoc_lam(user, hanh_dong):
+    """Câu hỏi quyền DUY NHẤT của cả server. Hành động chưa khai = cấm (fail-closed)."""
+    can = BANG_QUYEN.get(hanh_dong)
+    if can is None or not user:
+        return False
+    return BAC_VAI.get(user.get("quyen", ""), 0) >= BAC_VAI[can]
 
 # ---------- Máy tra cứu SOT (deterministic · không cần AI) ----------
 def _deaccent(s):
@@ -434,6 +496,91 @@ except Exception as _e:          # thiếu bản mẫu thì màn Tạo tài li�
 
 RENDER_DIR = HERE.parent / "_rendered"
 
+# Bản mẫu nào mang tư cách pháp nhân · SUY RA từ registry, không viết tay danh sách id.
+# Viết tay là chắc chắn quên khi ai đó thêm bản mẫu "tờ trình" hay "báo cáo gửi Bộ":
+# bản mẫu mới sẽ lọt xuống vai nhân viên mà không ai kịp thấy.
+# Dấu hiệu: bản mẫu có trường khoá NGƯỜI KÝ. Tên công ty thì fact-sheet và slide card
+# cũng có (in trên đầu trang, vô hại); chữ ký CEO thì chỉ văn bản ràng buộc mới có.
+CONG_VAN_IDS = {t["id"] for t in TEMPLATES
+                if any(f.get("key") == "nguoi_ky" and f.get("type") == "locked"
+                       for f in t.get("fields", []))}
+
+
+_KH_CSS = """body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0d0f11;
+color:#e8e6e3;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.k{max-width:520px;padding:40px;border:1px solid #23272b;border-radius:14px;background:#131619}
+h1{font-size:20px;margin:0 0 4px}p{color:#a9b0b6}a{color:#e8e6e3}
+input{width:100%;box-sizing:border-box;padding:11px 12px;background:#0d0f11;border:1px solid #23272b;
+color:#e8e6e3;font:inherit;font-size:14px;margin-top:10px}
+button{width:100%;height:38px;margin-top:12px;background:#e8e6e3;color:#0d0f11;border:0;
+font:inherit;font-weight:600;font-size:14px;cursor:pointer}
+.m{margin:16px 0 0;padding:14px 16px;border-left:2px solid currentColor;background:#171b1e}
+.e{color:#d97070;font-size:13px;min-height:18px;margin-top:8px}"""
+
+
+def _khung(tieu_de, mau, than):
+    return f"""<!doctype html><html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{tieu_de} · RtR Copilot</title><style>{_KH_CSS}</style></head>
+<body><div class="k"><h1 style="color:{mau}">{tieu_de}</h1>{than}
+<p style="margin-top:24px;font-size:13px"><a href="/">← Về RtR Copilot</a></p></div></body></html>"""
+
+
+def _trang_kich_hoat(ma):
+    """Trang sau khi bấm link · hai loại link, hai màn khác nhau.
+
+    Người TỰ ĐĂNG KÝ đã có mật khẩu → bấm link là xong.
+    Người ĐƯỢC MỜI TAY chưa có mật khẩu → phải hiện ô đặt mật khẩu, và tuyệt đối
+    KHÔNG được tiêu mã ở bước hiển thị, nếu không mở link ra là mất luôn đường vào.
+    """
+    if not auth:
+        return 400, _khung("Không kích hoạt được", "#d97070",
+                           '<div class="m">Máy chủ chưa bật tài khoản</div>')
+    loai, acc, loi = auth.trang_thai_ma(ma)
+    if loai == "dat_mat_khau":
+        than = (f'<p>Chào <b>{acc["ten"]}</b>. Đặt mật khẩu để bắt đầu dùng RtR Copilot '
+                f'với quyền <b>{auth.NHAN_VAI[acc["quyen"]]}</b>.</p>'
+                '<form method="POST" action="/kichhoat">'
+                f'<input type="hidden" name="ma" value="{ma}">'
+                f'<input type="password" name="mk" placeholder="Mật khẩu · tối thiểu {auth.MIN_PW} ký tự" '
+                'autocomplete="new-password" autofocus>'
+                '<button type="submit">Đặt mật khẩu và vào</button></form>'
+                '<p style="font-size:12px;margin-top:18px">Câu hỏi của bạn có ghi lại kèm tên, và '
+                '<b>chỉ quản trị viên</b> đọc được phần kèm tên. Lãnh đạo chỉ thấy số liệu tổng hợp.</p>')
+        return 200, _khung("Đặt mật khẩu", "#e8e6e3", than)
+    if loai == "kich_hoat":
+        ok, msg = auth.kich_hoat(ma)
+        if ok:
+            return 200, _khung("Kích hoạt thành công", "#4ea87b",
+                               f'<div class="m" style="color:#4ea87b">{msg}</div>'
+                               '<p>Quay lại ứng dụng và đăng nhập bằng email của bạn. Quyền cao hơn '
+                               'do quản trị viên cấp riêng.</p>')
+        loi = msg
+    return 400, _khung("Không kích hoạt được", "#d97070",
+                       f'<div class="m" style="color:#d97070">{loi}</div>'
+                       '<p>Link quá hạn thì xin quản trị viên cấp lại, hoặc đăng ký lại từ màn hình đăng nhập.</p>')
+
+
+def _dat_mat_khau_moi(ma, mk):
+    ok, msg = auth.kich_hoat(ma, mk) if auth else (False, "Máy chủ chưa bật tài khoản")
+    if ok:
+        return 200, _khung("Xong", "#4ea87b",
+                           f'<div class="m" style="color:#4ea87b">{msg}</div>'
+                           '<p>Quay lại ứng dụng và đăng nhập bằng email của bạn.</p>')
+    # Sai mật khẩu thì hiện LẠI ô nhập, không đá người dùng về trang lỗi cụt:
+    # mã vẫn còn hiệu lực, chỉ là họ gõ chưa đủ dài.
+    loai, acc, _ = auth.trang_thai_ma(ma)
+    if loai == "dat_mat_khau":
+        than = (f'<p>Chào <b>{acc["ten"]}</b>.</p><div class="e">{msg}</div>'
+                '<form method="POST" action="/kichhoat">'
+                f'<input type="hidden" name="ma" value="{ma}">'
+                f'<input type="password" name="mk" placeholder="Mật khẩu · tối thiểu {auth.MIN_PW} ký tự" '
+                'autocomplete="new-password" autofocus>'
+                '<button type="submit">Đặt mật khẩu và vào</button></form>')
+        return 400, _khung("Đặt mật khẩu", "#e8e6e3", than)
+    return 400, _khung("Không kích hoạt được", "#d97070",
+                       f'<div class="m" style="color:#d97070">{msg}</div>')
+
 
 def read_jsonl(path, limit=None):
     if not path.exists():
@@ -502,25 +649,84 @@ class Handler(BaseHTTPRequestHandler):
             return
         if self.path == "/api/whoami":
             ok, user, err = who(self)
+            # Trả kèm bảng quyền đã tính sẵn để giao diện ẩn/hiện đúng. Đây CHỈ là
+            # trang trí — mọi cổng thật nằm ở phía server; giấu nút không phải là khoá.
+            lam_duoc = {k: duoc_lam(user, k) for k in BANG_QUYEN} if ok else {}
             return self._send(200, json.dumps(
-                {"ok": ok, "can_dang_nhap": bool(USERS), "user": user, "error": err},
+                {"ok": ok, "can_dang_nhap": dung_tai_khoan() or bool(USERS),
+                 "che_do_dang_nhap": "tai_khoan" if dung_tai_khoan()
+                                     else ("ma_rieng" if USERS else "ma_chung"),
+                 "cho_dang_ky": bool(auth) and dung_tai_khoan(),
+                 "user": user, "lam_duoc": lam_duoc, "error": err},
                 ensure_ascii=False))
+        if self.path.startswith("/kichhoat"):
+            ma = urllib.request.unquote(self.path.split("ma=", 1)[-1]) if "ma=" in self.path else ""
+            code, body = _trang_kich_hoat(ma)
+            return self._send(code, body, "text/html")
+        if self.path == "/api/admin/users":
+            ok, user, err = who(self)
+            if not ok:
+                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            if not duoc_lam(user, "quan_tri_nguoi_dung"):
+                return self._send(403, json.dumps(
+                    {"error": "Chỉ quản trị viên xem được danh sách tài khoản"}, ensure_ascii=False))
+            rows = [auth.cong_khai(a, day_du=True) for a in auth.tat_ca()] if auth else []
+            rows.sort(key=lambda r: (r["trang_thai"] != "cho_kich_hoat", r["ten"].lower()))
+            return self._send(200, json.dumps(
+                {"users": rows, "thong_ke": auth.thong_ke() if auth else {},
+                 "smtp": bool(auth and auth.smtp_san_sang()),
+                 "ten_mien": auth.DOMAINS if auth else []}, ensure_ascii=False))
         if self.path == "/api/issues":
+            ok, user, err = who(self)
+            if not ok:
+                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
             rows = read_jsonl(ISSUE_LOG)
             for i, r in enumerate(rows):
                 r["idx"] = i
-            return self._send(200, json.dumps({"issues": list(reversed(rows))}, ensure_ascii=False))
+            # Ai thấy gì · Lâm chốt 29/07: chỉ quản trị viên đọc được ca kèm TÊN người báo.
+            # Lãnh đạo duyệt được nội dung nhưng không biết ai báo; nhân viên chỉ thấy ca
+            # của chính mình để theo dõi việc mình đã báo.
+            if duoc_lam(user, "xem_ten_nguoi_hoi"):
+                pass
+            elif duoc_lam(user, "duyet_bao_sai"):
+                rows = [dict(r, nguoi="(ẩn danh)") for r in rows]
+            else:
+                ten = (user or {}).get("ten", "")
+                rows = [r for r in rows if r.get("nguoi") == ten]
+            return self._send(200, json.dumps({"issues": list(reversed(rows)),
+                                               "an_danh": not duoc_lam(user, "xem_ten_nguoi_hoi"),
+                                               "chi_cua_toi": not duoc_lam(user, "duyet_bao_sai")},
+                                              ensure_ascii=False))
         if self.path == "/api/gaps":
             return self._send(200, json.dumps({"groups": group_gaps(read_jsonl(GAP_LOG))},
                                               ensure_ascii=False))
         if self.path == "/api/audit":
+            ok, user, err = who(self)
+            if not ok:
+                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            # Ba mức nhìn · quyết định của Lâm 29/07 về quyền riêng tư người hỏi.
+            # Lý do không phải hình thức: người ta chỉ dám hỏi câu ngây thơ khi biết
+            # sếp không đọc được tên mình bên cạnh câu hỏi đó. Mà chính câu ngây thơ
+            # mới lộ ra chỗ tài liệu công ty đang thủng.
+            xem_ten = duoc_lam(user, "xem_ten_nguoi_hoi")
+            xem_het = duoc_lam(user, "xem_thong_ke")
+            ten_toi = (user or {}).get("ten", "")
             evs = []
-            for r in reversed(read_jsonl(QA_LOG, limit=60)):
+            for r in reversed(read_jsonl(QA_LOG, limit=200)):
+                if not xem_het and r.get("nguoi", "không rõ") != ten_toi:
+                    continue
                 a = r.get("a", "")
                 gate = "HONEST NULL" if "GAP:" in a else ("MOCK LOOKUP" if r.get("mode") == "MOCK" else "PASS")
-                evs.append({"t": r.get("t", ""), "q": r.get("q", ""), "a": a,
-                            "mode": r.get("mode", ""), "gate": gate})
-            return self._send(200, json.dumps({"events": evs}, ensure_ascii=False))
+                e = {"t": r.get("t", ""), "q": r.get("q", ""), "a": a,
+                     "mode": r.get("mode", ""), "gate": gate}
+                if xem_ten:
+                    e["nguoi"] = r.get("nguoi", "không rõ")
+                evs.append(e)
+                if len(evs) >= 60:
+                    break
+            return self._send(200, json.dumps(
+                {"events": evs, "co_ten": xem_ten,
+                 "pham_vi": "tat_ca" if xem_het else "chi_cua_toi"}, ensure_ascii=False))
         if self.path.startswith("/api/usedby"):
             rid = urllib.request.unquote(self.path.split("id=", 1)[-1]) if "id=" in self.path else ""
             uses = []
@@ -540,7 +746,106 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, json.dumps(out, ensure_ascii=False))
         return self._send(404, json.dumps({"error": "not found"}))
 
+    def _body(self):
+        length = int(self.headers.get("content-length", 0))
+        return json.loads(self.rfile.read(length) or b"{}")
+
+    def _goc_url(self):
+        """Địa chỉ người dùng đang gõ · để link kích hoạt trong thư trỏ đúng máy."""
+        host = self.headers.get("host") or f"127.0.0.1:{PORT}"
+        return os.environ.get("COPILOT_URL", "").strip().rstrip("/") or f"http://{host}"
+
     def do_POST(self):
+        if self.path.startswith("/kichhoat"):
+            # Form đặt mật khẩu của người được mời tay · gửi dạng form thường để trang
+            # kích hoạt không cần JavaScript: người nhận có thể mở trên điện thoại cũ.
+            raw = self.rfile.read(int(self.headers.get("content-length", 0))).decode()
+            f = urllib.parse.parse_qs(raw)
+            code, body = _dat_mat_khau_moi(f.get("ma", [""])[0], f.get("mk", [""])[0])
+            return self._send(code, body, "text/html")
+
+        # ---------- tài khoản · KHÔNG cần đăng nhập trước ----------
+        if self.path in ("/api/dangky", "/api/dangnhap"):
+            if not auth:
+                return self._send(503, json.dumps({"error": "Chưa bật tài khoản trên máy chủ này"},
+                                                  ensure_ascii=False))
+            try:
+                b = self._body()
+            except Exception:
+                return self._send(400, json.dumps({"error": "Dữ liệu gửi lên không đọc được"}))
+            if self.path == "/api/dangky":
+                ok, msg = auth.dang_ky(b.get("email"), b.get("ten"), b.get("mat_khau"),
+                                       self._goc_url())
+                return self._send(200 if ok else 400,
+                                  json.dumps({"ok": ok, "thong_bao" if ok else "error": msg},
+                                             ensure_ascii=False))
+            tok, err, acc = auth.dang_nhap(b.get("email"), b.get("mat_khau"))
+            if not tok:
+                return self._send(401, json.dumps({"error": err}, ensure_ascii=False))
+            return self._send(200, json.dumps(
+                {"ok": True, "token": tok, "user": auth.cong_khai(acc),
+                 "lam_duoc": {k: auth.duoc(acc, k) for k in auth.QUYEN},
+                 "het_han_gio": auth.TOKEN_TTL_H}, ensure_ascii=False))
+
+        if self.path == "/api/doimatkhau":
+            ok, user, err = who(self)
+            if not ok or not auth:
+                return self._send(403, json.dumps({"error": err or "Chưa đăng nhập"},
+                                                  ensure_ascii=False))
+            acc = auth.tim(user.get("email", ""))
+            if not acc:
+                return self._send(400, json.dumps({"error": "Chỉ tài khoản email đổi được mật khẩu"},
+                                                  ensure_ascii=False))
+            b = self._body()
+            done, msg = auth.doi_mat_khau(acc, b.get("cu"), b.get("moi"))
+            return self._send(200 if done else 400,
+                              json.dumps({"ok": done, "thong_bao" if done else "error": msg},
+                                         ensure_ascii=False))
+
+        if self.path == "/api/admin/moi":
+            ok, user, err = who(self)
+            if not ok:
+                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            if not duoc_lam(user, "quan_tri_nguoi_dung") or not auth:
+                return self._send(403, json.dumps(
+                    {"error": "Chỉ quản trị viên mời được người mới"}, ensure_ascii=False))
+            b = self._body()
+            boi = user.get("email") or user.get("ten", "?")
+            done, msg, extra = auth.moi(b.get("email"), b.get("ten"),
+                                        b.get("vai") or "nhanvien", boi, self._goc_url())
+            if done:
+                with QA_LOG.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps({"t": datetime.now().isoformat(timespec="seconds"),
+                                        "mode": MODE, "nguoi": boi,
+                                        "q": f"[QUẢN TRỊ] mời {b.get('email')} vai {b.get('vai')}",
+                                        "a": msg}, ensure_ascii=False) + "\n")
+            return self._send(200 if done else 400, json.dumps(
+                {"ok": done, **({"thong_bao": msg, **(extra or {})} if done else {"error": msg})},
+                ensure_ascii=False))
+
+        if self.path in ("/api/admin/vai", "/api/admin/khoa"):
+            ok, user, err = who(self)
+            if not ok:
+                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            if not duoc_lam(user, "quan_tri_nguoi_dung") or not auth:
+                return self._send(403, json.dumps(
+                    {"error": "Chỉ quản trị viên phân quyền được"}, ensure_ascii=False))
+            b = self._body()
+            boi = user.get("email") or user.get("ten", "?")
+            if self.path == "/api/admin/vai":
+                done, msg = auth.dat_vai(b.get("email"), b.get("vai"), boi)
+            else:
+                done, msg = auth.dat_khoa(b.get("email"), bool(b.get("khoa")), boi)
+            if done:
+                with QA_LOG.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps({"t": datetime.now().isoformat(timespec="seconds"),
+                                        "mode": MODE, "nguoi": boi,
+                                        "q": f"[QUẢN TRỊ] {self.path.rsplit('/', 1)[-1]} · {b.get('email')}",
+                                        "a": msg}, ensure_ascii=False) + "\n")
+            return self._send(200 if done else 400,
+                              json.dumps({"ok": done, "thong_bao" if done else "error": msg},
+                                         ensure_ascii=False))
+
         if self.path == "/api/issue":
             # Báo sai phải thành DỮ LIỆU, không phải một thông báo rồi thôi.
             # Sổ theo dõi 4 tuần có ô "số ca báo sai" · đây là đường đổ vào ô đó.
@@ -615,8 +920,9 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._send(500, json.dumps({"error": str(e)[:250]}, ensure_ascii=False))
         if self.path == "/api/render":
-            if PASSCODE and self.headers.get("x-passcode", "") != PASSCODE:
-                return self._send(403, json.dumps({"error": "Sai mã nội bộ"}))
+            ok, user, err = who(self)
+            if not ok:
+                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
             if not render_doc:
                 return self._send(500, json.dumps(
                     {"state": "FAIL-LOUD", "issues": ["Bộ sinh tài liệu chưa nạp được"]},
@@ -627,6 +933,15 @@ class Handler(BaseHTTPRequestHandler):
                 tid = body.get("template", "")
                 params = body.get("params", {}) or {}
                 dry = bool(body.get("dry_run"))
+                # Công văn mang TƯ CÁCH PHÁP NHÂN: có tên công ty, số công văn và
+                # chữ ký CEO. Một file như thế gửi ra cơ quan nhà nước là ràng buộc
+                # công ty. Fact-sheet hay sales brief thì không — nên chỉ khoá công văn.
+                if tid in CONG_VAN_IDS and not duoc_lam(user, "sinh_cong_van"):
+                    return self._send(403, json.dumps(
+                        {"state": "FAIL-LOUD", "issues": [
+                            "Công văn mang tư cách pháp nhân · chỉ lãnh đạo trở lên tạo được. "
+                            "Bạn vẫn tạo được fact-sheet, slide card và sales brief."]},
+                        ensure_ascii=False))
                 if dry:
                     state, values, issues, _ = render_doc.resolve(tid, params)
                     return self._send(200, json.dumps(
@@ -719,17 +1034,34 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    HOST = "0.0.0.0" if PASSCODE else "127.0.0.1"
-    if not PASSCODE:
-        print("CHÚ Ý: chưa set COPILOT_PASSCODE · chỉ bind 127.0.0.1 (máy này).")
-        print("Mở cho LAN: export COPILOT_PASSCODE=matma rồi chạy lại.")
+    # Mở ra LAN khi CÓ cách nhận diện người: passcode chung, hoặc đã có tài khoản thật.
+    HOST = "0.0.0.0" if (PASSCODE or dung_tai_khoan()) else "127.0.0.1"
+    if not PASSCODE and not dung_tai_khoan():
+        print("CHÚ Ý: chưa có tài khoản nào và chưa set COPILOT_PASSCODE · chỉ bind 127.0.0.1.")
+        print("Mở cho LAN: tạo tài khoản quản trị (COPILOT_ADMIN_EMAIL + đăng ký) hoặc")
+        print("            export COPILOT_PASSCODE=matma rồi chạy lại.")
     if PACK == "leader":
         print("=" * 66)
         print("GÓI LÃNH ĐẠO · chứa giá bán và chính sách chiết khấu.")
         print("Chỉ chia sẻ địa chỉ và passcode cho nhóm đã được cấp quyền.")
         print("=" * 66)
-    print(f"Đăng nhập: {len(USERS)} người trong users.yaml" if USERS
-          else "Đăng nhập: chưa khai users.yaml · dùng passcode chung (không đếm được người dùng thực)")
+    if dung_tai_khoan():
+        _tk = auth.thong_ke()
+        print(f"Đăng nhập: TÀI KHOẢN EMAIL · {_tk['hoat_dong']} hoạt động "
+              f"({_tk['theo_vai']['quantri']} quản trị · {_tk['theo_vai']['lanhdao']} lãnh đạo · "
+              f"{_tk['theo_vai']['nhanvien']} nhân viên) · {_tk['cho_kich_hoat']} chờ kích hoạt")
+        print(f"Tự đăng ký: {', '.join('@' + d for d in auth.DOMAINS)}")
+        if not auth.smtp_san_sang():
+            print("CHÚ Ý: CHƯA cấu hình SMTP · người mới KHÔNG đăng ký được (không gửi được thư "
+                  "kích hoạt). Khai COPILOT_SMTP_HOST/USER/PASS.")
+    elif USERS:
+        print(f"Đăng nhập: {len(USERS)} người trong users.yaml (đường lùi · nên chuyển sang tài khoản email)")
+    else:
+        print("Đăng nhập: chưa có tài khoản nào · dùng passcode chung (không đếm được người dùng thực)")
+        if auth and auth.ADMIN_EMAIL:
+            print(f"Quản trị viên gốc sẽ là {auth.ADMIN_EMAIL} khi đăng ký lần đầu.")
+        elif auth:
+            print("CHÚ Ý: chưa khai COPILOT_ADMIN_EMAIL · đăng ký xong sẽ KHÔNG có ai phân quyền được.")
     print(f"RtR Copilot · http://{HOST}:{PORT} · gói {PACK} · chế độ {MODE}" + (f" · model {MODEL}" if MODE == "LIVE" else " · cắm ANTHROPIC_API_KEY để LIVE"))
     print(f"Gói: {len(RECORDS)} record · SOT {PACK_DATE}")
     HTTPServer((HOST, PORT), Handler).serve_forever()

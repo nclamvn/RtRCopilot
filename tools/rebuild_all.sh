@@ -44,11 +44,18 @@ echo "[5/6] đóng gói kit"
 cd "$ROOT/phase1_pilot"
 rm -f qa_log.jsonl.bak
 rm -f "$ROOT/Phase1_Pilot_Kit.zip"
-zip -j -q "$ROOT/Phase1_Pilot_Kit.zip" \
-  01_Setup_API_Server.md 01_Setup_Claude_Project.md 02_Huong_Dan_Nhom_Pilot.md \
-  03_Bo_Cau_Test_Acceptance.md 04_So_Theo_Doi_4_Tuan.md 05_Van_Hanh_Lien_Tuc.md \
-  06_Thu_Moi_Nhom_Pilot.md 07_Goi_Lanh_Dao.md 08_Tao_Tai_Lieu.md 09_Dang_Nhap_Nguoi_Dung.md com.rtr.copilot.plist \
-  copilot_server.py ui.html test_copilot.py e2e_tester.py start_copilot.sh weekly_review.py users.example.yaml \
+# Danh sách file GOM THEO MẪU, không liệt tay. Liệt tay đã hụt hai lần: thêm auth.py
+# và 10_Thu_Moi_Nhan_Vien.md mà zip vẫn không có, người nhận kit thiếu file mà không ai
+# biết. Mẫu thì file mới tự vào; muốn loại thì phải nói ra tên, và nói ra là thấy được.
+KHONG_DONG_GOI="users.yaml accounts.json accounts.tmp .session_secret"
+FILES=""
+for f in [0-9][0-9]_*.md *.py *.sh *.plist users.example.yaml; do
+  [ -e "$f" ] || continue
+  case " $KHONG_DONG_GOI " in *" $f "*) continue;; esac
+  FILES="$FILES $f"
+done
+FILES="$FILES ui.html"
+zip -j -q "$ROOT/Phase1_Pilot_Kit.zip" $FILES \
   "$ROOT/l3_pipeline/TIP7_SYSTEM_PROMPT_ClaudeProject.md" \
   "$ROOT/l3_pipeline/GOI_L3.yaml" \
   "$ROOT/l3_pipeline/l3_export.py" \

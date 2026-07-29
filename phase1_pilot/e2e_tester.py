@@ -40,6 +40,7 @@ BASE = f"http://127.0.0.1:{PORT}"
 
 # ---------------------------------------------------------------- hạ tầng
 FINDINGS = []      # (mức, persona, tiêu đề, chi tiết)
+TOKENS = {}        # vai → token phiên · nạp trong main()
 STATS = Counter()
 
 
@@ -53,10 +54,21 @@ def norm(s):
                    if unicodedata.category(c) != "Mn").replace("đ", "d")
 
 
+# Token của persona đang đóng vai. Đổi bằng vai() — mỗi persona là một CON NGƯỜI có
+# vai thật, không phải một lời gọi ẩn danh. Tester dùng chung một đường vào với người
+# thật thì mới phát hiện được lỗi phân quyền; gọi ẩn danh là tự bịt mắt một nửa.
+TOKEN = ""
+
+
+def vai(ten_vai):
+    global TOKEN
+    TOKEN = TOKENS.get(ten_vai, "")
+
+
 def post(path, obj, code=""):
     req = urllib.request.Request(BASE + path, data=json.dumps(obj).encode(),
                                  headers={"content-type": "application/json",
-                                          "x-passcode": code})
+                                          "x-passcode": code, "x-token": TOKEN})
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
             return r.status, json.loads(r.read())
@@ -65,7 +77,7 @@ def post(path, obj, code=""):
 
 
 def get(path, code=""):
-    req = urllib.request.Request(BASE + path, headers={"x-passcode": code})
+    req = urllib.request.Request(BASE + path, headers={"x-passcode": code, "x-token": TOKEN})
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             return r.status, r.read().decode()
@@ -164,6 +176,18 @@ def persona_soan_congvan():
     p = "Soạn công văn"
     print(f"\n{'='*64}\nPERSONA 3 · {p} · deadline chiều nay")
     print("Mindset: vội, hay bỏ trống trường — cổng phải chặn, không cho ra bản thiếu\n")
+
+    # Công văn mang tư cách pháp nhân · từ 29/07 chỉ vai lãnh đạo trở lên soạn được.
+    # Thử trước bằng vai NHÂN VIÊN để chắc cổng còn cắn, rồi mới đổi sang lãnh đạo
+    # làm tiếp phần kiểm cổng NT-4.
+    vai("nhanvien")
+    s, d = post("/api/render", {"template": "congvan", "params": {}})
+    if s != 403:
+        finding("RO_RI_QUYEN", p, "Nhân viên tạo được công văn mang tư cách pháp nhân",
+                f"Trả về {s} thay vì 403 · công văn có chữ ký CEO, gửi ra ngoài là ràng buộc công ty")
+    else:
+        print("  · vai nhân viên bị chặn đúng (403)")
+    vai("lanhdao")
 
     # 3a · cố tình bỏ trống dần từng trường bắt buộc
     day_du = {"so_cong_van": "9999/2026/CV-RTR", "noi_nhan": "Sở Thử",
@@ -480,6 +504,7 @@ def bao_cao():
     NHAN = {
         "BUG": "🐞 BUG · code sai, phải sửa",
         "RO_RI": "🔴 RÒ RỈ · thông tin lọt ra ngoài quyền",
+        "RO_RI_QUYEN": "🔴 RÒ RỈ QUYỀN · vai thấp làm được việc của vai cao",
         "VI_PHAM_NT3": "🔴 NT-3 · trả lời không có nguồn",
         "SPEC_CU_LOT": "🟠 SPEC CŨ · số cũ hiện như số hiện hành",
         "KHONG_ON_DINH": "🟠 KHÔNG ỔN ĐỊNH · cùng sự thật ra khác kết quả",
@@ -489,7 +514,7 @@ def bao_cao():
         "UX": "⚪ UX · dùng được nhưng tốn công người",
         "HA_TANG": "⚪ HẠ TẦNG · không chạy được kịch bản",
     }
-    thu_tu = ["BUG", "RO_RI", "VI_PHAM_NT3", "SPEC_CU_LOT", "KHONG_ON_DINH",
+    thu_tu = ["BUG", "RO_RI", "RO_RI_QUYEN", "VI_PHAM_NT3", "SPEC_CU_LOT", "KHONG_ON_DINH",
               "LO_HONG_GOI", "MA_SAT", "VAN_HANH", "UX", "HA_TANG"]
     for muc in thu_tu:
         nhom = [f for f in FINDINGS if f[0] == muc]
@@ -502,9 +527,12 @@ def bao_cao():
                 for dong in re.findall(r".{1,86}(?:\s|$)", chi_tiet):
                     if dong.strip():
                         print(f"      {dong.strip()}")
-    nghiem_trong = sum(STATS[m] for m in ("BUG", "RO_RI", "VI_PHAM_NT3"))
+    # RO_RI_QUYEN thuộc nhóm nghiêm trọng. Bỏ sót nó ở dòng đếm này là kiểu lỗi
+    # tệ nhất của một bộ đo: nó VẪN in ra phát hiện, nhưng dòng tổng kết — thứ
+    # người ta thật sự đọc — báo 0, nên không ai xử lý.
+    nghiem_trong = sum(STATS[m] for m in ("BUG", "RO_RI", "RO_RI_QUYEN", "VI_PHAM_NT3"))
     print(f"\n{'─'*64}")
-    print(f"Nghiêm trọng (bug/rò rỉ/không nguồn): {nghiem_trong}")
+    print(f"Nghiêm trọng (bug/rò rỉ quyền/không nguồn): {nghiem_trong}")
     print("Còn lại phần lớn là lỗ hổng GÓI TRI THỨC — việc của curator, không phải của code.")
     return 1 if nghiem_trong else 0
 
@@ -533,6 +561,24 @@ def main():
     tmp = Path(tempfile.mkdtemp(prefix="rtr_e2e_"))
     cs.GAP_LOG, cs.QA_LOG, cs.ISSUE_LOG = (tmp / "gap.jsonl", tmp / "qa.jsonl", tmp / "issue.jsonl")
     cs.PASSCODE, cs.USERS = "", {}
+
+    # Kho tài khoản TẠM · không đụng accounts.json thật trên máy đang chạy pilot.
+    import auth
+    auth.ACCOUNTS = tmp / "accounts.json"
+    auth.SECRET_FILE = tmp / ".secret"
+
+    def _tk(email, ten, v):
+        acc = {"email": email, "ten": ten, "pw": auth.bam("matkhaudumanh"), "quyen": v,
+               "trang_thai": "hoat_dong", "ver": 1, "ma_kich_hoat": None,
+               "han_kich_hoat": None, "tao_luc": auth.iso(), "kich_hoat_luc": auth.iso(),
+               "lan_cuoi": None, "nguoi_phan_vai": "e2e", "phan_vai_luc": None, "ghi_chu": ""}
+        auth._luu(acc)
+        return auth.tao_token(acc)
+
+    TOKENS.update({"nhanvien": _tk("nv@rtrobotics.com", "NV Ảo", "nhanvien"),
+                   "lanhdao":  _tk("ld@rtrobotics.com", "LĐ Ảo", "lanhdao"),
+                   "quantri":  _tk("ad@rtrobotics.com", "QT Ảo", "quantri")})
+    vai("nhanvien")     # mặc định: người dùng thường, vai thấp nhất
 
     srv = cs.HTTPServer(("127.0.0.1", PORT), cs.Handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()

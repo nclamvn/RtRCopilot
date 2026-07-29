@@ -11,4 +11,11 @@ __pycache__/
 
 # generated documents (scratch)
 _rendered/
+
+# danh tính người dùng · KHÔNG BAO GIỜ vào repo
+# accounts.json chứa email nhân viên + hash mật khẩu; .session_secret ký được token
+# giả mạo bất kỳ ai. Lọt một trong hai là mất toàn bộ ranh giới phân quyền.
 users.yaml
+accounts.json
+accounts.tmp
+.session_secret
