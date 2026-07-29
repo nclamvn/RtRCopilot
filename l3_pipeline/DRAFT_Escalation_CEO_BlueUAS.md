@@ -1,6 +1,26 @@
 # Note escalation CEO · DISP.011 · trạng thái Blue UAS trong hồ sơ nhà nước
 
-**Trạng thái:** DRAFT chờ Lâm review rồi gửi CEO · KHẨN
+> # ⛔ HẾT HIỆU LỰC · KHÔNG GỬI
+>
+> **Tiền đề của văn bản này đã bị đảo ngược ngày 28/07/2026.**
+>
+> Bản nháp viết ngày 27/07 dựa trên nhận định "HERA CHƯA trên Blue UAS cleared list,
+> nên claim trong 6 đề án đã nộp là sai". Ngày 28/07 Lâm xác nhận và đóng DISP.011:
+> `L3F.RES.003` (provenance **verified_primary**, hiệu lực 28/07/2026) ghi **HERA ĐÃ
+> chính thức trên DCMA Blue UAS cleared list**.
+>
+> Gửi văn bản này bây giờ là **tự nhận sai cho một điều nay đã đúng** — và tệ hơn, là
+> khẳng định với CEO (và có thể với cơ quan nhà nước) rằng hồ sơ đã nộp chứa claim sai,
+> trong khi hiện tại nó không sai.
+>
+> **Điều còn lại đáng bàn, và nó khác hẳn:** claim từng đi TRƯỚC bằng chứng tại thời
+> điểm nộp. Có cần ghi nhận việc đó hay không là quyết định của CEO về kỷ luật hồ sơ,
+> không phải một cuộc đính chính. Ai muốn xử lý phần đó thì viết văn bản mới, đừng sửa
+> văn bản này — lập luận bên dưới đã mục ở gốc.
+>
+> Giữ lại nguyên văn để tra lịch sử. Ngày phát hiện hết hiệu lực: 29/07/2026.
+
+**Trạng thái:** ~~DRAFT chờ Lâm review rồi gửi CEO · KHẨN~~ → **HẾT HIỆU LỰC 28/07/2026**
 **Chuẩn bị bởi:** Chủ thầu pipeline L3 · 27/07/2026 · một trang
 
 ---
