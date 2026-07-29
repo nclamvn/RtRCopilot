@@ -139,10 +139,16 @@ check("khoá ngược · token ngắn không bị ép về entity",
 
 # Catalog (danh mục nhiều-sản-phẩm, vd CAND.2.005 liệt kê 16 sản phẩm) không được thắng oan record
 # spec khi hỏi ĐÍCH DANH 1 sản phẩm — hòa điểm thì tie-break id "CAND" < "L3F" kéo danh mục lên trên.
+# CẬP NHẬT 29/07: chốt theo Ý ĐỊNH của phép thử ("không phải danh mục"), không ghim
+# một id. Sau khi doctrine A3 tham gia xếp hạng, câu này ra L3F.RES.001 — record NÓI
+# HeraSight LR là gì (tên chính thức của dòng sensor RGB+Thermal), provenance
+# verified_primary. Đó là câu trả lời ĐÚNG HƠN cho câu hỏi "là gì" so với bảng spec
+# L3F.1.001. Ghim id là biến phép thử ý định thành phép thử một lựa chọn cũ.
 _hl = cs.search("HeraSight LR là gì?")
-check("catalog không đè spec: 'HeraSight LR là gì?' → spec thật L3F.1.001, không phải danh mục",
-      bool(_hl) and _hl[0][1]["record"] == "L3F.1.001",
-      f"top={_hl[0][1]['record'] if _hl else 'NULL'}")
+check("catalog không đè spec: 'HeraSight LR là gì?' → record về ĐÚNG HeraSight, không phải danh mục",
+      bool(_hl) and _hl[0][1]["record"] in ("L3F.1.001", "L3F.RES.001")
+      and _hl[0][1]["_nent"] < cs.CATALOG_MIN,
+      f"top={_hl[0][1]['record'] if _hl else 'NULL'} nent={_hl[0][1]['_nent'] if _hl else '-'}")
 
 # QA 28/07: "HERA hơn DJI?" từng match record FCC (CAND.2.024) lạc đề vì gói không có fact cạnh
 # tranh nào có token DJI/đối thủ. Thêm L3F.CMP.001 (positioning từ differentiator đã có, provenance
@@ -937,6 +943,35 @@ check("bảng đồng nghĩa không bơm token không tồn tại trong gói",
 # Chiều ngược: nhóm đồng nghĩa KHÔNG được biến câu lạc đề thành có nghĩa
 for _q in ["LiDAR khác gì thermal?", "Drone dùng vào việc gì?", "zxqwerty là gì?"]:
     check(f"CẤM: '{_q}' vẫn honest-null", "GAP:" in cs.mock_answer(_q), cs.mock_answer(_q)[:90])
+
+# --- Doctrine A3 tham gia XẾP HẠNG (29/07) ---
+# Trước đây exporter vứt provenance_level nên gói phục vụ có 137 record đều None:
+# luật trung tâm của dự án không có mặt ở tầng trả lời. Hệ quả thật: "Mình có Blue
+# UAS không?" để record mô tả dataset bên thứ ba (RtR = null, claim) dẫn đầu, trên
+# chính record verified_primary nói HERA đã cleared.
+_prov = {str(r.get("provenance_level")) for r in cs.RECORDS}
+check("gói phục vụ CÓ mang provenance_level", "verified_primary" in _prov, str(sorted(_prov)))
+check("không phải mọi record đều None", _prov != {"None"}, str(sorted(_prov)))
+for _q in ["Blue UAS thế nào?", "Mình có Blue UAS không?", "blue uas", "HERA đã Blue UAS chưa?"]:
+    _h = cs.search(_q, top=1)
+    check(f"A3: '{_q}' để fact verified_primary dẫn",
+          _h and _h[0][1]["record"] == "L3F.RES.003",
+          _h[0][1]["record"] + " prov=" + str(_h[0][1].get("provenance_level")) if _h else "-")
+check("CẤM: record dataset bên thứ ba KHÔNG dẫn câu hỏi trạng thái RtR",
+      cs.search("Mình có Blue UAS không?", top=1)[0][1]["record"] != "L3F.3.016")
+# Chiều ngược: provenance là hệ số NHẸ, không được thành cổng chặn — claim vẫn là
+# tri thức hợp lệ và vẫn phải ra khi hỏi đích danh chủ đề của nó.
+# Câu thử cũ ("Registry The Sky Watch...") đo nhầm thứ: "Sky Watch" trùng tên với
+# SẢN PHẨM SkyWatch 360, nên nó đi khớp CAND.1.016 chứ không tới L3F.3.016.
+# Dùng record claim khác, hỏi đúng chủ đề của nó.
+_h_claim = cs.search("Mình có gì khác đối thủ?", top=1)
+check("CHO: record provenance=claim VẪN dẫn được khi hỏi đúng chủ đề của nó",
+      _h_claim and _h_claim[0][1].get("provenance_level") == "claim"
+      and "GAP:" not in cs.mock_answer("Mình có gì khác đối thủ?"),
+      _h_claim[0][1]["record"] + " prov=" + str(_h_claim[0][1].get("provenance_level")) if _h_claim else "-")
+check("hệ số provenance nhẹ, không lật kết quả khác chủ đề",
+      cs.search("Payload Hera bao nhiêu?", top=1)[0][1]["record"].startswith("CAND"),
+      cs.search("Payload Hera bao nhiêu?", top=1)[0][1]["record"])
 
 # CỔNG · mọi mã record được TRÍCH trong nội dung phải có thật trong gói.
 # Trích một mã không tồn tại thì người dùng bấm vào chip citation là rơi vào hư không,

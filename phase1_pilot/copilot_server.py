@@ -368,6 +368,13 @@ for r in RECORDS:
 # (nếu Lâm đổi wording bỏ "là công ty" thì fallback tự tắt, quay về honest-null — degrade an toàn).
 OVERVIEW = next((r for r in RECORDS
                  if r.get("domain") == "company" and "la cong ty" in r["_blob"]), None)
+# Hệ số theo mức chứng cứ · nhẹ và có thứ tự, không phải cổng chặn.
+# Chặn cứng theo provenance là sai: claim vẫn là tri thức hợp lệ, chỉ kém chắc hơn.
+# CHỈ verified_primary được thưởng. Mọi mức khác trung tính, kể cả record CHƯA khai
+# trường này (20 record None + 34 null) — thưởng theo mức trung gian là phạt oan
+# những record mà curator chưa kịp gắn nhãn, tức xếp hạng theo độ đầy đủ siêu dữ liệu
+# chứ không theo chất lượng bằng chứng. Chỉ phạt thứ bị đánh dấu CÓ VẤN ĐỀ.
+PROV_HESO = {"verified_primary": 1.15, "flagged": 0.75, "disputed": 0.75}
 STALE_PENALTY = 0.45  # nhân điểm · đủ tụt dưới record hiện hành cùng chủ đề, vẫn tra cứu được khi hỏi đích danh
 
 # tên sản phẩm/hệ thống · dùng cho neo entity trong search
@@ -573,6 +580,12 @@ def search(query, top=3):
                 score += 6.0
             elif not q_dinh_nghia:
                 score *= 0.6      # hỏi tra số thì record định nghĩa lùi, nhường record spec
+        # Doctrine A3 tham gia XẾP HẠNG, không chỉ nằm trong tài liệu. Hai record cùng
+        # nói về một chủ đề thì fact đã kiểm chứng phải dẫn trước claim chưa kiểm.
+        # Ca thật 29/07: "Mình có Blue UAS không?" để record mô tả dataset bên thứ ba
+        # (RtR = null, provenance claim) dẫn đầu, trên chính record verified_primary nói
+        # HERA đã cleared. Hệ số nhẹ — đủ phá hoà, không đủ lật một kết quả khác chủ đề.
+        score *= PROV_HESO.get(str(r.get("provenance_level")), 1.0)
         if r["_stale"]:
             score *= STALE_PENALTY
         if score > 0:

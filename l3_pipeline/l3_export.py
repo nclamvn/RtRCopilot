@@ -55,6 +55,10 @@ def main():
             "kernel_ref": None,
             "source": f.get("source_path"),
             "effective_date": f.get("effective_date"),
+            # Doctrine A3 sống hay chết ở đây. Trước 29/07 exporter VỨT trường này,
+            # nên gói phục vụ không phân biệt được fact đã kiểm chứng với claim chưa
+            # kiểm — luật trung tâm của dự án không có mặt ở tầng trả lời cho người dùng.
+            "provenance_level": f.get("provenance_level"),
         }
         if "PROPOSED" in str(f.get("note") or "") + str(f.get("content") or ""):
             rec["label"] = "PROPOSED · chưa cam kết với khách"
@@ -73,6 +77,10 @@ def main():
             "kernel_ref": f.get("kernel_ref"),
             "source": f.get("source_path"),
             "effective_date": f.get("effective_date"),
+            # Doctrine A3 sống hay chết ở đây. Trước 29/07 exporter VỨT trường này,
+            # nên gói phục vụ không phân biệt được fact đã kiểm chứng với claim chưa
+            # kiểm — luật trung tâm của dự án không có mặt ở tầng trả lời cho người dùng.
+            "provenance_level": f.get("provenance_level"),
         })
 
     # ---- GIÁ BÁN + ĐỊNH VỊ + VOICE · gói nền cho MỌI nhân viên ----

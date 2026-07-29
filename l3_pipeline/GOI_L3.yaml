@@ -24,6 +24,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/Product description V2/1. HeraSight LR1.xlsx
   effective_date: null
+  provenance_level: claim
 - record: L3F.1.008
   content: 'HeraLink được đổi tên thành HeraHub hiệu lực từ tháng 5/2026 vì tên gần với trademark HereLink của Cube
     Pilot, sau khi Cube Pilot gửi friendly request đề nghị đổi tên.
@@ -35,6 +36,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
   effective_date: null
+  provenance_level: claim
 - record: L3F.1.011
   content: 'VEGA dùng smart battery 50.4V dung lượng 35000 mAh.
 
@@ -45,6 +47,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/Product description V2/Vega Brochure_20260429.xlsx
   effective_date: null
+  provenance_level: claim
 - record: L3F.1.019
   content: 'Kênh liên hệ chính thức của RtR gồm điện thoại Việt Nam +84 909 735 829, điện thoại Mỹ +1 510 457 6280,
     email chung info@rtrobotics.com, email sales sales@rtrobotics.com và website rtrobotics.com.
@@ -56,6 +59,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/RtR-Product-Master-Canonical-v2.xlsx
   effective_date: null
+  provenance_level: claim
 - record: L3F.1.020
   content: 'Tên brand viết đúng là "Real-time Robotics" với chữ t viết thường (không phải Real-Time), viết tắt cho
     phép là RtR hoặc RTROBOTICS, và không dùng "RTR" all-caps trong body copy.
@@ -67,6 +71,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/RtR-Company-Card-Brief.docx
   effective_date: null
+  provenance_level: claim
 - record: L3F.1.022
   content: 'RtR Messaging Framework v1.0 (29/04/2026) là quy định MANDATORY cho mọi nhân sự đứng booth và mọi tài
     liệu external, với quy tắc lõi: narrative "Vietnamese deeptech goes global" chỉ dành cho audience E/F (báo chí
@@ -79,6 +84,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/RtR-MESSAGING-FRAMEWORK.md
   effective_date: '2026-04-29'
+  provenance_level: claim
 - record: L3F.1.023
   content: 'Câu trả lời chuẩn khi khách hỏi "where are you guys from?" là: "We''re U.S.-aligned with manufacturing
     in Vietnam. Full-stack vertical integration in-house. NDAA-compliant." (không trả lời "We''re from Vietnam").
@@ -90,6 +96,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/RtR-MESSAGING-FRAMEWORK.md
   effective_date: '2026-04-29'
+  provenance_level: claim
 - record: L3F.1.027
   content: 'RtR tham gia XPONENTIAL 2026 x MDEX (AUVSI / Messe Düsseldorf North America) ngày 11-14/05/2026 tại
     Huntington Place Convention Center, Detroit MI, với booth #20005 dạng island 20x20 ft (400 sq ft) gần cửa ra
@@ -102,6 +109,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/RtR-XPO26-Company-Briefing.docx
   effective_date: '2026-04-20'
+  provenance_level: claim
 - record: L3F.1.028
   content: 'MDEX (Michigan Defense Expo) hợp nhất với XPONENTIAL chỉ duy nhất năm 2026; năm 2027 MDEX quay về Macomb
     Community College, nên 2026 là cửa sổ một lần để gặp DoD buyers và NDIA Michigan ecosystem cùng một venue.
@@ -113,6 +121,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/RtR-XPO26-Company-Briefing.docx
   effective_date: '2026-04-20'
+  provenance_level: claim
 - record: L3F.1.029
   content: 'Quy trình thu lead tại booth RtR gồm 4 bước khoảng 30 giây mỗi khách: quét badge QR (hoặc nhập tay/chụp
     danh thiếp), phân loại tier A/B/C/F kèm thời gian mua và sản phẩm quan tâm, ghi chú nhanh (gõ hoặc voice-to-text),
@@ -125,6 +134,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-website/docs/booth-staff-guide.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.1.030
   content: 'Booth app RtR là PWA cài lên Home Screen, hoạt động offline với tự động sync, và có 4 chức năng phụ:
     My Leads (xem/lọc lead), Price Range (tra giá trả khách), Tech Support (search FAQ kỹ thuật) và Export CSV cuối
@@ -137,6 +147,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-website/docs/booth-staff-guide.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.1.031
   content: 'Luật escalation tại booth: khách Tier A chuyển CEO ngay lập tức, media chuyển CEO cùng Vy (CEO chỉ tiếp
     media khi được page mã ''E-MEDIA''), CEO là điểm cuối escalation và khi quá tải thì delegate cho COO.
@@ -148,6 +159,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/RtR-Booth-Playbook-EN.pdf
   effective_date: null
+  provenance_level: claim
 - record: L3F.1.032
   content: 'Đội booth XPO26 gồm 7 vai trò có playbook cá nhân hóa (trong đó Founder & CEO, COO, Business Development
     Manager, Software Manager, Mechanical R&D Team Lead) cộng 2 vai trò remote từ Việt Nam là CEO Assistant & Logistics
@@ -160,6 +172,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/RtR-Booth-Team-Profiles-EN.docx
   effective_date: null
+  provenance_level: claim
 - record: L3F.1.033
   content: 'Brand assets của RtR nằm tại rtr-website/content/branding/ (6 file logo PNG+SVG, Brand Identity Guidelines
     PDF, brochure, namecard); folder content/ là thư viện asset local bị gitignore, còn bản brochure deploy công
@@ -172,6 +185,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-website/content/INVENTORY.md
   effective_date: '2026-04-21'
+  provenance_level: claim
 - record: L3F.1.034
   content: 'RtR-Product-Master-Canonical (XPO26/) là file single source of truth tổng hợp thông tin chuẩn 8 sản
     phẩm RtR cho mọi tài liệu external, với source priority: file anh Quốc là chuẩn cho USP/slogan, brochure là
@@ -184,6 +198,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/RtR-Product-Master-Canonical-v2.xlsx
   effective_date: '2026-05-04'
+  provenance_level: claim
 - record: L3F.1.037
   content: 'Theo bảng certifications trong Company KB v2.0: ISO 9001 certified, FCC certified, IP54 certified, MIL-STD-810
     tested, DO-160G tested, FIPS 140-2 capable, FAA Part 107 compatible, ITAR controlled.
@@ -195,6 +210,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
   effective_date: '2026-05-18'
+  provenance_level: claim
 - record: L3F.1.038
   content: '"Anthracite Discipline" là design philosophy chính thức cho company card RtR với palette Anthracite
     #262421, Brushed White #F5F2EC, Patina Gold #C9A56C, Hairline #3A3734 và bộ chữ Outfit (display + body) cùng
@@ -207,6 +223,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/XPO26/anthracite-discipline.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.2.001
   content: 'RtR có hệ thống Sales Brief gồm workbook chuẩn tiếng Việt (RtR_Sales_Brief_Template_VN.xlsx) và skill
     sales-brief-fill đặt tại KnowledgeBase/Sales_Brief_System/, cho phép nhân viên sales gửi ghi chép hoặc voice
@@ -219,6 +236,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/README.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.2.002
   content: 'Quy trình điền Sales Brief có 4 luật cứng: fact điền thẳng còn judgment chỉ đề xuất chờ người bán confirm;
     thiếu thì hỏi không bịa; số trọng yếu phải đọc lại nguyên văn để xác nhận; chỉ nhận voice note nhân viên tự
@@ -231,6 +249,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/SKILL.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.2.003
   content: 'Quy ước đặt tên file Sales Brief hoàn chỉnh là RTR_[abbr]_Brief_[YYMMDD]_VN.xlsx, trong đó abbr là viết
     tắt tên khách hàng.
@@ -242,6 +261,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/SKILL.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.2.004
   content: 'Workbook Sales Brief tự tính điểm cơ hội tại ô C59, tự báo cảnh báo thiếu dữ liệu tại ô B63, in khuyến
     nghị tại ô B61, và có dòng 67 định dạng sẵn để copy vào CRM; script fill_brief.py chạy LibreOffice recalc rồi
@@ -254,6 +274,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/scripts/cell_map.json
   effective_date: null
+  provenance_level: claim
 - record: L3F.2.006
   content: 'RtR có chương trình bảo dưỡng định kỳ cho 8 sản phẩm (HERA, HeraHub, HeraSight, Hera Battery, Hera Charger,
     Drop System, S1 Spotlight, LS1 Aerial Loudspeaker), mỗi sản phẩm một workbook CRM riêng (01-08), quản trị bằng
@@ -266,6 +287,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
   effective_date: null
+  provenance_level: claim
 - record: L3F.2.007
   content: 'Chu kỳ bảo dưỡng chuẩn cho cả 8 sản phẩm RtR là 3/6/12 tháng hoặc theo mức sử dụng (cái nào đến trước),
     với usage limit 12 tháng đề xuất theo sản phẩm, ví dụ HERA 12.000 km bay tích lũy, HeraHub 1.000 giờ vận hành,
@@ -278,6 +300,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
   effective_date: null
+  provenance_level: claim
   label: PROPOSED · chưa cam kết với khách
 - record: L3F.2.008
   content: 'Ba mốc bảo dưỡng HERA trong chương trình v1.0-PROPOSED là BD 3 tháng/3.000 km bay tích lũy (kiểm tra
@@ -291,6 +314,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
   effective_date: null
+  provenance_level: claim
   label: PROPOSED · chưa cam kết với khách
 - record: L3F.2.009
   content: 'Baseline bảo hành đề xuất theo sản phẩm: HERA 24 tháng/12.000 km bay, HeraHub 24 tháng/1.000 giờ, HeraSight
@@ -304,6 +328,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
   effective_date: null
+  provenance_level: claim
   label: PROPOSED · chưa cam kết với khách
 - record: L3F.2.010
   content: 'Chính sách baseline chương trình bảo dưỡng: mọi con số chưa ký duyệt giữ trạng thái PROPOSED; 4 chính
@@ -317,6 +342,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
   effective_date: null
+  provenance_level: claim
   label: PROPOSED · chưa cam kết với khách
 - record: L3F.2.011
   content: 'Chương trình bảo dưỡng triển khai theo lộ trình 90 ngày (pilot, dữ liệu, phê duyệt, vận hành chính thức)
@@ -330,6 +356,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
   effective_date: null
+  provenance_level: claim
 - record: L3F.2.015
   content: 'Pin HERA có thông số 44,4 V và 35.000 mAh, trạng thái Source-confirmed từ hồ sơ DCMA Supporting Document,
     baseline 2026-07.
@@ -341,6 +368,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
   effective_date: null
+  provenance_level: claim
 - record: L3F.2.016
   content: 'Dải nhiệt độ vận hành khuyến cáo cho chương trình bảo dưỡng HERA là -20 đến 45 độ C (baseline 2026-07
     · PROPOSED chờ Engineering duyệt). Năng lực demonstrated riêng: bay ổn định -30 độ C validated US Army Alaska
@@ -351,6 +379,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
   effective_date: null
+  provenance_level: claim
   label: PROPOSED · chưa cam kết với khách
 - record: L3F.2.017
   content: 'RtR có bộ template làm deck tại KnowledgeBase/RtR_Deck_Templates/ gồm 5 file (01_Deck_Brief, 02_Slide_Card,
@@ -364,6 +393,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/README.md
   effective_date: '2026-07-16'
+  provenance_level: claim
 - record: L3F.2.018
   content: 'Mọi deck RtR phải đi tuần tự Gate 0-10 không nhảy cóc, bắt đầu từ Gate 0 viết một câu quyết định cần
     xin; cuối checklist có 6 red flag mà chỉ cần dính một cái là dừng phát hành (ví dụ số mô phỏng trình bày như
@@ -376,6 +406,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/04_Gates_Checklist.md
   effective_date: '2026-07-16'
+  provenance_level: claim
 - record: L3F.2.019
   content: 'Deck RtR trước khi phát hành phải chấm scorecard 100 điểm với ngưỡng: từ 85 điểm trở lên mới sẵn sàng
     trình, 75-84 cần sửa điểm yếu cụ thể, 65-74 chưa đủ thuyết phục, dưới 65 làm lại storyline/fact base.
@@ -387,6 +418,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/05_Scorecard.md
   effective_date: '2026-07-16'
+  provenance_level: claim
 - record: L3F.2.020
   content: 'Luận điểm trong deck RtR được chấm Priority Score theo công thức P = 0,30D + 0,20Pain + 0,20Delta +
     0,20Proof + 0,10Urgency; chỉ chọn tối đa 3 trụ cột giá trị có P từ 4,0 trở lên lên main deck, luận điểm 2,5
@@ -399,6 +431,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Deck_Templates/04_Gates_Checklist.md
   effective_date: '2026-07-16'
+  provenance_level: claim
 - record: L3F.2.021
   content: 'RtR có fact-sheet chính thức gửi báo chí (RtR_Factsheet_GuiAnhDong.docx, cập nhật 14/07/2026) tổng hợp
     thông tin công ty và sản phẩm phục vụ báo cáo về kinh tế tầm thấp, đầu mối là AI Officer Nguyễn Cảnh Lâm, dùng
@@ -411,6 +444,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: '2026-07-14'
+  provenance_level: claim
 - record: L3F.2.022
   content: 'Roadmap Hera 2026-2028 gồm 5 variant: V1 Hera Energy (thermal, dự kiến Q4 2026), V2 Hera Agri (multispectral
     5 kênh, Q1 2027), V3 Hera Civil (LIDAR solid-state, Q2 2027), V4 Hera Indoor (review 2027 Q2), V5 Hera Maritime
@@ -423,6 +457,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: '2026-07-14'
+  provenance_level: claim
 - record: L3F.2.030
   content: 'RtR có khung văn phong chính thức (RtR Voice & Nuance v1.0, 25/05/2026, classification P2 CONFIDENTIAL)
     chưng cất từ 2 deck CEO soạn, gồm 5 đặc tính Voice DNA, vocabulary signature, và nuance riêng cho 4 nhóm audience
@@ -435,6 +470,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Voice_Nuance_v1.md
   effective_date: '2026-05-25'
+  provenance_level: claim
 - record: L3F.2.031
   content: 'Tài liệu RtR không dùng ảnh AI-generated; chỉ dùng ảnh thật (XPO26 brochure assets, báo chí công khai
     có attribution, ảnh khách cung cấp có consent, ảnh field deployment của RtR) và mọi ảnh hero phải có caption
@@ -447,6 +483,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Voice_Nuance_v1.md
   effective_date: '2026-05-25'
+  provenance_level: claim
 - record: L3F.2.033
   content: 'RtR tổ chức Source of Truth theo doctrine 4 xuất xứ (L1 sự thật lưu sẵn vào registry, L2 sự thật dẫn
     xuất lưu công thức, L3 nghĩa vụ pháp quy vào obligations, L4 phán xét tự do đứng ngoài đường kiểm) với 3 kho
@@ -459,6 +496,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/_governance/SOT_Reorg_Methodology_v1_0.md
   effective_date: '2026-06-16'
+  provenance_level: claim
 - record: L3F.2.034
   content: 'Trước meeting khách lớn, RtR chạy Adversarial Audit Checklist đóng vai đối tác theo 7 vai audit (CFO,
     kỹ thuật, pháp chế...); mỗi mục gồm câu hỏi đối tác có khả năng hỏi, trạng thái sẵn sàng của RtR và action item,
@@ -471,6 +509,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Adversarial_Audit_Checklist_HBC_BKHCN_EVNNPT.md
   effective_date: '2026-06-12'
+  provenance_level: claim
 - record: L3F.2.035
   content: 'RtR đã audit 6 skill nội bộ ngày 07/07/2026 (vibecode-kit, registry-hygiene, refinery, rtr-3d-mission-sim,
     de-an-cncl-nafosted, de-an-skhcn-audit) bằng cách đối chiếu với vận hành thật; registry-hygiene trưởng thành
@@ -483,6 +522,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Skill_Audit_6_Skills_2026-07-07.md
   effective_date: '2026-07-07'
+  provenance_level: claim
 - record: L3F.2.037
   content: 'RtR có package chuyển giao 4 phương pháp lõi tại KnowledgeBase/PhuongPhap_ChuyenGiao/ (SOT Kernel-in-a-Box,
     Refinery, Vibecode Kit, Văn bản Nhà nước), license CC BY-SA 4.0 cho tài liệu và MIT cho code, theo mô hình chuyển
@@ -495,6 +535,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/PhuongPhap_ChuyenGiao/README.md
   effective_date: '2026-07-12'
+  provenance_level: claim
 - record: L3F.2.038
   content: 'Ba nguyên tắc chung xuyên suốt 4 phương pháp lõi của RtR: fail-loud thay vì fail-silent; tin cổng sau
     khi thấy nó cắn (cổng phải tự chứng minh bắt được lỗi); trung thực về độ tin cậy quan trọng hơn trông có vẻ
@@ -507,6 +548,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/PhuongPhap_ChuyenGiao/README.md
   effective_date: '2026-07-12'
+  provenance_level: claim
 - record: L3F.2.039
   content: 'RtR có gói "Em gửi anh Đông" v1.0 (14/07/2026) tại KnowledgeBase/Gui_Anh_Dong/: bộ công cụ hướng dẫn
     người ngoài dùng AI viết bản thảo và kiểm chứng dữ liệu, gồm 4 tập PDF và 2 skill (ai-viet, loc-va-kiem-chung),
@@ -520,6 +562,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/Gui_Anh_Dong/README.md
   effective_date: '2026-07-14'
+  provenance_level: claim
 - record: L3F.3.001
   content: 'The Sky Watch (brand-lead "Vietnam UAV Intelligence Platform") là bản đăng ký dữ liệu độc lập về UAV
     và kinh tế tầm thấp do Real-time Robotics vận hành, trong đó mỗi giá trị mang nguồn kèm mức tin cậy và phần
@@ -532,6 +575,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/STATUS-TSW.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.002
   content: 'The Sky Watch go-live công khai trên tên miền chính thức theskywatch.com (HTTPS hợp lệ) ngày 14/07/2026.
 
@@ -542,6 +586,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
   effective_date: '2026-07-14'
+  provenance_level: claim
 - record: L3F.3.003
   content: 'CMS của The Sky Watch là Directus cộng Postgres đặt sau Caddy (Caddy tự cấp HTTPS), chạy trên VPS Vultr
     tại Singapore, truy cập tại cms.theskywatch.com; chỉ Caddy hở internet ở cổng 80/443.
@@ -553,6 +598,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
   effective_date: '2026-07-14'
+  provenance_level: claim
 - record: L3F.3.004
   content: 'Tại thời điểm go-live 14/07/2026, trang chính The Sky Watch là bản tĩnh chạy trên Vercel; tên miền mua
     tại Mắt Bão, bản ghi A của tên miền gốc trỏ về Vercel.
@@ -564,6 +610,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
   effective_date: '2026-07-14'
+  provenance_level: claim
 - record: L3F.3.005
   content: 'Mã nguồn trang tĩnh The Sky Watch nằm trong repo GitHub nclamvn/usr-portal (branch main, site 100% HTML
     build sẵn commit vào repo), host tự deploy mỗi push.
@@ -575,6 +622,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/CLOUDFLARE-PAGES-SETUP.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.006
   content: 'Lớp dữ liệu The Sky Watch tại mốc v1 code-side đóng gồm 733 thực thể: 500 UAV, 233 doanh nghiệp, 39
     quốc gia, 13 phân khúc.
@@ -586,6 +634,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/STATUS-TSW.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.007
   content: 'The Sky Watch thực thi bất biến dữ liệu (zero-fab, honest-null hai chiều, disputed-keep-all, provenance
     phân tầng) bằng khoảng 40 gate verify_* cộng 33 teeth_* nối trong build_all.sh; gate đỏ thì không deploy.
@@ -597,6 +646,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/STATUS-TSW.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.008
   content: 'Kỷ luật biên tập The Sky Watch: bài analysis lập luận bắt buộc có human_author người thật trong contributors.yaml;
     bài do pipeline sinh là data-report ngôi ba không kê đơn; cấm byline bịa; mọi bài nhắc RtR/HERA bắt buộc có
@@ -609,6 +659,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/STATUS-TSW.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.009
   content: 'Bài flagship của The Sky Watch là op-ed Section 848 "Việt Nam chọn phe" ký tên thật Nguyễn Cảnh Lâm,
     đặt làm mặt tiền ANALYSIS/01 và có công bố lợi ích.
@@ -620,6 +671,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/STATUS-TSW.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.010
   content: 'Nền tảng đổi tên từ USR sang The Sky Watch trước go-live; danh tính xuất bản: Organization/publisher
     là The Sky Watch, site_name là VUIP, operator là RtR; toàn bộ 1012 trang canonical/og/sitemap/robots trỏ theskywatch.com.
@@ -631,6 +683,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/STATUS-TSW.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.011
   content: 'Directus của The Sky Watch self-host theo MSCL free tier (dưới ngưỡng doanh thu và nhân sự, kể cả production);
     free MSCL giới hạn 3 seat, thêm biên tập viên cần grant LICENSE_KEY hoặc bản trả phí.
@@ -642,6 +695,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/STATUS-TSW.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.012
   content: 'Giai đoạn 1 (GD1) của The Sky Watch gồm 5 cấu phần database (Database Drone, Hồ sơ doanh nghiệp, Bộ
     thuật ngữ, Văn bản pháp luật, Quy trình cấp phép bay kèm biểu mẫu); bản đối chiếu 13/07/2026 kết luận khung
@@ -654,6 +708,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/DOI-CHIEU-GD1.md
   effective_date: '2026-07-13'
+  provenance_level: claim
 - record: L3F.3.013
   content: 'The Sky Watch có trang quy trình cấp phép bay 24 bước (3 mục vòng đời) kèm 13 biểu mẫu link về trang
     scan, và hồ sơ Nghị định 288/2025 gồm bản scan ký số cộng trích nguyên văn Điều 3/4/19/27/34 cộng tóm lược dẫn
@@ -666,6 +721,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/DOI-CHIEU-GD1.md
   effective_date: '2026-07-13'
+  provenance_level: claim
 - record: L3F.3.014
   content: 'Phân vai vận hành GD1 The Sky Watch: Duân phụ trách web-cms cùng theo dõi tin và bài nền; Lâm phụ trách
     web-cms, database drone, database doanh nghiệp, thuật ngữ, văn bản pháp luật, cấp phép bay, công cụ so sánh;
@@ -678,6 +734,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/DOI-CHIEU-GD1.md
   effective_date: '2026-07-13'
+  provenance_level: claim
 - record: L3F.3.015
   content: 'Hệ thành viên và hàng đợi biên tập của The Sky Watch triển khai trên Directus production (image directus/directus:12.1.1)
     theo nguyên tắc fail-closed: đăng ký công khai chỉ bật sau khi schema, quyền sở hữu, SMTP và Flow kiểm xong;
@@ -690,6 +747,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/MEMBER-EDITORIAL-DEPLOY.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.016
   content: 'Xương sống tuân thủ (tier-A) của registry The Sky Watch: trường blue_uas ghi 26 đạt / 114 loại / 360
     chưa rõ, trường ndaa_compliant ghi 28 / 114 / 358; riêng RtR được để honest-null ở blue_uas vì FCC-conditional
@@ -702,6 +760,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/STATUS-TSW.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.3.021
   content: 'CEO-template.pptx là file template PPTX theo phong cách CEO được lưu và dùng trong pipeline dựng deck
     tại project_HaiPhong/_output (bản render PDF cùng pipeline mang tên HaiPhong_Deck_v3_CEO_Style.pdf).
@@ -713,6 +772,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/project_HaiPhong/_output/CEO-template.pptx
   effective_date: null
+  provenance_level: claim
 - record: L3F.4.001
   content: 'RtR CRM (folder crm) là nền tảng sales và operations nội bộ của RtR: quản lý contacts/companies, pipeline
     deal theo gate compliance, báo giá/đơn hàng/hóa đơn, quản lý fleet, email tích hợp Gmail có routing theo pháp
@@ -727,6 +787,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/crm/PROJECT_XRAY.md
   effective_date: '2026-05-29'
+  provenance_level: claim
 - record: L3F.4.002
   content: 'RtR IP Filing Assistant (folder ip) là nền tảng quản lý sáng chế enterprise phục vụ 80+ nhân viên, phủ
     trọn vòng đời IP từ quản lý tài sản (DAM), phân tích sáng chế có AI hỗ trợ (3 AI persona, multi-model Claude/OpenAI/Gemini)
@@ -740,6 +801,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/ip/PROJECT_XRAY.md
   effective_date: '2026-03-04'
+  provenance_level: claim
 - record: L3F.4.003
   content: 'RTR-MRP (folder rtr-mrp) là hệ thống hoạch định nguồn lực sản xuất (Material Requirements Planning)
     toàn diện cho sản xuất drone và thiết bị công nghệ cao: hoạch định vật tư ATP/CTP/Pegging, work orders + capacity
@@ -754,6 +816,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-mrp/README.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.4.004
   content: 'VietERP MRP (folder rtr-mrp-v2) là biến thể đổi thương hiệu của RTR-MRP: README gần như trùng nguyên
     văn với rtr-mrp (chỉ đổi tên hệ thống và thay "drone" bằng "product"), cùng chức năng MRP + quản lý sản xuất
@@ -767,6 +830,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-mrp-v2/README.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.4.005
   content: 'Folder rtr-pm không có doc ở gốc nhưng chứa nguyên một bản app RtR Control Tower (rtr-pm/RtR-ControlTower,
     kèm README, Blueprint, X-Ray và ảnh QA): bảng điều khiển trung tâm cho dự án phát triển drone, theo dõi tiến
@@ -780,6 +844,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-pm/RtR-ControlTower/README.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.4.006
   content: 'RtR Control Tower bản Supabase full-module (folder rtr-quanlyduan) là dashboard tình báo dự án real-time
     cho vận hành sản xuất drone RtR: phase-gate management, issue tracking, supply chain, flight testing, production,
@@ -794,6 +859,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-quanlyduan/README.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.4.007
   content: 'RTR DroneVerse (folder rtr-simulator) là hệ thống mô phỏng UAV chiến thuật đa nhiệm vụ của RtR: 14 mission
     đa pha, bản đồ vệ tinh Esri tọa độ GPS thật, 4 chế độ xem (map/3D/radar/split), AI tích hợp cho scenario generation,
@@ -807,6 +873,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-simulator/README.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.4.008
   content: 'Hệ thống rtr-twin (folder rtr-twin) tồn tại trong /Users/os/RtR/ nhưng folder rỗng hoàn toàn: chưa có
     tài liệu mô tả, chưa xác định được mục đích, trạng thái, tech stack hay owner.
@@ -818,6 +885,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-twin/
   effective_date: null
+  provenance_level: claim
 - record: L3F.4.009
   content: 'Hệ thống controltower (folder controltower) tồn tại trong /Users/os/RtR/ nhưng folder rỗng hoàn toàn:
     chưa có tài liệu mô tả, chưa xác định được mục đích, trạng thái, tech stack hay owner.
@@ -829,6 +897,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/controltower/
   effective_date: null
+  provenance_level: claim
 - record: L3F.4.010
   content: 'The Sky Watch (folder rtr-news) là nền tảng tin tức và kiến thức UAV công khai của RtR, đã production:
     go-live tên miền chính thức theskywatch.com ngày 14/07/2026 với HTTPS hợp lệ, CMS tại cms.theskywatch.com; kiến
@@ -842,6 +911,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-news/BAO-CAO-GOLIVE-THESKYWATCH.md
   effective_date: '2026-07-14'
+  provenance_level: claim
 - record: L3F.4.011
   content: 'Website công ty RtR (folder rtr-website) là site rtrobotics.com xây trên Next.js App Router: các vertical
     defense/commercial/OEM, blog/news/careers qua Sanity CMS, digital business card NFC/QR, và nền tảng Booth PWA
@@ -855,6 +925,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-website/PROJECT_XRAY.md
   effective_date: '2026-05-08'
+  provenance_level: claim
 - record: L3F.4.012
   content: 'Hệ thống utm (folder utm) tồn tại trong /Users/os/RtR/ nhưng folder rỗng hoàn toàn: chưa có tài liệu
     mô tả, chưa xác định được mục đích, trạng thái, tech stack hay owner.
@@ -866,6 +937,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/utm/
   effective_date: null
+  provenance_level: claim
 - record: L3F.4.013
   content: 'RtR Control Tower (folder rtr-ctl-fresh) là ứng dụng web quản lý toàn diện vòng đời phát triển sản phẩm
     drone: dashboard KPI, issues, quality gates, cây BOM, team/phân quyền (Admin/Engineer/Viewer), audit log, real-time
@@ -879,6 +951,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/rtr-ctl-fresh/README.md
   effective_date: null
+  provenance_level: claim
 - record: L3F.RES.001
   content: Dòng sensor RGB + Thermal của Hera có tên chính thức là HeraSight LR. Tên kỹ thuật 61T vẫn được dùng
     nội bộ để chỉ việc dòng này dùng cảm biến 61 megapixel của Sony. Hai tên cùng một sản phẩm.
@@ -888,6 +961,7 @@ records:
   kernel_ref: null
   source: Lâm confirm 27/07/2026 · DISP.001
   effective_date: '2026-07-27'
+  provenance_level: verified_primary
 - record: L3F.RES.002
   content: 'CEO Lương Việt Quốc là Tiến sĩ Kinh tế Phát triển tại UC Berkeley. Hành trình học tập theo học bổng:
     Fulbright, Cornell, rồi UC Berkeley.'
@@ -897,6 +971,7 @@ records:
   kernel_ref: null
   source: Lâm confirm 27/07/2026 · DISP.008 · khớp HOSO 6 đề án
   effective_date: '2026-07-27'
+  provenance_level: verified_primary
 - record: L3F.RES.003
   content: 'Trạng thái Blue UAS (cập nhật 28/07/2026): HERA ĐÃ chính thức trên DCMA Blue UAS cleared list. Hồ sơ
     (trước đó dưới DoW Conditional Approval) đã hoàn tất; nay HERA được liệt kê chính thức là cleared.'
@@ -906,6 +981,7 @@ records:
   kernel_ref: null
   source: Lâm (SOT curator) xác nhận 28/07/2026 · DISP.011 đã đóng
   effective_date: '2026-07-28'
+  provenance_level: verified_primary
 - record: L3F.ENT.001
   content: 'Tên pháp nhân Việt Nam dùng trên văn bản chính thức: CÔNG TY CỔ PHẦN REAL-TIME ROBOTICS VIỆT NAM (viết
     tắt RTR). Đây là tên đứng trên phần tiêu đề công văn gửi cơ quan nhà nước. Phân biệt với pháp nhân Hoa Kỳ (xem
@@ -916,6 +992,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/HoSo_CNCL_2_Cay_Che_SauRieng/00_GUI_DI/A_Gui_Vinatea/00_CongVan_1906_2026_CV_RTR.docx
   effective_date: null
+  provenance_level: null
 - record: L3F.ENT.002
   content: 'Real-time Robotics (RtR) là công ty Việt Nam nghiên cứu, phát triển và sản xuất hệ thống UAV (drone)
     cùng giải pháp trí tuệ nhân tạo biên (Edge AI). Hai nền tảng chính: HERA (ISR đa nhiệm · xem L3F.PRD.001) và
@@ -927,6 +1004,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: null
+  provenance_level: null
 - record: L3F.CMP.001
   content: 'Ưu thế cạnh tranh định lượng của HERA so với UAV tactical/thương mại thông thường (gồm lớp DJI): (1)
     Signature 1-4-14 — 1 chiến sĩ triển khai, 4 payload đồng thời một chuyến bay, 14 kg full-load (US: 30 lb); baseline
@@ -940,6 +1018,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/kernel/source_canonical/RtR_Product_Quantitative_Advantages.xlsx
   effective_date: null
+  provenance_level: claim
 - record: L3F.REC.001
   content: 'RtR có các dấu công nhận và cột mốc công khai: (1) được Phó Thủ tướng Chính phủ công nhận là "cánh chim
     đầu đàn" của hệ sinh thái drone Việt Nam (phát biểu chính thức 2024, báo chí TW + địa phương); (2) Giải Vàng
@@ -951,6 +1030,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: null
+  provenance_level: claim
 - record: L3F.BRD.002
   content: 'Sứ mệnh và triết lý thương hiệu RtR: sứ mệnh "Drone Innovation to Advance Humanity" (đổi mới drone vì
     tiến bộ nhân loại); doctrine thương hiệu "Invent. Build. Prove." (Sáng chế · Chế tạo · Chứng minh); định vị
@@ -961,6 +1041,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: null
+  provenance_level: claim
 - record: L3F.CAP.001
   content: 'Năng lực quốc phòng và định vị allied của RtR (nội bộ): (1) hợp tác/triển khai với US Army 11th Airborne
     (sự kiện training 01/2026); (2) khách quốc phòng Israel qua Protrack; (3) được chính phủ chọn cho nhiệm vụ chiến
@@ -972,6 +1053,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: null
+  provenance_level: claim
 - record: L3F.CAP.002
   content: 'Hệ sinh thái đối tác và kênh của RtR (nội bộ): phân phối Mỹ qua RMUS (non-exclusive); mạng đối tác 12+
     nhà cung cấp công nghệ; các MoU và dự án trong hệ sinh thái Việt Nam; khả năng hợp tác với đơn vị nhà nước (Z115).
@@ -983,6 +1065,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: null
+  provenance_level: claim
 - record: L3F.PRD.001
   content: 'HERA là nền tảng UAV đa nhiệm chủ lực của Real-time Robotics, dùng cho ISR (trinh sát, giám sát) và
     các nhiệm vụ dân sự. Đặc điểm định danh là signature 1-4-14: MỘT người triển khai, BỐN payload mang đồng thời
@@ -999,6 +1082,7 @@ records:
   kernel_ref: null
   source: (tổng hợp trong kernel · không có nguồn ngoài mới)
   effective_date: null
+  provenance_level: derived_from_verified
 - record: L3F.RES.004
   content: 'Người đứng đầu Real-time Robotics là TS. Lương Việt Quốc, nhà sáng lập kiêm CEO (Founder & CEO). Ông
     là Tiến sĩ Kinh tế Phát triển tại UC Berkeley, đi lên bằng học bổng Fulbright rồi Cornell rồi UC Berkeley (L3F.RES.002,
@@ -1013,6 +1097,7 @@ records:
   kernel_ref: null
   source: (tổng hợp trong kernel · không có nguồn ngoài mới)
   effective_date: null
+  provenance_level: derived_from_verified
 - record: CAND.1.005
   content: 'HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.
 
@@ -1023,6 +1108,7 @@ records:
   kernel_ref: HC-001
   source: /Users/os/RtR/XPO26/Product description V2/2. HERA Brochure_Quoc_ 250506.xlsx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.006
   content: 'HERA bay tối đa 56 phút không tải và 40 phút khi mang payload 5.7 lb.
 
@@ -1033,6 +1119,7 @@ records:
   kernel_ref: HC-001
   source: /Users/os/RtR/XPO26/Product description V2/2. HERA Brochure_Quoc_ 250506.xlsx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.007
   content: '[SPEC CŨ · RENAME-01: HeraLink đã đổi tên thành HeraHub · spec hiện hành là LCD 1280x800, 1800 nits,
     xem CAND.1.009] Tài liệu HeraLink v2.0 (thế hệ trước) mô tả GCS với màn 10.1 inch LCD 1920x1200 độ sáng 1200
@@ -1046,6 +1133,7 @@ records:
   kernel_ref: HC-017 + RENAME-01
   source: /Users/os/RtR/XPO26/Product description V2/3. HeraLink_v2.0docx.xlsx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.009
   content: 'Company Knowledge Base v2.0 vẫn mô tả HeraHub với màn hình 2000-nit, giá trị đã bị kernel thay bằng
     1800 nits cho HeraHub từ 16/07/2026.
@@ -1057,6 +1145,7 @@ records:
   kernel_ref: HC-017
   source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.010
   content: 'VEGA có trọng lượng cất cánh không tải 38.4 lbs (17.4 kg), MTOW 82.4 lbs (37.4 kg) với 44 lbs payload,
     bay 60 phút không tải, tầm điều khiển 10 km, chịu gió 13 m/s Beaufort 6.
@@ -1068,6 +1157,7 @@ records:
   kernel_ref: HC-002
   source: /Users/os/RtR/XPO26/Product description V2/Vega Brochure_20260429.xlsx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.013
   content: 'OmniSight là gimbal dual-pod AI đầu tiên trên thế giới, mỗi pod mang nhiều sensor EO-IR và laser rangefinder,
     pan/tilt 360 độ độc lập hoặc đồng bộ, độ rung góc ±0.005 độ, có 3 chế độ vận hành (Wide Horizon, Focus & Context,
@@ -1080,6 +1170,7 @@ records:
   kernel_ref: HC-013
   source: /Users/os/RtR/XPO26/Product description V2/5. OmniSight Gimbal – Chameleon Eyes.xlsx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.015
   content: 'DualSight có 2 camera RGB Sony FCB-EV9520L (30X optical + 12X digital mỗi camera), 2 thermal FLIR Boson/Boson+
     640x512 NETD ≤20 mK, nặng 1830±30 g, Edge AI Jetson Orin NX 100 TOPS, laser rangefinder cấu hình 2/4/6 km, real-time
@@ -1092,6 +1183,7 @@ records:
   kernel_ref: HC-012
   source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.016
   content: 'SkyWatch 360 là một HERA bay tether mang 3 DualSight đồng bộ, cho 6 luồng video đồng thời giám sát 360
     độ liên tục ở độ cao tối đa 100 m với thời gian bay không giới hạn nhờ nguồn qua dây.
@@ -1103,6 +1195,7 @@ records:
   kernel_ref: HC-014
   source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.017
   content: 'Loudspeaker LS1 dùng lõi siren-speaker police-grade Whelen WSSC Series, phát 120 dB đo tại 1 m, tầm
     phủ hiệu quả 300 m, công suất 30W, 10 tone siren Scan-Lock chọn được, gimbal ổn định 2 trục.
@@ -1114,6 +1207,7 @@ records:
   kernel_ref: HC-015
   source: /Users/os/RtR/XPO26/Product description V2/LoudSpeaker LS1 Brochure_20260429 (1).xlsx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.018
   content: 'Spotlight S1 chiếu 50 lux tại 50 m và 13 lux tại 100 m, công suất 80W, beam 15 độ, màu 6500K, strobe
     5 Hz, gimbal ổn định 3 trục, đạt eye safety IEC 62471 Risk Group 1.
@@ -1125,6 +1219,7 @@ records:
   kernel_ref: HC-016
   source: /Users/os/RtR/XPO26/Product description V2/Spotlight S1 Brochure_20260429 (2).xlsx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.021
   content: 'Trên company card thị trường Mỹ, signature sản phẩm dùng đơn vị pound: HERA 1-4-30 và VEGA 1-4-44.
 
@@ -1135,6 +1230,7 @@ records:
   kernel_ref: HC-001
   source: /Users/os/RtR/XPO26/RtR-Company-Card-Brief.docx
   effective_date: null
+  provenance_level: null
 - record: CAND.1.036
   content: 'Company Knowledge Base v2.0 ghi RMUS là "U.S. exclusive reseller" của RtR.
 
@@ -1145,6 +1241,7 @@ records:
   kernel_ref: SC-015 + D6
   source: /Users/os/RtR/rtr-website/RtR_Company_Knowledge_Base.docx
   effective_date: '2026-05-18'
+  provenance_level: null
 - record: CAND.2.005
   content: 'Danh mục sản phẩm chuẩn trong dropdown "RtR Product" của Sales Brief gồm 16 giá trị: HERA, VEGA, HERA
     + VEGA, HeraHub, VegaHub, HeraSight, HeraSight LR, VegaSight, OmniSight, DualSight, SkyWatch 360, LiDAR, RAGAS,
@@ -1157,6 +1254,7 @@ records:
   kernel_ref: HC-056 · HC-057 · HC-058
   source: /Users/os/RtR/KnowledgeBase/Sales_Brief_System/skill_sales-brief-fill/scripts/cell_map.json
   effective_date: null
+  provenance_level: null
 - record: CAND.2.013
   content: '[SPEC CŨ · ĐÃ ĐÓNG 27/07/2026: curator chốt IP43 là số cũ chưa cập nhật · hiện hành IP54 · xem L3R.K.006]
     Ghi nhận lịch sử: baseline bảo dưỡng HERA từng ghi kháng bụi/nước IP43 theo HERA Specification và yêu cầu Engineering
@@ -1170,6 +1268,7 @@ records:
   kernel_ref: HC-042
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
   effective_date: null
+  provenance_level: null
 - record: CAND.2.014
   content: '[SPEC CŨ · ĐÃ ĐÓNG 27/07/2026: curator chốt 10 km là số cũ chưa cập nhật · hiện hành 15 km · xem L3R.K.007]
     Ghi nhận lịch sử: baseline bảo dưỡng HERA từng ghi tầm điều khiển 10 km và ghi chú tài liệu khác có 15 km, trong
@@ -1182,6 +1281,7 @@ records:
   kernel_ref: HC-001
   source: /Users/os/RtR/KnowledgeBase/RtR_Maintenance_CRM/RtR_Maintenance_Program/01_CRM_Bao_Duong_HERA.xlsx
   effective_date: null
+  provenance_level: null
 - record: CAND.2.023
   content: 'RtR có 4 bằng sáng chế đã được cấp và 10 bằng sáng chế đang trong quá trình xét duyệt (theo factsheet
     báo chí 14/07/2026).
@@ -1193,6 +1293,7 @@ records:
   kernel_ref: SPEC_CHANGELOG (4 patent đã cấp + 10 đang xét duyệt) · CEO_STRATEGIC_STANCE_2026-07-01
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: '2026-07-14'
+  provenance_level: null
 - record: CAND.2.024
   content: 'Ngày 22/06/2026, FCC Hoa Kỳ ban hành quyết định DA-26-616A1 miễn trừ Hera khỏi lệnh cấm nhập khẩu UAV;
     tại thời điểm ban hành đây là sản phẩm UAV duy nhất tại châu Á được FCC miễn trừ, phân phối được cho cả thị
@@ -1205,6 +1306,7 @@ records:
   kernel_ref: SPEC_CHANGELOG (Hera FCC miễn trừ 22/06/2026) · CEO_STRATEGIC_STANCE_2026-07-01
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: '2026-06-22'
+  provenance_level: null
 - record: CAND.2.025
   content: 'Ngày 22/12/2025, Hoa Kỳ ban hành lệnh cấm nhập khẩu UAV từ tất cả các nước bao gồm mọi đồng minh, xác
     định phụ thuộc UAV nhập khẩu là rủi ro an ninh quốc gia.
@@ -1216,6 +1318,7 @@ records:
   kernel_ref: CEO_STRATEGIC_STANCE_2026-07-01 (mục bối cảnh 22/12/2025)
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: '2025-12-22'
+  provenance_level: null
 - record: CAND.2.026
   content: 'Năm 2027 RtR có kế hoạch mở nhà máy sản xuất Hera tại Hoa Kỳ theo mô hình xuất khẩu công nghệ: phần
     giá trị cao thiết kế và lập trình đặt tại Việt Nam, phần chế tạo và lắp ráp đặt tại Hoa Kỳ.
@@ -1227,6 +1330,7 @@ records:
   kernel_ref: POSITIONING_5CHAN_2026-07-03 (chân 7 · nhà máy Hoa Kỳ 2027) · CEO_STRATEGIC_STANCE_2026-07-01
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: null
+  provenance_level: null
 - record: CAND.2.027
   content: 'CEO sáng lập RtR là Lương Việt Quốc, Tiến sĩ tại UC Berkeley, từng theo học Cornell (Hoa Kỳ) và Fulbright
     (Việt Nam), với định hướng sáng lập "vượt thế giới hoặc phá sản".
@@ -1238,6 +1342,7 @@ records:
   kernel_ref: OC-001 · CEO_STRATEGIC_STANCE_2026-07-01
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: '2026-07-14'
+  provenance_level: null
 - record: CAND.2.028
   content: 'Bảng spec HERA trong factsheet báo chí (MTOW 30,5 kg, payload 14 kg 4 khoang, 56 phút, 15 km, Edge AI
     105 TOPS, gấp 14x, trạng thái đang giao thương mại) khớp spec hiện hành kernel HC-001; bảng VEGA (37,4 kg, 20
@@ -1250,6 +1355,7 @@ records:
   kernel_ref: HC-001 · HC-002
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: '2026-07-14'
+  provenance_level: null
 - record: CAND.2.029
   content: 'Con số "8,5/9 công nghệ lõi do RtR làm chủ" và "5/9 công nghệ lõi trên chuẩn quốc tế" là con số RtR
     tự đánh giá theo phương pháp so sánh với sản phẩm cùng lớp của Hoa Kỳ và Ukraine, và khi trích dẫn ra ngoài
@@ -1262,6 +1368,7 @@ records:
   kernel_ref: SC-020
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: '2026-07-14'
+  provenance_level: null
 - record: CAND.2.032
   content: 'Từ vựng cấm trong mọi tài liệu RtR: em-dash, AI-tell hyphen-fluff (next-generation, world-class, cutting-edge...),
     tính từ mơ hồ không có số (nhiều, tốt nhất, tiên tiến...) và marketing fluff (đối tác tin cậy, vì một tương
@@ -1274,6 +1381,7 @@ records:
   kernel_ref: DOCTRINE_1PAGE rule 4 (KHÔNG em-dash U+2014)
   source: /Users/os/RtR/KnowledgeBase/_governance/RtR_Voice_Nuance_v1.md
   effective_date: '2026-05-25'
+  provenance_level: null
 - record: CAND.3.030
   content: 'RtR (pháp nhân Hoa Kỳ), do Dr. Lương Việt Quốc sáng lập, được thành lập năm 2014. Đây là mốc thành lập
     entity Hoa Kỳ, phân biệt với pháp nhân Việt Nam (Công ty CP Real-time Robotics Việt Nam) thành lập 2017 (xem
@@ -1286,6 +1394,7 @@ records:
   kernel_ref: OC-001
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: null
+  provenance_level: null
 - record: CAND.3.031
   content: 'Nhà máy / trung tâm R&D và sản xuất của RtR đặt tại Lot I-4b-4.2 Road N3, Saigon Hi-Tech Park (SHTP),
     TP Thủ Đức. Đây là facility engineering, phân biệt với địa chỉ trụ sở ĐKKD 40/10 Khổng Tử (xem CAND.3.026).
@@ -1297,6 +1406,7 @@ records:
   kernel_ref: OC-020
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: null
+  provenance_level: null
 - record: L3R.K.001
   content: 'Signature sản phẩm hiện hành thị trường VN: HERA 1-4-14 (1 người vận hành, 4 khoang hàng, 14 kg payload)
     và VEGA 1-4-20 (payload 20 kg / 44 lb). Thị trường Mỹ dùng đơn vị pound trên company card: HERA 1-4-30, VEGA
@@ -1309,6 +1419,7 @@ records:
   kernel_ref: HC-001 + doctrine signature-unit-per-market
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: '2026-07-16'
+  provenance_level: null
 - record: L3R.K.002
   content: 'HERA 2.0 cấu hình US (FAA Part 107): trọng lượng không tải 16 kg (đã gồm pin), payload 9 kg (20 lb),
     MTOW không quá 25 kg (55 lb) đúng trần Part 107. HERA có hai cấu hình theo thị trường: bản VN payload 14 kg
@@ -1321,6 +1432,7 @@ records:
   kernel_ref: HC-001
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: '2026-07-16'
+  provenance_level: null
 - record: L3R.K.003
   content: 'VegaHub (GCS cho VEGA) dùng màn hình 2000 nits phục vụ vận hành tactical ngoài trời. Spec tách riêng
     với HeraHub (LCD 1280x800, 1800 nits) từ 16/07/2026; trước đó hai thiết bị dùng chung mô tả.
@@ -1332,6 +1444,7 @@ records:
   kernel_ref: HC-019 + HC-017
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: '2026-07-16'
+  provenance_level: null
 - record: L3R.K.004
   content: 'Payload HERA 15 kg (33 lb) là spec CŨ; spec hiện hành là 14 kg (signature 1-4-14). Việc đổi 15 kg sang
     14 kg diễn ra TRƯỚC ngày 27/07/2026 nhưng chưa xác định được mốc chính xác, nên không ghi ngày hiệu lực cho
@@ -1346,6 +1459,7 @@ records:
   kernel_ref: SPEC_CHANGELOG 2026-07-27 LEGACY-TAG (ngày rà soát · không phải ngày đổi spec)
   source: /Users/os/RtR/kernel/_dist/LEGACY_HERA_15KG_MANIFEST.md
   effective_date: null
+  provenance_level: null
 - record: L3R.K.005
   content: 'Văn bản gửi cơ quan nhà nước (công văn, tờ trình, báo cáo, email chính thức) soạn theo bộ văn phong
     chuẩn RtR: thể thức đúng Nghị định 30/2020/NĐ-CP, 7 nguyên tắc điều hành, 3 mức đề nghị, vốn từ chuẩn hoá, checklist
@@ -1358,6 +1472,7 @@ records:
   kernel_ref: toolkit rtr-van-phong-nha-nuoc
   source: /Users/os/RtR/kernel/_dist/toolkits/
   effective_date: null
+  provenance_level: null
 - record: L3R.K.006
   content: 'Chuẩn kháng bụi nước của HERA là IP54 (kernel HC-042, provenance verified_primary, certified). Con số
     IP43 từng xuất hiện trong baseline workbook bảo dưỡng là SỐ CŨ chưa cập nhật, curator chốt ngày 27/07/2026 và
@@ -1370,6 +1485,7 @@ records:
   kernel_ref: HC-042 + DISP.005 đóng 2026-07-27
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: '2026-07-27'
+  provenance_level: null
 - record: L3R.K.007
   content: 'Tầm điều khiển HERA là 15 km (kernel HC-001, chốt CEO 16/07/2026). Con số 10 km trong baseline workbook
     bảo dưỡng là SỐ CŨ chưa cập nhật, curator chốt 27/07/2026 và đã sửa trong file gốc. Lưu ý phân biệt: 10 km là
@@ -1382,6 +1498,7 @@ records:
   kernel_ref: HC-001 + HC-002 + DISP.006 đóng 2026-07-27
   source: /Users/os/RtR/kernel/registry/capabilities.yaml
   effective_date: '2026-07-27'
+  provenance_level: null
 - record: PRICE.HERA.MSRP.US
   content: 'Giá bán nội bộ · HERA US list price: 64900 USD · ghi chú: Stay competitive vs IF1200 ($60-62K)'
   domain: pricing
