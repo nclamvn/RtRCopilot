@@ -145,19 +145,51 @@ def _luu(acc):
 
 
 # ---------------------------------------------------------------- mật khẩu
-def bam(pw, salt=None):
-    """scrypt · tham số theo khuyến nghị hiện hành, đủ chậm để dò offline không kinh tế."""
+# scrypt là lựa chọn đầu (memory-hard, chống dò bằng GPU tốt hơn). NHƯNG nó do
+# OpenSSL cung cấp, mà macOS bản hệ thống dựng trên LibreSSL — LibreSSL KHÔNG có
+# scrypt, nên hashlib.scrypt không tồn tại trên đúng cái máy chạy pilot.
+# Phát hiện 29/07 khi bộ test dừng giữa chừng ở máy Lâm.
+#
+# Nên có đường lùi pbkdf2_hmac: luôn có trong thư viện chuẩn, không phụ thuộc
+# OpenSSL. Yếu hơn scrypt trước GPU nhưng vẫn là KDF đúng nghĩa, và yếu hơn nhiều
+# vẫn hơn hẳn "không chạy được". Chuỗi lưu ghi RÕ thuật toán ở đầu để một hash tạo
+# bằng cách này vẫn kiểm được bằng cách kia.
+CO_SCRYPT = hasattr(hashlib, "scrypt")
+PBKDF2_VONG = int(os.environ.get("COPILOT_PBKDF2_VONG", "600000"))
+
+
+def bam(pw, salt=None, ep_pbkdf2=False):
     salt = salt or secrets.token_bytes(16)
-    n, r, p = 2 ** 14, 8, 1
-    h = hashlib.scrypt(pw.encode(), salt=salt, n=n, r=r, p=p, dklen=32)
-    return f"scrypt${n}${r}${p}${salt.hex()}${h.hex()}"
+    if CO_SCRYPT and not ep_pbkdf2:
+        n, r, p = 2 ** 14, 8, 1
+        h = hashlib.scrypt(pw.encode(), salt=salt, n=n, r=r, p=p, dklen=32)
+        return f"scrypt${n}${r}${p}${salt.hex()}${h.hex()}"
+    h = hashlib.pbkdf2_hmac("sha256", pw.encode(), salt, PBKDF2_VONG, 32)
+    return f"pbkdf2${PBKDF2_VONG}${salt.hex()}${h.hex()}"
+
+
+def kdf_cua(luu):
+    return (luu or "").split("$", 1)[0]
+
+
+def kiem_duoc(luu):
+    """Máy này có kiểm được hash kiểu đó không · dùng để báo lỗi cho ĐÚNG nguyên nhân."""
+    k = kdf_cua(luu)
+    return k == "pbkdf2" or (k == "scrypt" and CO_SCRYPT)
 
 
 def khop_mat_khau(pw, luu):
     try:
-        _, n, r, p, salt, h = luu.split("$")
-        thu = hashlib.scrypt(pw.encode(), salt=bytes.fromhex(salt),
-                             n=int(n), r=int(r), p=int(p), dklen=32)
+        phan = luu.split("$")
+        if phan[0] == "pbkdf2":
+            _, it, salt, h = phan
+            thu = hashlib.pbkdf2_hmac("sha256", pw.encode(), bytes.fromhex(salt), int(it), 32)
+        elif phan[0] == "scrypt":
+            _, n, r, p, salt, h = phan
+            thu = hashlib.scrypt(pw.encode(), salt=bytes.fromhex(salt),
+                                 n=int(n), r=int(r), p=int(p), dklen=32)
+        else:
+            return False
         return hmac.compare_digest(thu.hex(), h)
     except Exception:
         return False
@@ -482,6 +514,12 @@ def dang_nhap(email, mat_khau):
     if not nhip_ok("login:" + e, 10, 900):
         return None, "Sai quá nhiều lần · chờ 15 phút rồi thử lại", None
     acc = tim(e)
+    # Hash tạo ở máy CÓ scrypt rồi chuyển accounts.json sang máy KHÔNG có (hoặc ngược
+    # lại) thì không kiểm được. Phải báo đúng nguyên nhân: nói "sai mật khẩu" ở đây là
+    # đẩy người ta gõ lại mãi một mật khẩu vốn đúng, và giấu mất lỗi hệ thống thật sự.
+    if acc and not kiem_duoc(acc["pw"]):
+        return None, ("Máy chủ này không kiểm được mật khẩu đã lưu "
+                      f"(cần {kdf_cua(acc['pw'])}) · báo quản trị viên đặt lại mật khẩu"), None
     # Cùng một câu báo lỗi cho "không có tài khoản" và "sai mật khẩu": báo tách ra là
     # cho người ngoài dò được ai đang có tài khoản trong công ty.
     sai = "Email hoặc mật khẩu không đúng"
@@ -596,7 +634,9 @@ if __name__ == "__main__":
         print(dat_vai(sys.argv[2], sys.argv[3], "dòng lệnh"))
     else:
         print(__doc__)
-        print(f"\nTên miền cho phép: {', '.join(DOMAINS)}")
+        print(f"\nBăm mật khẩu: {'scrypt' if CO_SCRYPT else f'pbkdf2-sha256 {PBKDF2_VONG:,} vòng'}"
+              + ("" if CO_SCRYPT else "  (máy này không có scrypt · thường là macOS/LibreSSL)"))
+        print(f"Tên miền cho phép: {', '.join(DOMAINS)}")
         print(f"Quản trị viên gốc: {ADMIN_EMAIL or '(chưa khai COPILOT_ADMIN_EMAIL)'}")
         print(f"SMTP: {'đã cấu hình' if smtp_san_sang() else 'CHƯA cấu hình'}")
         print(f"Tài khoản: {json.dumps(thong_ke(), ensure_ascii=False)}")

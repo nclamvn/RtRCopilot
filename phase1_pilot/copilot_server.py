@@ -258,6 +258,50 @@ def is_ubiq(t):
 def idf(t):
     return max(0.0, math.log((N + 1) / (DF.get(t, 0) + 1)) + 0.1)
 
+# Dung sai gõ sai chính tả (tester ảo 28/07, persona "ma sát thật"): người gõ trên điện thoại
+# đánh "Payloat" thay "Payload" → token lạ, khớp rỗng → honest-null oan (giấu tri thức đã có).
+# Sửa GỐC: token query KHÔNG có trong từ vựng nguồn mà cách ĐÚNG MỘT phép sửa (Levenshtein<=1) so
+# với đúng MỘT từ vựng nội-dung → coi là gõ nhầm, thêm từ đúng. Chỉ chạm QUERY (không đụng index).
+# Ba khoá chặn nới-quá (two-way regression — nới chiều xuôi thì khoá chiều ngược cùng lần sửa):
+#   1. Chỉ sửa token LẠ (không có trong DF) → từ hợp lệ không bao giờ bị đụng, không vỡ chiều xuôi.
+#   2. len>=5 cả token lẫn đích → từ ngắn (hera/vega/nits) nhiều hàng xóm, dễ ép nhầm → miễn.
+#   3. Phải DUY NHẤT một ứng viên khoảng-cách-1 → mơ hồ (đụng >1 từ) thì bỏ, thà honest-null hơn đoán sai.
+# Chỉ bắt Levenshtein<=1 (thay/chèn/xoá 1 ký tự); hoán vị 2 ký tự cố ý KHÔNG bắt để giữ ngưỡng chặt.
+CORRECT_VOCAB = sorted(t for t, d in DF.items() if len(t) >= 5 and d <= UBIQ_DF)
+
+def _within1(a, b):
+    """True nếu Levenshtein(a,b) <= 1. Chặn theo hiệu độ dài trước cho nhanh."""
+    la, lb = len(a), len(b)
+    if abs(la - lb) > 1:
+        return False
+    if a == b:
+        return True
+    if la == lb:                                   # thay 1 ký tự
+        return sum(x != y for x, y in zip(a, b)) == 1
+    if la > lb:                                     # chèn/xoá 1: a là chuỗi ngắn hơn
+        a, b = b, a
+    i = j = skipped = 0
+    while i < len(a) and j < len(b):
+        if a[i] != b[j]:
+            if skipped:
+                return False
+            skipped = 1
+            j += 1
+        else:
+            i += 1
+            j += 1
+    return True
+
+def correct_typos(q_tokens):
+    out = list(q_tokens)
+    for t in q_tokens:
+        if len(t) < 5 or t in DF:                  # từ ngắn hoặc từ nguồn đã biết → không sửa
+            continue
+        cands = [v for v in CORRECT_VOCAB if _within1(t, v)]
+        if len(cands) == 1 and cands[0] not in out:  # duy nhất một ứng viên → gõ nhầm rõ ràng
+            out.append(cands[0])
+    return out
+
 # record mô tả spec/tài liệu thế hệ cũ: down-rank trong MOCK để số stale không đè số hiện hành.
 # Marker hẹp và tường minh: "[spec cu" trong content hoặc rename-01 trong kernel_ref
 # (KHÔNG dùng chữ "legacy" trần: record doctrine legacy 15 kg là câu trả lời hiện hành hợp lệ).
@@ -304,10 +348,14 @@ SYNONYMS = [
 ]
 
 def expand(q_norm, q_tokens, q_raw=""):
-    out = list(q_tokens)
+    out = correct_typos(q_tokens)                    # dung sai gõ sai trước, rồi mới nở đồng nghĩa
     q_raw = q_raw.lower()
+    # đồng nghĩa (khớp theo chuỗi) cũng phải thấy token đã sửa lỗi gõ — nếu không, "Payloat"→token
+    # "payload" khớp record được nhưng trigger "payload"→["kg"] không nổ (chuỗi vẫn là "payloat"),
+    # câu gõ sai lệch xếp hạng khỏi câu gõ đúng. Ghép token đã sửa vào chuỗi để hai đường đồng nhất.
+    q_norm_x = q_norm + " " + " ".join(out)
     for trigger, adds in SYNONYMS:
-        hay = q_raw if any(ord(c) > 127 for c in trigger) else q_norm  # trigger có dấu match query gốc
+        hay = q_raw if any(ord(c) > 127 for c in trigger) else q_norm_x  # trigger có dấu match query gốc
         if trigger in hay:
             out.extend(a for a in adds if a not in out)
     return out

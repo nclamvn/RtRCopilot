@@ -131,20 +131,28 @@ giờ, đúng kiểu chế độ suy biến âm thầm.
 Hệ không cho hạ vai hoặc khoá **quản trị viên duy nhất còn hoạt động** — đó là tự khoá mình
 ra ngoài vĩnh viễn. Nên cấp quyền quản trị cho người thứ hai sớm.
 
-## Bốn điều hệ này KHÔNG làm được
+## Năm điều hệ này KHÔNG làm được
 
 Ghi ra để không ai tưởng nhầm là đã an toàn.
 
 1. **Email công ty còn hiệu lực ≠ còn là nhân viên.** Người nghỉ việc mà IT chưa khoá hộp
    thư vẫn đăng ký được. Chống bằng việc admin rà danh sách, không bằng code.
 2. **Không có xác thực hai lớp.** Ai lấy được mật khẩu là vào được.
-3. **`accounts.json` là tài sản nhạy cảm** — email nhân viên và hash mật khẩu.
+3. **Trên macOS, mật khẩu băm bằng pbkdf2 chứ không phải scrypt.** Python bản hệ thống của
+   macOS dựng trên LibreSSL, mà LibreSSL không có scrypt. Hệ tự nhận ra và chuyển sang
+   `pbkdf2-sha256` 600.000 vòng — vẫn là KDF đúng nghĩa, nhưng yếu hơn scrypt trước dàn GPU.
+   Muốn có scrypt thì cài Python từ python.org hoặc Homebrew (dựng trên OpenSSL), hệ tự dùng.
+   Chạy `python3 auth.py` để xem máy đang dùng cách nào.
+   **Kèm theo:** `accounts.json` tạo trên máy có scrypt thì máy không có scrypt **không kiểm
+   được** — đăng nhập báo đúng lý do đó chứ không nói "sai mật khẩu", và cách xử lý là quản
+   trị viên đặt lại mật khẩu, không phải bắt người dùng gõ lại.
+4. **`accounts.json` là tài sản nhạy cảm** — email nhân viên và hash mật khẩu.
    `.session_secret` còn nặng hơn: ai có nó ký được token giả mạo bất kỳ ai. Cả hai để
    quyền 0600, nằm trong `.gitignore`, không sao ra máy khác.
-4. **Giới hạn tần suất mất khi khởi động lại** (đếm trong bộ nhớ). Nó chặn script dò hàng
+5. **Giới hạn tần suất mất khi khởi động lại** (đếm trong bộ nhớ). Nó chặn script dò hàng
    nghìn lần, không chặn được kẻ tấn công kiên nhẫn.
 
-Vì bốn điều trên, **server phải nằm trong mạng nội bộ**. Muốn mở ra ngoài LAN thì thay bằng
+Vì năm điều trên, **server phải nằm trong mạng nội bộ**. Muốn mở ra ngoài LAN thì thay bằng
 đăng nhập thật (SSO Google Workspace, xác thực hai lớp), không vá thêm vào cái này.
 
 ## Chế độ mã chung · đường lùi

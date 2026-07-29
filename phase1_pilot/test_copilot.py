@@ -113,6 +113,30 @@ for spaced, glued in [("Omni Sight là gì?", "OmniSight là gì?"),
     check(f"gõ tách == gõ dính: '{spaced}'",
           _ts == (_hg[0][1]["record"] if _hg else None), f"{_ts}")
 
+# Dung sai gõ sai chính tả (tester ảo 28/07 · persona "ma sát thật": 1/7 biến thể hỏng vì "Payloat").
+# Người thật gõ điện thoại đánh sai 1 ký tự → token lạ, khớp rỗng → honest-null oan. Fix: correct_typos
+# ép token lạ về từ vựng nguồn khi Levenshtein<=1 + len>=5 + đích DUY NHẤT. Regression HAI CHIỀU:
+#   xuôi  — câu gõ sai ra CÙNG record như câu gõ đúng (typo == correct), không còn honest-null oan
+#   ngược — từ bịa xa từ vựng KHÔNG bị ép sửa · từ hợp lệ KHÔNG bị đụng (không nới quá tay)
+for typo, correct in [("Payloat Hera bao nhieu?", "Payload Hera bao nhieu?"),
+                      ("HeraSght LR là gì?", "HeraSight LR là gì?")]:
+    _htp, _hok = cs.search(typo), cs.search(correct)
+    _rtp = _htp[0][1]["record"] if _htp else None
+    _rok = _hok[0][1]["record"] if _hok else None
+    check(f"typo == correct: '{typo}' → cùng record câu gõ đúng ({_rok})",
+          _rtp is not None and _rtp == _rok, f"typo={_rtp} correct={_rok}")
+    check(f"typo không honest-null: '{typo}'",
+          bool(_htp) and cs.confident(typo, _htp[0][1]), f"top={_rtp}")
+# Khoá ngược 1: từ bịa xa mọi từ vựng (>1 phép sửa) → KHÔNG sinh sửa (thà honest-null hơn ép bừa)
+check("khoá ngược · từ bịa xa không bị ép sửa", cs.correct_typos(["zxqwerty"]) == ["zxqwerty"],
+      f"{cs.correct_typos(['zxqwerty'])}")
+# Khoá ngược 2: từ nguồn hợp lệ KHÔNG bao giờ bị 'sửa' thành từ khác (không vỡ chiều xuôi)
+check("khoá ngược · từ hợp lệ 'payload' giữ nguyên, không thêm biến thể",
+      cs.correct_typos(["payload"]) == ["payload"], f"{cs.correct_typos(['payload'])}")
+# Khoá ngược 3: token ngắn (<5) không bị ép sửa dù gần entity — 'hena' KHÔNG được thành 'hera'
+check("khoá ngược · token ngắn không bị ép về entity",
+      "hera" not in cs.correct_typos(["hena"]), f"{cs.correct_typos(['hena'])}")
+
 # Catalog (danh mục nhiều-sản-phẩm, vd CAND.2.005 liệt kê 16 sản phẩm) không được thắng oan record
 # spec khi hỏi ĐÍCH DANH 1 sản phẩm — hòa điểm thì tie-break id "CAND" < "L3F" kéo danh mục lên trên.
 _hl = cs.search("HeraSight LR là gì?")
@@ -727,7 +751,12 @@ _ma = _re.search(r"kichhoat\?ma=(\S+)", _buf.getvalue()).group(1)
 _acc = _auth.tim("moi.vao@rtrobotics.com")
 check("CẤM: chưa kích hoạt thì chưa đăng nhập được",
       _auth.dang_nhap("moi.vao@rtrobotics.com", "matkhaudumanh")[0] is None)
-check("mật khẩu KHÔNG lưu dạng đọc được", "matkhaudumanh" not in _acc["pw"] and _acc["pw"].startswith("scrypt$"))
+# Không khoá cứng vào "scrypt$": máy thiếu scrypt lưu bằng pbkdf2, cùng đảm bảo
+# an toàn. Điều PHẢI đúng ở mọi máy là mật khẩu không nằm ở dạng đọc được và chuỗi
+# lưu là một KDF hợp lệ mà máy này kiểm được.
+check("mật khẩu KHÔNG lưu dạng đọc được",
+      "matkhaudumanh" not in _acc["pw"] and _auth.kdf_cua(_acc["pw"]) in ("scrypt", "pbkdf2")
+      and _auth.kiem_duoc(_acc["pw"]), _auth.kdf_cua(_acc["pw"]))
 check("CHO: kích hoạt bằng link trong thư", _auth.kich_hoat(_ma)[0])
 check("CẤM: dùng lại link kích hoạt đã tiêu", _auth.kich_hoat(_ma)[0] is False)
 check("người mới vào với vai THẤP NHẤT", _auth.tim("moi.vao@rtrobotics.com")["quyen"] == "nhanvien")
@@ -817,6 +846,46 @@ check("CẤM: lãnh đạo KHÔNG thấy tên người hỏi",
 check("CẤM: nhân viên chỉ thấy nhật ký của chính mình", _a_nv["pham_vi"] == "chi_cua_toi")
 check("CHO: lãnh đạo vẫn thấy TOÀN BỘ lượt hỏi (chỉ khuyết tên)",
       _a_ld["pham_vi"] == "tat_ca" and len(_a_ld["events"]) >= len(_a_nv["events"]))
+
+# --- 8h2 · băm mật khẩu chạy được trên MỌI máy, kể cả máy không có scrypt
+# macOS bản hệ thống dựng trên LibreSSL, mà LibreSSL KHÔNG có scrypt. Bộ test cũ
+# chạy xanh ở sandbox Linux rồi chết ở đúng cái máy chạy pilot. Ba phép dưới đây
+# khoá cả hai môi trường, không chỉ môi trường đang chạy test.
+check("máy này có scrypt hay không đều khai rõ", isinstance(_auth.CO_SCRYPT, bool),
+      f"CO_SCRYPT={_auth.CO_SCRYPT}")
+_h_pb = _auth.bam("matkhaudumanh", ep_pbkdf2=True)
+check("CHO: băm pbkdf2 chạy được (đường lùi khi thiếu scrypt)",
+      _auth.kdf_cua(_h_pb) == "pbkdf2" and _auth.khop_mat_khau("matkhaudumanh", _h_pb))
+check("CẤM: pbkdf2 KHÔNG nhận mật khẩu sai", not _auth.khop_mat_khau("matkhausai", _h_pb))
+if _auth.CO_SCRYPT:
+    _h_sc = _auth.bam("matkhaudumanh")
+    check("CHO: băm scrypt chạy được và kiểm được",
+          _auth.kdf_cua(_h_sc) == "scrypt" and _auth.khop_mat_khau("matkhaudumanh", _h_sc))
+    check("CẤM: scrypt KHÔNG nhận mật khẩu sai", not _auth.khop_mat_khau("matkhausai", _h_sc))
+    # Mô phỏng máy thiếu scrypt · phải VẪN đăng ký và đăng nhập được
+    import hashlib as _hl
+    _sc_that, _co_that = _hl.scrypt, _auth.CO_SCRYPT
+    del _hl.scrypt
+    _auth.CO_SCRYPT = False
+    try:
+        _h2 = _auth.bam("matkhaudumanh")
+        check("CHO: máy KHÔNG có scrypt vẫn băm và kiểm được mật khẩu",
+              _auth.kdf_cua(_h2) == "pbkdf2" and _auth.khop_mat_khau("matkhaudumanh", _h2))
+        check("hash scrypt cũ bị nhận ra là KHÔNG kiểm được trên máy này",
+              _auth.kiem_duoc(_h_sc) is False and _auth.kiem_duoc(_h2) is True)
+        # Không kiểm được thì phải báo ĐÚNG nguyên nhân, không nói "sai mật khẩu"
+        _a_sc = {"email": "sc@rtrobotics.me", "ten": "Hash Scrypt", "pw": _h_sc,
+                 "quyen": "nhanvien", "trang_thai": "hoat_dong", "ver": 1,
+                 "ma_kich_hoat": None, "han_kich_hoat": None, "tao_luc": _auth.iso(),
+                 "kich_hoat_luc": _auth.iso(), "lan_cuoi": None, "nguoi_phan_vai": None,
+                 "phan_vai_luc": None, "ghi_chu": ""}
+        _auth._luu(_a_sc)
+        _tk_sc, _err_sc, _ = _auth.dang_nhap("sc@rtrobotics.me", "matkhaudumanh")
+        check("máy không kiểm được hash thì BÁO ĐÚNG lý do, không đổ cho người dùng",
+              _tk_sc is None and "không kiểm được" in _err_sc, _err_sc)
+    finally:
+        _hl.scrypt, _auth.CO_SCRYPT = _sc_that, _co_that
+    _auth.dat_khoa("sc@rtrobotics.me", True, "test")
 
 # --- 8i · đường MỜI TAY · chạy được khi công ty chưa có Workspace
 # Đường này cố ý KHÔNG dựa vào email: thứ chứng minh danh tính là việc quản trị viên
