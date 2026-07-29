@@ -984,15 +984,16 @@ records:
   provenance_level: verified_primary
 - record: L3F.ENT.001
   content: 'Tên pháp nhân Việt Nam dùng trên văn bản chính thức: CÔNG TY CỔ PHẦN REAL-TIME ROBOTICS VIỆT NAM (viết
-    tắt RTR). Đây là tên đứng trên phần tiêu đề công văn gửi cơ quan nhà nước. Phân biệt với pháp nhân Hoa Kỳ (xem
-    CAND.3.030 · pháp nhân Hoa Kỳ). Thông tin công khai, xuất hiện trên mọi văn bản đã gửi đi.'
+    tắt RTR). Mã số doanh nghiệp 0314718578 (theo ĐKKD lần 6, ngày 15/8/2025). Đây là tên đứng trên phần tiêu đề
+    công văn gửi cơ quan nhà nước. Phân biệt với pháp nhân Hoa Kỳ (xem CAND.3.030 · pháp nhân Hoa Kỳ). Thông tin
+    công khai, xuất hiện trên mọi văn bản đã gửi đi.'
   domain: company
   tier: L3
   status: approved
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/HoSo_CNCL_2_Cay_Che_SauRieng/00_GUI_DI/A_Gui_Vinatea/00_CongVan_1906_2026_CV_RTR.docx
   effective_date: null
-  provenance_level: null
+  provenance_level: verified_primary
 - record: L3F.ENT.002
   content: 'Real-time Robotics (RtR) là công ty Việt Nam nghiên cứu, phát triển và sản xuất hệ thống UAV (drone)
     cùng giải pháp trí tuệ nhân tạo biên (Edge AI). Hai nền tảng chính: HERA (ISR đa nhiệm · xem L3F.PRD.001) và
