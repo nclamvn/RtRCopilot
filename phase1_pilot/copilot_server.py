@@ -115,7 +115,51 @@ RECORDS = parse_records(GOI_TEXT)
 BY_ID = {r["record"]: r for r in RECORDS}
 
 _tip7 = find("TIP7_SYSTEM_PROMPT_ClaudeProject.md").read_text(encoding="utf-8")
-SYSTEM = _tip7.split("---", 1)[-1].strip() + "\n\n## GÓI TRI THỨC L3 (nguồn duy nhất · NT-1)\n\n" + GOI_TEXT
+# Loại trả lời THỨ BA · Lâm chốt 29/07/2026.
+# Trước đây chỉ có hai loại: có record thì trả lời kèm mã, không có thì nói không biết.
+# Nhưng có loại câu hỏi mà "không biết" là dở: kiến thức chung của ngành, thứ ai làm
+# UAV cũng biết và không cần nguồn nội bộ nào. Ví dụ Lâm nêu: "khách hàng của UAV là ai".
+#
+# Ranh giới, và đây mới là phần khó — nới sai chỗ này là hỏng cả sản phẩm:
+#   · Được nói KIẾN THỨC NGÀNH nói chung.
+#   · TUYỆT ĐỐI không nói bất cứ điều gì VỀ RtR mà không có record: khách hàng của
+#     RtR, con số của RtR, đối tác của RtR, năng lực của RtR.
+#   · Phải mang nhãn riêng để người đọc phân biệt được ngay đâu là nguồn sự thật
+#     công ty, đâu là kiến thức chung. Trộn hai thứ vào nhau là mất luôn giá trị của
+#     cái thứ nhất.
+KIEN_THUC_CHUNG = """
+
+## Loại trả lời thứ ba · KIẾN THỨC CHUNG (Lâm chốt 29/07/2026)
+
+Trước đây bạn chỉ có hai lựa chọn: trả lời từ gói kèm mã record, hoặc nói không biết.
+Nay có lựa chọn thứ ba, dùng ĐÚNG trong một trường hợp:
+
+Câu hỏi thuộc **kiến thức chung của ngành UAV/robotics**, không hỏi về RtR cụ thể, và
+gói không có record nào. Ví dụ: ai thường mua UAV, drone dùng vào việc gì, LiDAR khác
+gì thermal, quy định bay ở Mỹ đại khái ra sao.
+
+Khi đó trả lời bình thường bằng kiến thức của bạn, MỞ ĐẦU đúng dòng này:
+
+`[KIẾN THỨC CHUNG NGÀNH · không phải nguồn sự thật RtR]`
+
+và KẾT THÚC bằng một câu chỉ đường về người phụ trách cho phần cụ thể của RtR.
+
+### Ba điều tuyệt đối cấm ở loại trả lời này
+
+1. **Không nói gì về RtR mà không có record.** Không suy ra khách hàng của RtR từ việc
+   biết ai mua UAV. Không đoán con số, đối tác, năng lực, thị phần, giá của RtR. Người
+   hỏi "khách hàng của mình là ai" thì trả lời được ai *thường* mua UAV, rồi nói thẳng:
+   danh sách khách hàng cụ thể của RtR không có trong gói, hỏi người phụ trách kinh doanh.
+2. **Không trộn.** Một câu trả lời hoặc là từ gói (kèm mã record), hoặc là kiến thức
+   chung (kèm nhãn trên). Không ghép nửa nọ nửa kia trong cùng một đoạn không phân định.
+3. **Không dùng để lấp chỗ thiếu.** Câu hỏi VỀ RtR mà gói không có thì vẫn honest-null
+   như cũ, kèm dòng GAP. Không được biến thành "kiến thức chung" để tránh nói không biết.
+
+Nếu phân vân câu hỏi thuộc loại nào, chọn honest-null. Sai theo hướng im lặng.
+"""
+
+SYSTEM = (_tip7.split("---", 1)[-1].strip() + KIEN_THUC_CHUNG
+          + "\n\n## GÓI TRI THỨC L3 (nguồn duy nhất · NT-1)\n\n" + GOI_TEXT)
 
 GAP_LOG = HERE / "gap_log.jsonl"
 QA_LOG = HERE / "qa_log.jsonl"
@@ -396,6 +440,9 @@ SYNONYMS = [
     # tên công ty khi hỏi về chính công ty mình.
     # Tài liệu viết "nền tảng", nhân viên nói "sản phẩm". Bắc cầu từ vựng, không bịa.
     ("san pham", ["nen", "tang", "platform"]),
+    # tài liệu viết "ưu thế cạnh tranh so với", nhân viên nói "khác đối thủ"
+    ("doi thu", ["canh", "tranh", "uu", "the", "so"]),
+    ("khac gi so voi", ["canh", "tranh", "uu", "the"]),
     # "drone của mình / máy bay bên mình" = hai nền tảng của công ty.
     ("drone cua minh", ["hera", "vega"]),
     ("drone cua ta", ["hera", "vega"]),
@@ -430,7 +477,11 @@ SYNONYMS = [
     ("van phong", ["van", "phong", "cong", "van"]),
 ]
 
+NHOM_DONG_NGHIA = {}     # token gốc -> token thay thế · nạp lại mỗi lần expand
+
+
 def expand(q_norm, q_tokens, q_raw=""):
+    NHOM_DONG_NGHIA.clear()
     out = correct_typos(q_tokens)                    # dung sai gõ sai trước, rồi mới nở đồng nghĩa
     q_raw = q_raw.lower()
     # "ai" nghĩa NGƯỜI NÀO khác "AI" nghĩa trí tuệ nhân tạo. Không tách thì "Sếp là ai?"
@@ -438,6 +489,12 @@ def expand(q_norm, q_tokens, q_raw=""):
     # Chỉ bỏ khi nó đứng ở vị trí từ để hỏi ("là ai", "ai là", "ai phụ trách").
     if re.search(r"\b(la ai|ai la|ai phu trach|ai lam|ai chiu)\b", q_norm) and "ai" in out:
         out = [t for t in out if t != "ai"]
+    # "mình / ta / chúng ta" khi nói về công ty: bắc cầu sang tên công ty rồi BỎ đại từ.
+    # Giữ lại thì nó là token hiếm không bao giờ khớp record nào — vừa kéo tụt độ phủ,
+    # vừa bị luật "từ hiếm chưa khớp" chặn oan. Nó là đại từ, không phải nội dung.
+    if re.search(r"\b(minh|ta|chung ta|ben minh)\b", q_norm):
+        out = [t for t in out if t not in ("minh", "ta")]
+        out.extend(a for a in ("rtr", "robotics") if a not in out)
     # đồng nghĩa (khớp theo chuỗi) cũng phải thấy token đã sửa lỗi gõ — nếu không, "Payloat"→token
     # "payload" khớp record được nhưng trigger "payload"→["kg"] không nổ (chuỗi vẫn là "payloat"),
     # câu gõ sai lệch xếp hạng khỏi câu gõ đúng. Ghép token đã sửa vào chuỗi để hai đường đồng nhất.
@@ -445,7 +502,19 @@ def expand(q_norm, q_tokens, q_raw=""):
     for trigger, adds in SYNONYMS:
         hay = q_raw if any(ord(c) > 127 for c in trigger) else q_norm_x  # trigger có dấu match query gốc
         if trigger in hay:
-            out.extend(a for a in adds if a not in out)
+            # CHỈ nở sang từ thật sự tồn tại trong gói. Từ không có ở record nào thì
+            # không giúp khớp thêm gì, mà lại bị luật "từ hiếm chưa khớp" tính là dấu
+            # hiệu lạc đề — bảng đồng nghĩa tự bắn vào chân mình. Gặp thật 29/07 với
+            # chữ "thế" trong ("doi thu" → uu the).
+            them = [a for a in adds if a not in out and DF.get(a, 0) > 0]
+            out.extend(them)
+            # Ghi lại token GỐC nào được thay bằng token nào. Độ phủ phải tính theo
+            # Ý người dùng hỏi, không theo số token máy sinh ra: "đối thủ" khớp được
+            # qua "cạnh tranh" thì là ĐÃ khớp, không phải trượt. Không có bảng này thì
+            # bảng đồng nghĩa càng giàu, độ phủ càng tụt — càng giúp càng hại.
+            for w in trigger.split():
+                if w in out or DF.get(w, 0) > 0:
+                    NHOM_DONG_NGHIA.setdefault(w, set()).update(them)
             # Từ đời thường đã bắc cầu xong ("sếp"→ceo) thì bỏ khỏi danh sách nếu nó
             # không tồn tại trong gói · cùng lý do với chữ gõ sai ở trên.
             for w in trigger.split():
@@ -530,7 +599,13 @@ def confident(question, top_rec):
     q_disc = [t for t in q_tokens if (not is_ubiq(t) or t in ent_hoi) and t not in TU_HOI]
     if not q_disc:
         return False
-    matched = [t for t in q_disc if t in top_rec["_tokens"]]
+    def khop(t):
+        # Token coi là khớp khi CHÍNH NÓ có trong record, hoặc một token đồng nghĩa
+        # thay cho nó có trong record.
+        return t in top_rec["_tokens"] or any(a in top_rec["_tokens"]
+                                              for a in NHOM_DONG_NGHIA.get(t, ()))
+
+    matched = [t for t in q_disc if khop(t)]
     cov = len(matched) / len(q_disc)
     if not matched or cov < 0.5:
         return False
@@ -548,13 +623,60 @@ def confident(question, top_rec):
     bo_sot = [t for t in q_disc if t not in matched and t not in ent_hoi and idf(t) >= 2.5]
     if any(e in matched for e in ent_hoi) and not bo_sot:
         return True
-    if any(idf(t) >= 3.0 for t in matched):            # 1 token rất hiếm khớp · tín hiệu mạnh
+    # Một token hiếm khớp là tín hiệu mạnh, NHƯNG chỉ khi phần còn lại của câu cũng
+    # khớp kha khá. Không có điều kiện độ phủ thì "LiDAR khác gì thermal?" tin ngay chỉ
+    # vì chữ "lidar" xuất hiện trong một danh mục sản phẩm, dù "khác" và "thermal" vắng.
+    if any(idf(t) >= 3.0 for t in matched) and cov >= 0.6:
         return True
     # không entity, không token hiếm → chỉ khớp bằng token vừa-hiếm → đòi phủ cao hơn để
     # chặn va chạm coincidental (vd "thời/Hỏa" đụng "thời điểm/Hoa Kỳ" trong record FCC)
     return len(matched) >= 2 and sum(idf(t) for t in matched) >= 3.0 and cov >= 0.66
 
+def la_hoi_ve_rtr(question):
+    """Câu hỏi này hỏi VỀ RtR, hay hỏi kiến thức ngành nói chung?
+
+    Dùng để chọn đúng câu 'không biết'. Sai theo hướng COI LÀ HỎI VỀ RtR: đoán nhầm
+    thành 'kiến thức chung' là mở đường cho câu trả lời không nguồn về chính công ty.
+    """
+    q = strip_accents(question)
+    if any(k in q for k in ("rtr", "real time robotics", "real-time robotics",
+                            "cong ty", "cty", "minh", "ben ta", "chung ta", "noi bo")):
+        return True
+    return any(e in q.replace(" ", "") for e in ENTITIES)
+
+
+# Khái niệm CỐ Ý để ngoài mọi gói (doctrine A3 + quyết định curator). Hỏi tới thì
+# nói thẳng là cố ý không có và vì sao, thay vì đưa một record khớp lỏng lẻo. Người
+# đọc phân biệt được "công ty chưa viết xuống" với "công ty cố ý không đưa vào bot" —
+# hai thứ dẫn tới hai hành động khác nhau.
+CO_Y_KHONG_CO = [
+    (("thi phan", "market share", "thi phan cua"),
+     "Thị phần chưa có số kiểm chứng nên cố ý để ngoài gói (doctrine A3: số chưa kiểm "
+     "chứng không phơi như sự thật cứng). Hỏi người phụ trách kinh doanh."),
+    (("bien loi nhuan", "margin", "loi nhuan gop"),
+     "Biên lợi nhuận là số chưa kiểm chứng, cố ý để ngoài MỌI gói kể cả gói lãnh đạo. "
+     "Muốn con số chính thức thì hỏi CFO."),
+    (("deal dang dam phan", "dang dam phan", "dieu khoan rieng"),
+     "Điều khoản deal đang đàm phán thay đổi từng tuần nên cố ý để ngoài gói — đưa vào "
+     "là cầm chắc trả lời số cũ. Hỏi người phụ trách thương vụ."),
+    (("gia doi thu", "tinh bao gia", "competitor pricing"),
+     "Tình báo giá đối thủ là dữ liệu bên thứ ba, để ngoài gói vì rủi ro pháp lý. "
+     "Hỏi trực tiếp người phụ trách."),
+]
+
+
+def co_y_khong_co(question):
+    q = strip_accents(question)
+    for keys, ly_do in CO_Y_KHONG_CO:
+        if any(k in q for k in keys):
+            return ly_do
+    return None
+
+
 def mock_answer(question):
+    ly_do = co_y_khong_co(question)
+    if ly_do:
+        return (f"[KHÔNG CÓ TRONG GÓI · cố ý]\n{ly_do}\nGAP: {question.strip()[:150]}")
     hits = search(question)
     if not hits or not confident(question, hits[0][1]):
         # Fallback định danh: câu hỏi CHỈ về "công ty là ai/gì" (không thuộc tính cụ thể nào)
@@ -566,6 +688,14 @@ def mock_answer(question):
         if OVERVIEW and ("rtr" in qt or "robotics" in qt) and set(qd) <= {"ai"}:
             return (f"[MOCK · máy tra cứu · chưa nối API · hồ sơ tổng quan công ty]\n"
                     f"{OVERVIEW['content']}\n[{OVERVIEW['record']}]")
+        # MOCK là máy tra cứu thuần, KHÔNG có mô hình nên không thể tự nói kiến thức
+        # chung ngành. Nhưng nó phân biệt được hai loại "không biết", và nói ra sự khác
+        # nhau đó thay vì cùng một câu cụt: một loại sẽ trả lời được khi cắm API, một
+        # loại thì phải curator bổ sung. Nói nhầm loại là để người dùng chờ vô ích.
+        if not la_hoi_ve_rtr(question):
+            return (f"[MOCK · máy tra cứu · chưa nối API]\nCâu này thuộc kiến thức chung "
+                    f"của ngành, không phải nguồn sự thật RtR. Chế độ tra cứu không trả lời "
+                    f"được; cắm API rồi hỏi lại là có.\nGAP: {question.strip()[:150]}")
         return (f"[MOCK · máy tra cứu · chưa nối API]\nSOT chưa có thông tin khớp câu hỏi này. "
                 f"Câu hỏi đã được ghi nhận để curator bổ sung.\nGAP: {question.strip()[:150]}")
     parts = [f"[MOCK · máy tra cứu · chưa nối API · kết quả là record khớp nhất, không phải câu trả lời AI]"]

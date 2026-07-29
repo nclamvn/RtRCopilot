@@ -903,6 +903,41 @@ check("CẤM: câu chỉ có tiểu từ lịch sự vẫn honest-null",
 check("CẤM: hỏi thứ gói cố ý không có vẫn honest-null (doctrine A3)",
       "GAP:" in cs.mock_answer("Biên lợi nhuận bao nhiêu ạ?"))
 
+# --- Kiến thức chung ngành · loại trả lời THỨ BA (Lâm chốt 29/07) ---
+# Lâm: "khách hàng của UAV thì LLM trả lời quá dễ". Đúng, nhưng nới ở đây mà không
+# vạch ranh giới là mất luôn giá trị của NT-1. Ba điều cấm phải nằm trong prompt.
+for _k in ["KIẾN THỨC CHUNG NGÀNH · không phải nguồn sự thật RtR",
+           "Không nói gì về RtR mà không có record", "Không trộn",
+           "Không dùng để lấp chỗ thiếu", "chọn honest-null"]:
+    check(f"prompt LIVE khai ranh giới kiến thức chung: '{_k[:40]}'", _k in cs.SYSTEM)
+# MOCK không có mô hình nên KHÔNG được tự nói kiến thức chung · phải nói rõ chờ LIVE
+_a_nganh = cs.mock_answer("Quy định bay drone ở Mỹ thế nào?")
+check("MOCK không bịa kiến thức chung, chỉ báo cần LIVE",
+      "GAP:" in _a_nganh and "kiến thức chung" in _a_nganh, _a_nganh[:100])
+check("phân loại đúng: hỏi VỀ RtR thì không được coi là kiến thức chung",
+      cs.la_hoi_ve_rtr("Khách hàng của mình là ai?") and cs.la_hoi_ve_rtr("Payload HERA?")
+      and not cs.la_hoi_ve_rtr("Quy định bay drone ở Mỹ thế nào?"))
+
+# --- Khái niệm CỐ Ý để ngoài gói · nói rõ lý do thay vì record khớp lỏng ---
+for _q, _tu in [("Thị phần của công ty mình?", "doctrine A3"),
+                ("Biên lợi nhuận HERA?", "CFO"),
+                ("Giá đối thủ bao nhiêu?", "bên thứ ba")]:
+    _a = cs.mock_answer(_q)
+    check(f"cố ý không có: '{_q}' nói rõ lý do",
+          "cố ý" in _a and _tu in _a and "GAP:" in _a, _a[:110])
+
+# --- Độ phủ tính theo Ý người hỏi, không theo số token máy sinh ---
+check("đồng nghĩa KHÔNG kéo tụt độ phủ ('đối thủ' khớp qua 'cạnh tranh')",
+      "GAP:" not in cs.mock_answer("Mình có gì khác đối thủ?"))
+check("bảng đồng nghĩa không bơm token không tồn tại trong gói",
+      all(cs.DF.get(t, 0) > 0
+          for t in cs.expand(cs.strip_accents("Mình có gì khác đối thủ?"),
+                             cs.tokens("Mình có gì khác đối thủ?"),
+                             q_raw="Mình có gì khác đối thủ?")))
+# Chiều ngược: nhóm đồng nghĩa KHÔNG được biến câu lạc đề thành có nghĩa
+for _q in ["LiDAR khác gì thermal?", "Drone dùng vào việc gì?", "zxqwerty là gì?"]:
+    check(f"CẤM: '{_q}' vẫn honest-null", "GAP:" in cs.mock_answer(_q), cs.mock_answer(_q)[:90])
+
 # CỔNG · mọi mã record được TRÍCH trong nội dung phải có thật trong gói.
 # Trích một mã không tồn tại thì người dùng bấm vào chip citation là rơi vào hư không,
 # và cổng khoá fact của bộ sinh tài liệu cũng trỏ vào chỗ trống. Ba mã dưới đây là nợ
