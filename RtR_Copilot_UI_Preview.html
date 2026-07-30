@@ -574,7 +574,7 @@ td.rid{color:var(--rtr-signal);font-weight:700;letter-spacing:.06em;white-space:
       <button data-s="sot">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         <span class="txt">Tra cứu SOT</span><span class="count" id="cntSot">—</span></button>
-      <button data-s="gaps">
+      <button data-s="gaps" data-can="xem_thong_ke">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 5v9"/><path d="M12 18h.01"/><path d="M3 20h18L12 3z"/></svg>
         <span class="txt">Khoảng trống</span><span class="count" id="cntGap">—</span></button>
       <button data-s="audit">
@@ -1201,10 +1201,12 @@ fetch("/health").then(r => r.json()).then(h => {
   }
   applyLang();
   $("mGap").textContent = "—";
-  fetch("/api/gaps").then(r => r.json()).then(d => {
-    $("cntGap").textContent = d.groups.length;
-    $("mGap").textContent = d.groups.length;
-  }).catch(()=>{});
+  if (CAN.xem_thong_ke) {
+    fetch("/api/gaps", {headers: AUTH()}).then(r => r.json()).then(d => {
+      $("cntGap").textContent = d.groups.length;
+      $("mGap").textContent = d.groups.length;
+    }).catch(()=>{});
+  }
 });
 }
 boot();
@@ -1458,7 +1460,7 @@ async function loadEvidence(ids){
   const rows = [];
   for (const id of ids.slice(0, 6)) {
     try {
-      const r = await fetch("/api/record?id=" + encodeURIComponent(id));
+      const r = await fetch("/api/record?id=" + encodeURIComponent(id), {headers: AUTH()});
       const d = await r.json();
       if (!d.error) rows.push(d);
     } catch(e){}
@@ -1496,7 +1498,7 @@ function renderDock(sel){
     c.onclick = () => openRec(c.dataset.rid, false));
 }
 async function openRec(rid, fromChat){
-  const r = await fetch("/api/record?id=" + encodeURIComponent(rid));
+  const r = await fetch("/api/record?id=" + encodeURIComponent(rid), {headers: AUTH()});
   const d = await r.json();
   if (d.error) { toast("Record không có trong gói này"); return; }
   if (!evidence.find(x => x.record === rid)) evidence.unshift(d);
@@ -1600,12 +1602,12 @@ addEventListener("keydown", e => {
 
 /* ---------- 20.6 · drawer hồ sơ record ---------- */
 let RECINDEX = {};
-fetch("/api/search?q=" + encodeURIComponent("a e i o u")).then(()=>{}).catch(()=>{});
+fetch("/api/search?q=" + encodeURIComponent("a e i o u"), {headers: AUTH()}).then(()=>{}).catch(()=>{});
 $("recClose").onclick = () => $("rec").classList.remove("on");
 addEventListener("keydown", e => { if (e.key === "Escape") $("rec").classList.remove("on"); });
 
 async function openRecDrawer(rid){
-  const d = await (await fetch("/api/record?id=" + encodeURIComponent(rid))).json();
+  const d = await (await fetch("/api/record?id=" + encodeURIComponent(rid), {headers: AUTH()})).json();
   if (d.error) { toast("Record không có trong gói này"); return; }
   const row = (l, v, none) => '<div class="kv"><div class="l">' + l + '</div><div class="v'
     + (v ? "" : " none") + '">' + esc(v || none || "không ghi trong nguồn") + "</div></div>";
@@ -1628,7 +1630,7 @@ async function openRecDrawer(rid){
   $("rec").classList.add("on");
   $("recIssue").onclick = () => toast("Nhắn anh Lâm kèm mã " + rid + " và câu trả lời sai");
   try {
-    const u = await (await fetch("/api/usedby?id=" + encodeURIComponent(rid))).json();
+    const u = await (await fetch("/api/usedby?id=" + encodeURIComponent(rid), {headers: AUTH()})).json();
     $("recUses").innerHTML = u.uses.length
       ? u.uses.map(x => '<div class="use">' + esc(x.q) + '<br><span style="font-size:9px;opacity:.7">'
           + x.t.replace("T"," ") + "</span></div>").join("")
@@ -1642,7 +1644,7 @@ $("lkq").addEventListener("input", () => { clearTimeout(lkT); lkT = setTimeout(d
 async function doSearch(){
   const q = $("lkq").value.trim();
   if (!q) { $("lkBody").innerHTML = '<tr><td colspan="5" style="color:var(--rtr-faint);padding:20px 12px">Gõ từ khoá để bắt đầu.</td></tr>'; $("sHits").textContent = 0; return; }
-  const d = await (await fetch("/api/search?q=" + encodeURIComponent(q))).json();
+  const d = await (await fetch("/api/search?q=" + encodeURIComponent(q), {headers: AUTH()})).json();
   $("sHits").textContent = d.results.length;
   if (!d.results.length) {
     $("lkBody").innerHTML = '<tr><td colspan="5" style="color:var(--rtr-faint);padding:20px 12px">Không có record khớp. Câu hỏi dạng tự nhiên thì thử màn Hỏi đáp.</td></tr>';
@@ -1661,7 +1663,7 @@ async function doSearch(){
 
 /* ---------- 21 · gaps ---------- */
 async function loadGaps(){
-  const d = await (await fetch("/api/gaps")).json();
+  const d = await (await fetch("/api/gaps", {headers: AUTH()})).json();
   if (!d.groups.length) {
     $("gapList").innerHTML = '<div style="padding:20px 14px;font-size:11px;color:var(--rtr-faint)">Chưa ghi nhận khoảng trống nào. Mục này đầy lên khi có người hỏi câu hệ thống chưa trả lời được.</div>';
     return;
@@ -1686,7 +1688,7 @@ async function loadGaps(){
 /* ---------- 19 · Document Studio · vá bản mẫu, gate NT-4 ---------- */
 let TPLS = [], curTpl = null;
 
-fetch("/api/templates").then(r => r.json()).then(d => {
+fetch("/api/templates", {headers: AUTH()}).then(r => r.json()).then(d => {
   TPLS = d.templates || [];
   if (!d.ready || !TPLS.length) {
     $("tplList").innerHTML = '<div style="padding:14px;font-size:11px;color:var(--rtr-danger)">'
@@ -1852,7 +1854,21 @@ async function doRender(){
       $("st3").classList.add("on");
       $("renderMsg").innerHTML = "Đã xuất <b>" + esc(d.filename) + "</b>"
         + (d.records && d.records.length ? " · fact khoá từ " + d.records.map(esc).join(", ") : "")
-        + '<br><a href="' + d.download + '" style="color:var(--rtr-signal)">Tải tài liệu</a>';
+        + '<br><a href="#" data-download="' + esc(d.download)
+        + '" style="color:var(--rtr-signal)">Tải tài liệu</a>';
+      const dl = $("renderMsg").querySelector("[data-download]");
+      if (dl) dl.onclick = async e => {
+        e.preventDefault();
+        const rr = await fetch(dl.dataset.download, {headers: AUTH()});
+        if (!rr.ok) {
+          let x = {}; try { x = await rr.json(); } catch(_){}
+          $("renderMsg").textContent = x.error || "Không tải được tài liệu.";
+          return;
+        }
+        const blob = await rr.blob(), url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = d.filename;
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      };
     } else {
       setGate(d.state, "bad");
       $("renderMsg").innerHTML = (d.issues || ["Không xuất được"]).map(i => "· " + esc(i)).join("<br>");

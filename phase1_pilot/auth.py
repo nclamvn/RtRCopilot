@@ -42,8 +42,13 @@ from email.message import EmailMessage
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ACCOUNTS = HERE / "accounts.json"
-SECRET_FILE = HERE / ".session_secret"
+ACCOUNTS = Path(os.environ.get("COPILOT_ACCOUNTS_FILE", str(HERE / "accounts.json")))
+SECRET_FILE = Path(os.environ.get("COPILOT_SECRET_FILE", str(HERE / ".session_secret")))
+
+
+class AuthStoreError(RuntimeError):
+    """Kho danh tính không đọc được; caller phải fail-closed, không coi là kho rỗng."""
+
 
 # ---------------------------------------------------------------- cấu hình
 def _env_list(name, default):
@@ -110,9 +115,31 @@ def _doc():
     if not ACCOUNTS.exists():
         return {"schema": "1.0", "accounts": []}
     try:
-        return json.loads(ACCOUNTS.read_text(encoding="utf-8"))
-    except Exception:
-        return {"schema": "1.0", "accounts": []}
+        doc = json.loads(ACCOUNTS.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as e:
+        raise AuthStoreError(f"Kho tài khoản không đọc được: {type(e).__name__}") from e
+    if not isinstance(doc, dict) or not isinstance(doc.get("accounts"), list):
+        raise AuthStoreError("Kho tài khoản sai cấu trúc")
+    return doc
+
+
+def trang_thai_kho():
+    """Trả trạng thái vận hành của account store mà không làm suy biến thành anonymous.
+
+    Normal mode chỉ healthy khi có ít nhất một quản trị viên hoạt động. First-run
+    bootstrap là trạng thái riêng do server quyết định qua biến môi trường.
+    """
+    if not ACCOUNTS.exists():
+        return False, "missing", "Chưa có kho tài khoản"
+    try:
+        accounts = _doc()["accounts"]
+    except AuthStoreError as e:
+        return False, "corrupt", str(e)
+    admins = [a for a in accounts
+              if a.get("trang_thai") == "hoat_dong" and a.get("quyen") == "quantri"]
+    if not admins:
+        return False, "no_active_admin", "Không có quản trị viên hoạt động"
+    return True, "ok", ""
 
 
 def _ghi(doc):

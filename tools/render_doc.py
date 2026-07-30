@@ -184,6 +184,8 @@ def render(tid, params, out_dir=None):
                     "issues": ["Không có ô nào để điền"]}
         render_xlsx(src, tpl.get("sheet", "Brief"), cells, out)
 
+    # Tài liệu có thể chứa dữ liệu khách hàng/nội bộ; chỉ owner hệ điều hành đọc.
+    out.chmod(0o600)
     return {"state": "PASS", "file": str(out), "issues": [], "records": meta["records"]}
 
 

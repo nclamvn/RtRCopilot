@@ -1,0 +1,137 @@
+from functools import lru_cache
+from typing import Literal
+
+from pydantic import (
+    Field,
+    HttpUrl,
+    PostgresDsn,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    postgres_dsn: PostgresDsn
+    migration_dsn: PostgresDsn | None = None
+    redis_url: str = Field(pattern=r"^rediss?://")
+    s3_endpoint: HttpUrl
+    s3_access_key: str = Field(min_length=3)
+    s3_secret_key: str = Field(min_length=8)
+    s3_bucket: str = Field(pattern=r"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$")
+    log_level: str = "INFO"
+    app_env: Literal["development", "test", "production"] = "development"
+    public_base_url: HttpUrl = HttpUrl("http://127.0.0.1:3000")
+    oidc_issuer: HttpUrl | None = None
+    oidc_client_id: str | None = None
+    oidc_client_secret: str | None = None
+    oidc_allowed_domains: str = "rtrobotics.com,rtrobotics.me"
+    oidc_group_mapping: str = "{}"
+    dev_oidc_enabled: bool = True
+    session_ttl_seconds: int = Field(default=3600, ge=300, le=86400)
+    session_cookie_name: str = "rtr_session"
+    expected_schema_revision: str = "0005_ingestion_renditions"
+    maintenance_mode: bool = False
+    retention_policy_json: str | None = None
+    backup_destination: str | None = None
+    ingestion_max_upload_bytes: int = Field(default=52_428_800, ge=1_048_576)
+    ingestion_max_image_pixels: int = Field(default=40_000_000, ge=1_000_000)
+    ingestion_max_pdf_pages: int = Field(default=500, ge=1, le=5000)
+    ingestion_max_pdf_objects: int = Field(default=100_000, ge=1000)
+    ingestion_max_archive_entries: int = Field(default=5000, ge=10, le=50000)
+    ingestion_max_archive_entry_bytes: int = Field(
+        default=52_428_800,
+        ge=1_048_576,
+    )
+    ingestion_max_expanded_bytes: int = Field(default=209_715_200, ge=1_048_576)
+    ingestion_max_compression_ratio: int = Field(default=100, ge=2, le=1000)
+    ingestion_max_cells: int = Field(default=250_000, ge=1000)
+    ingestion_max_slides: int = Field(default=500, ge=1)
+    ingestion_max_media_seconds: int = Field(default=14_400, ge=1)
+    ingestion_max_media_width: int = Field(default=3840, ge=320, le=16384)
+    ingestion_max_media_height: int = Field(default=2160, ge=240, le=16384)
+    ingestion_max_sample_rate: int = Field(default=96_000, ge=8000, le=384_000)
+    ingestion_tool_timeout_seconds: int = Field(default=120, ge=1, le=3600)
+    ingestion_temp_bytes: int = Field(default=524_288_000, ge=10_485_760)
+    ingestion_job_max_attempts: int = Field(default=3, ge=1, le=20)
+    ingestion_lease_seconds: int = Field(default=120, ge=10, le=3600)
+    ingestion_retry_base_seconds: int = Field(default=5, ge=1, le=3600)
+    ingestion_ocr_languages: str = "eng"
+    ingestion_ocr_enabled: bool = True
+    ingestion_transcript_enabled: bool = True
+    ingestion_vosk_model_path: str = (
+        "/opt/rtr/models/vosk-model-small-en-us-0.15"
+    )
+    ingestion_vosk_model_sha256: str = (
+        "30f26242c4eb449f948e42cb302dd7a686cb29a3423a8367f99ff41780942498"
+    )
+    ingestion_external_egress: bool = False
+    malware_scanner_host: str = "clamav"
+    malware_scanner_port: int = Field(default=3310, ge=1, le=65535)
+    malware_signature_max_age_seconds: int = Field(default=172800, ge=3600)
+    viewer_capability_ttl_seconds: int = Field(default=300, ge=30, le=900)
+
+    @field_validator("oidc_issuer", mode="before")
+    @classmethod
+    def empty_oidc_issuer_is_unset(cls, value: object) -> object:
+        return None if value == "" else value
+
+    @model_validator(mode="after")
+    def production_identity_config(self) -> "Settings":
+        if self.app_env != "production":
+            return self
+        required = {
+            "oidc_issuer": self.oidc_issuer,
+            "oidc_client_id": self.oidc_client_id,
+            "oidc_client_secret": self.oidc_client_secret,
+            "public_base_url": self.public_base_url,
+        }
+        missing = [key for key, value in required.items() if not value]
+        if missing:
+            raise ValueError("required:" + ",".join(sorted(missing)))
+        if self.public_base_url.scheme != "https":
+            raise ValueError("public_base_url:https_required")
+        if self.dev_oidc_enabled:
+            raise ValueError("dev_oidc_enabled:forbidden_in_production")
+        return self
+
+    @property
+    def allowed_domains(self) -> frozenset[str]:
+        return frozenset(
+            domain.strip().lower()
+            for domain in self.oidc_allowed_domains.split(",")
+            if domain.strip()
+        )
+
+
+class ConfigurationError(RuntimeError):
+    """Configuration is invalid without retaining secret-bearing input values."""
+
+
+@lru_cache
+def get_settings() -> Settings:
+    try:
+        return Settings()  # type: ignore[call-arg]
+    except ValidationError as error:
+        issues: list[str] = []
+        for issue in error.errors(include_input=False, include_url=False):
+            key = ".".join(str(part) for part in issue["loc"])
+            if not key and issue["type"] == "value_error":
+                reason = str(issue.get("ctx", {}).get("error", "invalid"))
+                if reason.startswith("required:"):
+                    issues.extend(
+                        f"{item}:required"
+                        for item in reason.removeprefix("required:").split(",")
+                    )
+                    continue
+                if ":" in reason:
+                    safe_key, safe_reason = reason.split(":", 1)
+                    issues.append(f"{safe_key}:{safe_reason}")
+                    continue
+            issues.append(f"{key}:{issue['type']}")
+        raise ConfigurationError(
+            "Invalid configuration: " + ", ".join(sorted(issues)),
+        ) from None

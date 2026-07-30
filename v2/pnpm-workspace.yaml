@@ -1,0 +1,19 @@
+packages:
+  - apps/web
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver
+allowBuilds:
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+
+overrides:
+  brace-expansion: 5.0.8
+  postcss: 8.5.18
+  sharp: 0.35.0
+
+patchedDependencies:
+  brace-expansion@5.0.8: patches/brace-expansion@5.0.8.patch

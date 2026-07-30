@@ -248,15 +248,28 @@ _auth.ACCOUNTS = Path(_tmpdir) / "accounts.json"
 _auth.SECRET_FILE = Path(_tmpdir) / ".secret"
 os.environ["COPILOT_MAIL_DEV"] = "1"
 assert not _auth.co_tai_khoan(), "kho tài khoản chưa sạch khi vào tầng 4"
+
+def _tao_tk(email, ten, vai):
+    acc = {"email": email, "ten": ten, "pw": _auth.bam("matkhaudumanh"), "quyen": vai,
+           "trang_thai": "hoat_dong", "ver": 1, "ma_kich_hoat": None, "han_kich_hoat": None,
+           "tao_luc": _auth.iso(), "kich_hoat_luc": _auth.iso(), "lan_cuoi": None,
+           "nguoi_phan_vai": "test", "phan_vai_luc": None, "ghi_chu": ""}
+    _auth._luu(acc)
+    return _auth.tao_token(acc)
+
+# Normal mode phải có active admin trước khi bất kỳ data API nào phục vụ.
+TOK_LD = _tao_tk("ld@rtrobotics.com", "Lãnh đạo Test", "lanhdao")
+TOK_NV = _tao_tk("nv@rtrobotics.com", "Nhân viên Test", "nhanvien")
+TOK_AD = _tao_tk("ad@rtrobotics.com", "Quản trị Test", "quantri")
+cs.AUTH_MODE = "accounts"
+cs.AUTH_BOOTSTRAP = False
 server = cs.HTTPServer(("127.0.0.1", 8790), cs.Handler)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 time.sleep(0.3)
 B = "http://127.0.0.1:8790"
 
-# Token phiên dùng cho các lượt gọi cần vai cao. Mặc định rỗng: chế độ mã chung,
-# server cấp vai THẤP NHẤT cho người gọi không nhận diện được — nên phần lớn test
-# dưới đây chạy đúng như một nhân viên thường, và đó là điều nên kiểm mặc định.
-TOK = ""
+# Mặc định mọi regression chạy bằng vai thấp nhất, không còn anonymous data access.
+TOK = TOK_NV
 
 def get(path, tok=None):
     req = urllib.request.Request(B + path, headers={"x-token": tok if tok is not None else TOK})
@@ -282,6 +295,14 @@ def get_ma(path, tok=None):
         return get(path, tok)
     except urllib.error.HTTPError as e:
         return e.code, e.read().decode()
+
+def get_raw_ma(path, tok=None):
+    req = urllib.request.Request(B + path, headers={"x-token": tok if tok is not None else TOK})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status, r.read()
+    except urllib.error.HTTPError as e:
+        return e.code, e.read()
 
 s, html = get("/")
 check("GET / trả UI", s == 200 and "RT ROBOTICS" in html and "Ask." in html)
@@ -425,6 +446,8 @@ cs.USERS = {"nv-1": {"ten": "Nhân viên A", "phong": "Kinh doanh", "quyen": "st
             "ld-1": {"ten": "Lãnh đạo B", "phong": "CEO", "quyen": "leader"}}
 class _H:  # giả handler chỉ để gọi who()
     def __init__(self, code): self.headers = {"x-passcode": code}
+_mode_that = cs.AUTH_MODE
+cs.AUTH_MODE = "migration"
 ok, u, err = cs.who(_H("nv-1"));   check("mã đúng thì vào được", ok and u["ten"] == "Nhân viên A")
 ok, u, err = cs.who(_H("sai-be"));  check("mã sai bị chặn", not ok, err)
 cs.PACK = "leader"
@@ -432,7 +455,7 @@ ok, u, err = cs.who(_H("nv-1"))
 check("CHẶN: nhân viên không vào được gói lãnh đạo dù mã hợp lệ", not ok, err)
 ok, u, err = cs.who(_H("ld-1"))
 check("CHO: lãnh đạo vào được gói lãnh đạo", ok, err)
-cs.PACK = "staff"; cs.USERS = {}
+cs.PACK = "staff"; cs.USERS = {}; cs.AUTH_MODE = _mode_that
 
 check("log ghi tên người, không chỉ câu hỏi",
       '"nguoi"' in (HERE / "copilot_server.py").read_text(encoding="utf-8"))
@@ -458,23 +481,6 @@ check("có đủ 4 bản mẫu",
 _cv = next(t for t in tp["templates"] if t["id"] == "congvan")
 check("bản mẫu khai fact khoá kèm mã record",
       any(f["type"] == "locked" and f.get("record") for f in _cv["fields"]))
-
-# --- Tài khoản tạm cho phần công văn -----------------------------------------
-# Công văn mang tư cách pháp nhân nên từ 29/07 chỉ vai lãnh đạo trở lên tạo được.
-# Test dựng một kho tài khoản TẠM ở thư mục khác để không đụng accounts.json thật
-# trên máy production — bộ test phải chạy được ở mọi cấu hình.
-def _tao_tk(email, ten, vai):
-    acc = {"email": email, "ten": ten, "pw": _auth.bam("matkhaudumanh"), "quyen": vai,
-           "trang_thai": "hoat_dong", "ver": 1, "ma_kich_hoat": None, "han_kich_hoat": None,
-           "tao_luc": _auth.iso(), "kich_hoat_luc": _auth.iso(), "lan_cuoi": None,
-           "nguoi_phan_vai": "test", "phan_vai_luc": None, "ghi_chu": ""}
-    _auth._luu(acc)
-    return _auth.tao_token(acc)
-
-
-TOK_LD = _tao_tk("ld@rtrobotics.com", "Lãnh đạo Test", "lanhdao")
-TOK_NV = _tao_tk("nv@rtrobotics.com", "Nhân viên Test", "nhanvien")
-TOK_AD = _tao_tk("ad@rtrobotics.com", "Quản trị Test", "quantri")
 
 # Từ đây trở đi server đã có tài khoản thật nên KHÔNG còn đường ẩn danh: mọi lượt
 # gọi phải mang token. Đặt mặc định là NHÂN VIÊN — vai thấp nhất — để phần còn lại
@@ -552,6 +558,8 @@ check("5 lần xuất liên tiếp KHÔNG trùng tên file", len(_ten) == 5,
       f"chỉ có {len(_ten)}/5 tên khác nhau · người sau tải về file người trước")
 if d.get("filename"):
     _f = HERE.parent / "_rendered" / d["filename"]
+    check("tài liệu sinh ra có mode 0600", oct(_f.stat().st_mode)[-3:] == "600",
+          oct(_f.stat().st_mode)[-3:])
     try:
         import openpyxl as _ox
         _w = _ox.load_workbook(_f, data_only=True)
@@ -568,11 +576,13 @@ if d.get("filename"):
 _acc_tam = _auth.ACCOUNTS
 _auth.ACCOUNTS = Path(_tmpdir) / "khong-ton-tai.json"
 cs.PASSCODE = "test123"
+cs.AUTH_MODE = "migration"
 _s, _d = post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]}, "")
 check("mã chung sai bị chặn 403", _s == 403, str(_s))
 _s, _d = post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]}, TOK_NV)
 check("token hợp lệ KHÔNG cứu được khi kho tài khoản đã tắt", _s == 403, str(_s))
 cs.PASSCODE = ""
+cs.AUTH_MODE = "accounts"
 _auth.ACCOUNTS = _acc_tam
 _s, _d = post_ma("/api/chat", {"messages": [{"role": "user", "content": "x"}]}, TOK_NV)
 check("bật kho tài khoản trở lại thì token dùng được ngay", _s == 200, str(_s))
@@ -852,6 +862,202 @@ check("CẤM: lãnh đạo KHÔNG thấy tên người hỏi",
 check("CẤM: nhân viên chỉ thấy nhật ký của chính mình", _a_nv["pham_vi"] == "chi_cua_toi")
 check("CHO: lãnh đạo vẫn thấy TOÀN BỘ lượt hỏi (chỉ khuyết tên)",
       _a_ld["pham_vi"] == "tat_ca" and len(_a_ld["events"]) >= len(_a_nv["events"]))
+
+# ---------- 8k · Security containment TIP-001 ----------
+print("\n[8k] Security containment · anonymous, role, ownership, corrupt store")
+
+# Mọi data API deny trước khi route handler có cơ hội trả metadata/content.
+_anon_get = ["/api/search?q=HERA", "/api/record?id=L3F.ENT.001", "/api/gaps",
+             "/api/usedby?id=L3F.ENT.001", "/api/templates",
+             "/api/download?f=doan-duoc.docx", "/api/issues", "/api/audit",
+             "/api/admin/users", "/api/khong-khai"]
+check("CẤM anonymous trên toàn bộ GET data API",
+      all(get_ma(p, "")[0] in (401, 403) for p in _anon_get),
+      str({p: get_ma(p, "")[0] for p in _anon_get}))
+_anon_post = [
+    ("/api/chat", {"messages": [{"role": "user", "content": "x"}]}),
+    ("/api/issue", {"q": "x", "a": "y"}), ("/api/extract", {}),
+    ("/api/render", {}), ("/api/doimatkhau", {}),
+    ("/api/admin/moi", {}), ("/api/admin/vai", {}), ("/api/admin/khoa", {}),
+    ("/api/khong-khai", {}),
+]
+check("CẤM anonymous trên toàn bộ POST data API",
+      all(post_ma(p, b, "")[0] in (401, 403) for p, b in _anon_post))
+
+# Role matrix của các endpoint mới được khóa.
+check("CẤM staff xem GAP tổng hợp", get_ma("/api/gaps", TOK_NV)[0] == 403)
+check("CHO leader xem GAP tổng hợp", get_ma("/api/gaps", TOK_LD)[0] == 200)
+check("CHO admin xem GAP tổng hợp", get_ma("/api/gaps", TOK_AD)[0] == 200)
+check("CHO staff tra cứu record và template",
+      get_ma("/api/search?q=HERA", TOK_NV)[0] == 200
+      and get_ma("/api/record?id=L3F.ENT.001", TOK_NV)[0] == 200
+      and get_ma("/api/templates", TOK_NV)[0] == 200)
+check("CẤM action endpoint chưa khai dù đã đăng nhập",
+      get_ma("/api/khong-khai", TOK_AD)[0] == 403)
+
+# usedby: staff chỉ thấy chính mình; leader thấy aggregate không identity; admin thấy đủ.
+_, _ans_owner_nv = post("/api/chat", {"messages": [{
+    "role": "user", "content": "Payload HERA bao nhiêu vậy ạ?"}]}, TOK_NV)
+_, _ans_owner_ld = post("/api/chat", {"messages": [{
+    "role": "user", "content": "Payload HERA bao nhiêu vậy ạ?"}]}, TOK_LD)
+_ids_nv = set(_re.findall(r"\[((?:L3F|L3R|CAND|HC|OC|SC|PRICE)[-.][^\]\s·]*)",
+                          _ans_owner_nv.get("answer", "")))
+_ids_ld = set(_re.findall(r"\[((?:L3F|L3R|CAND|HC|OC|SC|PRICE)[-.][^\]\s·]*)",
+                          _ans_owner_ld.get("answer", "")))
+_rid_owner = sorted(_ids_nv & _ids_ld)[0] if _ids_nv & _ids_ld else ""
+_u_nv = json.loads(get("/api/usedby?id=" + _rid_owner, TOK_NV)[1])["uses"]
+_u_ld = json.loads(get("/api/usedby?id=" + _rid_owner, TOK_LD)[1])["uses"]
+_u_ad = json.loads(get("/api/usedby?id=" + _rid_owner, TOK_AD)[1])["uses"]
+check("usedby staff chỉ có event của chính mình",
+      _u_nv and len(_u_nv) == sum(x.get("user_id") == "nv@rtrobotics.com" for x in _u_ad)
+      and not any("nguoi" in x or "user_id" in x for x in _u_nv), str(_u_nv))
+check("usedby leader thấy aggregate nhưng không identity",
+      len(_u_ld) >= 2 and not any("nguoi" in x or "user_id" in x for x in _u_ld), str(_u_ld))
+check("usedby admin thấy identity đầy đủ",
+      len(_u_ad) >= 2 and all("user_id" in x for x in _u_ad), str(_u_ad))
+
+# Hai tài khoản cố ý trùng display name không được nhìn lẫn issue/audit của nhau.
+TOK_NV2 = _tao_tk("nv2@rtrobotics.com", "Nhân viên Test", "nhanvien")
+post("/api/issue", {"q": "ISSUE-CHỈ-NV2", "a": "sai", "why": "test isolation"}, TOK_NV2)
+post("/api/chat", {"messages": [{"role": "user", "content": "AUDIT-CHỈ-NV2"}]}, TOK_NV2)
+with cs.ISSUE_LOG.open("a", encoding="utf-8") as _f_legacy:
+    _f_legacy.write(json.dumps({"t": "2026-01-01T00:00:00", "nguoi": "Nhân viên Test",
+                                "q": "ISSUE-LEGACY-CÙNG-TÊN", "a": "old"}) + "\n")
+with cs.QA_LOG.open("a", encoding="utf-8") as _f_legacy:
+    _f_legacy.write(json.dumps({"t": "2026-01-01T00:00:00", "mode": "MOCK",
+                                "nguoi": "Nhân viên Test",
+                                "q": "AUDIT-LEGACY-CÙNG-TÊN", "a": "old"}) + "\n")
+_issues_nv = json.loads(get("/api/issues", TOK_NV)[1])["issues"]
+_issues_ld = json.loads(get("/api/issues", TOK_LD)[1])["issues"]
+_issues_ad = json.loads(get("/api/issues", TOK_AD)[1])["issues"]
+check("issues staff isolation dùng user_id, không display name/log cũ",
+      not any(x.get("q") in ("ISSUE-CHỈ-NV2", "ISSUE-LEGACY-CÙNG-TÊN")
+              for x in _issues_nv), str(_issues_nv))
+check("issues leader aggregate ẩn toàn bộ identity",
+      any(x.get("q") == "ISSUE-CHỈ-NV2" for x in _issues_ld)
+      and not any("user_id" in x for x in _issues_ld)
+      and all(x.get("nguoi") == "(ẩn danh)" for x in _issues_ld))
+check("issues admin giữ identity đầy đủ",
+      any(x.get("q") == "ISSUE-CHỈ-NV2"
+          and x.get("user_id") == "nv2@rtrobotics.com" for x in _issues_ad))
+_audit_nv = json.loads(get("/api/audit", TOK_NV)[1])["events"]
+_audit_ld = json.loads(get("/api/audit", TOK_LD)[1])["events"]
+_audit_ad = json.loads(get("/api/audit", TOK_AD)[1])["events"]
+check("audit staff isolation dùng user_id, không display name/log cũ",
+      not any(x.get("q") in ("AUDIT-CHỈ-NV2", "AUDIT-LEGACY-CÙNG-TÊN")
+              for x in _audit_nv), str(_audit_nv))
+check("audit leader aggregate ẩn toàn bộ identity",
+      any(x.get("q") == "AUDIT-CHỈ-NV2" for x in _audit_ld)
+      and not any("nguoi" in x or "user_id" in x for x in _audit_ld))
+check("audit admin giữ identity đầy đủ",
+      any(x.get("q") == "AUDIT-CHỈ-NV2"
+          and x.get("user_id") == "nv2@rtrobotics.com" for x in _audit_ad))
+
+# Hai người tạo hai file; kể cả admin cũng không mặc định đọc chéo.
+_doc_params_a = {"customer": "Owner A", "mtg_date": "2026-07-30",
+                 "abbr": "OA", "objective": "ownership A"}
+_doc_params_b = {"customer": "Owner B", "mtg_date": "2026-07-30",
+                 "abbr": "OB", "objective": "ownership B"}
+_, _doc_a = post("/api/render", {"template": "salesbrief", "params": _doc_params_a}, TOK_NV)
+_, _doc_b = post("/api/render", {"template": "salesbrief", "params": _doc_params_b}, TOK_LD)
+check("CHO owner tải tài liệu của chính mình",
+      get_raw_ma(_doc_a["download"], TOK_NV)[0] == 200)
+check("CẤM user A tải tài liệu của user B",
+      get_raw_ma(_doc_b["download"], TOK_NV)[0] == 403)
+check("CẤM admin mặc định tải chéo tài liệu",
+      get_raw_ma(_doc_b["download"], TOK_AD)[0] == 403)
+_sec_log = cs.QA_LOG.read_text(encoding="utf-8")
+check("audit ghi download attempt bị từ chối",
+      "[SECURITY] download" in _sec_log and '"a": "DENIED"' in _sec_log)
+check("owner registry và generated docs đều có mode 0600",
+      oct(cs.RENDER_OWNERS.stat().st_mode)[-3:] == "600"
+      and all(oct((HERE.parent / "_rendered" / d["filename"]).stat().st_mode)[-3:] == "600"
+              for d in (_doc_a, _doc_b)))
+for _doc_o in (_doc_a, _doc_b):
+    (HERE.parent / "_rendered" / _doc_o["filename"]).unlink(missing_ok=True)
+
+# Missing/corrupt/unreadable/no-admin đều unhealthy và không rơi về fallback.
+_store_real = _auth.ACCOUNTS
+_store_cases = []
+_missing = Path(_tmpdir) / "missing-security.json"
+_corrupt = Path(_tmpdir) / "corrupt-security.json"; _corrupt.write_text("{bad", encoding="utf-8")
+_unreadable = Path(_tmpdir) / "store-is-directory"; _unreadable.mkdir()
+_no_admin = Path(_tmpdir) / "no-admin.json"
+_no_admin.write_text(json.dumps({"schema": "1.0", "accounts": [{
+    "email": "only.staff@rtrobotics.com", "ten": "Only Staff", "pw": "x",
+    "quyen": "nhanvien", "trang_thai": "hoat_dong"
+}]}), encoding="utf-8")
+for _label, _path in [("missing", _missing), ("corrupt", _corrupt),
+                      ("unreadable", _unreadable), ("no_active_admin", _no_admin)]:
+    _auth.ACCOUNTS = _path
+    _hs, _hb = get_ma("/health", TOK_AD)
+    _ds, _ = get_ma("/api/search?q=HERA", TOK_AD)
+    _ls, _ = post_ma("/api/dangnhap", {
+        "email": "ad@rtrobotics.com", "mat_khau": "matkhaudumanh"}, "")
+    _store_cases.append((_label, _hs, json.loads(_hb).get("ok"), _ds, _ls))
+_auth.ACCOUNTS = _store_real
+check("corrupt auth matrix fail-closed + health unhealthy",
+      all(hs == 503 and ok is False and ds == 503 and ls == 503
+          for _, hs, ok, ds, ls in _store_cases),
+      str(_store_cases))
+
+cs.AUTH_BOOTSTRAP = True
+_auth.ACCOUNTS = _missing
+_bs, _ = get_ma("/api/search?q=HERA", TOK_AD)
+_ws, _wb = get_ma("/api/whoami", "")
+check("bootstrap explicit vẫn deny data API và chỉ mở bootstrap",
+      _bs == 503 and _ws == 200 and json.loads(_wb).get("cho_dang_ky") is True)
+_auth.ACCOUNTS = _store_real
+cs.AUTH_BOOTSTRAP = False
+
+# Process thật phải sống để phục vụ health 503, không crash ở startup diagnostics.
+import socket as _socket
+def _startup_case(label, store):
+    sock = _socket.socket()
+    sock.bind(("127.0.0.1", 0))
+    port = sock.getsockname()[1]
+    sock.close()
+    env = dict(os.environ)
+    env.update({"COPILOT_PORT": str(port), "COPILOT_AUTH_MODE": "accounts",
+                "COPILOT_ACCOUNTS_FILE": str(store),
+                "COPILOT_SECRET_FILE": str(Path(_tmpdir) / f"{label}.secret")})
+    for key in ("COPILOT_AUTH_BOOTSTRAP", "COPILOT_PASSCODE", "ANTHROPIC_API_KEY"):
+        env.pop(key, None)
+    proc = subprocess.Popen([sys.executable, "copilot_server.py"], cwd=str(HERE),
+                            env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            text=True)
+    base = f"http://127.0.0.1:{port}"
+    health = data = None
+    try:
+        for _ in range(30):
+            if proc.poll() is not None:
+                break
+            try:
+                urllib.request.urlopen(base + "/health", timeout=.2)
+            except urllib.error.HTTPError as e:
+                health = e.code
+                try:
+                    urllib.request.urlopen(base + "/api/search?q=HERA", timeout=.2)
+                except urllib.error.HTTPError as de:
+                    data = de.code
+                break
+            except (urllib.error.URLError, TimeoutError):
+                time.sleep(.05)
+        return label, proc.poll(), health, data
+    finally:
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proc.kill(); proc.wait(timeout=3)
+
+_startup_cases = [_startup_case("missing", _missing),
+                  _startup_case("corrupt", _corrupt),
+                  _startup_case("no_admin", _no_admin)]
+check("startup unhealthy không crash; health/protected cùng trả 503",
+      all(rc is None and hs == 503 and ds == 503
+          for _, rc, hs, ds in _startup_cases), str(_startup_cases))
 
 # ---------- 4e · Câu ĐỊNH NGHĨA · câu người mới hỏi đầu tiên ----------
 # Lâm 29/07: "HERA là gì và Sếp là ai mà bạn không trả lời được — thông tin này ai

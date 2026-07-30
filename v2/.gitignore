@@ -1,0 +1,15 @@
+.env
+.next/
+node_modules/
+.pnpm-store/
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.pyc
+coverage.xml
+dist/
+*.tsbuildinfo
+playwright-report/
+test-results/

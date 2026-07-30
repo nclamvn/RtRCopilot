@@ -1,0 +1,322 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+archive="${1:-}"
+target="${2:-}"
+confirmation="${3:-}"
+project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$project_root"
+set -a
+. "$project_root/.env"
+set +a
+
+if [[ -z "$archive" || -z "$target" ]]; then
+  echo "Usage: restore-data.sh archive target-name RESTORE:target-name" >&2
+  exit 2
+fi
+if [[ ! -f "$archive" || ! -r "$archive" ]]; then
+  echo "Restore archive does not exist or is unreadable" >&2
+  exit 3
+fi
+if [[ ! "$target" =~ ^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$ ]]; then
+  echo "Target must satisfy the strict S3 bucket naming subset" >&2
+  exit 4
+fi
+if [[ "$confirmation" != "RESTORE:$target" ]]; then
+  echo "Typed confirmation mismatch; expected RESTORE:$target" >&2
+  exit 5
+fi
+if [[ "$target" == "$POSTGRES_DB" || "$target" == "$S3_BUCKET" ]]; then
+  echo "Restore target must be isolated from active database and bucket" >&2
+  exit 6
+fi
+
+work_dir="$(mktemp -d)"
+operation_id="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+created_database="false"
+created_bucket="false"
+bucket_claimed="false"
+restore_succeeded="false"
+cleanup() {
+  exit_code=$?
+  cleanup_failed="false"
+  set +e
+  if [[ "$restore_succeeded" != "true" ]]; then
+    if [[ "$created_database" == "true" ]]; then
+      database_owner="$(docker compose exec -T postgres psql -At \
+        -U "$POSTGRES_USER" -d "$target" \
+        -c "SELECT operation_id FROM rtr_restore_operation WHERE singleton" \
+        2>/dev/null)"
+      if [[ "$database_owner" == "$operation_id" ]]; then
+        docker compose exec -T postgres dropdb -U "$POSTGRES_USER" "$target" \
+          >/dev/null || cleanup_failed="true"
+      else
+        echo "RECOVERY REQUIRED: database ownership became ambiguous; target quarantined" >&2
+        cleanup_failed="true"
+      fi
+    fi
+    if [[ "$bucket_claimed" == "true" ]]; then
+      guard_args=(
+        --profile tools run --rm
+        -e "S3_BUCKET=$target"
+        migrate python -m rtr_copilot.commands.restore_bucket_guard cleanup
+        --bucket "$target" --operation-id "$operation_id"
+      )
+      if [[ "$created_bucket" == "true" ]]; then
+        guard_args+=(--created-bucket)
+      fi
+      docker compose "${guard_args[@]}" >/dev/null || cleanup_failed="true"
+    fi
+    if [[ "${RESTORE_TEST_FORCE_CLEANUP_FAILURE:-false}" == "true" ]]; then
+      cleanup_failed="true"
+    fi
+  fi
+  rm -rf "$work_dir"
+  if [[ "$cleanup_failed" == "true" ]]; then
+    echo "RESTORE CLEANUP FAILED operation_id=$operation_id; explicit recovery required" >&2
+    exit_code=90
+  fi
+  trap - EXIT
+  exit "$exit_code"
+}
+trap cleanup EXIT
+
+# Local archive/checksum/inventory validation is deliberately completed before
+# creating a database or bucket.
+tar -tzf "$archive" >/dev/null
+tar -xzf "$archive" -C "$work_dir"
+python3 - "$work_dir" <<'PY'
+import hashlib
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+manifest_path = root / "manifest.json"
+dump_path = root / "database.dump"
+inventory_path = root / "minio-inventory.json"
+for required in (manifest_path, dump_path, inventory_path, root / "objects"):
+    if not required.exists():
+        raise SystemExit(f"archive missing required entry: {required.name}")
+manifest = json.loads(manifest_path.read_text())
+inventory = json.loads(inventory_path.read_text())
+if manifest.get("manifest_version") != 1:
+    raise SystemExit("unsupported manifest version")
+if inventory != manifest.get("minio_inventory"):
+    raise SystemExit("inventory file differs from manifest")
+actual_dump = hashlib.sha256(dump_path.read_bytes()).hexdigest()
+if actual_dump != manifest["database"]["sha256"]:
+    raise SystemExit("dump checksum mismatch")
+seen = set()
+for item in inventory:
+    key = item["key"]
+    if key in seen or key.startswith("/") or ".." in pathlib.PurePosixPath(key).parts:
+        raise SystemExit(f"unsafe or duplicate object key: {key}")
+    seen.add(key)
+    path = root / "objects" / pathlib.PurePosixPath(key)
+    if not path.is_file():
+        raise SystemExit(f"missing object payload: {key}")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != item["sha256"] or path.stat().st_size != item["byte_size"]:
+        raise SystemExit(f"object payload mismatch: {key}")
+PY
+
+exists="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d postgres \
+  -c "SELECT 1 FROM pg_database WHERE datname='$target'")"
+if [[ -n "$exists" ]]; then
+  echo "Restore database target already exists" >&2
+  exit 7
+fi
+
+minio_id="$(docker compose ps -q minio)"
+bucket_state="$(docker run --rm --network "container:$minio_id" \
+  --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
+  -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
+       if mc stat 'local/$target' >/dev/null 2>&1; then
+         if test -n \"\$(mc ls --recursive 'local/$target')\"; then
+           echo nonempty
+         else
+           echo empty
+         fi
+       else
+         echo absent
+       fi")"
+if [[ "$bucket_state" == "nonempty" ]]; then
+  echo "Restore bucket target is not empty" >&2
+  exit 8
+fi
+
+if [[ -n "${RESTORE_TEST_RACE_OBJECT_KEY:-}" ]]; then
+  docker run --rm --network "container:$minio_id" \
+    --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
+    -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
+         mc mb --ignore-existing 'local/$target' >/dev/null
+         printf third-party-race | mc pipe 'local/$target/$RESTORE_TEST_RACE_OBJECT_KEY' >/dev/null"
+fi
+
+started_epoch="$(date +%s)"
+if [[ "$bucket_state" == "absent" ]]; then
+  docker run --rm --network "container:$minio_id" \
+    --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
+    -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
+         mc mb 'local/$target' >/dev/null"
+  created_bucket="true"
+fi
+docker compose --profile tools run --rm \
+  -e "S3_BUCKET=$target" \
+  migrate python -m rtr_copilot.commands.restore_bucket_guard claim \
+  --bucket "$target" --operation-id "$operation_id" >/dev/null
+bucket_claimed="true"
+
+docker compose exec -T postgres createdb -U "$POSTGRES_USER" "$target"
+created_database="true"
+docker compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
+  -U "$POSTGRES_USER" -d "$target" <<SQL >/dev/null
+CREATE TABLE rtr_restore_operation (
+  singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+  operation_id uuid NOT NULL,
+  state text NOT NULL CHECK (state IN ('restoring','ready','recovery_required')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+INSERT INTO rtr_restore_operation(singleton, operation_id, state)
+VALUES (true, '$operation_id', 'restoring');
+SQL
+if [[ "${RESTORE_TEST_FAIL_AFTER_DATABASE:-false}" == "true" ]]; then
+  echo "Injected restore failure after database ownership marker" >&2
+  false
+fi
+docker compose exec -T postgres pg_restore -U "$POSTGRES_USER" \
+  -d "$target" --no-owner --no-privileges <"$work_dir/database.dump"
+
+docker compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
+  -U "$POSTGRES_USER" -d "$target" <<'SQL' >/dev/null
+GRANT USAGE ON SCHEMA public TO rtr_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO rtr_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO rtr_app;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON audit_events FROM rtr_app;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON audit_chain_anchor FROM rtr_app;
+REVOKE INSERT, UPDATE, DELETE ON alembic_version FROM rtr_app;
+GRANT EXECUTE ON FUNCTION append_audit_event(
+  uuid,timestamptz,text,uuid,text,text,text,text,text,uuid,text,uuid[],
+  jsonb,char(64),char(64),integer
+) TO rtr_app;
+REVOKE CREATE ON SCHEMA public FROM rtr_app;
+SQL
+
+while IFS='|' read -r object_key object_sha object_size; do
+  [[ -z "$object_key" ]] && continue
+  docker run --rm --network "container:$minio_id" \
+    -v "$work_dir/objects:/objects:ro" \
+    --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
+    -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
+         mc cp --attr 'sha256=$object_sha;byte-size=$object_size;upload-state=restored;restore-operation-id=$operation_id' \
+           '/objects/$object_key' 'local/$target/$object_key' >/dev/null"
+done < <(python3 - "$work_dir/manifest.json" <<'PY'
+import json
+import sys
+for item in json.load(open(sys.argv[1]))["minio_inventory"]:
+    print(f"{item['key']}|{item['sha256']}|{item['byte_size']}")
+PY
+)
+
+docker compose --profile tools run --rm \
+  -v "$work_dir:/restore:ro" \
+  -e "S3_BUCKET=$target" \
+  migrate python -m rtr_copilot.commands.restore_bucket_guard complete \
+  --bucket "$target" --operation-id "$operation_id" \
+  --expected-path /restore/minio-inventory.json >/dev/null
+
+revision="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
+  -c 'SELECT version_num FROM alembic_version')"
+[[ "$revision" == "0005_ingestion_renditions" ]] || exit 10
+broken_links="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
+  -c "SELECT count(*) FROM documents d LEFT JOIN document_versions v
+      ON v.version_id=d.current_version_id
+      WHERE d.current_version_id IS NOT NULL AND v.version_id IS NULL")"
+[[ "$broken_links" == "0" ]] || exit 11
+
+restored_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" \
+  -d "$target" -c \
+  "SELECT json_object_agg(name,total) FROM (
+   SELECT 'subjects' name,count(*) total FROM subjects UNION ALL
+   SELECT 'subject_scopes',count(*) FROM subject_scopes UNION ALL
+   SELECT 'resources',count(*) FROM resources UNION ALL
+   SELECT 'acl_entries',count(*) FROM acl_entries UNION ALL
+   SELECT 'documents',count(*) FROM documents UNION ALL
+   SELECT 'document_versions',count(*) FROM document_versions UNION ALL
+   SELECT 'renditions',count(*) FROM renditions UNION ALL
+   SELECT 'upload_sessions',count(*) FROM upload_sessions UNION ALL
+   SELECT 'ingestion_jobs',count(*) FROM ingestion_jobs UNION ALL
+   SELECT 'ingestion_outbox',count(*) FROM ingestion_outbox UNION ALL
+   SELECT 'object_blobs',count(*) FROM object_blobs UNION ALL
+   SELECT 'audit_events',count(*) FROM audit_events) q")"
+restored_audit="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" \
+  -d "$target" -c \
+  "SELECT json_build_object('count',expected_count,
+   'sequence',coalesce(head_sequence,0),'head_hash',head_hash)
+   FROM audit_chain_anchor WHERE singleton")"
+python3 - "$work_dir/manifest.json" "$restored_counts" "$restored_audit" <<'PY'
+import json
+import sys
+manifest = json.load(open(sys.argv[1]))
+if manifest["row_counts"] != json.loads(sys.argv[2]):
+    raise SystemExit("restored row counts differ from manifest")
+if manifest["audit"] != json.loads(sys.argv[3]):
+    raise SystemExit("restored audit anchor differs from manifest")
+PY
+
+runtime_dsn="postgresql://$POSTGRES_RUNTIME_USER:$POSTGRES_RUNTIME_PASSWORD@postgres:5432/$target"
+runtime_sql() {
+  docker compose exec -T -e PGPASSWORD="$POSTGRES_RUNTIME_PASSWORD" postgres \
+    psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_RUNTIME_USER" \
+    -d "$target" -c "$1" >/dev/null 2>&1
+}
+denied=0
+for statement in \
+  "CREATE TABLE runtime_must_not_create(id integer)" \
+  "ALTER TABLE subjects ADD COLUMN runtime_must_not_alter integer" \
+  "DROP TABLE subjects" \
+  "INSERT INTO audit_events(event_id,actor_kind,action,result,reason_code,request_id,event_hash)
+   VALUES(gen_random_uuid(),'service','bypass','success','bypass','bypass',repeat('0',64))" \
+  "UPDATE audit_events SET reason_code='tamper'" \
+  "DELETE FROM audit_chain_anchor" \
+  "TRUNCATE audit_events"
+do
+  if ! runtime_sql "$statement"; then
+    denied=$((denied + 1))
+  fi
+done
+[[ "$denied" -eq 7 ]] || { echo "Runtime grants verification failed" >&2; exit 12; }
+
+docker compose --profile tools run --rm \
+  -e POSTGRES_DSN="$runtime_dsn" \
+  -e S3_BUCKET="$target" \
+  migrate python -m rtr_copilot.commands.verify_audit >/dev/null
+docker compose --profile tools run --rm \
+  -e POSTGRES_DSN="$runtime_dsn" \
+  -e S3_BUCKET="$target" \
+  migrate python -m rtr_copilot.commands.repository_smoke >/dev/null
+docker compose --profile tools run --rm \
+  -e S3_BUCKET="$target" \
+  migrate python -m rtr_copilot.commands.object_inventory \
+  >"$work_dir/restored-inventory.json"
+python3 - "$work_dir/manifest.json" "$work_dir/restored-inventory.json" <<'PY'
+import json
+import sys
+expected = json.load(open(sys.argv[1]))["minio_inventory"]
+actual = json.load(open(sys.argv[2]))
+for item in actual:
+    item["bucket"] = expected[0]["bucket"] if expected else item["bucket"]
+if expected != actual:
+    raise SystemExit("restored object inventory differs from manifest")
+PY
+
+docker compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
+  -U "$POSTGRES_USER" -d "$target" \
+  -c "UPDATE rtr_restore_operation SET state='ready', updated_at=now()
+      WHERE singleton AND operation_id='$operation_id'" >/dev/null
+restore_succeeded="true"
+duration="$(( $(date +%s) - started_epoch ))"
+object_count="$(python3 -c "import json; print(len(json.load(open('$work_dir/manifest.json'))['minio_inventory']))")"
+echo "RESTORE PASS operation_id=$operation_id target=$target revision=$revision objects=$object_count row_counts=100% checksums=100% audit_chain=valid runtime_denials=7 duration_seconds=$duration"

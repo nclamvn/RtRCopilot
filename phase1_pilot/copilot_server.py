@@ -15,6 +15,7 @@ Kiến trúc: GOI_L3.yaml (gói từ kernel) là nguồn duy nhất (NT-1). GAP 
 gap_log.jsonl · hỏi đáp log qa_log.jsonl.
 """
 import json
+import hmac
 import os
 import re
 import sys
@@ -22,6 +23,7 @@ import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
+import threading
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
@@ -177,6 +179,13 @@ except Exception as _e:                       # pragma: no cover
     auth = None
     print(f"CHÚ Ý: không nạp được auth.py ({_e}) · quay về mã chung")
 
+# Normal mode bắt buộc account store khỏe. Đường users/passcode cũ chỉ tồn tại khi
+# operator chủ động bật migration; first-run bootstrap là một mode localhost riêng.
+AUTH_MODE = os.environ.get("COPILOT_AUTH_MODE", "accounts").strip().lower()
+if AUTH_MODE not in ("accounts", "migration"):
+    sys.exit("COPILOT_AUTH_MODE chỉ nhận 'accounts' hoặc 'migration'")
+AUTH_BOOTSTRAP = os.environ.get("COPILOT_AUTH_BOOTSTRAP", "") == "1"
+
 USERS = {}
 _ufile = HERE / "users.yaml"
 if _ufile.exists():
@@ -204,7 +213,18 @@ def _chuan_vai(u):
 
 
 def dung_tai_khoan():
-    return bool(auth and auth.co_tai_khoan())
+    return AUTH_MODE == "accounts"
+
+
+def auth_health():
+    """Trả (healthy, code, detail); migration vẫn phải có credential thực."""
+    if AUTH_MODE == "migration":
+        if USERS or PASSCODE:
+            return True, "migration", ""
+        return False, "migration_no_credential", "Migration mode chưa có users.yaml hoặc passcode"
+    if not auth:
+        return False, "auth_module", "Không nạp được mô-đun tài khoản"
+    return auth.trang_thai_kho()
 
 
 def who(handler):
@@ -216,7 +236,10 @@ def who(handler):
     tok = (handler.headers.get("x-token", "") or "").strip()
     code = (handler.headers.get("x-passcode", "") or "").strip()
 
-    if dung_tai_khoan():
+    if AUTH_MODE == "accounts":
+        healthy, _, detail = auth_health()
+        if not healthy:
+            return False, None, detail
         acc, err = auth.doc_token(tok)
         if not acc:
             return False, None, err or "Chưa đăng nhập"
@@ -235,7 +258,9 @@ def who(handler):
             return False, u, "Tài khoản này không có quyền vào gói lãnh đạo"
         return True, u, ""
 
-    if PASSCODE and code != PASSCODE:
+    if not PASSCODE:
+        return False, None, "Migration mode chưa có credential"
+    if code != PASSCODE:
         return False, None, "Sai mã nội bộ"
     # Chế độ mã chung: không biết người gọi là ai, nên cấp vai theo GÓI đang phục vụ.
     # Gói lãnh đạo đã bị chặn ở tầng khởi động nếu không có passcode (RB.2).
@@ -824,6 +849,60 @@ except Exception as _e:          # thiếu bản mẫu thì màn Tạo tài li�
     print(f"CHÚ Ý: chưa nạp được bộ sinh tài liệu ({_e}) · màn Tạo tài liệu sẽ báo chưa sẵn sàng")
 
 RENDER_DIR = HERE.parent / "_rendered"
+RENDER_OWNERS = RENDER_DIR / ".owners.json"
+_OWNER_LOCK = threading.Lock()
+
+
+def _user_id(user):
+    """Định danh ownership tạm thời; TIP-004 sẽ migrate sang immutable user id."""
+    return (user or {}).get("email") or ("legacy:" + (user or {}).get("ten", ""))
+
+
+def _owners():
+    if not RENDER_OWNERS.exists():
+        return {}
+    try:
+        doc = json.loads(RENDER_OWNERS.read_text(encoding="utf-8"))
+        return doc if isinstance(doc, dict) else {}
+    except Exception:
+        return {}
+
+
+def _own_file(name, user):
+    RENDER_DIR.mkdir(exist_ok=True)
+    with _OWNER_LOCK:
+        doc = _owners()
+        doc[Path(name).name] = {"owner": _user_id(user),
+                                "created": datetime.now().isoformat(timespec="seconds")}
+        tmp = RENDER_OWNERS.with_suffix(".tmp")
+        tmp.write_text(json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.chmod(tmp, 0o600)
+        tmp.replace(RENDER_OWNERS)
+        os.chmod(RENDER_OWNERS, 0o600)
+
+
+def _audit_security(user, action, target, allowed):
+    with QA_LOG.open("a", encoding="utf-8") as f:
+        f.write(json.dumps({
+            "t": datetime.now().isoformat(timespec="seconds"), "mode": MODE,
+            "nguoi": (user or {}).get("ten", "không rõ"), "user_id": _user_id(user),
+            "q": f"[SECURITY] {action} · {target}",
+            "a": "ALLOWED" if allowed else "DENIED",
+        }, ensure_ascii=False) + "\n")
+
+
+GET_ACTIONS = {
+    "/api/search": "tra_cuu", "/api/templates": "sinh_tai_lieu",
+    "/api/download": "sinh_tai_lieu", "/api/admin/users": "quan_tri_nguoi_dung",
+    "/api/issues": "bao_sai", "/api/gaps": "xem_thong_ke",
+    "/api/audit": "hoi", "/api/usedby": "tra_cuu", "/api/record": "tra_cuu",
+}
+POST_ACTIONS = {
+    "/api/doimatkhau": "hoi", "/api/admin/moi": "quan_tri_nguoi_dung",
+    "/api/admin/vai": "quan_tri_nguoi_dung", "/api/admin/khoa": "quan_tri_nguoi_dung",
+    "/api/issue": "bao_sai", "/api/extract": "sinh_tai_lieu",
+    "/api/render": "sinh_tai_lieu", "/api/chat": "hoi",
+}
 
 # Bản mẫu nào mang tư cách pháp nhân · SUY RA từ registry, không viết tay danh sách id.
 # Viết tay là chắc chắn quên khi ai đó thêm bản mẫu "tờ trình" hay "báo cáo gửi Bộ":
@@ -938,14 +1017,43 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _api_auth(self, actions):
+        """Cổng mặc định cho /api/*; endpoint public phải được tách rõ trước khi gọi."""
+        path = urllib.parse.urlsplit(self.path).path
+        action = actions.get(path)
+        healthy, _, detail = auth_health()
+        if not healthy:
+            self._send(503, json.dumps({"error": detail, "unhealthy": True},
+                                       ensure_ascii=False))
+            return None
+        ok, user, err = who(self)
+        if not ok:
+            self._send(403, json.dumps({"error": err or "Chưa đăng nhập"},
+                                       ensure_ascii=False))
+            return None
+        if not action or not duoc_lam(user, action):
+            self._send(403, json.dumps({"error": "Không có quyền thực hiện hành động này"},
+                                       ensure_ascii=False))
+            return None
+        return user
+
     def do_GET(self):
         if self.path == "/":
             return self._send(200, HTML, "text/html")
         if self.path == "/health":
-            return self._send(200, json.dumps({
-                "ok": True, "mode": MODE, "pack": PACK, "dang_nhap": bool(USERS),
+            healthy, auth_state, auth_detail = auth_health()
+            return self._send(200 if healthy else 503, json.dumps({
+                "ok": healthy, "mode": MODE, "pack": PACK, "dang_nhap": healthy,
+                "auth_mode": AUTH_MODE, "auth_state": auth_state,
+                "auth_detail": auth_detail if not healthy else None,
                 "model": MODEL if MODE == "LIVE" else None,
                 "records_loaded": len(RECORDS), "pack_date": PACK_DATE}))
+        # Bootstrap tối thiểu: whoami là API GET duy nhất không cần phiên.
+        if self.path.startswith("/api/") and self.path != "/api/whoami":
+            user = self._api_auth(GET_ACTIONS)
+            if user is None:
+                return
+            self._api_user = user
         if self.path.startswith("/api/search"):
             q = urllib.request.unquote(self.path.split("q=", 1)[-1]) if "q=" in self.path else ""
             hits = search(q, top=8)
@@ -961,10 +1069,18 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, json.dumps({"ready": bool(TEMPLATES), "templates": out},
                                               ensure_ascii=False))
         if self.path.startswith("/api/download"):
+            user = self._api_user
             name = urllib.request.unquote(self.path.split("f=", 1)[-1]) if "f=" in self.path else ""
             f = (RENDER_DIR / Path(name).name)          # chặn đi ra ngoài thư mục
             if not f.exists() or f.parent != RENDER_DIR:
                 return self._send(404, json.dumps({"error": "không có file"}))
+            owner = _owners().get(f.name, {}).get("owner")
+            allowed = bool(owner and hmac.compare_digest(owner, _user_id(user)))
+            _audit_security(user, "download", f.name, allowed)
+            if not allowed:
+                return self._send(403, json.dumps(
+                    {"error": "Chỉ người tạo tài liệu tải được file này"},
+                    ensure_ascii=False))
             ctype = ("application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                      if f.suffix == ".docx" else
                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -977,16 +1093,20 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             return
         if self.path == "/api/whoami":
+            healthy, state, detail = auth_health()
             ok, user, err = who(self)
             # Trả kèm bảng quyền đã tính sẵn để giao diện ẩn/hiện đúng. Đây CHỈ là
             # trang trí — mọi cổng thật nằm ở phía server; giấu nút không phải là khoá.
             lam_duoc = {k: duoc_lam(user, k) for k in BANG_QUYEN} if ok else {}
             return self._send(200, json.dumps(
-                {"ok": ok, "can_dang_nhap": dung_tai_khoan() or bool(USERS),
+                {"ok": ok, "can_dang_nhap": True,
+                 "healthy": healthy, "auth_state": state,
                  "che_do_dang_nhap": "tai_khoan" if dung_tai_khoan()
                                      else ("ma_rieng" if USERS else "ma_chung"),
-                 "cho_dang_ky": bool(auth) and dung_tai_khoan(),
-                 "user": user, "lam_duoc": lam_duoc, "error": err},
+                 "cho_dang_ky": bool(auth) and dung_tai_khoan()
+                                and (healthy or AUTH_BOOTSTRAP),
+                 "user": user, "lam_duoc": lam_duoc,
+                 "error": err or (detail if not healthy else "")},
                 ensure_ascii=False))
         if self.path.startswith("/kichhoat"):
             ma = urllib.request.unquote(self.path.split("ma=", 1)[-1]) if "ma=" in self.path else ""
@@ -1018,10 +1138,12 @@ class Handler(BaseHTTPRequestHandler):
             if duoc_lam(user, "xem_ten_nguoi_hoi"):
                 pass
             elif duoc_lam(user, "duyet_bao_sai"):
-                rows = [dict(r, nguoi="(ẩn danh)") for r in rows]
+                rows = [{k: v for k, v in dict(r, nguoi="(ẩn danh)").items()
+                         if k != "user_id"} for r in rows]
             else:
-                ten = (user or {}).get("ten", "")
-                rows = [r for r in rows if r.get("nguoi") == ten]
+                uid = _user_id(user)
+                # Log cũ thiếu user_id không được đoán theo display name: fail-closed.
+                rows = [r for r in rows if r.get("user_id") == uid]
             return self._send(200, json.dumps({"issues": list(reversed(rows)),
                                                "an_danh": not duoc_lam(user, "xem_ten_nguoi_hoi"),
                                                "chi_cua_toi": not duoc_lam(user, "duyet_bao_sai")},
@@ -1039,10 +1161,11 @@ class Handler(BaseHTTPRequestHandler):
             # mới lộ ra chỗ tài liệu công ty đang thủng.
             xem_ten = duoc_lam(user, "xem_ten_nguoi_hoi")
             xem_het = duoc_lam(user, "xem_thong_ke")
-            ten_toi = (user or {}).get("ten", "")
+            uid_toi = _user_id(user)
             evs = []
             for r in reversed(read_jsonl(QA_LOG, limit=200)):
-                if not xem_het and r.get("nguoi", "không rõ") != ten_toi:
+                # Log cũ thiếu user_id không match staff, dù display name trùng.
+                if not xem_het and r.get("user_id") != uid_toi:
                     continue
                 a = r.get("a", "")
                 gate = "HONEST NULL" if "GAP:" in a else ("MOCK LOOKUP" if r.get("mode") == "MOCK" else "PASS")
@@ -1050,6 +1173,7 @@ class Handler(BaseHTTPRequestHandler):
                      "mode": r.get("mode", ""), "gate": gate}
                 if xem_ten:
                     e["nguoi"] = r.get("nguoi", "không rõ")
+                    e["user_id"] = r.get("user_id", "")
                 evs.append(e)
                 if len(evs) >= 60:
                     break
@@ -1057,11 +1181,18 @@ class Handler(BaseHTTPRequestHandler):
                 {"events": evs, "co_ten": xem_ten,
                  "pham_vi": "tat_ca" if xem_het else "chi_cua_toi"}, ensure_ascii=False))
         if self.path.startswith("/api/usedby"):
+            user = self._api_user
             rid = urllib.request.unquote(self.path.split("id=", 1)[-1]) if "id=" in self.path else ""
             uses = []
             for r in reversed(read_jsonl(QA_LOG, limit=200)):
                 if rid and rid in (r.get("a") or ""):
-                    uses.append({"t": r.get("t", ""), "q": r.get("q", "")})
+                    if user.get("quyen") == "nhanvien" and r.get("user_id") != _user_id(user):
+                        continue
+                    item = {"t": r.get("t", ""), "q": r.get("q", "")}
+                    if user.get("quyen") == "quantri":
+                        item.update({"nguoi": r.get("nguoi", "không rõ"),
+                                     "user_id": r.get("user_id", "")})
+                    uses.append(item)
                 if len(uses) >= 8:
                     break
             return self._send(200, json.dumps({"uses": uses}, ensure_ascii=False))
@@ -1098,6 +1229,12 @@ class Handler(BaseHTTPRequestHandler):
             if not auth:
                 return self._send(503, json.dumps({"error": "Chưa bật tài khoản trên máy chủ này"},
                                                   ensure_ascii=False))
+            healthy, state, detail = auth_health()
+            bootstrap_register = (self.path == "/api/dangky" and AUTH_BOOTSTRAP
+                                  and state in ("missing", "no_active_admin"))
+            if not healthy and not bootstrap_register:
+                return self._send(503, json.dumps(
+                    {"error": detail, "unhealthy": True}, ensure_ascii=False))
             try:
                 b = self._body()
             except Exception:
@@ -1116,10 +1253,16 @@ class Handler(BaseHTTPRequestHandler):
                  "lam_duoc": {k: auth.duoc(acc, k) for k in auth.QUYEN},
                  "het_han_gio": auth.TOKEN_TTL_H}, ensure_ascii=False))
 
+        if self.path.startswith("/api/"):
+            user = self._api_auth(POST_ACTIONS)
+            if user is None:
+                return
+            self._api_user = user
+
         if self.path == "/api/doimatkhau":
-            ok, user, err = who(self)
-            if not ok or not auth:
-                return self._send(403, json.dumps({"error": err or "Chưa đăng nhập"},
+            user = self._api_user
+            if not auth:
+                return self._send(503, json.dumps({"error": "Chưa bật tài khoản"},
                                                   ensure_ascii=False))
             acc = auth.tim(user.get("email", ""))
             if not acc:
@@ -1132,9 +1275,7 @@ class Handler(BaseHTTPRequestHandler):
                                          ensure_ascii=False))
 
         if self.path == "/api/admin/moi":
-            ok, user, err = who(self)
-            if not ok:
-                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            user = self._api_user
             if not duoc_lam(user, "quan_tri_nguoi_dung") or not auth:
                 return self._send(403, json.dumps(
                     {"error": "Chỉ quản trị viên mời được người mới"}, ensure_ascii=False))
@@ -1153,9 +1294,7 @@ class Handler(BaseHTTPRequestHandler):
                 ensure_ascii=False))
 
         if self.path in ("/api/admin/vai", "/api/admin/khoa"):
-            ok, user, err = who(self)
-            if not ok:
-                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            user = self._api_user
             if not duoc_lam(user, "quan_tri_nguoi_dung") or not auth:
                 return self._send(403, json.dumps(
                     {"error": "Chỉ quản trị viên phân quyền được"}, ensure_ascii=False))
@@ -1178,9 +1317,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/issue":
             # Báo sai phải thành DỮ LIỆU, không phải một thông báo rồi thôi.
             # Sổ theo dõi 4 tuần có ô "số ca báo sai" · đây là đường đổ vào ô đó.
-            ok, user, err = who(self)
-            if not ok:
-                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            user = self._api_user
             try:
                 length = int(self.headers.get("content-length", 0))
                 b = json.loads(self.rfile.read(length))
@@ -1191,6 +1328,7 @@ class Handler(BaseHTTPRequestHandler):
                     return self._send(400, json.dumps({"error": "Thiếu nội dung câu trả lời bị báo sai"}))
                 rec = {"t": datetime.now().isoformat(timespec="seconds"), "mode": MODE, "pack": PACK,
                        "nguoi": (user or {}).get("ten", "không rõ"),
+                       "user_id": _user_id(user),
                        "q": q, "a": a, "why": why,
                        "records": re.findall(r"\[((?:HC|OC|SC|STRAT|L3F|L3R|CAND|SPEC|DISP|PRICE)[-.][^\]\s·]*)", a),
                        "trang_thai": "moi"}
@@ -1203,9 +1341,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/extract":
             # NT-4: model CHỈ bóc tham số từ lời người dùng · không tạo file, không
             # đụng fact khoá. Kết quả đổ vào form để NGƯỜI soát rồi mới bấm xuất.
-            ok, user, err = who(self)
-            if not ok:
-                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            user = self._api_user
             if MODE != "LIVE":
                 return self._send(200, json.dumps(
                     {"ok": False, "reason": "Bóc tham số cần chế độ LIVE · chưa nối API key. "
@@ -1249,9 +1385,7 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._send(500, json.dumps({"error": str(e)[:250]}, ensure_ascii=False))
         if self.path == "/api/render":
-            ok, user, err = who(self)
-            if not ok:
-                return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+            user = self._api_user
             if not render_doc:
                 return self._send(500, json.dumps(
                     {"state": "FAIL-LOUD", "issues": ["Bộ sinh tài liệu chưa nạp được"]},
@@ -1279,12 +1413,15 @@ class Handler(BaseHTTPRequestHandler):
                         ensure_ascii=False))
                 r = render_doc.render(tid, params, out_dir=RENDER_DIR)
                 if r.get("file"):
+                    _own_file(Path(r["file"]).name, user)
                     r["download"] = "/api/download?f=" + urllib.request.quote(Path(r["file"]).name)
                     r["filename"] = Path(r["file"]).name
                     r.pop("file", None)
                     with QA_LOG.open("a", encoding="utf-8") as f:
                         f.write(json.dumps({"t": datetime.now().isoformat(timespec="seconds"),
                                             "mode": MODE, "q": f"[TẠO TÀI LIỆU] {tid}",
+                                            "nguoi": user.get("ten", "không rõ"),
+                                            "user_id": _user_id(user),
                                             "a": f"{r['state']} · {r['filename']} · record: "
                                                  f"{', '.join(r.get('records') or []) or 'không có fact khoá'}"},
                                            ensure_ascii=False) + "\n")
@@ -1294,9 +1431,7 @@ class Handler(BaseHTTPRequestHandler):
                     {"state": "FAIL-LOUD", "issues": [str(e)[:300]]}, ensure_ascii=False))
         if self.path != "/api/chat":
             return self._send(404, json.dumps({"error": "not found"}))
-        ok, user, err = who(self)
-        if not ok:
-            return self._send(403, json.dumps({"error": err}, ensure_ascii=False))
+        user = self._api_user
         streamed = False
         try:
             length = int(self.headers.get("content-length", 0))
@@ -1354,6 +1489,7 @@ class Handler(BaseHTTPRequestHandler):
         now = datetime.now().isoformat(timespec="seconds")
         with QA_LOG.open("a", encoding="utf-8") as f:
             f.write(json.dumps({"t": now, "mode": MODE, "nguoi": (user or {}).get("ten", "không rõ"),
+                                "user_id": _user_id(user),
                                 "q": question, "a": answer}, ensure_ascii=False) + "\n")
         for gap in re.findall(r"GAP:\s*(.+)", answer):
             with GAP_LOG.open("a", encoding="utf-8") as f:
@@ -1363,18 +1499,21 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    # Mở ra LAN khi CÓ cách nhận diện người: passcode chung, hoặc đã có tài khoản thật.
-    HOST = "0.0.0.0" if (PASSCODE or dung_tai_khoan()) else "127.0.0.1"
-    if not PASSCODE and not dung_tai_khoan():
-        print("CHÚ Ý: chưa có tài khoản nào và chưa set COPILOT_PASSCODE · chỉ bind 127.0.0.1.")
-        print("Mở cho LAN: tạo tài khoản quản trị (COPILOT_ADMIN_EMAIL + đăng ký) hoặc")
-        print("            export COPILOT_PASSCODE=matma rồi chạy lại.")
+    healthy, auth_state, auth_detail = auth_health()
+    # Bootstrap luôn localhost. Normal mode chỉ mở LAN khi account store thực sự khỏe.
+    HOST = "127.0.0.1" if AUTH_BOOTSTRAP or not healthy else "0.0.0.0"
+    if not healthy:
+        print(f"AUTH UNHEALTHY · {auth_state}: {auth_detail} · chỉ bind 127.0.0.1.")
+        if AUTH_BOOTSTRAP:
+            print("BOOTSTRAP explicit đang bật · chỉ đăng ký/kích hoạt; mọi API dữ liệu trả 503.")
+        else:
+            print("Không có anonymous fallback. First-run cần COPILOT_AUTH_BOOTSTRAP=1.")
     if PACK == "leader":
         print("=" * 66)
         print("GÓI LÃNH ĐẠO · chứa giá bán và chính sách chiết khấu.")
         print("Chỉ chia sẻ địa chỉ và passcode cho nhóm đã được cấp quyền.")
         print("=" * 66)
-    if dung_tai_khoan():
+    if dung_tai_khoan() and healthy:
         _tk = auth.thong_ke()
         print(f"Đăng nhập: TÀI KHOẢN EMAIL · {_tk['hoat_dong']} hoạt động "
               f"({_tk['theo_vai']['quantri']} quản trị · {_tk['theo_vai']['lanhdao']} lãnh đạo · "
@@ -1383,9 +1522,9 @@ if __name__ == "__main__":
         if not auth.smtp_san_sang():
             print("CHÚ Ý: CHƯA cấu hình SMTP · người mới KHÔNG đăng ký được (không gửi được thư "
                   "kích hoạt). Khai COPILOT_SMTP_HOST/USER/PASS.")
-    elif USERS:
+    elif AUTH_MODE == "migration" and USERS:
         print(f"Đăng nhập: {len(USERS)} người trong users.yaml (đường lùi · nên chuyển sang tài khoản email)")
-    else:
+    elif AUTH_MODE == "migration":
         print("Đăng nhập: chưa có tài khoản nào · dùng passcode chung (không đếm được người dùng thực)")
         if auth and auth.ADMIN_EMAIL:
             print(f"Quản trị viên gốc sẽ là {auth.ADMIN_EMAIL} khi đăng ký lần đầu.")
