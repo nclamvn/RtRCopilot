@@ -343,6 +343,48 @@ async def test_clean_upload_is_durable_idempotent_and_provenance_complete(
 
 
 @pytest.mark.asyncio
+async def test_deferred_publication_stays_quarantined_until_atomic_finalization(
+    factory: async_sessionmaker[Any],
+) -> None:
+    settings = get_settings()
+    service = IngestionService(
+        settings=settings,
+        storage=S3ObjectStorage(settings),
+        uow=UnitOfWork(factory),
+        scanner=DeterministicTestScanner("clean"),
+    )
+    principal, parent = await _principal_and_parent(factory)
+    payload = _png()
+    upload_id, validation_job = await service.receive(
+        _bytes_stream(payload), content_length=len(payload), parent=parent,
+        logical_name="deferred output", original_filename="deferred.png",
+        declared_mime="image/png", declared_sha256=None,
+        requested_by=principal, request_id=f"deferred-{uuid.uuid4()}",
+        defer_publication=True,
+    )
+    assert await service.process_job(validation_job, worker_id="deferred-validation")
+    async with factory() as session:
+        row = (await session.execute(text("""
+            SELECT u.document_id,u.version_id,u.object_id,u.publication_deferred,
+              array_agg(DISTINCT r.lifecycle_state) states
+            FROM upload_sessions u
+            JOIN resources r ON r.resource_id IN (
+              u.document_id,u.version_id,u.object_id
+            )
+            WHERE u.upload_id=:upload_id
+            GROUP BY u.document_id,u.version_id,u.object_id,u.publication_deferred
+        """), {"upload_id": upload_id})).mappings().one()
+        visible = await session.scalar(text("""
+            SELECT count(*) FROM documents d
+            JOIN resources r ON r.resource_id=d.document_id
+            WHERE d.document_id=:document_id AND r.lifecycle_state='active'
+        """), {"document_id": row["document_id"]})
+    assert row["publication_deferred"] is True
+    assert set(row["states"]) == {"quarantined"}
+    assert visible == 0
+
+
+@pytest.mark.asyncio
 async def test_infected_upload_remains_quarantined_without_version(
     factory: async_sessionmaker[Any],
 ) -> None:

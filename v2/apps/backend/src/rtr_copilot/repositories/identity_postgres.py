@@ -238,6 +238,15 @@ class PostgresSubjectRepository:
                 temporary_entitlements=await self._entitlements(session, row["user_id"]),
             )
 
+    async def get_by_user_id(self, user_id: UUID) -> Subject | None:
+        async with self.factory() as session:
+            identity = (await session.execute(text("""
+                SELECT issuer,provider_sub FROM subjects WHERE user_id=:user_id
+            """), {"user_id": user_id})).one_or_none()
+        if identity is None:
+            return None
+        return await self.get_by_identity(str(identity[0]), str(identity[1]))
+
     async def replace_authority(self, subject: Subject) -> Subject:
         return await self.mutate_authority(
             subject,

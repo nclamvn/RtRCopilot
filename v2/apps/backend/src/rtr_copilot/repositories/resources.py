@@ -28,6 +28,8 @@ class ResourceRecord(BaseModel):
         "object",
         "rendition",
         "record",
+        "template",
+        "template_version",
     ]
     owner_subject_id: uuid.UUID | None = None
     classification: Classification

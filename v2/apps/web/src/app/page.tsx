@@ -1,6 +1,7 @@
 "use client";
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import Link from "next/link";
 import {
   FileItem,
   Locator,
@@ -352,6 +353,7 @@ export default function Home() {
         <input value={query} onChange={event => setQuery(event.target.value)}
           placeholder="Tên tệp hoặc tài liệu"/></label>
       <div className="identity"><strong>{identity.display_name || identity.email}</strong>
+        <Link href="/documents">Documents</Link>
         <button type="button" onClick={logout}>Đăng xuất</button></div>
       <button className="mobile-control" type="button" onClick={() => setCatalogOpen(true)}>
         Danh mục

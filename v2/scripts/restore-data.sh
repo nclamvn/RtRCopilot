@@ -201,7 +201,9 @@ REVOKE DELETE ON
   sot_packages, records, record_versions, evidence_spans, sot_publish_runs,
   sot_active_revisions, sot_reindex_outbox, search_generations,
   active_search_generations, chunks, index_jobs, messages, answer_runs,
-  answer_citations
+  answer_citations, templates, template_versions, template_bindings,
+  render_jobs, document_publication_outbox, render_job_bindings, generated_files, approvals,
+  document_issuances
 FROM rtr_app;
 GRANT EXECUTE ON FUNCTION append_audit_event(
   uuid,timestamptz,text,uuid,text,text,text,text,text,uuid,text,uuid[],
@@ -235,7 +237,7 @@ docker compose --profile tools run --rm \
 
 revision="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
   -c 'SELECT version_num FROM alembic_version')"
-[[ "$revision" == "0007_hybrid_rag_grounded_answers" ]] || exit 10
+[[ "$revision" == "0008_document_operating_system" ]] || exit 10
 broken_links="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
   -c "SELECT count(*) FROM documents d LEFT JOIN document_versions v
       ON v.version_id=d.current_version_id
@@ -309,6 +311,38 @@ rag_delete_grants="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER
     ]) table_name
     WHERE has_table_privilege('$POSTGRES_RUNTIME_USER',table_name,'DELETE')")"
 [[ "$rag_delete_grants" == "0" ]] || exit 11
+document_os_integrity_errors="$(docker compose exec -T postgres psql -At \
+  -U "$POSTGRES_USER" -d "$target" -c "SELECT
+    (SELECT count(*) FROM template_versions tv
+     LEFT JOIN templates t ON t.template_id=tv.template_id
+     LEFT JOIN object_blobs o ON o.object_id=tv.source_object_id
+     WHERE t.template_id IS NULL OR o.object_id IS NULL
+       OR tv.source_sha256<>o.sha256)
+    + (SELECT count(*) FROM generated_files g
+       LEFT JOIN render_jobs j ON j.render_job_id=g.render_job_id
+       LEFT JOIN document_versions v ON v.version_id=g.version_id
+       LEFT JOIN object_blobs o ON o.object_id=g.object_id
+       WHERE j.render_job_id IS NULL OR v.version_id IS NULL
+         OR o.object_id IS NULL OR g.checksum<>v.sha256 OR g.checksum<>o.sha256)
+    + (SELECT count(*) FROM document_publication_outbox p
+       LEFT JOIN render_jobs j ON j.render_job_id=p.render_job_id
+       WHERE j.render_job_id IS NULL
+         OR (p.state='finalized' AND p.finalized_at IS NULL))
+    + (SELECT count(*) FROM approvals a
+       LEFT JOIN generated_files g ON g.generated_file_id=a.generated_file_id
+       WHERE g.generated_file_id IS NULL OR a.checksum<>g.checksum)
+    + (SELECT count(*) FROM document_issuances i
+       LEFT JOIN generated_files g ON g.generated_file_id=i.generated_file_id
+       WHERE g.generated_file_id IS NULL OR i.issued_checksum<>g.checksum)")"
+[[ "$document_os_integrity_errors" == "0" ]] || exit 11
+document_os_delete_grants="$(docker compose exec -T postgres psql -At \
+  -U "$POSTGRES_USER" -d "$target" -c "SELECT count(*) FROM unnest(ARRAY[
+    'templates','template_versions','template_bindings','render_jobs',
+    'document_publication_outbox','render_job_bindings','generated_files',
+    'approvals','document_issuances'
+  ]) table_name
+  WHERE has_table_privilege('$POSTGRES_RUNTIME_USER',table_name,'DELETE')")"
+[[ "$document_os_delete_grants" == "0" ]] || exit 11
 
 restored_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" \
   -d "$target" -c \
@@ -339,6 +373,15 @@ restored_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" 
    SELECT 'answer_runs',count(*) FROM answer_runs UNION ALL
    SELECT 'answer_citations',count(*) FROM answer_citations UNION ALL
    SELECT 'gaps',count(*) FROM gaps UNION ALL
+   SELECT 'templates',count(*) FROM templates UNION ALL
+   SELECT 'template_versions',count(*) FROM template_versions UNION ALL
+   SELECT 'template_bindings',count(*) FROM template_bindings UNION ALL
+   SELECT 'render_jobs',count(*) FROM render_jobs UNION ALL
+   SELECT 'document_publication_outbox',count(*) FROM document_publication_outbox UNION ALL
+   SELECT 'render_job_bindings',count(*) FROM render_job_bindings UNION ALL
+   SELECT 'generated_files',count(*) FROM generated_files UNION ALL
+   SELECT 'approvals',count(*) FROM approvals UNION ALL
+   SELECT 'document_issuances',count(*) FROM document_issuances UNION ALL
    SELECT 'object_blobs',count(*) FROM object_blobs UNION ALL
    SELECT 'audit_events',count(*) FROM audit_events) q")"
 restored_audit="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" \

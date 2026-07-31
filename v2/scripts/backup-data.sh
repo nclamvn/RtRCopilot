@@ -110,6 +110,15 @@ row_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" \
    SELECT 'answer_runs',count(*) FROM answer_runs UNION ALL
    SELECT 'answer_citations',count(*) FROM answer_citations UNION ALL
    SELECT 'gaps',count(*) FROM gaps UNION ALL
+   SELECT 'templates',count(*) FROM templates UNION ALL
+   SELECT 'template_versions',count(*) FROM template_versions UNION ALL
+   SELECT 'template_bindings',count(*) FROM template_bindings UNION ALL
+   SELECT 'render_jobs',count(*) FROM render_jobs UNION ALL
+   SELECT 'document_publication_outbox',count(*) FROM document_publication_outbox UNION ALL
+   SELECT 'render_job_bindings',count(*) FROM render_job_bindings UNION ALL
+   SELECT 'generated_files',count(*) FROM generated_files UNION ALL
+   SELECT 'approvals',count(*) FROM approvals UNION ALL
+   SELECT 'document_issuances',count(*) FROM document_issuances UNION ALL
    SELECT 'object_blobs',count(*) FROM object_blobs UNION ALL
    SELECT 'audit_events',count(*) FROM audit_events) q")"
 finished="$(date -u +%Y-%m-%dT%H:%M:%SZ)"

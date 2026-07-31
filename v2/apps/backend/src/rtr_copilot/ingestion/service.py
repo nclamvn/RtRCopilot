@@ -109,6 +109,7 @@ class IngestionService:
         declared_sha256: str | None,
         requested_by: uuid.UUID,
         request_id: str,
+        defer_publication: bool = False,
     ) -> tuple[uuid.UUID, uuid.UUID]:
         if (
             content_length is not None
@@ -234,6 +235,11 @@ class IngestionService:
                 "sha256": stored.sha256,
                 "byte_size": stored.byte_size,
             })
+            if defer_publication:
+                await session.execute(text("""
+                    UPDATE upload_sessions SET publication_deferred=true
+                    WHERE upload_id=:upload_id
+                """), {"upload_id": upload_id})
             job_id = await self.jobs.create(
                 session,
                 upload_id=upload_id,
@@ -358,7 +364,9 @@ class IngestionService:
                 source_zone=row["source_zone"],
                 department_id=row["department_id"],
                 project_id=row["project_id"],
-                lifecycle_state="active",
+                lifecycle_state=(
+                    "quarantined" if row["publication_deferred"] else "active"
+                ),
             ),
         )
         await session.execute(text("""
@@ -384,16 +392,24 @@ class IngestionService:
             WHERE document_id=:document_id;
         """), {"version_id": version_id, "document_id": row["document_id"]})
         await session.execute(text("""
-            UPDATE resources SET lifecycle_state='active', updated_at=now()
+            UPDATE resources SET lifecycle_state=:lifecycle, updated_at=now()
             WHERE resource_id IN (:document_id,:object_id)
         """), {
             "document_id": row["document_id"],
             "object_id": row["object_id"],
+            "lifecycle": (
+                "quarantined" if row["publication_deferred"] else "active"
+            ),
         })
         await session.execute(text("""
-            UPDATE object_blobs SET storage_state='available',
+            UPDATE object_blobs SET storage_state=:storage_state,
               mime_type=:mime, verified_at=now() WHERE object_id=:object_id
-        """), {"mime": detection.detected_mime, "object_id": row["object_id"]})
+        """), {
+            "mime": detection.detected_mime, "object_id": row["object_id"],
+            "storage_state": (
+                "staged" if row["publication_deferred"] else "available"
+            ),
+        })
         render_job = await self.jobs.create(
             session,
             upload_id=None,
@@ -549,9 +565,11 @@ class IngestionService:
                 SELECT v.version_id,v.document_id,v.object_id,v.sha256,v.byte_size,
                   v.detected_mime,o.object_key,o.bucket,r.owner_subject_id,
                   r.classification,r.source_zone,r.department_id,r.project_id
+                  ,COALESCE(u.publication_deferred,false) publication_deferred
                 FROM document_versions v
                 JOIN object_blobs o ON o.object_id=v.object_id
                 JOIN resources r ON r.resource_id=v.version_id
+                LEFT JOIN upload_sessions u ON u.version_id=v.version_id
                 WHERE v.version_id=:version_id
             """), {"version_id": version_id})).mappings().one()
             return dict(row)
@@ -727,7 +745,10 @@ class IngestionService:
                             source_zone=row["source_zone"],
                             department_id=row["department_id"],
                             project_id=row["project_id"],
-                            lifecycle_state="active",
+                            lifecycle_state=(
+                                "quarantined"
+                                if row["publication_deferred"] else "active"
+                            ),
                         ),
                     )
                     await session.execute(text("""
@@ -736,7 +757,7 @@ class IngestionService:
                           etag,storage_state,created_by,verified_at
                         ) VALUES (
                           :object_id,:bucket,:key,:sha256,:byte_size,:mime,
-                          :etag,'available',:created_by,now()
+                          :etag,:storage_state,:created_by,now()
                         )
                     """), {
                         "object_id": object_id,
@@ -747,6 +768,9 @@ class IngestionService:
                         "mime": mime,
                         "etag": stored.etag,
                         "created_by": claim.requested_by,
+                        "storage_state": (
+                            "staged" if row["publication_deferred"] else "available"
+                        ),
                     })
                 await ResourceRepository().create(
                     session,
@@ -758,7 +782,10 @@ class IngestionService:
                         source_zone=row["source_zone"],
                         department_id=row["department_id"],
                         project_id=row["project_id"],
-                        lifecycle_state="active",
+                        lifecycle_state=(
+                            "quarantined"
+                            if row["publication_deferred"] else "active"
+                        ),
                     ),
                 )
                 await session.execute(text("""

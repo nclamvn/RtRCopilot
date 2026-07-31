@@ -13,7 +13,9 @@ else
     -v "$project_root/apps/backend:/app" \
     -w /app \
     python:3.12.4-slim \
-    sh -ec 'pip install --no-cache-dir uv==0.8.11 >/dev/null &&
+    sh -ec 'apt-get update -qq &&
+      apt-get install --no-install-recommends --yes fonts-dejavu-core=2.37-6 >/dev/null &&
+      pip install --no-cache-dir uv==0.8.11 >/dev/null &&
       uv sync --frozen &&
       uv run ruff check . &&
       uv run mypy &&

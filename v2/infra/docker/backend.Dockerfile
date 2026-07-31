@@ -46,6 +46,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends --yes \
       espeak-ng=1.51+dfsg-10+deb12u2 \
       ffmpeg=7:5.1.9-0+deb12u1 \
+      fonts-dejavu-core=2.37-6 \
       libatomic1=12.2.0-14+deb12u1 \
       libseccomp2=2.5.4-1+deb12u1 \
       tesseract-ocr=5.3.0-2 \

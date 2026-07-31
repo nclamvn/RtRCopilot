@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** Blueprint APPROVED · TIP-008 VERIFIED
+**Trạng thái:** Blueprint APPROVED · TIP-009 VERIFIED
 
 ```text
 TIP-001 Security containment
@@ -42,7 +42,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-006 ✅ | SOT adapter, full provenance, freshness, atomic publish/reindex | 003,004 | VERIFIED: 16/16 AC; 153 backend + 20 integration tests; live kernel blocked read-only |
 | TIP-007 ✅ | ACL-filtered hybrid retrieval, grounded answer, deep citations | 006 | VERIFIED: 17/17 AC; leak 0; Recall@5 1.00; runtime grounded + honest-null |
 | TIP-008 ✅ | Files UI + viewers cho image/PDF/DOCX/XLSX/PPTX/video/audio | 005 | VERIFIED: 18/18 AC; web 28 + browser 15; backend 159 + integration 34; leak 0 |
-| TIP-009 | Template registry, structured binding, render/preview/approval | 006,008 | No hard-code drift; official doc approval trail |
+| TIP-009 ✅ | Template registry, structured binding, render/preview/approval | 006,008 | VERIFIED: deterministic 4-format Document OS; locked SOT; approval/issuance trail |
 | TIP-010 | Curator/admin flows, gaps/freshness, Refinery research adapter | 006,007 | Research never masquerades as RtR fact |
 | TIP-011 | Unified Design DNA UI, Evidence Rail, responsive/WCAG/i18n | 007,008,009 | Browser E2E + axe; keyboard-only critical flows |
 | TIP-012 | HTTPS, quotas, observability, CI/CD, security/load, backup/DR | 010,011 | SLO/load targets; restore and rollback drill |

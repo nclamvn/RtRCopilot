@@ -120,3 +120,44 @@ Catalog, manifest, rendition và original đều resolve effective principals
 user/group/role/department/project tại thời điểm request. Explicit deny thắng;
 quyền xem không suy ra quyền tải. Nội dung trả `private, no-store`, `nosniff` và
 không expose bucket/key.
+
+## Documents workspace
+
+Người dùng mở `/documents` để chọn mẫu đã duyệt, điền trường có kiểu, kiểm tra
+locked facts từ SOT, tạo bản dựng và xem bằng chính safe viewer của Files. Trang
+không mở trực tiếp OOXML, object URL hoặc bucket URL. Official/legal preview luôn
+hiện dấu `DRAFT · CHƯA PHÁT HÀNH` cho tới khi issuance thành công.
+
+Các boundary chính:
+
+- `GET /api/v1/templates` là registry policy-filtered, cursor ký và ổn định;
+- `GET /api/v1/templates/{template_id}/versions/{version_id}` và
+  `GET /api/v1/templates/{template_id}/versions` trả schema/lịch sử được cấp quyền;
+- curator/admin import và lifecycle qua `/api/v1/templates`;
+- bind/render qua `/api/v1/templates/{version_id}/bind|render`;
+- status/retry/cancel qua `/api/v1/documents/render-jobs`;
+- generated detail, submit, decision, issue và revoke qua
+  `/api/v1/documents/generated`.
+
+Template import từ chối macro/OLE/ActiveX, external relationship, traversal,
+malformed hoặc oversized package. Render worker không gọi internet hoặc thực thi
+template code; manifest đóng băng template checksum, renderer version, canonical
+input, SOT revision và exact fact/evidence checksums. Output hợp lệ được đăng ký
+vào Files và chỉ public metadata sau safe rendition pipeline.
+
+Official/legal yêu cầu reviewer role, requester không được tự duyệt, approval gắn
+exact checksum và chỉ checksum đó được issue một lần. Revocation giữ nguyên lịch
+sử. Khi render fail/cancel, job chỉ trả safe error code và resource tạm được đóng
+visibility; retry dùng lại cùng semantic job.
+
+Backup/restore manifest bao gồm toàn bộ template/version/binding, render
+job/binding, generated manifest/checksum, approval và issuance. Sau restore, chạy:
+
+```bash
+make migration-check
+make db-verify
+```
+
+Nếu worker bị ngắt giữa render và Files registration, retry job sau khi dependency
+ready. Không sửa trực tiếp generated row, approval hoặc issuance; các bảng lịch sử
+có trigger bất biến và mutation trái phép phải được xử lý như sự cố audit.

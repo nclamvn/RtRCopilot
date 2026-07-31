@@ -10,6 +10,7 @@ from typing import Any, cast
 from redis.asyncio import Redis
 
 from rtr_copilot.config import get_settings
+from rtr_copilot.documents.service import DocumentOSService
 from rtr_copilot.ingestion.jobs import INGESTION_QUEUE, JobRepository
 from rtr_copilot.ingestion.service import IngestionService
 from rtr_copilot.rag.reindex import ReindexService
@@ -32,6 +33,9 @@ async def execute(
     job_id = str(job["job_id"])
     if job.get("name") == "ingestion.process":
         await IngestionService().process_job(uuid.UUID(job_id), worker_id=worker_id)
+        return
+    if job.get("name") == "document.render":
+        await DocumentOSService().process_render(uuid.UUID(job_id))
         return
     if job.get("name") != "system.ping":
         return

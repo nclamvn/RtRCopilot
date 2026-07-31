@@ -10,8 +10,10 @@ set +a
 # A gate may run concurrently from another Builder/VERIFY process. Isolate every
 # invocation so one cleanup/downgrade cannot invalidate another migration chain.
 verify_run_id="$$"
-verify_database="rtr_verify_007_${verify_run_id}"
-verify_bucket="rtr-copilot-verify-007-${verify_run_id}"
+verify_database="rtr_verify_009_${verify_run_id}"
+verify_bucket="rtr-copilot-verify-009-${verify_run_id}"
+restore_database="${verify_database}_restore"
+restore_bucket="${verify_bucket}-restore"
 owner_dsn="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$verify_database"
 runtime_dsn="postgresql://$POSTGRES_RUNTIME_USER:$POSTGRES_RUNTIME_PASSWORD@postgres:5432/$verify_database"
 
@@ -21,15 +23,18 @@ cleanup() {
         WHERE datname='$verify_database' AND pid <> pg_backend_pid()" >/dev/null
   docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
     --if-exists "$verify_database" >/dev/null
+  docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
+    --if-exists "$restore_database" >/dev/null
   minio_id="$(docker compose ps -q minio)"
   docker run --rm --network "container:$minio_id" \
     --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
     -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
-         mc rb --force 'local/$verify_bucket' >/dev/null 2>&1 || true"
+         mc rb --force 'local/$verify_bucket' >/dev/null 2>&1 || true
+         mc rb --force 'local/$restore_bucket' >/dev/null 2>&1 || true"
 }
 trap cleanup EXIT
 
-docker compose up -d postgres minio
+docker compose up -d postgres minio redis
 docker compose exec -T postgres psql -X -U "$POSTGRES_USER" -d postgres \
   -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity
       WHERE datname='$verify_database' AND pid <> pg_backend_pid()" >/dev/null
@@ -44,6 +49,7 @@ docker run --rm --network "container:$minio_id" \
 
 run_migration() {
   docker compose --profile tools run --rm \
+    -v "$project_root/apps/backend/migrations:/app/migrations:ro" \
     -e MIGRATION_DSN="$owner_dsn" \
     -e POSTGRES_DSN="$runtime_dsn" \
     migrate alembic "$@"
@@ -97,6 +103,16 @@ run_migration upgrade 0007_hybrid_rag_grounded_answers
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NOT NULL
   AND to_regclass('public.ingestion_outbox') IS NOT NULL
   AND to_regclass('public.upload_sessions') IS NOT NULL" | grep -q "t"
+run_migration upgrade 0008_document_operating_system
+owner_sql "SELECT to_regclass('public.templates') IS NOT NULL
+  AND to_regclass('public.template_versions') IS NOT NULL
+  AND to_regclass('public.render_jobs') IS NOT NULL
+  AND to_regclass('public.generated_files') IS NOT NULL
+  AND to_regclass('public.approvals') IS NOT NULL
+  AND to_regclass('public.document_issuances') IS NOT NULL" | grep -q "t"
+run_migration downgrade 0007_hybrid_rag_grounded_answers
+owner_sql "SELECT to_regclass('public.templates') IS NULL" | grep -q "t"
+run_migration upgrade 0008_document_operating_system
 run_migration downgrade 0004_append_only_audit
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NULL" | grep -q "t"
 run_migration upgrade 0005_ingestion_renditions
@@ -129,8 +145,162 @@ docker compose --profile tools run --rm --no-deps \
     /app/.venv/bin/python -m pytest -q \
       -o asyncio_default_test_loop_scope=session \
       tests/test_data_integration.py tests/test_ingestion_integration.py \
+      tests/test_documents_integration.py \
       tests/test_sot_integration.py tests/test_rag_integration.py
   '
+
+# AC18: prove a non-empty Document OS database/object backup can be restored
+# with exact canonical lineage, checksums and runtime grants.
+empty_sha="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+owner_sql "BEGIN;
+  INSERT INTO subjects(user_id,issuer,provider_sub,email,canonical_domain,display_name)
+  VALUES('99000000-0000-0000-0000-000000000001','tip009-recovery',
+    '$verify_run_id','recovery@rtrobotics.com','rtrobotics.com','TIP-009 Recovery');
+  INSERT INTO resources(resource_id,resource_type,owner_subject_id,classification,
+    source_zone,lifecycle_state) VALUES
+    ('99000000-0000-0000-0000-000000000010','template',
+      '99000000-0000-0000-0000-000000000001','internal','sot','active'),
+    ('99000000-0000-0000-0000-000000000011','template_version',
+      '99000000-0000-0000-0000-000000000001','internal','sot','active'),
+    ('99000000-0000-0000-0000-000000000012','object',
+      '99000000-0000-0000-0000-000000000001','internal','sot','active'),
+    ('99000000-0000-0000-0000-000000000020','document',
+      '99000000-0000-0000-0000-000000000001','internal','sot','active'),
+    ('99000000-0000-0000-0000-000000000021','document_version',
+      '99000000-0000-0000-0000-000000000001','internal','sot','active'),
+    ('99000000-0000-0000-0000-000000000022','object',
+      '99000000-0000-0000-0000-000000000001','internal','sot','active');
+  INSERT INTO object_blobs(object_id,bucket,object_key,sha256,byte_size,mime_type,
+    storage_state,created_by,verified_at) VALUES
+    ('99000000-0000-0000-0000-000000000012','$verify_bucket',
+      'tip009-recovery/template.docx','$empty_sha',0,
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'available','99000000-0000-0000-0000-000000000001',now()),
+    ('99000000-0000-0000-0000-000000000022','$verify_bucket',
+      'tip009-recovery/output.docx','$empty_sha',0,
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'available','99000000-0000-0000-0000-000000000001',now());
+  INSERT INTO templates(template_id,stable_key,display_name,category,owner_subject_id,
+    classification,document_class,lifecycle)
+  VALUES('99000000-0000-0000-0000-000000000010','tip009.recovery',
+    'TIP-009 recovery fixture','recovery',
+    '99000000-0000-0000-0000-000000000001','internal','official','approved');
+  INSERT INTO template_versions(version_id,template_id,version_ordinal,format,
+    source_object_id,source_sha256,field_schema,renderer_kind,renderer_version,
+    status,created_by,approved_by,approved_at)
+  VALUES('99000000-0000-0000-0000-000000000011',
+    '99000000-0000-0000-0000-000000000010',1,'docx',
+    '99000000-0000-0000-0000-000000000012','$empty_sha',
+    '{\"type\":\"object\"}','docx_declarative','tip009-recovery','approved',
+    '99000000-0000-0000-0000-000000000001',
+    '99000000-0000-0000-0000-000000000001',now());
+  UPDATE templates SET current_version_id=
+    '99000000-0000-0000-0000-000000000011'
+    WHERE template_id='99000000-0000-0000-0000-000000000010';
+  INSERT INTO template_bindings(binding_id,template_version_id,field_path,field_type,
+    source,required,rules)
+  VALUES('99000000-0000-0000-0000-000000000013',
+    '99000000-0000-0000-0000-000000000011','customer_name','string',
+    'user',true,'{}');
+  INSERT INTO documents(document_id,logical_name)
+  VALUES('99000000-0000-0000-0000-000000000020','TIP-009 recovery output');
+  INSERT INTO document_versions(version_id,document_id,version_no,object_id,
+    original_filename,mime_type,sha256,byte_size,created_by)
+  VALUES('99000000-0000-0000-0000-000000000021',
+    '99000000-0000-0000-0000-000000000020',1,
+    '99000000-0000-0000-0000-000000000022','output.docx',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '$empty_sha',0,'99000000-0000-0000-0000-000000000001');
+  UPDATE documents SET current_version_id=
+    '99000000-0000-0000-0000-000000000021'
+    WHERE document_id='99000000-0000-0000-0000-000000000020';
+  INSERT INTO render_jobs(render_job_id,requester_id,idempotency_key,
+    canonical_input_hash,template_version_id,state,progress,request_id,
+    started_at,finished_at)
+  VALUES('99000000-0000-0000-0000-000000000030',
+    '99000000-0000-0000-0000-000000000001','tip009-recovery-$verify_run_id',
+    '$empty_sha','99000000-0000-0000-0000-000000000011','completed',100,
+    'tip009-recovery',now(),now());
+  INSERT INTO document_publication_outbox(outbox_id,render_job_id,state,payload,
+    attempts,finalized_at)
+  VALUES('99000000-0000-0000-0000-000000000031',
+    '99000000-0000-0000-0000-000000000030','finalized',
+    '{\"checksum\":\"$empty_sha\"}',1,now());
+  INSERT INTO render_job_bindings(render_binding_id,render_job_id,field_path,source,
+    canonical_value)
+  VALUES('99000000-0000-0000-0000-000000000032',
+    '99000000-0000-0000-0000-000000000030','customer_name','user',
+    '\"Recovery Customer\"');
+  INSERT INTO generated_files(generated_file_id,render_job_id,document_id,version_id,
+    object_id,output_format,ordinal,checksum,render_manifest,lifecycle)
+  VALUES('99000000-0000-0000-0000-000000000040',
+    '99000000-0000-0000-0000-000000000030',
+    '99000000-0000-0000-0000-000000000020',
+    '99000000-0000-0000-0000-000000000021',
+    '99000000-0000-0000-0000-000000000022','docx',1,'$empty_sha',
+    '{\"parameters\":{\"customer_name\":{\"canonical_value\":\"Recovery Customer\"}}}',
+    'issued');
+  INSERT INTO approvals(approval_id,generated_file_id,stage,reviewer_subject_id,
+    decision,checksum,attestation_hash,reason)
+  VALUES('99000000-0000-0000-0000-000000000050',
+    '99000000-0000-0000-0000-000000000040','approval',
+    '99000000-0000-0000-0000-000000000001','approved','$empty_sha',
+    '$empty_sha','Recovery proof');
+  INSERT INTO document_issuances(issuance_id,generated_file_id,issue_number,
+    issuer_subject_id,issued_checksum)
+  VALUES('99000000-0000-0000-0000-000000000060',
+    '99000000-0000-0000-0000-000000000040','RTR-2026-ABCDEF123456',
+    '99000000-0000-0000-0000-000000000001','$empty_sha');
+  COMMIT;" >/dev/null
+docker run --rm --network "container:$minio_id" \
+  --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
+  -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
+       printf '' | mc pipe 'local/$verify_bucket/tip009-recovery/template.docx' >/dev/null
+       printf '' | mc pipe 'local/$verify_bucket/tip009-recovery/output.docx' >/dev/null
+       mc mb --ignore-existing 'local/$restore_bucket' >/dev/null
+       mc cp --recursive 'local/$verify_bucket/tip009-recovery/' \
+         'local/$restore_bucket/tip009-recovery/' >/dev/null"
+recovery_dump="$(mktemp)"
+docker compose exec -T postgres pg_dump -U "$POSTGRES_USER" \
+  -d "$verify_database" -Fc >"$recovery_dump"
+docker compose exec -T postgres createdb -U "$POSTGRES_USER" "$restore_database"
+docker compose exec -T postgres pg_restore -U "$POSTGRES_USER" \
+  -d "$restore_database" --no-owner <"$recovery_dump"
+rm -f "$recovery_dump"
+restore_proof="$(docker compose exec -T postgres psql -X -At \
+  -U "$POSTGRES_USER" -d "$restore_database" -c "SELECT
+    (SELECT count(*) FROM templates)=1
+    AND (SELECT count(*) FROM template_versions)=1
+    AND (SELECT count(*) FROM template_bindings)=1
+    AND (SELECT count(*) FROM render_jobs)=1
+    AND (SELECT count(*) FROM document_publication_outbox)=1
+    AND (SELECT count(*) FROM render_job_bindings)=1
+    AND (SELECT count(*) FROM generated_files)=1
+    AND (SELECT count(*) FROM approvals)=1
+    AND (SELECT count(*) FROM document_issuances)=1
+    AND NOT EXISTS (
+      SELECT 1 FROM generated_files g
+      JOIN render_jobs j USING(render_job_id)
+      JOIN document_versions v USING(version_id)
+      JOIN object_blobs o ON o.object_id=g.object_id
+      JOIN document_publication_outbox p USING(render_job_id)
+      JOIN approvals a USING(generated_file_id)
+      JOIN document_issuances i USING(generated_file_id)
+      WHERE g.checksum<>v.sha256 OR g.checksum<>o.sha256
+        OR g.checksum<>a.checksum OR g.checksum<>i.issued_checksum
+        OR p.state<>'finalized' OR p.finalized_at IS NULL)
+    AND NOT EXISTS (
+      SELECT 1 FROM unnest(ARRAY['templates','template_versions',
+        'template_bindings','render_jobs','document_publication_outbox',
+        'render_job_bindings','generated_files','approvals','document_issuances']) t
+      WHERE has_table_privilege('$POSTGRES_RUNTIME_USER',t,'DELETE'))")"
+[[ "$restore_proof" == "t" ]]
+restored_objects="$(docker run --rm --network "container:$minio_id" \
+  --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
+  -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
+       mc ls --recursive 'local/$restore_bucket/tip009-recovery/' | wc -l" \
+  | tr -d '[:space:]')"
+[[ "$restored_objects" == "2" ]]
 
 runtime_sql() {
   docker compose exec -T -e PGPASSWORD="$POSTGRES_RUNTIME_PASSWORD" postgres \
@@ -164,4 +334,4 @@ do
   fi
 done
 [[ "$denied" -eq 18 ]]
-echo "DATA INTEGRATION PASS · migrations=7 · revision_fixtures=7 · failing_ddl_rollback=1 · tests=34 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · runtime_denials=18"
+echo "DATA INTEGRATION PASS · migrations=8 · revision_fixtures=8 · failing_ddl_rollback=1 · tests=37 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=18"
