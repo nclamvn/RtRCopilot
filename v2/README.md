@@ -1,7 +1,8 @@
 # RtR Copilot V2 · Production Platform Foundation
 
-Đây là scaffold M1, chưa có dữ liệu và chưa giả lập Ask, Files hoặc Documents. V2
-chạy song song; `phase1_pilot`, kernel và GOI packs không được mount hoặc sửa.
+V2 hiện có nền tảng identity/policy, SOT/RAG và Files workspace đa định dạng. Dữ
+liệu công ty không được tự động mount; `phase1_pilot`, kernel và GOI packs không
+được sửa hoặc dùng làm fixture.
 
 ## Prerequisites
 
@@ -75,8 +76,47 @@ Không chạy `make reset` để chữa readiness; reset xóa dữ liệu local.
 `.env.example` là danh mục đầy đủ biến bắt buộc. API và worker validate URL/schema
 trước khi serve; lỗi chỉ nêu key, không in giá trị secret. Không commit `.env`.
 
-## Boundary với TIP sau
+## Canonical SOT publish
 
-- TIP-003 thêm OIDC và policy; scaffold này không có user giả.
-- TIP-004 thêm business schema, object metadata và durable audit.
-- Không mount KnowledgeBase, kernel, home directory, credential file hoặc Docker socket.
+TIP-006 chỉ nhận thư mục adapter-package xác định nằm dưới
+`SOT_STAGING_ROOT`. Các boundary chính là stage, validate, publish và status tại
+`/api/v1/sot/packages`; active records/evidence được đọc qua `/api/v1/sot/records`
+và luôn đi qua policy TIP-003.
+
+Production cần `SOT_SIGNING_SECRET` riêng, tối thiểu 32 byte. Nếu API container cần
+nhận package bên ngoài thì chỉ bind-mount đúng staging directory ở chế độ read-only.
+Không mount KnowledgeBase, toàn bộ home directory, credential file hoặc Docker
+socket; live kernel không bao giờ được import hay dùng làm package production.
+
+Probe kernel chỉ-đọc:
+
+```bash
+python -m rtr_copilot.commands.sot_kernel_guard \
+  --root /Users/os/RtR/kernel --record-key L3F.ENT.002
+```
+
+## Files workspace
+
+Người dùng đã đăng nhập mở Files tại web root. Trình duyệt chỉ gọi same-origin
+`/api/files`; route này proxy có allowlist sang `/api/v1/files` và không chuyển
+object key, token hay internal hostname.
+
+Backend hỗ trợ:
+
+- catalog policy-filtered và cursor có chữ ký: `GET /api/v1/files`;
+- đích upload được phép: `GET /api/v1/files/upload-targets`;
+- upload stream, status và retry tại `/api/v1/files/uploads`;
+- viewer manifest và safe rendition content;
+- tải original bằng quyền `download` riêng tại
+  `/api/v1/files/versions/{version_id}/original`;
+- single byte range cho rendition/original (`200`, `206`, `416`).
+
+Mười bốn input được nhận: PNG/JPEG/WebP/TIFF, PDF, DOCX/XLSX/PPTX, MP4/WebM và
+MP3/M4A/WAV/OGG. UI không mở original Office: DOCX/PPTX dùng PDF/text semantic
+rendition và luôn cảnh báo bố cục có thể khác; XLSX dùng bounded semantic grid.
+Audio/video dùng browser-safe rendition và transcript timecode.
+
+Catalog, manifest, rendition và original đều resolve effective principals
+user/group/role/department/project tại thời điểm request. Explicit deny thắng;
+quyền xem không suy ra quyền tải. Nội dung trả `private, no-store`, `nosniff` và
+không expose bucket/key.

@@ -21,7 +21,14 @@ Lifecycle = Literal["draft", "active", "superseded", "quarantined", "deleted"]
 
 class ResourceRecord(BaseModel):
     resource_id: uuid.UUID = Field(default_factory=uuid.uuid4)
-    resource_type: Literal["source", "document", "document_version", "object", "rendition"]
+    resource_type: Literal[
+        "source",
+        "document",
+        "document_version",
+        "object",
+        "rendition",
+        "record",
+    ]
     owner_subject_id: uuid.UUID | None = None
     classification: Classification
     source_zone: SourceZone
@@ -146,6 +153,18 @@ class ResourceRepository:
             document_id = await session.scalar(text("""
                 SELECT document_id FROM document_versions WHERE version_id=:resource_id
             """), {"resource_id": resource_id})
+        elif leaf.resource_type == "object":
+            version_id = await session.scalar(text("""
+                SELECT version_id FROM document_versions WHERE object_id=:resource_id
+                UNION ALL
+                SELECT version_id FROM renditions WHERE object_id=:resource_id
+                LIMIT 1
+            """), {"resource_id": resource_id})
+            if version_id is not None:
+                lineage.append(version_id)
+                document_id = await session.scalar(text("""
+                    SELECT document_id FROM document_versions WHERE version_id=:version_id
+                """), {"version_id": version_id})
         elif leaf.resource_type == "document":
             document_id = resource_id
         if document_id is not None:

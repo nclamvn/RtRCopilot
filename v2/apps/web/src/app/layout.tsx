@@ -2,8 +2,8 @@ import type {Metadata} from "next";
 import "./styles.css";
 
 export const metadata: Metadata = {
-  title: "RtR Copilot V2 Foundation",
-  description: "Secure platform foundation status",
+  title: "Files · RtR Copilot",
+  description: "Không gian xem tệp nội bộ an toàn của RtR",
 };
 
 export default function RootLayout({children}: Readonly<{children: React.ReactNode}>) {

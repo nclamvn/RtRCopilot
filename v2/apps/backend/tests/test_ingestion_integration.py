@@ -464,6 +464,10 @@ async def test_private_context_http_acl_is_owner_or_explicit_grant_only(
     unrelated = await _new_principal(factory, "unrelated")
     expired = await _new_principal(factory, "expired")
     denied = await _new_principal(factory, "denied")
+    effective_cases = {
+        principal_type: await _new_principal(factory, f"effective-{principal_type}")
+        for principal_type in ("group", "role", "department", "project")
+    }
     payload = _png()
     upload_id, job_id = await service.receive(
         _bytes_stream(payload),
@@ -489,12 +493,15 @@ async def test_private_context_http_acl_is_owner_or_explicit_grant_only(
         document_id = await session.scalar(text("""
             SELECT document_id FROM upload_sessions WHERE upload_id=:upload_id
         """), {"upload_id": upload_id})
+        original_object_id = await session.scalar(text("""
+            SELECT object_id FROM document_versions WHERE version_id=:version_id
+        """), {"version_id": version_id})
         render_job_id = await session.scalar(text("""
             SELECT job_id FROM ingestion_jobs
             WHERE version_id=:version_id AND job_type='render'
         """), {"version_id": version_id})
     assert source_id == parent.resource_id
-    assert document_id and version_id and render_job_id
+    assert document_id and version_id and original_object_id and render_job_id
     assert await service.process_job(render_job_id, worker_id="acl-render")
     async with factory() as session:
         rendition_ids = list((await session.execute(text("""
@@ -520,11 +527,28 @@ async def test_private_context_http_acl_is_owner_or_explicit_grant_only(
         "unrelated": _subject(unrelated),
         "expired": _subject(expired),
         "denied": _subject(denied),
+        **{
+            f"effective-{principal_type}": _subject(principal)
+            for principal_type, principal in effective_cases.items()
+        },
     }
     manifest_url = f"/api/v1/files/versions/{version_id}/viewer-manifest"
     content_url = f"/api/v1/files/renditions/{rendition_ids[0]}/content"
+    original_url = f"/api/v1/files/versions/{version_id}/original"
     status_url = f"/api/v1/files/uploads/{upload_id}"
     async with _http_client(subjects) as client:
+        owner_catalog = await client.get(
+            "/api/v1/files",
+            headers={"X-Test-Subject": "owner"},
+        )
+        unrelated_catalog = await client.get(
+            "/api/v1/files",
+            headers={"X-Test-Subject": "unrelated"},
+        )
+        owner_targets = await client.get(
+            "/api/v1/files/upload-targets",
+            headers={"X-Test-Subject": "owner"},
+        )
         owner_status = await client.get(
             status_url,
             headers={"X-Test-Subject": "owner"},
@@ -536,6 +560,22 @@ async def test_private_context_http_acl_is_owner_or_explicit_grant_only(
         owner_content = await client.get(
             content_url,
             headers={"X-Test-Subject": "owner"},
+        )
+        owner_range = await client.get(
+            content_url,
+            headers={"X-Test-Subject": "owner", "Range": "bytes=0-9"},
+        )
+        owner_original = await client.get(
+            original_url,
+            headers={"X-Test-Subject": "owner"},
+        )
+        owner_original_suffix = await client.get(
+            original_url,
+            headers={"X-Test-Subject": "owner", "Range": "bytes=-10"},
+        )
+        owner_invalid_range = await client.get(
+            original_url,
+            headers={"X-Test-Subject": "owner", "Range": "bytes=999999-"},
         )
         unrelated_status = await client.get(
             status_url,
@@ -576,6 +616,31 @@ async def test_private_context_http_acl_is_owner_or_explicit_grant_only(
     assert owner_status.status_code == 200
     assert owner_manifest.status_code == 200
     assert owner_content.status_code == 200
+    assert owner_catalog.status_code == 200
+    assert str(version_id) in {
+        item["version_id"] for item in owner_catalog.json()["items"]
+    }
+    assert unrelated_catalog.status_code == 200
+    assert str(version_id) not in {
+        item["version_id"] for item in unrelated_catalog.json()["items"]
+    }
+    assert owner_targets.status_code == 200
+    assert str(parent.resource_id) in {
+        item["target_id"] for item in owner_targets.json()["items"]
+    }
+    assert owner_range.status_code == 206
+    assert owner_range.content == owner_content.content[:10]
+    assert owner_range.headers["content-range"].endswith(
+        f"/{len(owner_content.content)}",
+    )
+    assert owner_original.status_code == 200
+    assert owner_original.content == payload
+    assert owner_original_suffix.status_code == 206
+    assert owner_original_suffix.content == payload[-10:]
+    assert owner_invalid_range.status_code == 416
+    assert owner_invalid_range.content != payload
+    assert owner_original.headers["content-disposition"].startswith("attachment;")
+    assert owner_original.headers["cache-control"] == "private, no-store"
     assert owner_manifest.json()["capabilities"]["download_original"]
     for denied_response, unknown_response in (
         (unrelated_status, unknown_status),
@@ -748,6 +813,174 @@ async def test_private_context_http_acl_is_owner_or_explicit_grant_only(
         )
     assert viewer_manifest_with_download.status_code == 200
     assert viewer_manifest_with_download.json()["capabilities"]["download_original"]
+
+    async with factory() as session, session.begin():
+        await ResourceRepository().add_acl(
+            session,
+            ACLRecord(
+                resource_id=original_object_id,
+                principal_type="user",
+                principal_id=viewer,
+                action="download",
+                effect="deny",
+            ),
+            request_id=f"object-download-deny-{uuid.uuid4()}",
+        )
+    async with _http_client(subjects) as client:
+        viewer_catalog_after_object_deny = await client.get(
+            "/api/v1/files",
+            headers={"X-Test-Subject": "viewer"},
+        )
+        viewer_manifest_after_object_deny = await client.get(
+            manifest_url,
+            headers={"X-Test-Subject": "viewer"},
+        )
+        viewer_original_after_object_deny = await client.get(
+            original_url,
+            headers={"X-Test-Subject": "viewer"},
+        )
+    denied_catalog_item = next(
+        item for item in viewer_catalog_after_object_deny.json()["items"]
+        if item["version_id"] == str(version_id)
+    )
+    assert not denied_catalog_item["can_download"]
+    assert not viewer_manifest_after_object_deny.json()["capabilities"][
+        "download_original"
+    ]
+    assert viewer_original_after_object_deny.status_code == 404
+
+    group_id = uuid.uuid4()
+    department_id = uuid.uuid4()
+    project_id = uuid.uuid4()
+    async with factory() as session, session.begin():
+        await session.execute(text("""
+            INSERT INTO groups(group_id,issuer,provider_group_key,name)
+            VALUES (:group_id,'https://integration.identity',:key,'Effective deny')
+        """), {"group_id": group_id, "key": f"effective-{group_id}"})
+        await session.execute(text("""
+            INSERT INTO subject_groups(subject_id,group_id)
+            VALUES (:subject_id,:group_id)
+        """), {
+            "subject_id": effective_cases["group"],
+            "group_id": group_id,
+        })
+        role_id = await session.scalar(text("""
+            SELECT role_id FROM roles WHERE key='staff'
+        """))
+        assert role_id
+        await session.execute(text("""
+            INSERT INTO subject_roles(subject_id,role_id)
+            VALUES (:subject_id,:role_id)
+        """), {
+            "subject_id": effective_cases["role"],
+            "role_id": role_id,
+        })
+        for scope_type, scope_id in (
+            ("department", department_id),
+            ("project", project_id),
+        ):
+            await session.execute(text("""
+                INSERT INTO subject_scopes(subject_id,scope_type,scope_key)
+                VALUES (:subject_id,:scope_type,:scope_key)
+            """), {
+                "subject_id": effective_cases[scope_type],
+                "scope_type": scope_type,
+                "scope_key": str(scope_id),
+            })
+        repository = ResourceRepository()
+        for principal in effective_cases.values():
+            await repository.add_acl(
+                session,
+                ACLRecord(
+                    resource_id=parent.resource_id,
+                    principal_type="user",
+                    principal_id=principal,
+                    action="view",
+                    effect="allow",
+                ),
+                request_id=f"effective-allow-{uuid.uuid4()}",
+            )
+        for principal_type, principal_id in (
+            ("group", group_id),
+            ("role", role_id),
+            ("department", department_id),
+            ("project", project_id),
+        ):
+            await repository.add_acl(
+                session,
+                ACLRecord(
+                    resource_id=document_id,
+                    principal_type=principal_type,  # type: ignore[arg-type]
+                    principal_id=principal_id,
+                    action="view",
+                    effect="deny",
+                ),
+                request_id=f"effective-deny-{uuid.uuid4()}",
+            )
+    async with _http_client(subjects) as client:
+        effective_denials = [
+            await client.get(
+                manifest_url,
+                headers={"X-Test-Subject": f"effective-{principal_type}"},
+            )
+            for principal_type in effective_cases
+        ]
+    assert [response.status_code for response in effective_denials] == [404] * 4
+
+
+@pytest.mark.asyncio
+async def test_upload_targets_scan_past_first_batch_without_authorization_starvation(
+    factory: async_sessionmaker[Any],
+) -> None:
+    principal, _parent = await _principal_and_parent(factory)
+    unrelated = await _new_principal(factory, "target-scan-unrelated")
+    decoy_ids = [uuid.uuid4() for _ in range(200)]
+    authorized_id = uuid.uuid4()
+    resource_rows = [
+        {
+            "resource_id": resource_id,
+            "owner_subject_id": unrelated,
+        }
+        for resource_id in decoy_ids
+    ]
+    resource_rows.append({
+        "resource_id": authorized_id,
+        "owner_subject_id": principal,
+    })
+    source_rows = [
+        {
+            "source_id": resource_id,
+            "name": f"scan-target-{index:03d}",
+        }
+        for index, resource_id in enumerate(decoy_ids)
+    ]
+    source_rows.append({
+        "source_id": authorized_id,
+        "name": "zzzz-authorized-after-first-scan-batch",
+    })
+    async with factory() as session, session.begin():
+        await session.execute(text("""
+            INSERT INTO resources(
+              resource_id,resource_type,owner_subject_id,classification,
+              source_zone,lifecycle_state
+            ) VALUES (
+              :resource_id,'source',:owner_subject_id,'internal',
+              'private_context','active'
+            )
+        """), resource_rows)
+        await session.execute(text("""
+            INSERT INTO sources(source_id,kind,name,metadata)
+            VALUES (:source_id,'internal',:name,'{}')
+        """), source_rows)
+    async with _http_client({"scanner": _subject(principal)}) as client:
+        response = await client.get(
+            "/api/v1/files/upload-targets",
+            headers={"X-Test-Subject": "scanner"},
+        )
+    assert response.status_code == 200
+    assert str(authorized_id) in {
+        item["target_id"] for item in response.json()["items"]
+    }
 
 
 @pytest.mark.asyncio

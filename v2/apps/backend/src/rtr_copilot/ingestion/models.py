@@ -100,6 +100,38 @@ class ViewerManifest(BaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class FileCatalogItem(BaseModel):
+    document_id: UUID
+    version_id: UUID
+    logical_name: str
+    display_filename: str
+    detected_mime: str
+    viewer_kind: str
+    viewer_state: str
+    byte_size: int
+    classification: str
+    owner_display_name: str | None = None
+    version_created_at: datetime
+    quality: dict[str, Any] = Field(default_factory=dict)
+    warnings: list[str] = Field(default_factory=list)
+    can_download: bool
+
+
+class FileCatalogPage(BaseModel):
+    items: list[FileCatalogItem]
+    next_cursor: str | None = None
+
+
+class UploadTarget(BaseModel):
+    target_id: UUID
+    label: str
+    classification: str
+
+
+class UploadTargetList(BaseModel):
+    items: list[UploadTarget]
+
+
 class RenditionProvenance(BaseModel):
     schema_version: Literal[1] = 1
     source_version_id: UUID

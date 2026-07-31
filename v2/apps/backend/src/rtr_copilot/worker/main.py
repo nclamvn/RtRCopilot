@@ -12,6 +12,7 @@ from redis.asyncio import Redis
 from rtr_copilot.config import get_settings
 from rtr_copilot.ingestion.jobs import INGESTION_QUEUE, JobRepository
 from rtr_copilot.ingestion.service import IngestionService
+from rtr_copilot.rag.reindex import ReindexService
 
 QUEUE = "rtr:jobs"
 HEARTBEAT = "rtr:worker:heartbeat"
@@ -52,6 +53,16 @@ async def run() -> None:
             jobs = JobRepository()
             await jobs.dispatch_outbox(client)
             await jobs.refresh_metrics()
+            try:
+                await ReindexService().process_next()
+            except Exception as error:
+                logger.error(json.dumps({
+                    "event": "reindex_job_error",
+                    "error_code": "reindex_failed",
+                    "error_fingerprint": hashlib.sha256(
+                        type(error).__name__.encode(),
+                    ).hexdigest(),
+                }))
             item = await cast(
                 Awaitable[list[str] | None],
                 client.brpop([INGESTION_QUEUE, QUEUE], timeout=5),

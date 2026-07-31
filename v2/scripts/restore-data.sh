@@ -197,6 +197,12 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO rtr_app;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON audit_events FROM rtr_app;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON audit_chain_anchor FROM rtr_app;
 REVOKE INSERT, UPDATE, DELETE ON alembic_version FROM rtr_app;
+REVOKE DELETE ON
+  sot_packages, records, record_versions, evidence_spans, sot_publish_runs,
+  sot_active_revisions, sot_reindex_outbox, search_generations,
+  active_search_generations, chunks, index_jobs, messages, answer_runs,
+  answer_citations
+FROM rtr_app;
 GRANT EXECUTE ON FUNCTION append_audit_event(
   uuid,timestamptz,text,uuid,text,text,text,text,text,uuid,text,uuid[],
   jsonb,char(64),char(64),integer
@@ -229,12 +235,80 @@ docker compose --profile tools run --rm \
 
 revision="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
   -c 'SELECT version_num FROM alembic_version')"
-[[ "$revision" == "0005_ingestion_renditions" ]] || exit 10
+[[ "$revision" == "0007_hybrid_rag_grounded_answers" ]] || exit 10
 broken_links="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
   -c "SELECT count(*) FROM documents d LEFT JOIN document_versions v
       ON v.version_id=d.current_version_id
       WHERE d.current_version_id IS NOT NULL AND v.version_id IS NULL")"
 [[ "$broken_links" == "0" ]] || exit 11
+sot_broken_links="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
+  -c "SELECT count(*) FROM records r
+      LEFT JOIN record_versions rv ON rv.version_id=r.current_version_id
+      WHERE r.lifecycle='active' AND (
+        rv.version_id IS NULL OR rv.lifecycle<>'active'
+      )")"
+[[ "$sot_broken_links" == "0" ]] || exit 11
+sot_integrity_errors="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
+  -c "SELECT
+      (SELECT count(*) FROM evidence_spans e
+       LEFT JOIN record_versions rv ON rv.version_id=e.record_version_id
+       WHERE rv.version_id IS NULL)
+      + (SELECT count(*) FROM sot_active_revisions ar
+         LEFT JOIN sot_packages p ON p.package_id=ar.package_id
+         WHERE p.package_id IS NULL OR p.lifecycle<>'active'
+           OR p.revision<>ar.revision OR p.payload_sha256<>ar.payload_sha256)
+      + (SELECT count(*) FROM record_versions
+         WHERE content_sha256 !~ '^[0-9a-f]{64}$')
+      + (SELECT count(*) FROM evidence_spans
+         WHERE evidence_sha256 !~ '^[0-9a-f]{64}$')
+      + (SELECT count(*) FROM records r
+         JOIN resources rs ON rs.resource_id=r.record_id
+         JOIN record_versions rv ON rv.version_id=r.current_version_id
+         WHERE r.lifecycle='active' AND (
+           rv.owner_subject_id<>r.owner_subject_id
+           OR rv.classification<>r.classification
+           OR rv.classification<>rs.classification
+           OR rv.department_id IS DISTINCT FROM r.department_id
+           OR rv.department_id IS DISTINCT FROM rs.department_id
+           OR rv.project_id IS DISTINCT FROM r.project_id
+           OR rv.project_id IS DISTINCT FROM rs.project_id
+         ))")"
+[[ "$sot_integrity_errors" == "0" ]] || exit 11
+sot_delete_grants="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
+  -c "SELECT count(*) FROM unnest(ARRAY[
+      'sot_packages','records','record_versions','evidence_spans',
+      'sot_publish_runs','sot_active_revisions','sot_reindex_outbox'
+    ]) table_name
+    WHERE has_table_privilege('$POSTGRES_RUNTIME_USER',table_name,'DELETE')")"
+[[ "$sot_delete_grants" == "0" ]] || exit 11
+rag_integrity_errors="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
+  -c "SELECT
+      (SELECT count(*) FROM active_search_generations ag
+       LEFT JOIN search_generations g ON g.generation_id=ag.generation_id
+       WHERE g.generation_id IS NULL OR g.lifecycle<>'active'
+         OR g.source_key<>ag.source_key
+         OR g.source_revision<>ag.source_revision
+         OR g.index_fingerprint<>ag.index_fingerprint)
+      + (SELECT count(*) FROM chunks c
+         LEFT JOIN search_generations g ON g.generation_id=c.generation_id
+         LEFT JOIN record_versions rv ON rv.version_id=c.record_version_id
+         WHERE g.generation_id IS NULL OR rv.version_id IS NULL
+           OR c.text_sha256 !~ '^[0-9a-f]{64}$'
+           OR c.record_checksum !~ '^[0-9a-f]{64}$')
+      + (SELECT count(*) FROM answer_citations ac
+         LEFT JOIN answer_runs ar ON ar.answer_run_id=ac.answer_run_id
+         LEFT JOIN chunks c ON c.chunk_id=ac.chunk_id
+         WHERE ar.answer_run_id IS NULL OR c.chunk_id IS NULL
+           OR ac.record_checksum<>c.record_checksum
+           OR ac.record_version_id<>c.record_version_id)")"
+[[ "$rag_integrity_errors" == "0" ]] || exit 11
+rag_delete_grants="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
+  -c "SELECT count(*) FROM unnest(ARRAY[
+      'search_generations','active_search_generations','chunks','index_jobs',
+      'messages','answer_runs','answer_citations'
+    ]) table_name
+    WHERE has_table_privilege('$POSTGRES_RUNTIME_USER',table_name,'DELETE')")"
+[[ "$rag_delete_grants" == "0" ]] || exit 11
 
 restored_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" \
   -d "$target" -c \
@@ -249,6 +323,22 @@ restored_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" 
    SELECT 'upload_sessions',count(*) FROM upload_sessions UNION ALL
    SELECT 'ingestion_jobs',count(*) FROM ingestion_jobs UNION ALL
    SELECT 'ingestion_outbox',count(*) FROM ingestion_outbox UNION ALL
+   SELECT 'sot_packages',count(*) FROM sot_packages UNION ALL
+   SELECT 'records',count(*) FROM records UNION ALL
+   SELECT 'record_versions',count(*) FROM record_versions UNION ALL
+   SELECT 'evidence_spans',count(*) FROM evidence_spans UNION ALL
+   SELECT 'sot_publish_runs',count(*) FROM sot_publish_runs UNION ALL
+   SELECT 'sot_active_revisions',count(*) FROM sot_active_revisions UNION ALL
+   SELECT 'sot_reindex_outbox',count(*) FROM sot_reindex_outbox UNION ALL
+   SELECT 'search_generations',count(*) FROM search_generations UNION ALL
+   SELECT 'active_search_generations',count(*) FROM active_search_generations UNION ALL
+   SELECT 'chunks',count(*) FROM chunks UNION ALL
+   SELECT 'index_jobs',count(*) FROM index_jobs UNION ALL
+   SELECT 'conversations',count(*) FROM conversations UNION ALL
+   SELECT 'messages',count(*) FROM messages UNION ALL
+   SELECT 'answer_runs',count(*) FROM answer_runs UNION ALL
+   SELECT 'answer_citations',count(*) FROM answer_citations UNION ALL
+   SELECT 'gaps',count(*) FROM gaps UNION ALL
    SELECT 'object_blobs',count(*) FROM object_blobs UNION ALL
    SELECT 'audit_events',count(*) FROM audit_events) q")"
 restored_audit="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" \
@@ -281,13 +371,22 @@ for statement in \
    VALUES(gen_random_uuid(),'service','bypass','success','bypass','bypass',repeat('0',64))" \
   "UPDATE audit_events SET reason_code='tamper'" \
   "DELETE FROM audit_chain_anchor" \
-  "TRUNCATE audit_events"
+  "TRUNCATE audit_events" \
+  "DELETE FROM record_versions" \
+  "DELETE FROM evidence_spans" \
+  "DELETE FROM sot_reindex_outbox" \
+  "DELETE FROM chunks" \
+  "UPDATE chunks SET normalized_text='tamper'" \
+  "DELETE FROM answer_citations" \
+  "UPDATE answer_citations SET marker='C999'" \
+  "DELETE FROM messages" \
+  "UPDATE messages SET sanitized_content='tamper'"
 do
   if ! runtime_sql "$statement"; then
     denied=$((denied + 1))
   fi
 done
-[[ "$denied" -eq 7 ]] || { echo "Runtime grants verification failed" >&2; exit 12; }
+[[ "$denied" -eq 16 ]] || { echo "Runtime grants verification failed" >&2; exit 12; }
 
 docker compose --profile tools run --rm \
   -e POSTGRES_DSN="$runtime_dsn" \
@@ -319,4 +418,4 @@ docker compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
 restore_succeeded="true"
 duration="$(( $(date +%s) - started_epoch ))"
 object_count="$(python3 -c "import json; print(len(json.load(open('$work_dir/manifest.json'))['minio_inventory']))")"
-echo "RESTORE PASS operation_id=$operation_id target=$target revision=$revision objects=$object_count row_counts=100% checksums=100% audit_chain=valid runtime_denials=7 duration_seconds=$duration"
+echo "RESTORE PASS operation_id=$operation_id target=$target revision=$revision objects=$object_count row_counts=100% checksums=100% audit_chain=valid runtime_denials=16 duration_seconds=$duration"

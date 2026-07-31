@@ -1,0 +1,278 @@
+import uuid
+from typing import Annotated, Any
+
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
+
+from rtr_copilot.auth.api import current_subject
+from rtr_copilot.auth.models import Subject
+from rtr_copilot.config import get_settings
+from rtr_copilot.db.uow import UnitOfWork
+from rtr_copilot.rag.answering import AnswerService, GroundingError
+from rtr_copilot.rag.models import (
+    AskRequest,
+    AskResponse,
+    Citation,
+    ConversationMessage,
+    ConversationResponse,
+    KnowledgeErrorEnvelope,
+    SearchRequest,
+    SearchResponse,
+)
+from rtr_copilot.rag.retrieval import RetrievalError, RetrievalService
+from rtr_copilot.repositories.audit import AuditRepository
+
+router = APIRouter(
+    prefix="/api/v1",
+    tags=["knowledge"],
+    responses={
+        status: {"model": KnowledgeErrorEnvelope}
+        for status in (400, 401, 403, 404, 409, 413, 422, 503)
+    },
+)
+
+
+async def rag_subject(request: Request) -> Subject | None:
+    settings = get_settings()
+    return await current_subject(
+        request,
+        request.cookies.get(settings.session_cookie_name),
+    )
+
+
+def _error(request: Request, status: int, code: str) -> JSONResponse:
+    return JSONResponse(
+        status_code=status,
+        content={
+            "error": {
+                "code": code,
+                "message": "Knowledge request could not be completed",
+            },
+            "request_id": str(request.state.request_id),
+        },
+    )
+
+
+@router.post("/search", response_model=SearchResponse)
+async def search(
+    body: SearchRequest,
+    request: Request,
+    subject: Annotated[Subject | None, Depends(rag_subject)],
+) -> SearchResponse | JSONResponse:
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    request_id = str(request.state.request_id)
+    service = RetrievalService()
+    try:
+        hits = await service.search(
+            subject,
+            body.query,
+            filters=body.filters,
+            request_id=request_id,
+            top_k=body.top_k,
+        )
+    except RetrievalError as error:
+        return _error(request, 413 if "budget" in error.code else 400, error.code)
+    async with UnitOfWork().transaction() as session:
+        await AuditRepository().append(
+            session,
+            actor_kind="user",
+            actor_user_id=uuid.UUID(subject.user_id),
+            action="rag.search",
+            result="success",
+            reason_code="authorized_results",
+            request_id=request_id,
+            resource_type="search",
+            details={
+                "returned_count": len(hits),
+                "query_fingerprint": __import__("hashlib").sha256(
+                    body.query.casefold().encode(),
+                ).hexdigest(),
+                "content_queries": service.trace.content_queries,
+                "dlp_rule_ids": sorted(set(service.trace.dlp_rule_ids)),
+            },
+        )
+    return SearchResponse(results=hits, request_id=request_id)
+
+
+@router.post("/ask", response_model=AskResponse)
+async def ask(
+    body: AskRequest,
+    request: Request,
+    subject: Annotated[Subject | None, Depends(rag_subject)],
+) -> AskResponse | JSONResponse:
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    try:
+        return await AnswerService().ask(
+            subject,
+            body.question,
+            filters=body.filters,
+            require_verified=body.require_verified,
+            conversation_id=body.conversation_id,
+            request_id=str(request.state.request_id),
+        )
+    except RetrievalError as error:
+        return _error(request, 413 if "budget" in error.code else 400, error.code)
+    except GroundingError:
+        return _error(request, 404, "conversation_not_found")
+
+
+def _citation(row: dict[str, Any]) -> Citation:
+    return Citation(
+        marker=row["marker"],
+        chunk_id=row["chunk_id"],
+        record_key=row["record_key"],
+        record_version_id=row["record_version_id"],
+        evidence_key=row["evidence_key"],
+        record_checksum=str(row["record_checksum"]),
+        evidence_checksum=(
+            str(row["evidence_checksum"]) if row["evidence_checksum"] else None
+        ),
+        source_key=row["source_key"],
+        source_revision=row["source_revision"],
+        provenance_level=row["provenance_level"],
+        verification_state=row["verification_state"],
+        freshness_state=row["freshness_state"],
+        source_label=row["source_label"],
+        locator=dict(row["locator"]),
+        redacted=row["redacted"],
+    )
+
+
+@router.get(
+    "/conversations/{conversation_id}",
+    response_model=ConversationResponse,
+)
+async def conversation(
+    conversation_id: uuid.UUID,
+    request: Request,
+    subject: Annotated[Subject | None, Depends(rag_subject)],
+) -> ConversationResponse | JSONResponse:
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    request_id = str(request.state.request_id)
+    async with UnitOfWork().factory() as session:
+        owner = await session.scalar(text("""
+            SELECT owner_subject_id FROM conversations
+            WHERE conversation_id=:conversation_id AND lifecycle='active'
+        """), {"conversation_id": conversation_id})
+        if owner != uuid.UUID(subject.user_id):
+            return _error(request, 404, "conversation_not_found")
+        headers = (await session.execute(text("""
+            SELECT message_id,role,answer_state,created_at
+            FROM messages WHERE conversation_id=:conversation_id
+            ORDER BY created_at,message_id LIMIT 100
+        """), {"conversation_id": conversation_id})).mappings().all()
+        citation_metadata = (await session.execute(text("""
+            SELECT ar.answer_message_id,ac.citation_id,c.chunk_id,c.chunk_key,
+              c.record_id,c.generation_id,c.source_key,c.source_revision,
+              c.classification,c.owner_subject_id,c.department_id,c.project_id,
+              c.provenance_level,c.verification_state,c.freshness_state,
+              (
+                c.lifecycle='active' AND g.lifecycle='active'
+                AND ag.generation_id=c.generation_id
+                AND r.current_version_id=c.record_version_id
+                AND rv.lifecycle='active'
+              ) AS current_active,
+              has_effective_acl_deny(
+                c.record_id,CAST(:principal AS uuid),CAST('view' AS text)
+              ) AS explicit_deny
+            FROM answer_runs ar JOIN answer_citations ac
+              ON ac.answer_run_id=ar.answer_run_id
+            JOIN chunks c ON c.chunk_id=ac.chunk_id
+            JOIN search_generations g ON g.generation_id=c.generation_id
+            LEFT JOIN active_search_generations ag
+              ON ag.generation_id=c.generation_id
+            JOIN records r ON r.record_id=c.record_id
+            JOIN record_versions rv ON rv.version_id=c.record_version_id
+            WHERE ar.conversation_id=:conversation_id
+            ORDER BY ar.created_at,ac.marker
+        """), {
+            "conversation_id": conversation_id,
+            "principal": uuid.UUID(subject.user_id),
+        })).mappings().all()
+        active_metadata = [
+            dict(row) for row in citation_metadata if row["current_active"]
+        ]
+        allowed_chunks = set(RetrievalService()._allowed(
+            subject,
+            active_metadata,
+            request_id,
+        ))
+        blocked_messages = {
+            row["answer_message_id"]
+            for row in citation_metadata
+            if not row["current_active"] or row["chunk_id"] not in allowed_chunks
+        }
+        readable_message_ids = [
+            row["message_id"]
+            for row in headers
+            if row["role"] == "user"
+            or row["answer_state"] != "grounded"
+            or row["message_id"] not in blocked_messages
+        ]
+        content_rows = (await session.execute(text("""
+            SELECT message_id,sanitized_content FROM messages
+            WHERE message_id=ANY(CAST(:message_ids AS uuid[]))
+        """), {"message_ids": readable_message_ids})).mappings().all()
+        contents: dict[uuid.UUID, str] = {
+            row["message_id"]: row["sanitized_content"]
+            for row in content_rows
+        }
+        allowed_citation_ids = [
+            row["citation_id"]
+            for row in citation_metadata
+            if (
+                row["answer_message_id"] not in blocked_messages
+                and row["chunk_id"] in allowed_chunks
+            )
+        ]
+        citations = (await session.execute(text("""
+            SELECT ar.answer_message_id,ac.*
+            FROM answer_runs ar JOIN answer_citations ac
+              ON ac.answer_run_id=ar.answer_run_id
+            WHERE ac.citation_id=ANY(CAST(:citation_ids AS uuid[]))
+            ORDER BY ar.created_at,ac.marker
+        """), {"citation_ids": allowed_citation_ids})).mappings().all()
+    by_message: dict[uuid.UUID, list[Citation]] = {}
+    for row in citations:
+        by_message.setdefault(row["answer_message_id"], []).append(
+            _citation(dict(row)),
+        )
+    messages = [
+        ConversationMessage(
+            message_id=row["message_id"],
+            role=row["role"],
+            content=contents.get(
+                row["message_id"],
+                "Evidence is no longer available.",
+            ),
+            answer_state=row["answer_state"],
+            citations=by_message.get(row["message_id"], []),
+            created_at=row["created_at"],
+        )
+        for row in headers
+    ]
+    async with UnitOfWork().transaction() as session:
+        await AuditRepository().append(
+            session,
+            actor_kind="user",
+            actor_user_id=uuid.UUID(subject.user_id),
+            action="rag.conversation.view",
+            result="success",
+            reason_code="owner_access",
+            request_id=request_id,
+            resource_type="conversation",
+            details={
+                "conversation_id": str(conversation_id),
+                "message_count": len(messages),
+                "citation_revocations": len(blocked_messages),
+            },
+        )
+    return ConversationResponse(
+        conversation_id=conversation_id,
+        messages=messages,
+        request_id=request_id,
+    )

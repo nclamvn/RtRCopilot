@@ -127,12 +127,16 @@ class S3ObjectStorage:
 
         await asyncio.to_thread(download)
 
-    async def get_body(self, key: str) -> Any:
-        response = await asyncio.to_thread(
-            self.client.get_object,
-            Bucket=self.bucket,
-            Key=key,
-        )
+    async def get_body(
+        self,
+        key: str,
+        *,
+        byte_range: tuple[int, int] | None = None,
+    ) -> Any:
+        arguments: dict[str, Any] = {"Bucket": self.bucket, "Key": key}
+        if byte_range is not None:
+            arguments["Range"] = f"bytes={byte_range[0]}-{byte_range[1]}"
+        response = await asyncio.to_thread(self.client.get_object, **arguments)
         return response["Body"]
 
     async def head(self, key: str) -> dict[str, Any]:

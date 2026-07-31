@@ -7,8 +7,11 @@ set -a
 . "$project_root/.env"
 set +a
 
-verify_database="rtr_verify_005"
-verify_bucket="rtr-copilot-verify-005"
+# A gate may run concurrently from another Builder/VERIFY process. Isolate every
+# invocation so one cleanup/downgrade cannot invalidate another migration chain.
+verify_run_id="$$"
+verify_database="rtr_verify_007_${verify_run_id}"
+verify_bucket="rtr-copilot-verify-007-${verify_run_id}"
 owner_dsn="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$verify_database"
 runtime_dsn="postgresql://$POSTGRES_RUNTIME_USER:$POSTGRES_RUNTIME_PASSWORD@postgres:5432/$verify_database"
 
@@ -75,6 +78,22 @@ run_migration upgrade 0003_resource_object_foundation
 run_migration upgrade 0004_append_only_audit
 owner_sql "SELECT expected_count=0 FROM audit_chain_anchor WHERE singleton" | grep -q "t"
 run_migration upgrade 0005_ingestion_renditions
+run_migration upgrade 0006_sot_publish_provenance
+owner_sql "SELECT to_regclass('public.sot_packages') IS NOT NULL
+  AND to_regclass('public.record_versions') IS NOT NULL
+  AND to_regclass('public.evidence_spans') IS NOT NULL
+  AND to_regclass('public.sot_reindex_outbox') IS NOT NULL" | grep -q "t"
+run_migration downgrade 0005_ingestion_renditions
+owner_sql "SELECT to_regclass('public.sot_packages') IS NULL" | grep -q "t"
+run_migration upgrade 0006_sot_publish_provenance
+run_migration upgrade 0007_hybrid_rag_grounded_answers
+owner_sql "SELECT to_regclass('public.search_generations') IS NOT NULL
+  AND to_regclass('public.chunks') IS NOT NULL
+  AND to_regclass('public.answer_runs') IS NOT NULL
+  AND to_regclass('public.gaps') IS NOT NULL" | grep -q "t"
+run_migration downgrade 0006_sot_publish_provenance
+owner_sql "SELECT to_regclass('public.chunks') IS NULL" | grep -q "t"
+run_migration upgrade 0007_hybrid_rag_grounded_answers
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NOT NULL
   AND to_regclass('public.ingestion_outbox') IS NOT NULL
   AND to_regclass('public.upload_sessions') IS NOT NULL" | grep -q "t"
@@ -109,7 +128,8 @@ docker compose --profile tools run --rm --no-deps \
       pytest==8.4.1 pytest-asyncio==1.1.0
     /app/.venv/bin/python -m pytest -q \
       -o asyncio_default_test_loop_scope=session \
-      tests/test_data_integration.py tests/test_ingestion_integration.py
+      tests/test_data_integration.py tests/test_ingestion_integration.py \
+      tests/test_sot_integration.py tests/test_rag_integration.py
   '
 
 runtime_sql() {
@@ -128,11 +148,20 @@ for statement in \
   "DELETE FROM audit_events" \
   "TRUNCATE audit_events" \
   "UPDATE audit_chain_anchor SET expected_count=0" \
-  "DELETE FROM audit_chain_anchor"
+  "DELETE FROM audit_chain_anchor" \
+  "DELETE FROM record_versions" \
+  "DELETE FROM evidence_spans" \
+  "DELETE FROM sot_reindex_outbox" \
+  "DELETE FROM chunks" \
+  "UPDATE chunks SET normalized_text='tamper'" \
+  "DELETE FROM answer_citations" \
+  "UPDATE answer_citations SET marker='C999'" \
+  "DELETE FROM messages" \
+  "UPDATE messages SET sanitized_content='tamper'"
 do
   if ! runtime_sql "$statement"; then
     denied=$((denied + 1))
   fi
 done
-[[ "$denied" -eq 9 ]]
-echo "DATA INTEGRATION PASS · migrations=5 · revision_fixtures=5 · failing_ddl_rollback=1 · tests=16 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · runtime_denials=9"
+[[ "$denied" -eq 18 ]]
+echo "DATA INTEGRATION PASS · migrations=7 · revision_fixtures=7 · failing_ddl_rollback=1 · tests=34 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · runtime_denials=18"

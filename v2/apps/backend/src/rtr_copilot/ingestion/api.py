@@ -1,8 +1,16 @@
+import base64
+import hashlib
+import hmac
+import json
+import re
+import unicodedata
 import uuid
 from collections.abc import Iterator
+from datetime import datetime
 from typing import Annotated, Any
+from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, Header, Request
+from fastapi import APIRouter, Depends, Header, Query, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import text
 
@@ -15,15 +23,19 @@ from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.ingestion.errors import IngestionFailure, safe_message
 from rtr_copilot.ingestion.models import (
     ErrorEnvelope,
+    FileCatalogItem,
+    FileCatalogPage,
     RetryResponse,
     UploadAccepted,
     UploadStatus,
+    UploadTarget,
+    UploadTargetList,
     ViewerCapabilities,
     ViewerManifest,
     ViewerRendition,
 )
 from rtr_copilot.ingestion.service import IngestionService
-from rtr_copilot.ingestion.validators import VIEWER_KINDS
+from rtr_copilot.ingestion.validators import VIEWER_KINDS, normalize_display_name
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.resources import ResourceRecord, ResourceRepository
 from rtr_copilot.storage.s3 import S3ObjectStorage
@@ -37,8 +49,11 @@ ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     404: {"model": ErrorEnvelope},
     409: {"model": ErrorEnvelope},
     413: {"model": ErrorEnvelope},
+    416: {"model": ErrorEnvelope},
     422: {"model": ErrorEnvelope},
 }
+VIEWER_FILTERS = frozenset(VIEWER_KINDS.values())
+RANGE_PATTERN = re.compile(r"^bytes=(\d*)-(\d*)$")
 
 
 async def file_subject(request: Request) -> Subject | None:
@@ -84,11 +99,12 @@ async def _authorized_resource(
     repository = ResourceRepository()
     async with uow.factory() as session:
         resource = await repository.get(session, resource_id)
+        principal_ids = await _effective_principal_ids(session, subject)
         effective = await repository.effective_policy_attributes(
             session,
             resource_id,
             action=action,
-            principal_ids={uuid.UUID(subject.user_id)},
+            principal_ids=principal_ids,
         )
     if resource is None or effective is None:
         return None
@@ -112,15 +128,17 @@ async def _version_authorized(
     uow = UnitOfWork()
     repository = ResourceRepository()
     async with uow.factory() as session:
+        principal_ids = await _effective_principal_ids(session, subject)
         effective = await repository.effective_policy_attributes(
             session,
             version_id,
             action=action,
-            principal_ids={uuid.UUID(subject.user_id)},
+            principal_ids=principal_ids,
         )
         row = (await session.execute(text("""
             SELECT v.version_id,v.document_id,v.object_id,v.sha256,v.detected_mime,
-              v.viewer_state,r.classification,r.lifecycle_state,d.source_id
+              v.mime_type,v.byte_size,v.original_filename,v.viewer_state,
+              r.classification,r.lifecycle_state,d.source_id
             FROM document_versions v
             JOIN resources r ON r.resource_id=v.version_id
             JOIN documents d ON d.document_id=v.document_id
@@ -136,6 +154,85 @@ async def _version_authorized(
         PolicyContext(request_id=request_id),
     )
     return dict(row), decision.allow
+
+
+async def _effective_principal_ids(session: Any, subject: Subject) -> set[uuid.UUID]:
+    """Resolve all persisted principal assignments at request time."""
+    user_id = uuid.UUID(subject.user_id)
+    rows = (await session.execute(text("""
+        SELECT group_id AS principal_id FROM subject_groups
+        WHERE subject_id=:subject_id AND valid_from <= now()
+          AND (expires_at IS NULL OR expires_at > now())
+        UNION
+        SELECT role_id FROM subject_roles
+        WHERE subject_id=:subject_id AND valid_from <= now()
+          AND (expires_at IS NULL OR expires_at > now())
+        UNION
+        SELECT CAST(scope_key AS uuid) FROM subject_scopes
+        WHERE subject_id=:subject_id AND valid_from <= now()
+          AND (expires_at IS NULL OR expires_at > now())
+          AND scope_key ~* :uuid_pattern
+    """), {
+        "subject_id": user_id,
+        "uuid_pattern": (
+            "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-"
+            "[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        ),
+    })).scalars().all()
+    return {user_id, *(uuid.UUID(str(value)) for value in rows)}
+
+
+def _normalized_query(value: str) -> str:
+    folded = unicodedata.normalize("NFKD", value.casefold())
+    return " ".join("".join(char for char in folded if not unicodedata.combining(char)).split())
+
+
+def _cursor_secret() -> bytes:
+    return get_settings().sot_signing_secret.get_secret_value().encode()
+
+
+def _encode_cursor(created_at: datetime, version_id: uuid.UUID) -> str:
+    payload = json.dumps(
+        {"at": created_at.isoformat(), "id": str(version_id)},
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode()
+    signature = hmac.new(_cursor_secret(), payload, hashlib.sha256).digest()
+    return base64.urlsafe_b64encode(payload + signature).decode().rstrip("=")
+
+
+def _decode_cursor(value: str) -> tuple[datetime, uuid.UUID]:
+    try:
+        raw = base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+        payload, signature = raw[:-32], raw[-32:]
+        expected = hmac.new(_cursor_secret(), payload, hashlib.sha256).digest()
+        if len(payload) == 0 or not hmac.compare_digest(signature, expected):
+            raise ValueError
+        decoded = json.loads(payload)
+        return datetime.fromisoformat(decoded["at"]), uuid.UUID(decoded["id"])
+    except (ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
+        raise ValueError("invalid_cursor") from error
+
+
+def _parse_range(value: str | None, size: int) -> tuple[int, int] | None:
+    if value is None:
+        return None
+    match = RANGE_PATTERN.fullmatch(value.strip())
+    if match is None or "," in value or size <= 0:
+        raise ValueError("invalid_range")
+    start_raw, end_raw = match.groups()
+    if not start_raw and not end_raw:
+        raise ValueError("invalid_range")
+    if not start_raw:
+        suffix = int(end_raw)
+        if suffix <= 0:
+            raise ValueError("invalid_range")
+        return max(0, size - suffix), size - 1
+    start = int(start_raw)
+    end = int(end_raw) if end_raw else size - 1
+    if start >= size or end < start:
+        raise ValueError("range_not_satisfiable")
+    return start, min(end, size - 1)
 
 
 async def _audit_access(
@@ -160,6 +257,208 @@ async def _audit_access(
             resource_id=resource_id,
             resource_type=resource_type,
         )
+
+
+@router.get("", response_model=FileCatalogPage, responses=ERROR_RESPONSES)
+async def catalog(
+    request: Request,
+    subject: Annotated[Subject | None, Depends(file_subject)],
+    limit: Annotated[int, Query(ge=1, le=50)] = 25,
+    cursor: str | None = None,
+    viewer_kind: str | None = None,
+    query: Annotated[str | None, Query(max_length=200)] = None,
+) -> FileCatalogPage | JSONResponse:
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    if viewer_kind is not None and viewer_kind not in VIEWER_FILTERS:
+        return _error(request, 400, "invalid_filter")
+    try:
+        boundary = _decode_cursor(cursor) if cursor else None
+    except ValueError:
+        return _error(request, 400, "invalid_cursor")
+    normalized_query = _normalized_query(query or "")
+    items: list[FileCatalogItem] = []
+    examined: tuple[datetime, uuid.UUID] | None = boundary
+    exhausted = False
+    repository = ResourceRepository()
+    async with UnitOfWork().factory() as session:
+        principal_ids = await _effective_principal_ids(session, subject)
+        while len(items) < limit and not exhausted:
+            rows = (await session.execute(text("""
+                SELECT d.document_id,d.logical_name,v.version_id,v.original_filename,
+                  v.object_id,v.detected_mime,v.viewer_state,v.byte_size,v.created_at,
+                  r.classification,r.owner_subject_id,s.display_name AS owner_display_name,
+                  COALESCE(q.ready_count,0) AS ready_count,
+                  COALESCE(q.partial_count,0) AS partial_count
+                FROM documents d
+                JOIN document_versions v ON v.version_id=d.current_version_id
+                JOIN resources r ON r.resource_id=v.version_id
+                LEFT JOIN subjects s ON s.user_id=r.owner_subject_id
+                LEFT JOIN LATERAL (
+                  SELECT count(*) FILTER (WHERE rd.status='ready') AS ready_count,
+                    count(*) FILTER (
+                      WHERE rd.status='ready' AND rd.quality_state<>'complete'
+                    ) AS partial_count
+                  FROM renditions rd WHERE rd.version_id=v.version_id
+                ) q ON true
+                WHERE r.lifecycle_state='active'
+                  AND (
+                    CAST(:at AS timestamptz) IS NULL
+                    OR (v.created_at,v.version_id)
+                      < (CAST(:at AS timestamptz),CAST(:cursor_id AS uuid))
+                  )
+                ORDER BY v.created_at DESC,v.version_id DESC
+                LIMIT 100
+            """), {
+                "at": examined[0] if examined else None,
+                "cursor_id": examined[1] if examined else None,
+            })).mappings().all()
+            if not rows:
+                exhausted = True
+                break
+            for row in rows:
+                examined = (row["created_at"], row["version_id"])
+                mime = str(row["detected_mime"])
+                kind = VIEWER_KINDS.get(mime)
+                if kind is None or (viewer_kind is not None and kind != viewer_kind):
+                    continue
+                if normalized_query and normalized_query not in _normalized_query(
+                    f"{row['logical_name']} {row['original_filename']}",
+                ):
+                    continue
+                effective = await repository.effective_policy_attributes(
+                    session,
+                    row["version_id"],
+                    action="view",
+                    principal_ids=principal_ids,
+                )
+                if effective is None or not policy.decide(
+                    subject,
+                    "view",
+                    effective[0],
+                    PolicyContext(request_id=str(request.state.request_id)),
+                ).allow:
+                    continue
+                downloadable = await repository.effective_policy_attributes(
+                    session,
+                    row["version_id"],
+                    action="download",
+                    principal_ids=principal_ids,
+                )
+                downloadable_object = await repository.effective_policy_attributes(
+                    session,
+                    row["object_id"],
+                    action="download",
+                    principal_ids=principal_ids,
+                )
+                can_download = bool(
+                    downloadable
+                    and downloadable_object
+                    and policy.decide(
+                        subject,
+                        "download",
+                        downloadable[0],
+                        PolicyContext(request_id=str(request.state.request_id)),
+                    ).allow
+                    and policy.decide(
+                        subject,
+                        "download",
+                        downloadable_object[0],
+                        PolicyContext(request_id=str(request.state.request_id)),
+                    ).allow
+                )
+                warnings = []
+                if row["partial_count"]:
+                    warnings.append("partial_rendition")
+                if kind in {"docx", "pptx"}:
+                    warnings.append("semantic_preview_layout_may_differ")
+                items.append(FileCatalogItem(
+                    document_id=row["document_id"],
+                    version_id=row["version_id"],
+                    logical_name=row["logical_name"],
+                    display_filename=row["original_filename"],
+                    detected_mime=mime,
+                    viewer_kind=kind,
+                    viewer_state=row["viewer_state"],
+                    byte_size=row["byte_size"],
+                    classification=row["classification"],
+                    owner_display_name=row["owner_display_name"] or None,
+                    version_created_at=row["created_at"],
+                    quality={
+                        "ready_rendition_count": row["ready_count"],
+                        "partial_rendition_count": row["partial_count"],
+                    },
+                    warnings=warnings,
+                    can_download=can_download,
+                ))
+                if len(items) == limit:
+                    break
+            exhausted = len(rows) < 100
+    next_cursor = (
+        _encode_cursor(*examined)
+        if examined is not None and not exhausted and len(items) == limit
+        else None
+    )
+    return FileCatalogPage(items=items, next_cursor=next_cursor)
+
+
+@router.get(
+    "/upload-targets",
+    response_model=UploadTargetList,
+    responses=ERROR_RESPONSES,
+)
+async def upload_targets(
+    request: Request,
+    subject: Annotated[Subject | None, Depends(file_subject)],
+) -> UploadTargetList | JSONResponse:
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    results: list[UploadTarget] = []
+    repository = ResourceRepository()
+    async with UnitOfWork().factory() as session:
+        principal_ids = await _effective_principal_ids(session, subject)
+        boundary: tuple[str, uuid.UUID] | None = None
+        while True:
+            rows = (await session.execute(text("""
+                SELECT s.source_id,s.name,r.classification
+                FROM sources s JOIN resources r ON r.resource_id=s.source_id
+                WHERE r.lifecycle_state='active'
+                  AND (
+                    CAST(:after_name AS text) IS NULL
+                    OR (lower(s.name),s.source_id)
+                      > (CAST(:after_name AS text),CAST(:after_id AS uuid))
+                  )
+                ORDER BY lower(s.name),s.source_id
+                LIMIT 200
+            """), {
+                "after_name": boundary[0] if boundary else None,
+                "after_id": boundary[1] if boundary else None,
+            })).mappings().all()
+            if not rows:
+                break
+            for row in rows:
+                effective = await repository.effective_policy_attributes(
+                    session,
+                    row["source_id"],
+                    action="upload",
+                    principal_ids=principal_ids,
+                )
+                if effective and policy.decide(
+                    subject,
+                    "upload",
+                    effective[0],
+                    PolicyContext(request_id=str(request.state.request_id)),
+                ).allow:
+                    results.append(UploadTarget(
+                        target_id=row["source_id"],
+                        label=row["name"],
+                        classification=row["classification"],
+                    ))
+            last = rows[-1]
+            boundary = (str(last["name"]).lower(), last["source_id"])
+            if len(rows) < 200:
+                break
+    return UploadTargetList(items=results)
 
 
 @router.post(
@@ -375,6 +674,7 @@ async def retry_upload(
 )
 async def viewer_manifest(
     request: Request,
+    response: Response,
     version_id: uuid.UUID,
     subject: Annotated[Subject | None, Depends(file_subject)],
 ) -> ViewerManifest | JSONResponse:
@@ -404,6 +704,12 @@ async def viewer_manifest(
     download = await _version_authorized(
         subject,
         version_id,
+        action="download",
+        request_id=request_id,
+    )
+    object_download = await _authorized_resource(
+        subject,
+        version["object_id"],
         action="download",
         request_id=request_id,
     )
@@ -468,6 +774,7 @@ async def viewer_manifest(
         resource_id=version_id,
         resource_type="document_version",
     )
+    response.headers["Cache-Control"] = "private, no-store"
     return ViewerManifest(
         version_id=version_id,
         source_sha256=str(version["sha256"]),
@@ -479,7 +786,9 @@ async def viewer_manifest(
             text=text_ready,
             search_within_file=text_ready,
             deep_link=text_ready,
-            download_original=bool(download and download[1]),
+            download_original=bool(
+                download and download[1] and object_download and object_download[1]
+            ),
         ),
         renditions=renditions,
         quality={
@@ -493,6 +802,105 @@ async def viewer_manifest(
 
 
 @router.get(
+    "/versions/{version_id}/original",
+    response_model=None,
+    responses=ERROR_RESPONSES,
+)
+async def original_content(
+    request: Request,
+    version_id: uuid.UUID,
+    subject: Annotated[Subject | None, Depends(file_subject)],
+    range_header: Annotated[str | None, Header(alias="Range")] = None,
+) -> StreamingResponse | JSONResponse:
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    request_id = str(request.state.request_id)
+    version_authorized = await _version_authorized(
+        subject,
+        version_id,
+        action="download",
+        request_id=request_id,
+    )
+    if version_authorized is None:
+        return _error(request, 404, "not_found")
+    version, version_allowed = version_authorized
+    object_authorized = await _authorized_resource(
+        subject,
+        version["object_id"],
+        action="download",
+        request_id=request_id,
+    )
+    allowed = bool(version_allowed and object_authorized and object_authorized[1])
+    if not allowed:
+        await _audit_access(
+            subject=subject,
+            action="original.content",
+            allow=False,
+            reason="policy_denied",
+            request_id=request_id,
+            resource_id=version_id,
+            resource_type="document_version",
+        )
+        return _error(request, 404, "not_found")
+    async with UnitOfWork().factory() as session:
+        row = (await session.execute(text("""
+            SELECT o.object_key,o.byte_size,o.sha256
+            FROM object_blobs o WHERE o.object_id=:object_id
+              AND o.storage_state='available'
+        """), {"object_id": version["object_id"]})).mappings().one_or_none()
+    if row is None:
+        return _error(request, 404, "not_found")
+    size = int(row["byte_size"])
+    try:
+        byte_range = _parse_range(range_header, size)
+    except ValueError:
+        failure = _error(request, 416, "range_not_satisfiable")
+        failure.headers["Content-Range"] = f"bytes */{size}"
+        failure.headers["Accept-Ranges"] = "bytes"
+        return failure
+    body = await S3ObjectStorage(get_settings()).get_body(
+        str(row["object_key"]),
+        byte_range=byte_range,
+    )
+
+    def chunks() -> Iterator[bytes]:
+        try:
+            while chunk := body.read(1024 * 1024):
+                yield chunk
+        finally:
+            body.close()
+
+    await _audit_access(
+        subject=subject,
+        action="original.content",
+        allow=True,
+        reason="request_time_authorization",
+        request_id=request_id,
+        resource_id=version_id,
+        resource_type="document_version",
+    )
+    filename = normalize_display_name(str(version["original_filename"]))
+    headers = {
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "private, no-store",
+        "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}",
+        "Content-Length": str(
+            byte_range[1] - byte_range[0] + 1 if byte_range else size
+        ),
+        "ETag": f'"{row["sha256"]}"',
+        "X-Content-Type-Options": "nosniff",
+    }
+    if byte_range:
+        headers["Content-Range"] = f"bytes {byte_range[0]}-{byte_range[1]}/{size}"
+    return StreamingResponse(
+        chunks(),
+        status_code=206 if byte_range else 200,
+        media_type=str(version["mime_type"]),
+        headers=headers,
+    )
+
+
+@router.get(
     "/renditions/{rendition_id}/content",
     response_model=None,
     responses=ERROR_RESPONSES,
@@ -501,12 +909,13 @@ async def rendition_content(
     request: Request,
     rendition_id: uuid.UUID,
     subject: Annotated[Subject | None, Depends(file_subject)],
+    range_header: Annotated[str | None, Header(alias="Range")] = None,
 ) -> StreamingResponse | JSONResponse:
     if subject is None:
         return _error(request, 401, "authentication_required")
     async with UnitOfWork().factory() as session:
         row = (await session.execute(text("""
-            SELECT r.version_id,r.mime_type,r.status,o.object_key
+            SELECT r.version_id,r.mime_type,r.status,o.object_key,o.byte_size,o.sha256
             FROM renditions r JOIN object_blobs o ON o.object_id=r.object_id
             JOIN resources rr ON rr.resource_id=r.rendition_id
             WHERE r.rendition_id=:rendition_id
@@ -543,7 +952,18 @@ async def rendition_content(
             resource_type="rendition",
         )
         return _error(request, 404, "not_found")
-    body = await S3ObjectStorage(get_settings()).get_body(str(row["object_key"]))
+    size = int(row["byte_size"])
+    try:
+        byte_range = _parse_range(range_header, size)
+    except ValueError:
+        failure = _error(request, 416, "range_not_satisfiable")
+        failure.headers["Content-Range"] = f"bytes */{size}"
+        failure.headers["Accept-Ranges"] = "bytes"
+        return failure
+    body = await S3ObjectStorage(get_settings()).get_body(
+        str(row["object_key"]),
+        byte_range=byte_range,
+    )
 
     def chunks() -> Iterator[bytes]:
         try:
@@ -563,9 +983,19 @@ async def rendition_content(
     )
     return StreamingResponse(
         chunks(),
+        status_code=206 if byte_range else 200,
         media_type=str(row["mime_type"]),
         headers={
+            "Accept-Ranges": "bytes",
             "Cache-Control": "private, no-store",
+            "Content-Length": str(
+                byte_range[1] - byte_range[0] + 1 if byte_range else size
+            ),
+            **(
+                {"Content-Range": f"bytes {byte_range[0]}-{byte_range[1]}/{size}"}
+                if byte_range else {}
+            ),
+            "ETag": f'"{row["sha256"]}"',
             "X-Content-Type-Options": "nosniff",
         },
     )

@@ -94,6 +94,22 @@ row_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" \
    SELECT 'upload_sessions',count(*) FROM upload_sessions UNION ALL
    SELECT 'ingestion_jobs',count(*) FROM ingestion_jobs UNION ALL
    SELECT 'ingestion_outbox',count(*) FROM ingestion_outbox UNION ALL
+   SELECT 'sot_packages',count(*) FROM sot_packages UNION ALL
+   SELECT 'records',count(*) FROM records UNION ALL
+   SELECT 'record_versions',count(*) FROM record_versions UNION ALL
+   SELECT 'evidence_spans',count(*) FROM evidence_spans UNION ALL
+   SELECT 'sot_publish_runs',count(*) FROM sot_publish_runs UNION ALL
+   SELECT 'sot_active_revisions',count(*) FROM sot_active_revisions UNION ALL
+   SELECT 'sot_reindex_outbox',count(*) FROM sot_reindex_outbox UNION ALL
+   SELECT 'search_generations',count(*) FROM search_generations UNION ALL
+   SELECT 'active_search_generations',count(*) FROM active_search_generations UNION ALL
+   SELECT 'chunks',count(*) FROM chunks UNION ALL
+   SELECT 'index_jobs',count(*) FROM index_jobs UNION ALL
+   SELECT 'conversations',count(*) FROM conversations UNION ALL
+   SELECT 'messages',count(*) FROM messages UNION ALL
+   SELECT 'answer_runs',count(*) FROM answer_runs UNION ALL
+   SELECT 'answer_citations',count(*) FROM answer_citations UNION ALL
+   SELECT 'gaps',count(*) FROM gaps UNION ALL
    SELECT 'object_blobs',count(*) FROM object_blobs UNION ALL
    SELECT 'audit_events',count(*) FROM audit_events) q")"
 finished="$(date -u +%Y-%m-%dT%H:%M:%SZ)"

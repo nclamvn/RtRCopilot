@@ -16,5 +16,6 @@ WORKDIR /app
 RUN addgroup -S app -g 10001 && adduser -S app -u 10001 -G app
 COPY --from=builder --chown=app:app /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
+COPY --chown=app:app infra/docker/web-guard.mjs ./web-guard.mjs
 USER app
-CMD ["node", "apps/web/server.js"]
+CMD ["node", "web-guard.mjs"]

@@ -1,10 +1,12 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import (
     Field,
     HttpUrl,
     PostgresDsn,
+    SecretStr,
     ValidationError,
     field_validator,
     model_validator,
@@ -33,7 +35,31 @@ class Settings(BaseSettings):
     dev_oidc_enabled: bool = True
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86400)
     session_cookie_name: str = "rtr_session"
-    expected_schema_revision: str = "0005_ingestion_renditions"
+    expected_schema_revision: str = "0007_hybrid_rag_grounded_answers"
+    sot_staging_root: Path = Path("/tmp/rtr-sot-staging")
+    sot_signing_secret: SecretStr = SecretStr(
+        "development-only-sot-signing-secret-32bytes",
+    )
+    sot_allow_claim_as_approved: bool = False
+    rag_embedding_dimension: int = Field(default=64, ge=64, le=64)
+    rag_embedding_model: str = "rtr-offline-hash-embedding"
+    rag_embedding_version: str = "1"
+    rag_chunk_max_chars: int = Field(default=1200, ge=128, le=8000)
+    rag_chunk_overlap_chars: int = Field(default=120, ge=0, le=1000)
+    rag_query_max_bytes: int = Field(default=4096, ge=64, le=32768)
+    rag_candidate_limit: int = Field(default=200, ge=1, le=1000)
+    rag_metadata_scan_limit: int = Field(default=5000, ge=1, le=20000)
+    rag_retrieval_timeout_ms: int = Field(default=2000, ge=100, le=10000)
+    rag_top_k: int = Field(default=5, ge=1, le=20)
+    rag_min_vector_score: float = Field(default=0.15, ge=0.0, le=1.0)
+    rag_evidence_max_bytes: int = Field(default=16000, ge=512, le=100000)
+    rag_answer_max_chars: int = Field(default=12000, ge=256, le=50000)
+    rag_provider_timeout_seconds: float = Field(default=5.0, ge=0.05, le=30.0)
+    rag_provider_mode: Literal["local", "external"] = "local"
+    rag_external_classification_allowlist: str = ""
+    rag_external_endpoint_policy: str | None = None
+    rag_external_credential_source: str | None = None
+    rag_gap_routing_key: str = "curator:sot"
     maintenance_mode: bool = False
     retention_policy_json: str | None = None
     backup_destination: str | None = None
@@ -81,6 +107,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def production_identity_config(self) -> "Settings":
+        if self.rag_metadata_scan_limit < self.rag_candidate_limit:
+            raise ValueError("rag_metadata_scan_limit:below_candidate_limit")
+        if self.rag_chunk_overlap_chars >= self.rag_chunk_max_chars:
+            raise ValueError("rag_chunk_overlap_chars:must_be_below_chunk_max")
         if self.app_env != "production":
             return self
         required = {
@@ -96,6 +126,19 @@ class Settings(BaseSettings):
             raise ValueError("public_base_url:https_required")
         if self.dev_oidc_enabled:
             raise ValueError("dev_oidc_enabled:forbidden_in_production")
+        signing_secret = self.sot_signing_secret.get_secret_value()
+        if (
+            len(signing_secret) < 32
+            or signing_secret == "development-only-sot-signing-secret-32bytes"
+            or signing_secret in {self.s3_secret_key, self.oidc_client_secret}
+        ):
+            raise ValueError("sot_signing_secret:unsafe_in_production")
+        if self.rag_provider_mode == "external" and (
+            not self.rag_external_classification_allowlist.strip()
+            or not self.rag_external_endpoint_policy
+            or not self.rag_external_credential_source
+        ):
+            raise ValueError("rag_external_provider:policy_required")
         return self
 
     @property

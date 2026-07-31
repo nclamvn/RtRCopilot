@@ -14,6 +14,7 @@ from pptx import Presentation
 from reportlab.pdfgen import canvas
 
 from rtr_copilot.config import Settings
+from rtr_copilot.ingestion.api import _decode_cursor, _encode_cursor, _parse_range
 from rtr_copilot.ingestion.errors import IngestionFailure, safe_message
 from rtr_copilot.ingestion.extractors import extract_required
 from rtr_copilot.ingestion.malware import DeterministicTestScanner
@@ -513,6 +514,25 @@ def test_filename_and_client_errors_are_sanitized() -> None:
         normalize_display_name("\x00\u202e")
     hostile = "token=secret /private/path quarantine/key raw file text"
     assert hostile not in safe_message("processing_failed")
+
+
+def test_file_cursor_and_byte_ranges_are_bounded() -> None:
+    from datetime import UTC, datetime
+    from uuid import uuid4
+
+    instant = datetime.now(UTC)
+    version_id = uuid4()
+    assert _decode_cursor(_encode_cursor(instant, version_id)) == (instant, version_id)
+    with pytest.raises(ValueError, match="invalid_cursor"):
+        _decode_cursor("tampered")
+    assert _parse_range(None, 10) is None
+    assert _parse_range("bytes=2-5", 10) == (2, 5)
+    assert _parse_range("bytes=7-", 10) == (7, 9)
+    assert _parse_range("bytes=-3", 10) == (7, 9)
+    assert _parse_range("bytes=0-99", 10) == (0, 9)
+    for invalid in ("bytes=10-", "bytes=5-2", "bytes=0-1,3-4", "items=0-1"):
+        with pytest.raises(ValueError):
+            _parse_range(invalid, 10)
 
 
 def test_sandbox_rejects_network_and_path_escape_and_kills_timeout(
