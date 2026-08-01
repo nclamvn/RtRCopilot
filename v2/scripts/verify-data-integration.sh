@@ -113,6 +113,17 @@ owner_sql "SELECT to_regclass('public.templates') IS NOT NULL
 run_migration downgrade 0007_hybrid_rag_grounded_answers
 owner_sql "SELECT to_regclass('public.templates') IS NULL" | grep -q "t"
 run_migration upgrade 0008_document_operating_system
+run_migration upgrade 0009_governance_research
+owner_sql "SELECT to_regclass('public.research_sources') IS NOT NULL
+  AND to_regclass('public.research_packages') IS NOT NULL
+  AND to_regclass('public.research_records') IS NOT NULL
+  AND to_regclass('public.gap_transitions') IS NOT NULL
+  AND to_regclass('public.review_tasks') IS NOT NULL
+  AND to_regclass('public.graduation_proposals') IS NOT NULL
+  AND to_regclass('public.governance_settings') IS NOT NULL" | grep -q "t"
+run_migration downgrade 0008_document_operating_system
+owner_sql "SELECT to_regclass('public.research_records') IS NULL" | grep -q "t"
+run_migration upgrade 0009_governance_research
 run_migration downgrade 0004_append_only_audit
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NULL" | grep -q "t"
 run_migration upgrade 0005_ingestion_renditions
@@ -146,7 +157,8 @@ docker compose --profile tools run --rm --no-deps \
       -o asyncio_default_test_loop_scope=session \
       tests/test_data_integration.py tests/test_ingestion_integration.py \
       tests/test_documents_integration.py \
-      tests/test_sot_integration.py tests/test_rag_integration.py
+      tests/test_sot_integration.py tests/test_rag_integration.py \
+      tests/test_governance_integration.py
   '
 
 # AC18: prove a non-empty Document OS database/object backup can be restored
@@ -334,4 +346,4 @@ do
   fi
 done
 [[ "$denied" -eq 18 ]]
-echo "DATA INTEGRATION PASS · migrations=8 · revision_fixtures=8 · failing_ddl_rollback=1 · tests=37 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=18"
+echo "DATA INTEGRATION PASS · migrations=9 · revision_fixtures=9 · failing_ddl_rollback=1 · tests=45 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=18"

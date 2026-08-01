@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     dev_oidc_enabled: bool = True
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86400)
     session_cookie_name: str = "rtr_session"
-    expected_schema_revision: str = "0008_document_operating_system"
+    expected_schema_revision: str = "0009_governance_research"
     sot_staging_root: Path = Path("/tmp/rtr-sot-staging")
     sot_signing_secret: SecretStr = SecretStr(
         "development-only-sot-signing-secret-32bytes",

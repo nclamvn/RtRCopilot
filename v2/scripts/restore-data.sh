@@ -203,7 +203,11 @@ REVOKE DELETE ON
   active_search_generations, chunks, index_jobs, messages, answer_runs,
   answer_citations, templates, template_versions, template_bindings,
   render_jobs, document_publication_outbox, render_job_bindings, generated_files, approvals,
-  document_issuances
+  document_issuances, research_sources, research_packages, research_records,
+  gaps, gap_transitions, review_tasks, graduation_proposals,
+  governance_settings
+FROM rtr_app;
+REVOKE UPDATE ON research_records, gap_transitions, governance_settings
 FROM rtr_app;
 GRANT EXECUTE ON FUNCTION append_audit_event(
   uuid,timestamptz,text,uuid,text,text,text,text,text,uuid,text,uuid[],
@@ -237,7 +241,7 @@ docker compose --profile tools run --rm \
 
 revision="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
   -c 'SELECT version_num FROM alembic_version')"
-[[ "$revision" == "0008_document_operating_system" ]] || exit 10
+[[ "$revision" == "0009_governance_research" ]] || exit 10
 broken_links="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
   -c "SELECT count(*) FROM documents d LEFT JOIN document_versions v
       ON v.version_id=d.current_version_id
@@ -373,6 +377,13 @@ restored_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" 
    SELECT 'answer_runs',count(*) FROM answer_runs UNION ALL
    SELECT 'answer_citations',count(*) FROM answer_citations UNION ALL
    SELECT 'gaps',count(*) FROM gaps UNION ALL
+   SELECT 'research_sources',count(*) FROM research_sources UNION ALL
+   SELECT 'research_packages',count(*) FROM research_packages UNION ALL
+   SELECT 'research_records',count(*) FROM research_records UNION ALL
+   SELECT 'gap_transitions',count(*) FROM gap_transitions UNION ALL
+   SELECT 'review_tasks',count(*) FROM review_tasks UNION ALL
+   SELECT 'graduation_proposals',count(*) FROM graduation_proposals UNION ALL
+   SELECT 'governance_settings',count(*) FROM governance_settings UNION ALL
    SELECT 'templates',count(*) FROM templates UNION ALL
    SELECT 'template_versions',count(*) FROM template_versions UNION ALL
    SELECT 'template_bindings',count(*) FROM template_bindings UNION ALL
