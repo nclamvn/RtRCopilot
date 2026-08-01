@@ -93,3 +93,59 @@ edge có audit + recovery bằng re-proposal.
 
 *Verify Report này lập trên branch `tip-010` (5 commit builder). Không sửa
 ngược sau khi commit; kết quả gate local sẽ được ghi bổ sung, không ghi đè.*
+
+---
+
+## ADDENDUM 01/08/2026 (chiều) — Gỡ deferred: container gates chạy trong cloud
+
+Ba mục deferred đã được thực thi ngay trong môi trường cloud bằng các thích
+ứng hạ tầng **không đụng một byte nào của repo**:
+
+- Vosk model: mirror HTTP nội bộ, sha256 khớp tuyệt đối hash ghim trong
+  Dockerfile (`30f26242…2498`) — gate checksum giữ nguyên hiệu lực.
+- TLS trust cho build container: CA của sandbox nướng vào base image local
+  qua BuildKit **source policy** (map digest ghim → bản CA-baked); Dockerfile
+  và compose không sửa.
+- Trivy DB: prepopulate volume cache bằng chính scanner image đã ghim.
+- `mktemp` shim nới quyền thư mục tạm (root-uid của sandbox; máy local không
+  gặp).
+
+### Kết quả gate
+
+| Gate | Kết quả |
+|---|---|
+| `docker compose build` (api, worker, web, migrate) | **EXIT=0** |
+| Trivy scan image api (script nguyên bản) | **PASS — Clean, 0 HIGH/CRITICAL** (chạy 2 lần) |
+| `verify-data-integration.sh` containerized | **DATA INTEGRATION PASS** · migrations=9 · tests=45 · policy_scenarios=48 · runtime_denials=18 (Contractor rerun độc lập) |
+| Playwright vs **web production image** (compose, localhost:3000) | **28/28 passed** |
+| Backup + restore drill (`backup-data.sh` + `restore-data.sh`, DB sống có dữ liệu) | **RESTORE PASS** · revision=0009 · objects=32 · row_counts=100% · checksums=100% · audit_chain=valid · runtime_denials=16 |
+| Full suite native sau refine (fresh DB) | **278 passed / 3 skipped**; ruff PASS; mypy 83 files clean |
+| Worker container | healthy (chạy qua `--no-deps`, xem ghi chú ClamAV) |
+
+### Hai refine phát sinh từ chính các gate này (đều là harness/fixture, 0 thay đổi production code)
+
+1. **Refine 1 — AC18 harness bug (pre-existing):** proof restore của
+   `verify-data-integration.sh` giả định bảng document-OS rỗng sau phase
+   pytest; tái hiện được **cả trên main** ở 0008 lẫn 0009. Fix: AC18 seed vào
+   database `_ac18` riêng đã migrate head; proof SQL giữ nguyên byte-for-byte.
+2. **Refine 2 — fixture lineage:** fixture `insert_sot_version` trong test
+   governance để lại record `GOV.*` active có `current_version_id` NULL/
+   không active — restore drill bắt đúng vi phạm invariant TIP-006. Fix trong
+   2 file test; fresh-DB proof: cả hai truy vấn broken-links = **0**.
+
+Cả hai được phát hiện **bởi** gate và chứng minh gate có răng.
+
+### Ghi chú môi trường còn lại (không chặn)
+
+**ClamAV signature freshness ≤48h:** healthcheck (fail-closed đúng thiết kế)
+đòi chữ ký ≤48h; mọi nguồn cập nhật đều ngoài allowlist của sandbox và image
+mới nhất mang chữ ký 5 ngày tuổi. Trên máy local egress mở, freshclam chạy
+bình thường — `make dev` sẽ cho cả 7 service healthy. Không phải lỗi code;
+worker đã chứng minh healthy độc lập.
+
+### Verdict cập nhật
+
+**VERIFIED · READY.** Mọi AC kiểm chứng được đã PASS trong cloud, kể cả ba
+mục trước đây deferred. P0/P1: 0. TIP-010 đủ điều kiện merge vào `main`.
+Khuyến nghị (không bắt buộc): chạy `make verify` một lần trên máy local như
+belt-and-suspenders, đặc biệt để thấy ClamAV healthy với egress mở.

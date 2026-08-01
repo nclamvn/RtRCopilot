@@ -77,12 +77,19 @@ async def insert_sot_version(
     set_current: bool = True,
     supersedes_version_id: uuid.UUID | None = None,
 ) -> tuple[uuid.UUID, uuid.UUID]:
-    """Insert a SOT package/record/version fixture with live freshness metadata."""
+    """Insert a SOT package/record/version fixture with live freshness metadata.
+
+    A brand-new record only becomes lifecycle ``active`` when it also receives
+    an active current version, keeping the TIP-006 integrity invariant the
+    restore drill enforces (active record => existing active current version).
+    """
     package_id = uuid.uuid4()
     version_id = uuid.uuid4()
     checksum = digest(uuid.uuid4().hex)
     new_record = record_id is None
     record_id = record_id or uuid.uuid4()
+    record_state = "active" if (set_current and lifecycle == "active") else "staged"
+    resource_state = "active" if record_state == "active" else "draft"
     async with factory() as session, session.begin():
         await session.execute(text("""
             INSERT INTO sot_packages(
@@ -105,20 +112,28 @@ async def insert_sot_version(
                 INSERT INTO resources(
                   resource_id,resource_type,owner_subject_id,classification,
                   source_zone,lifecycle_state
-                ) VALUES (:record_id,'record',:owner_id,'internal','sot','active')
-            """), {"record_id": record_id, "owner_id": owner_id})
+                ) VALUES (
+                  :record_id,'record',:owner_id,'internal','sot',
+                  :resource_state
+                )
+            """), {
+                "record_id": record_id,
+                "owner_id": owner_id,
+                "resource_state": resource_state,
+            })
             await session.execute(text("""
                 INSERT INTO records(
                   record_id,record_key,source_key,owner_subject_id,
                   classification,lifecycle
                 ) VALUES (
                   :record_id,:record_key,'governance-service-tests',:owner_id,
-                  'internal','active'
+                  'internal',:record_state
                 )
             """), {
                 "record_id": record_id,
                 "record_key": f"GOVSVC.{uuid.uuid4().hex}",
                 "owner_id": owner_id,
+                "record_state": record_state,
             })
         await session.execute(text("""
             INSERT INTO record_versions(

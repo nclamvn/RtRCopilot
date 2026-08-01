@@ -89,3 +89,43 @@ pytest phase `45 passed`, AC18 restore proof passed, cleanup dropped all
 ```
 DATA INTEGRATION PASS · migrations=9 · revision_fixtures=9 · failing_ddl_rollback=1 · tests=45 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=18
 ```
+
+## ADDENDUM 2 — Contractor VERIFY finding #2: SOT integrity residue from governance test fixtures (refine completed)
+
+**Finding:** the production restore drill (`scripts/restore-data.sh`) failed exit 11
+at the SOT broken-links check against a DB populated by the integration suites:
+4 `records` rows (all `GOV.` keys from `tests/test_governance_integration.py`)
+were left `lifecycle='active'` with `current_version_id` NULL — my
+`insert_sot_version` fixture never set the current-version pointer and marked
+even the staged-version probe's record as active, violating the TIP-006
+invariant "active record ⇒ existing active current version". Audit of the other
+governance suites found one mirrored hole in Builder 2's
+`tests/test_governance_service_integration.py` (`lifecycle="staged",
+set_current=False` creates a brand-new record that stays active with a NULL
+pointer); Builder 3/4a's admin fixture already repoints correctly and needed no
+change.
+
+**Fix (test files only; no production code, migrations or scripts):**
+- `tests/test_governance_integration.py` — `insert_sot_version` now derives
+  `records.lifecycle`/`resources.lifecycle_state` from the version lifecycle
+  (`active`/`active` vs `staged`/`draft`) and, for active versions, repoints
+  `records.current_version_id` (+`updated_at`) at the inserted version.
+- `tests/test_governance_service_integration.py` — the fixture's new-record
+  branch now inserts `records`/`resources` as `staged`/`draft` unless the call
+  both sets the current pointer and inserts an active version
+  (`record_state = "active" if (set_current and lifecycle == "active") else
+  "staged"`). No assertion weakened; all tests prove the same behaviors
+  (the staged probes only ever read `record_versions.lifecycle`).
+
+**Verification (this container, native infra: PG :5432, repro-minio :9002,
+repro-redis :6380):**
+- Unit gates: `ruff` PASS, `mypy` 83 files 0 issues, `pytest` 210 passed /
+  71 skipped (previous slice baseline 182/46; growth is Builders 2-4 suites).
+- Fresh-DB proof: created `rtr_v2_hygiene`, migrated to head, ran
+  documents + sot + rag + all three governance integration suites in sequence
+  (43 passed, 0 skipped), then ran both restore-drill broken-link queries
+  (restore-data.sh lines 245-256) verbatim: documents broken links = **0**,
+  SOT broken links = **0**, with 17 governance-fixture records present
+  (12 active, all with current pointers; 2 staged probes with NULL pointer,
+  correctly exempt). The `rtr_v2_hygiene` database is left in place for
+  Contractor inspection.

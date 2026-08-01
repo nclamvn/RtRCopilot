@@ -152,11 +152,18 @@ async def insert_sot_version(
     *,
     lifecycle: str,
 ) -> tuple[uuid.UUID, uuid.UUID]:
-    """Insert a minimal SOT package/record/version fixture directly."""
+    """Insert a minimal SOT package/record/version fixture directly.
+
+    Keeps the TIP-006 integrity invariant the restore drill enforces: an
+    active ``records`` row always points at its existing active current
+    version; a non-active version leaves the record (and resource) staged.
+    """
     package_id = uuid.uuid4()
     record_id = uuid.uuid4()
     version_id = uuid.uuid4()
     checksum = digest(uuid.uuid4().hex)
+    record_state = "active" if lifecycle == "active" else "staged"
+    resource_state = "active" if lifecycle == "active" else "draft"
     async with factory() as session, session.begin():
         await session.execute(text("""
             INSERT INTO sot_packages(
@@ -177,20 +184,27 @@ async def insert_sot_version(
             INSERT INTO resources(
               resource_id,resource_type,owner_subject_id,classification,
               source_zone,lifecycle_state
-            ) VALUES (:record_id,'record',:owner_id,'internal','sot','active')
-        """), {"record_id": record_id, "owner_id": owner_id})
+            ) VALUES (
+              :record_id,'record',:owner_id,'internal','sot',:resource_state
+            )
+        """), {
+            "record_id": record_id,
+            "owner_id": owner_id,
+            "resource_state": resource_state,
+        })
         await session.execute(text("""
             INSERT INTO records(
               record_id,record_key,source_key,owner_subject_id,classification,
               lifecycle
             ) VALUES (
               :record_id,:record_key,'governance-tests',:owner_id,'internal',
-              'active'
+              :record_state
             )
         """), {
             "record_id": record_id,
             "record_key": f"GOV.{uuid.uuid4().hex}",
             "owner_id": owner_id,
+            "record_state": record_state,
         })
         await session.execute(text("""
             INSERT INTO record_versions(
@@ -213,6 +227,12 @@ async def insert_sot_version(
             "checksum": checksum,
             "lifecycle": lifecycle,
         })
+        if lifecycle == "active":
+            await session.execute(text("""
+                UPDATE records SET current_version_id=:version_id,
+                  updated_at=now()
+                WHERE record_id=:record_id
+            """), {"version_id": version_id, "record_id": record_id})
     return version_id, package_id
 
 
