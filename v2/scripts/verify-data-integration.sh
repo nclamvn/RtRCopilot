@@ -14,6 +14,9 @@ verify_database="rtr_verify_009_${verify_run_id}"
 verify_bucket="rtr-copilot-verify-009-${verify_run_id}"
 restore_database="${verify_database}_restore"
 restore_bucket="${verify_bucket}-restore"
+# AC18 runs against its own database so the pytest phase's deterministic
+# residue (templates, render jobs, issuances) can never skew the seeded counts.
+ac18_database="${verify_database}_ac18"
 owner_dsn="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$verify_database"
 runtime_dsn="postgresql://$POSTGRES_RUNTIME_USER:$POSTGRES_RUNTIME_PASSWORD@postgres:5432/$verify_database"
 
@@ -21,10 +24,15 @@ cleanup() {
   docker compose exec -T postgres psql -X -U "$POSTGRES_USER" -d postgres \
     -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity
         WHERE datname='$verify_database' AND pid <> pg_backend_pid()" >/dev/null
+  docker compose exec -T postgres psql -X -U "$POSTGRES_USER" -d postgres \
+    -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+        WHERE datname='$ac18_database' AND pid <> pg_backend_pid()" >/dev/null
   docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
     --if-exists "$verify_database" >/dev/null
   docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
     --if-exists "$restore_database" >/dev/null
+  docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
+    --if-exists "$ac18_database" >/dev/null
   minio_id="$(docker compose ps -q minio)"
   docker run --rm --network "container:$minio_id" \
     --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
@@ -47,6 +55,15 @@ docker run --rm --network "container:$minio_id" \
   -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
        mc mb --ignore-existing 'local/$verify_bucket' >/dev/null"
 
+run_migration_for() {
+  migration_database="$1"
+  shift
+  docker compose --profile tools run --rm \
+    -v "$project_root/apps/backend/migrations:/app/migrations:ro" \
+    -e MIGRATION_DSN="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$migration_database" \
+    -e POSTGRES_DSN="postgresql://$POSTGRES_RUNTIME_USER:$POSTGRES_RUNTIME_PASSWORD@postgres:5432/$migration_database" \
+    migrate alembic "$@"
+}
 run_migration() {
   docker compose --profile tools run --rm \
     -v "$project_root/apps/backend/migrations:/app/migrations:ro" \
@@ -57,6 +74,10 @@ run_migration() {
 owner_sql() {
   docker compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
     -U "$POSTGRES_USER" -d "$verify_database" -c "$1"
+}
+ac18_sql() {
+  docker compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
+    -U "$POSTGRES_USER" -d "$ac18_database" -c "$1"
 }
 
 # AC004.2: every revision is exercised with a revision-specific fixture and
@@ -162,9 +183,16 @@ docker compose --profile tools run --rm --no-deps \
   '
 
 # AC18: prove a non-empty Document OS database/object backup can be restored
-# with exact canonical lineage, checksums and runtime grants.
+# with exact canonical lineage, checksums and runtime grants. The proof seeds
+# a dedicated head-migrated database: the pytest phase above intentionally
+# leaves document-OS rows behind in $verify_database, and AC18's count(*)=1
+# assertions require an otherwise-empty schema.
+docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
+  --if-exists "$ac18_database" >/dev/null
+docker compose exec -T postgres createdb -U "$POSTGRES_USER" "$ac18_database"
+run_migration_for "$ac18_database" upgrade head
 empty_sha="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-owner_sql "BEGIN;
+ac18_sql "BEGIN;
   INSERT INTO subjects(user_id,issuer,provider_sub,email,canonical_domain,display_name)
   VALUES('99000000-0000-0000-0000-000000000001','tip009-recovery',
     '$verify_run_id','recovery@rtrobotics.com','rtrobotics.com','TIP-009 Recovery');
@@ -274,7 +302,7 @@ docker run --rm --network "container:$minio_id" \
          'local/$restore_bucket/tip009-recovery/' >/dev/null"
 recovery_dump="$(mktemp)"
 docker compose exec -T postgres pg_dump -U "$POSTGRES_USER" \
-  -d "$verify_database" -Fc >"$recovery_dump"
+  -d "$ac18_database" -Fc >"$recovery_dump"
 docker compose exec -T postgres createdb -U "$POSTGRES_USER" "$restore_database"
 docker compose exec -T postgres pg_restore -U "$POSTGRES_USER" \
   -d "$restore_database" --no-owner <"$recovery_dump"

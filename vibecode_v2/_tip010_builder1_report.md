@@ -56,3 +56,36 @@ Live-database verification (this container has PostgreSQL 16 + pgvector; I creat
 - Setting-value bounds beyond typing (min/max per key, e.g. SLA windows) are left to the admin service layer; add a bounds table or per-key registry there if REQ needs hard DB bounds.
 - Audit events for import/reject, transitions, assignments, proposal decisions and settings changes are Builder 2's service-layer duty via `AuditRepository().append` in the same transaction — the repository intentionally does not auto-audit (matches ResourceRepository/ObjectRepository split).
 - TIP-007's `rag/answering.py` gap upsert still works unchanged; Builder 2 may later route it through `create_or_increment_gap` for one code path, but that is a TIP-010 service decision, not required.
+
+## ADDENDUM — Contractor VERIFY finding: AC18 restore proof (refine completed)
+
+**Finding (pre-existing harness bug, not a TIP-010 regression):** the containerized
+gate's AC18 restore proof failed with `restore_proof=f`. Root cause: the pytest
+phase intentionally leaves deterministic document-OS residue (templates with
+`integration.<uuid>` keys, 3 render_jobs incl. one failed, generated_files,
+approvals, one issuance) in the same `$verify_database` that AC18 then seeds with
+exactly one row per table; the proof's `count(*)=1` assertions therefore see 2-4
+rows. Contractor's controlled reproduction confirms the identical failure on MAIN
+(pre-TIP-010) at both revisions 0008 and 0009 on fresh databases
+(templates|2, render_jobs|3, generated_files|2, issuances|1 in every
+combination) — a pre-existing AC18 ordering assumption made newly visible;
+`test_governance_integration.py` is not the cause.
+
+**Fix (surgical, `v2/scripts/verify-data-integration.sh` only):** AC18 is now
+hermetic. A dedicated database `${verify_database}_ac18` is created and migrated
+to head via a new parameterized `run_migration_for <database> <args...>` helper
+(the existing `run_migration` and the migration ladder are untouched); the AC18
+seed runs through a new `ac18_sql` helper against that database; `pg_dump` reads
+from `$ac18_database`; the restore side still uses `$restore_database` and the
+proof SQL (counts=1, checksum lineage, DELETE-privilege checks), pytest phase,
+runtime-denial loop and final echo are byte-for-byte unchanged; `cleanup()` now
+also terminates connections to and drops `$ac18_database`. `bash -n` clean.
+
+**Verification:** full `./scripts/verify-data-integration.sh` rerun end-to-end
+against the warm compose stack (postgres/minio/redis healthy): containerized
+pytest phase `45 passed`, AC18 restore proof passed, cleanup dropped all
+`rtr_verify*` databases (0 remain). Final line:
+
+```
+DATA INTEGRATION PASS · migrations=9 · revision_fixtures=9 · failing_ddl_rollback=1 · tests=45 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=18
+```
