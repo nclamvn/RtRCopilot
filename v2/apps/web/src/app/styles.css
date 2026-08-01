@@ -127,3 +127,36 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,[t
 @media(max-width:1100px){.ops-workspace{grid-template-columns:280px minmax(380px,1fr)}.ops-rail{position:fixed;left:0;right:0;bottom:0;top:44%;transform:translateY(110%);transition:transform .18s ease;border-top:1px solid var(--locator);z-index:30}.ops-rail.open{transform:none}.ops-topbar>.mobile-control:last-of-type{display:block;border:1px solid var(--line);padding:8px;background:transparent}.ops-nav{display:none}.ops-split{grid-template-columns:1fr}}
 @media(max-width:760px){.ops-workspace{grid-template:64px minmax(0,1fr)/1fr}.ops-topbar{padding:0 10px;gap:8px}.ops-topbar .identity,.nav-brand span:last-child{display:none}.ops-topbar>.mobile-control{display:block;border:1px solid var(--line);padding:8px;background:transparent}.ops-ledger{position:fixed;inset:64px 12% 0 0;z-index:30;transform:translateX(-110%);transition:transform .18s ease}.ops-ledger.open{transform:none}.ops-rail{top:42%}.ops-surface{grid-row:2;padding:16px 12px}.detail-facts div{grid-template-columns:1fr;gap:2px}.crossing-gate{left:60%}}
 @media(max-width:380px){.ops-topbar>.mobile-control{font-size:10px;padding:7px 5px}.ops-ledger{right:4%}}
+/* TIP-011 Builder A — unified application shell (append-only; tokens frozen) */
+.shell{min-height:100vh;display:grid;grid-template:64px minmax(0,1fr)/232px minmax(0,1fr);background:var(--bg)}
+.skip-link{position:absolute;left:-999px;top:0;z-index:60;background:var(--panel);color:var(--ink);border:1px solid var(--focus);padding:10px 14px;text-decoration:none;font-size:12px}
+.skip-link:focus{left:12px;top:10px}
+.shell-topbar{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:0 18px;border-bottom:1px solid var(--line);background:var(--bg);z-index:10}
+.shell-topbar .identity{margin-left:auto}
+.shell-brand{color:var(--ink);text-decoration:none}
+.shell-search{flex:1;max-width:520px;height:42px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:0 12px;text-decoration:none;font-size:12px}
+.shell-search code{font:10px ui-monospace,monospace;color:var(--locator)}
+.lang-switch{display:flex;border:1px solid var(--line)}
+.lang-switch button{background:transparent;border:0;padding:9px 10px;font:700 10px/1 ui-monospace,monospace;letter-spacing:.08em;color:var(--muted);cursor:pointer}
+.lang-switch button[aria-pressed=true]{color:var(--ink);background:#1d2428;box-shadow:inset 0 -2px var(--signal)}
+.shell-menu{display:none;background:transparent;border:1px solid var(--line);color:var(--ink);padding:8px;cursor:pointer}
+.shell-nav{min-height:0;overflow:auto;display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--line);padding:16px 0 0;z-index:5}
+.shell-nav-head{display:flex;align-items:center;justify-content:space-between;padding:0 18px;margin-bottom:10px}
+.shell-nav-head .eyebrow{margin:0}
+.shell-nav-close{display:none;border:0;background:transparent;color:var(--ink);font-size:24px;cursor:pointer}
+.shell-nav ol{list-style:none;margin:0;padding:0}
+.shell-nav li{border-top:1px solid var(--line)}
+.shell-nav li a{display:block;padding:13px 18px;color:var(--ink);text-decoration:none;font-size:13px}
+.shell-nav li a[aria-current=page]{background:#1d2428;box-shadow:inset 3px 0 var(--signal)}
+.shell-nav-hint{margin-top:auto;border-top:1px solid var(--line);padding:13px 18px;color:var(--muted);font-size:10px;line-height:1.5}
+.shell-main{min-width:0;min-height:0;overflow:auto;padding:26px clamp(18px,4vw,48px)}
+.page-head{display:flex;align-items:end;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:22px}
+.page-head h1{font:700 clamp(30px,5vw,54px)/1 "Arial Narrow",Arial,sans-serif;letter-spacing:-.02em;margin:6px 0 0}
+.placeholder-card{border:1px solid var(--line);background:var(--panel);padding:22px;max-width:720px;display:grid;gap:12px}
+.placeholder-card p{margin:0;line-height:1.6}
+.placeholder-card ul{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.placeholder-card li{border-top:1px solid var(--line);padding:10px 0;font-size:13px;display:grid;gap:4px}
+.placeholder-card code{font:10px/1.5 ui-monospace,monospace;color:var(--locator);overflow-wrap:anywhere}
+.shell-scrim{display:none}
+@media(max-width:760px){.shell{grid-template:64px minmax(0,1fr)/1fr}.shell-topbar{padding:0 12px;gap:10px}.shell-brand span:last-child,.shell-search,.shell-topbar .identity strong{display:none}.shell-menu{display:block}.shell-nav{position:fixed;inset:64px 12% 0 0;transform:translateX(-110%);transition:transform .18s ease;z-index:30;padding-top:14px}.shell-nav.open{transform:none}.shell-nav-close{display:block}.shell-main{grid-row:2;padding:20px 14px}.shell-scrim{display:block;position:fixed;inset:64px 0 0;background:rgba(0,0,0,.6);border:0;z-index:20}}
+@media(max-width:380px){.shell-menu{font-size:10px;padding:7px 5px}.shell-nav{right:4%}}

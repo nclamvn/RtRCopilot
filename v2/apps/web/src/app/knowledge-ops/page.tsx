@@ -32,18 +32,12 @@ import {
   WorkspaceState,
   WorkspaceView,
 } from "../../governance/contracts";
+import {IDLE, Surface, errorText, type Load} from "../../shared/surface";
 import {GatedCrossing, ZoneChip} from "./zone";
 
 type Identity = {user_id: string; email: string; display_name: string; roles: string[]};
-type Load<T> =
-  | {state: "idle"}
-  | {state: "loading"}
-  | {state: "ready"; data: T}
-  | {state: "denied"; error: TypedError}
-  | {state: "error"; error: TypedError};
 type Evidence = {records: ResearchRecord[]; missing: number};
 
-const IDLE = {state: "idle"} as const;
 const QUEUE_VIEWS: Record<string, "freshness" | "conflict" | "owner-review"> = {
   freshness: "freshness", conflict: "conflict", "owner-review": "owner-review",
 };
@@ -62,10 +56,6 @@ const api = (path: string, init?: RequestInit) => fetch(`/api/governance/${path}
   headers: {"content-type": "application/json", ...(init?.headers ?? {})},
 });
 
-function errorText(error: TypedError) {
-  return error.requestId ? `${error.code} · ${error.requestId}` : error.code;
-}
-
 function when(value: string | null) {
   return value ? new Date(value).toLocaleString("vi-VN") : "—";
 }
@@ -76,29 +66,6 @@ function slaBadge(gap: Gap) {
   return <span className={`sla-badge ${overdue ? "overdue" : ""}`}>
     {overdue ? "Quá hạn SLA" : `Hạn ${when(gap.due_at)}`}
   </span>;
-}
-
-function Surface<T>({load, children, empty, retry}: {
-  load: Load<T>; empty?: string; retry?: () => void;
-  children: (data: T) => React.ReactNode;
-}) {
-  if (load.state === "idle" || load.state === "loading") {
-    return <p role="status" className="surface-loading">Đang tải…</p>;
-  }
-  if (load.state === "denied") {
-    return <div role="alert" className="surface-denied">
-      Bị từ chối theo chính sách · {errorText(load.error)}
-    </div>;
-  }
-  if (load.state === "error") {
-    return <div role="alert" className="surface-error">
-      Không tải được dữ liệu · {errorText(load.error)}
-      {retry && <button type="button" onClick={retry}>Thử lại</button>}
-    </div>;
-  }
-  const isEmpty = Array.isArray(load.data) && load.data.length === 0;
-  if (isEmpty && empty) return <p className="surface-empty">{empty}</p>;
-  return <>{children(load.data)}</>;
 }
 
 export default function KnowledgeOpsPage() {

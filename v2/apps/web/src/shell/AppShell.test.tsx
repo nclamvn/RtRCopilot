@@ -1,0 +1,134 @@
+// @vitest-environment jsdom
+
+import "@testing-library/jest-dom/vitest";
+import {cleanup, fireEvent, render, screen} from "@testing-library/react";
+import React from "react";
+import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {I18nProvider} from "../i18n/provider";
+import {AppShell, activeArea} from "./AppShell";
+
+const nav = vi.hoisted(() => ({pathname: "/ask", view: null as string | null}));
+vi.mock("next/navigation", () => ({
+  usePathname: () => nav.pathname,
+  useSearchParams: () => new URLSearchParams(nav.view ? `view=${nav.view}` : ""),
+}));
+
+const identity = {
+  user_id: "77777777-7777-4777-8777-777777777777",
+  email: "curator@rtrobotics.com", display_name: "RtR Curator", roles: ["curator"],
+};
+
+function json(value: unknown, status = 200) {
+  return new Response(JSON.stringify(value), {
+    status, headers: {"content-type": "application/json"},
+  });
+}
+
+beforeEach(() => {
+  nav.pathname = "/ask";
+  nav.view = null;
+  vi.stubGlobal("fetch", vi.fn(async () => json(identity)));
+});
+
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  document.cookie = "rtr_locale=; path=/; max-age=0";
+  document.documentElement.lang = "vi";
+});
+
+function renderShell(initialLocale: "vi" | "en" = "vi") {
+  return render(<I18nProvider initialLocale={initialLocale}>
+    <AppShell><h1>Nội dung thử</h1></AppShell>
+  </I18nProvider>);
+}
+
+test("shell renders topbar, six nav areas and marks the active area", async () => {
+  renderShell();
+  expect(screen.getByText("RT ROBOTICS / COPILOT")).toBeInTheDocument();
+  const navigation = screen.getByRole("navigation", {name: "Điều hướng chính"});
+  const links = [
+    ["Hỏi", "/ask"], ["Tệp", "/files"], ["Tài liệu", "/documents"],
+    ["Tri thức", "/knowledge-ops?view=research"],
+    ["Vận hành", "/knowledge-ops"], ["Quản trị", "/admin"],
+  ] as const;
+  for (const [name, href] of links) {
+    expect(screen.getByRole("link", {name})).toHaveAttribute("href", href);
+  }
+  expect(navigation.querySelectorAll("ol a").length).toBe(6);
+  expect(screen.getByRole("link", {name: "Hỏi"}))
+    .toHaveAttribute("aria-current", "page");
+  expect(screen.getByRole("link", {name: "Quản trị"}))
+    .not.toHaveAttribute("aria-current");
+  expect(await screen.findByText("RtR Curator")).toBeInTheDocument();
+});
+
+test("active-area rules cover every route, including knowledge-ops views", () => {
+  expect(activeArea("/ask", null)).toBe("ask");
+  expect(activeArea("/", null)).toBe("files");
+  expect(activeArea("/files", null)).toBe("files");
+  expect(activeArea("/documents", null)).toBe("documents");
+  expect(activeArea("/knowledge-ops", null)).toBe("operations");
+  expect(activeArea("/knowledge-ops", "gaps")).toBe("operations");
+  expect(activeArea("/knowledge-ops", "freshness")).toBe("operations");
+  expect(activeArea("/knowledge-ops", "research")).toBe("knowledge");
+  expect(activeArea("/knowledge-ops", "graduation")).toBe("knowledge");
+  expect(activeArea("/admin", null)).toBe("admin");
+  expect(activeArea("/elsewhere", null)).toBeNull();
+});
+
+test("skip link is the first focusable element and moves focus to main", () => {
+  const {container} = renderShell();
+  const skip = screen.getByRole("link", {name: "Bỏ qua tới nội dung chính"});
+  expect(skip).toHaveAttribute("href", "#main");
+  expect(container.querySelector("a, button")).toBe(skip);
+  fireEvent.click(skip);
+  const main = screen.getByRole("main");
+  expect(main).toHaveAttribute("id", "main");
+  expect(document.activeElement).toBe(main);
+});
+
+test("global search affordance routes to /ask", () => {
+  renderShell();
+  expect(screen.getByRole("link", {name: /Tìm kiếm — hỏi Copilot/}))
+    .toHaveAttribute("href", "/ask");
+});
+
+test("language switch flips strings, lang attribute and persists via cookie only", () => {
+  renderShell();
+  const en = screen.getByRole("button", {name: "EN"});
+  expect(en).toHaveAttribute("aria-pressed", "false");
+  fireEvent.click(en);
+  expect(en).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByRole("link", {name: "Ask"})).toBeInTheDocument();
+  expect(screen.getByRole("link", {name: "Admin"})).toBeInTheDocument();
+  expect(document.documentElement.lang).toBe("en");
+  expect(document.cookie).toContain("rtr_locale=en");
+  expect(localStorage.length).toBe(0);
+  expect(sessionStorage.length).toBe(0);
+  fireEvent.click(screen.getByRole("button", {name: "VI"}));
+  expect(screen.getByRole("link", {name: "Hỏi"})).toBeInTheDocument();
+  expect(document.documentElement.lang).toBe("vi");
+  expect(document.cookie).toContain("rtr_locale=vi");
+});
+
+test("F6 and Shift+F6 cycle focus between navigation and work surface", () => {
+  renderShell();
+  const navigation = screen.getByRole("navigation", {name: "Điều hướng chính"});
+  const main = screen.getByRole("main");
+  fireEvent.keyDown(window, {key: "F6"});
+  expect(document.activeElement).toBe(navigation);
+  fireEvent.keyDown(window, {key: "F6"});
+  expect(document.activeElement).toBe(main);
+  fireEvent.keyDown(window, {key: "F6", shiftKey: true});
+  expect(document.activeElement).toBe(navigation);
+});
+
+test("anonymous session renders the company sign-in affordance", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => json(
+    {error: {code: "authentication_required"}}, 401,
+  )));
+  renderShell();
+  expect(await screen.findByRole("link", {name: "Đăng nhập công ty"}))
+    .toHaveAttribute("href", "/api/auth/login");
+});
