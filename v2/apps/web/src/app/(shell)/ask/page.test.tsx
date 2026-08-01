@@ -1,25 +1,230 @@
 // @vitest-environment jsdom
 
 import "@testing-library/jest-dom/vitest";
-import {cleanup, render, screen} from "@testing-library/react";
+import {cleanup, fireEvent, render, screen, waitFor} from "@testing-library/react";
 import React from "react";
-import {afterEach, expect, test} from "vitest";
+import {afterEach, expect, test, vi} from "vitest";
 import {I18nProvider} from "../../../i18n/provider";
 import AskPage from "./page";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  window.history.replaceState({}, "", "/ask");
+});
 
-test("ask placeholder renders exactly one H1 in Vietnamese by default", () => {
+const conversationId = "11111111-1111-4111-8111-111111111111";
+const runId = "22222222-2222-4222-8222-222222222222";
+const gapId = "33333333-3333-4333-8333-333333333333";
+const versionId = "55555555-5555-4555-8555-555555555555";
+const sha = "a".repeat(64);
+
+const identity = {
+  user_id: "44444444-4444-4444-8444-444444444444",
+  email: "staff@rtrobotics.com", display_name: "RtR Staff", roles: ["staff"],
+};
+
+const citation = {
+  marker: "C1",
+  chunk_id: "66666666-6666-4666-8666-666666666666",
+  record_key: "company.warranty",
+  record_version_id: versionId,
+  evidence_key: "company.warranty.e1",
+  record_checksum: sha,
+  evidence_checksum: null,
+  source_key: "rtr.specs",
+  source_revision: 1,
+  provenance_level: "approved_internal",
+  verification_state: "approved",
+  freshness_state: "current",
+  source_label: "Company specification",
+  locator: {page: 4},
+  redacted: false,
+};
+
+type Handler = () => {status?: number; json: unknown};
+
+function mockFetch(routes: Record<string, Handler>) {
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+    const raw = typeof input === "string"
+      ? input
+      : input instanceof URL ? input.toString() : input.url;
+    const path = (raw.startsWith("http") ? new URL(raw).pathname : raw.split("?")[0]);
+    const handler = routes[path];
+    if (!handler) return new Response(JSON.stringify({error: {code: "unmocked"}}), {
+      status: 500, headers: {"content-type": "application/json"},
+    });
+    const {status = 200, json} = handler();
+    return new Response(JSON.stringify(json), {
+      status, headers: {"content-type": "application/json"},
+    });
+  }));
+}
+
+const anonymous: Record<string, Handler> = {
+  "/api/auth/me": () => ({status: 401, json: {
+    error: {code: "authentication_required", message: ""}, request_id: "req-0",
+  }}),
+};
+
+test("anonymous ask renders exactly one H1 in Vietnamese by default", async () => {
+  mockFetch(anonymous);
   render(<AskPage/>);
+  await waitFor(() => expect(screen.getByText(/Đăng nhập bằng email công ty/))
+    .toBeInTheDocument());
   const headings = screen.getAllByRole("heading", {level: 1});
   expect(headings.length).toBe(1);
   expect(headings[0]).toHaveTextContent("Hỏi");
-  expect(screen.getByText(/Sắp có/)).toBeInTheDocument();
 });
 
-test("ask placeholder is fully translated under the en locale", () => {
+test("anonymous ask is fully translated under the en locale", async () => {
+  mockFetch(anonymous);
   render(<I18nProvider initialLocale="en"><AskPage/></I18nProvider>);
+  await waitFor(() => expect(screen.getByText(/Sign in with your company email/))
+    .toBeInTheDocument());
   expect(screen.getByRole("heading", {level: 1, name: "Ask"})).toBeInTheDocument();
-  expect(screen.getByText(/Coming soon/)).toBeInTheDocument();
-  expect(screen.queryByText(/Sắp có/)).toBeNull();
+  expect(screen.queryByText(/Đăng nhập/)).toBeNull();
+});
+
+test("grounded ask renders citation markers wired to the shared rail; research denial disables the scope", async () => {
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/search": () => ({status: 403, json: {
+      error: {code: "curator_required", message: ""}, request_id: "req-9",
+    }}),
+    "/api/ask/ask": () => ({json: {
+      state: "grounded",
+      answer: "Robot RtR được bảo hành 24 tháng. [C1]",
+      citations: [citation],
+      conversation_id: conversationId,
+      answer_run_id: runId,
+      request_id: "req-1",
+    }}),
+  });
+  render(<AskPage/>);
+  const input = await screen.findByLabelText("Câu hỏi");
+  // Typed 403 → the research scope renders disabled with the denied state.
+  await waitFor(() => expect(screen.getByLabelText("Kèm vùng nghiên cứu")).toBeDisabled());
+  expect(screen.getByText(/Phạm vi nghiên cứu bị từ chối theo chính sách/))
+    .toHaveTextContent("curator_required · req-9");
+  fireEvent.change(input, {target: {value: "Chính sách bảo hành robot?"}});
+  fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
+  expect(await screen.findByText(/Robot RtR được bảo hành 24 tháng/)).toBeInTheDocument();
+  // Citation marker focuses the rail entry.
+  const marker = screen.getByRole("button", {
+    name: "Trích dẫn — mở bằng chứng trong Evidence Rail C1",
+  });
+  fireEvent.click(marker);
+  const entry = document.getElementById("rail-entry-C1");
+  expect(entry).not.toBeNull();
+  await waitFor(() => expect(entry).toHaveFocus());
+  expect(entry).toHaveAttribute("aria-current", "true");
+  // The rail deep link follows the TIP-008 contract.
+  expect(screen.getByRole("link", {name: "Mở đúng vị trí — Trang 4"}))
+    .toHaveAttribute("href", `/files?version=${versionId}&page=4`);
+  // URL-restorable conversation id, without any browser storage.
+  expect(location.search).toBe(`?conversation=${conversationId}`);
+  expect(localStorage.length + sessionStorage.length).toBe(0);
+});
+
+test("honest-null is a first-class state showing the recorded gap id and state", async () => {
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/search": () => ({json: {
+      zone_label: "research", grounding: "research_supported",
+      results: [], request_id: "req-8",
+    }}),
+    "/api/ask/ask": () => ({json: {
+      state: "honest_null",
+      answer: "Không tìm thấy bằng chứng được phép và đủ tin cậy để trả lời.",
+      citations: [],
+      conversation_id: conversationId,
+      answer_run_id: runId,
+      gap_id: gapId,
+      request_id: "req-2",
+    }}),
+    [`/api/governance/gaps/${gapId}`]: () => ({status: 403, json: {
+      error: {code: "forbidden", message: ""}, request_id: "req-3",
+    }}),
+  });
+  render(<AskPage/>);
+  const input = await screen.findByLabelText("Câu hỏi");
+  fireEvent.change(input, {target: {value: "Điều chưa ai ghi lại?"}});
+  fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
+  expect(await screen.findByRole("heading", {name: "Chưa có bằng chứng"}))
+    .toBeInTheDocument();
+  expect(screen.getByText(/Không tìm thấy bằng chứng được phép/)).toBeInTheDocument();
+  expect(screen.getByText(gapId)).toBeInTheDocument();
+  // The caller may not read the gap: state degrades honestly, no invention.
+  await waitFor(() => expect(screen.getByText("ngoài phạm vi xem của bạn"))
+    .toBeInTheDocument());
+  expect(screen.getByRole("link", {name: /Vận hành tri thức/}))
+    .toHaveAttribute("href", `/knowledge-ops?view=gaps&gap=${gapId}`);
+  // No fabricated citations appear.
+  expect(screen.getByText("Chưa có bằng chứng để hiển thị.")).toBeInTheDocument();
+});
+
+test("research-scoped results render exactly the server zone, tier and grounding labels", async () => {
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/search": () => ({json: {
+      zone_label: "research", grounding: "research_supported",
+      results: [{
+        zone_label: "research",
+        research_record_id: "77777777-7777-4777-8777-777777777777",
+        record_key: "vendor.abb.profile", tier: "P",
+        snippet: "ABB manufactures industrial robots.", lexical_score: 0.9,
+        citation: {
+          zone_label: "research",
+          research_record_id: "77777777-7777-4777-8777-777777777777",
+          record_key: "vendor.abb.profile", version_ordinal: 1, tier: "P",
+          source_key: "refinery.industry", package_fingerprint: sha,
+          content_sha256: "c".repeat(64), corroboration_state: "corroborated",
+          evidence_checksums: ["d".repeat(64)],
+        },
+      }], request_id: "req-7",
+    }}),
+    "/api/ask/ask": () => ({json: {
+      state: "grounded",
+      answer: "Theo SOT, RtR tích hợp robot hàn. [C1]",
+      citations: [citation],
+      conversation_id: conversationId,
+      answer_run_id: runId,
+      request_id: "req-4",
+    }}),
+  });
+  render(<AskPage/>);
+  const research = await screen.findByLabelText("Kèm vùng nghiên cứu");
+  await waitFor(() => expect(research).toBeEnabled());
+  fireEvent.click(research);
+  fireEvent.change(screen.getByLabelText("Câu hỏi"),
+    {target: {value: "RtR tích hợp robot của hãng nào?"}});
+  fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
+  expect(await screen.findByRole("heading", {name: "Kết quả vùng nghiên cứu"}))
+    .toBeInTheDocument();
+  expect(screen.getAllByText("RESEARCH").length).toBeGreaterThanOrEqual(2);
+  expect(screen.getAllByText("Tier P").length).toBeGreaterThanOrEqual(1);
+  expect(screen.getAllByText(/research_supported/).length).toBeGreaterThanOrEqual(1);
+  // SOT facts and research-supported statements are visibly distinguished.
+  expect(await screen.findByText(/Theo SOT, RtR tích hợp robot hàn/)).toBeInTheDocument();
+  expect(screen.getByText("Sự thật SOT (grounded)")).toBeInTheDocument();
+  expect(screen.getByText("Do nghiên cứu hỗ trợ (research_supported)"))
+    .toBeInTheDocument();
+});
+
+test("denied file catalog renders the typed state inside the picker", async () => {
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/search": () => ({json: {
+      zone_label: "research", grounding: "research_supported",
+      results: [], request_id: "req-6",
+    }}),
+    "/api/files": () => ({status: 403, json: {
+      error: {code: "policy_denied", message: ""}, request_id: "req-5",
+    }}),
+  });
+  render(<AskPage/>);
+  fireEvent.click(await screen.findByRole("button", {name: "Chọn tệp được cấp quyền"}));
+  const denied = await screen.findByText(/Bị từ chối theo chính sách/);
+  expect(denied).toHaveTextContent("policy_denied · req-5");
 });

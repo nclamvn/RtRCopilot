@@ -1,22 +1,12 @@
 import React from "react";
-import {Proposal, TrustZone} from "../../governance/contracts";
-
-const ZONE_TEXT: Record<TrustZone, string> = {
-  sot: "SOT",
-  research: "RESEARCH",
-  private: "PRIVATE",
-};
+import {Proposal} from "../../governance/contracts";
 
 /**
- * Signature element: the persistent trust-zone chip. The `zone` value must
- * come from an API response (`zone_label` on research payloads and dashboard
- * tiles); callers without a server-provided label pass null and no chip
- * renders — the client never guesses a zone.
+ * TIP-011 Task 2: the trust-zone chip now lives in the shared rail module
+ * (`src/rail/ZoneChip`) so Ask, Files, Documents and Knowledge Ops render
+ * the identical element. Re-exported here with zero behavior change.
  */
-export function ZoneChip({zone}: {zone: TrustZone | null | undefined}) {
-  if (zone !== "sot" && zone !== "research" && zone !== "private") return null;
-  return <span className={`zone-chip zone-${zone}`}>{ZONE_TEXT[zone]}</span>;
-}
+export {ZoneChip} from "../../rail/ZoneChip";
 
 export type CrossingPhase =
   | "proposed" | "approved_staged" | "approved_unsubmitted" | "rejected";

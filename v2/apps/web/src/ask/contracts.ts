@@ -1,0 +1,171 @@
+/**
+ * Typed contracts for the Ask workspace (TIP-011 Task 2, D-011-03).
+ *
+ * The TIP-007 answer API is consumed as-is: `state` is the server grounding
+ * metadata (`grounded` SOT facts, `honest_null` with a recorded gap id,
+ * `failed`), citations adapt into the shared Evidence Rail contract through
+ * `evidenceFromAskCitation` (which enforces the client-edge zone gate), and
+ * the conversation id is URL-restorable with no restricted metadata in
+ * browser storage.
+ */
+
+import {ViewerKind} from "../files/contracts";
+import {EvidenceEntry, evidenceFromAskCitation} from "../rail/contracts";
+
+export type AnswerState = "grounded" | "honest_null" | "failed";
+
+export type AskAnswer = {
+  state: AnswerState;
+  answer: string;
+  entries: EvidenceEntry[];
+  conversationId: string;
+  answerRunId: string;
+  gapId: string | null;
+  requestId: string;
+};
+
+export type ConversationMessage = {
+  messageId: string;
+  role: "user" | "assistant";
+  content: string;
+  answerState: string | null;
+  entries: EvidenceEntry[];
+  createdAt: string;
+};
+
+export type Conversation = {
+  conversationId: string;
+  messages: ConversationMessage[];
+  requestId: string;
+};
+
+/** Minimal ACL-scoped catalog row for the file-scope picker. */
+export type FileScopeItem = {
+  documentId: string;
+  versionId: string;
+  logicalName: string;
+  displayFilename: string;
+  viewerKind: ViewerKind | "unsupported";
+  classification: string;
+};
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const STATES = new Set<AnswerState>(["grounded", "honest_null", "failed"]);
+const KINDS = new Set(["image", "pdf", "docx", "xlsx", "pptx", "video", "audio"]);
+
+function record(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function uuid(value: unknown): value is string {
+  return typeof value === "string" && UUID.test(value);
+}
+function text(value: unknown, maximum = 20_000): value is string {
+  return typeof value === "string" && value.length <= maximum
+    && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value);
+}
+function stamp(value: unknown): value is string {
+  return typeof value === "string" && value.length <= 64
+    && !Number.isNaN(Date.parse(value));
+}
+
+export function parseAskAnswer(value: unknown): AskAnswer {
+  if (!record(value) || !STATES.has(value.state as AnswerState)
+      || !text(value.answer) || !Array.isArray(value.citations)
+      || value.citations.length > 20 || !uuid(value.conversation_id)
+      || !uuid(value.answer_run_id)
+      || !(value.gap_id === null || value.gap_id === undefined || uuid(value.gap_id))
+      || !text(value.request_id, 128)) {
+    throw new Error("invalid_ask_response");
+  }
+  const state = value.state as AnswerState;
+  if (state !== "grounded" && value.citations.length > 0) {
+    // A non-grounded answer may not smuggle citations past the grounding gate.
+    throw new Error("invalid_ask_response");
+  }
+  return {
+    state,
+    answer: value.answer as string,
+    entries: state === "grounded"
+      ? value.citations.map(item => evidenceFromAskCitation(item, "grounded"))
+      : [],
+    conversationId: value.conversation_id as string,
+    answerRunId: value.answer_run_id as string,
+    gapId: uuid(value.gap_id) ? value.gap_id : null,
+    requestId: value.request_id as string,
+  };
+}
+
+export function parseConversation(value: unknown): Conversation {
+  if (!record(value) || !uuid(value.conversation_id)
+      || !Array.isArray(value.messages) || value.messages.length > 100
+      || !text(value.request_id, 128)) {
+    throw new Error("invalid_conversation");
+  }
+  const messages = value.messages.map((item): ConversationMessage => {
+    if (!record(item) || !uuid(item.message_id)
+        || (item.role !== "user" && item.role !== "assistant")
+        || !text(item.content)
+        || !(item.answer_state === null || item.answer_state === undefined
+          || text(item.answer_state, 40))
+        || !Array.isArray(item.citations) || item.citations.length > 20
+        || !stamp(item.created_at)) {
+      throw new Error("invalid_conversation_message");
+    }
+    return {
+      messageId: item.message_id as string,
+      role: item.role,
+      content: item.content as string,
+      answerState: text(item.answer_state, 40) && item.answer_state
+        ? item.answer_state as string : null,
+      entries: item.citations.map(citation =>
+        evidenceFromAskCitation(citation, "grounded")),
+      createdAt: item.created_at as string,
+    };
+  });
+  return {
+    conversationId: value.conversation_id as string,
+    messages,
+    requestId: value.request_id as string,
+  };
+}
+
+export function parseFileScopePage(value: unknown): {
+  items: FileScopeItem[]; nextCursor: string | null;
+} {
+  if (!record(value) || !Array.isArray(value.items) || value.items.length > 200) {
+    throw new Error("invalid_catalog_page");
+  }
+  const items = value.items.map((item): FileScopeItem => {
+    if (!record(item) || !uuid(item.document_id) || !uuid(item.version_id)
+        || !text(item.logical_name, 500) || !text(item.display_filename, 500)
+        || !text(item.classification, 100)) {
+      throw new Error("invalid_catalog_item");
+    }
+    return {
+      documentId: item.document_id as string,
+      versionId: item.version_id as string,
+      logicalName: item.logical_name as string,
+      displayFilename: item.display_filename as string,
+      viewerKind: KINDS.has(item.viewer_kind as string)
+        ? item.viewer_kind as ViewerKind : "unsupported",
+      classification: item.classification as string,
+    };
+  });
+  return {
+    items,
+    nextCursor: text(value.next_cursor, 512) && value.next_cursor
+      ? value.next_cursor as string : null,
+  };
+}
+
+/** URL-restorable Ask state: the conversation id only, never content. */
+export function parseAskState(params: URLSearchParams): {conversationId: string | null} {
+  const conversation = params.get("conversation");
+  return {conversationId: uuid(conversation) ? conversation : null};
+}
+
+export function askQuery(conversationId: string | null): string {
+  if (!conversationId) return "";
+  const params = new URLSearchParams({conversation: conversationId});
+  return params.toString();
+}

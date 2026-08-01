@@ -99,8 +99,13 @@ export function AppShell({children}: {children: React.ReactNode}) {
         document.querySelectorAll<HTMLElement>("[data-shell-region]"),
       );
       if (regions.length === 0) return;
-      const current = regions.findIndex(
-        region => region.contains(document.activeElement),
+      // Innermost (last in DOM order) region containing focus wins, so a
+      // region nested inside `main` — Builder B's Evidence Rail — cycles
+      // correctly instead of trapping F6 (nav → work surface → rail → nav).
+      const current = regions.reduce(
+        (found, region, index) =>
+          region.contains(document.activeElement) ? index : found,
+        -1,
       );
       const step = event.shiftKey ? -1 : 1;
       const base = current === -1 ? (step === 1 ? -1 : 0) : current;
