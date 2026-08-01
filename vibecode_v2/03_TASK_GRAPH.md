@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** Blueprint APPROVED · TIP-011 VERIFIED · TIP-012 ISSUED (01/08/2026)
+**Trạng thái:** Blueprint APPROVED · TIP-012 VERIFIED (01/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -45,7 +45,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-009 ✅ | Template registry, structured binding, render/preview/approval | 006,008 | VERIFIED: deterministic 4-format Document OS; locked SOT; approval/issuance trail |
 | TIP-010 ✅ | Curator/admin flows, gaps/freshness, Refinery research adapter | 006,007 | VERIFIED: 16/16 AC; full 278/3; masquerade 0 hit; Trivy clean; restore drill PASS |
 | TIP-011 ✅ | Unified Design DNA UI, Evidence Rail, responsive/WCAG/i18n | 007,008,009 | VERIFIED: 14/14 AC; axe 0 violations; keyboard E2E; full 292/3; Playwright 73/73 |
-| TIP-012 | HTTPS, quotas, observability, CI/CD, security/load, backup/DR | 010,011 | SLO/load targets; restore and rollback drill |
+| TIP-012 ✅ | HTTPS, quotas, observability, CI/CD, security/load, backup/DR | 010,011 | VERIFIED: 16/16 AC; SLO 10/10; ingress 15/15; full 377/18/0; drills timed |
 | TIP-013 | Data migration, regression parity, staged pilot, final VERIFY | 012 | 34 REQ coverage; zero P0/P1 open; go/no-go report |
 
 ## Audit trail rule
