@@ -38,6 +38,7 @@ from rtr_copilot.ingestion.validators import (
     normalize_display_name,
     validate_content,
 )
+from rtr_copilot.observability.worker import log_job_request_id
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.resources import ResourceRecord, ResourceRepository
 from rtr_copilot.storage.s3 import S3ObjectStorage, StoredObject
@@ -853,6 +854,9 @@ class IngestionService:
         )
         if claim is None:
             return False
+        # AC-09: log the originating request-id (persisted on the job row by the
+        # api) while the worker processes it — the third link of the chain proof.
+        log_job_request_id("ingestion", claim.request_id, job_id=str(claim.job_id))
         await self.jobs.running(claim)
         started = time.monotonic()
         lease_stop = asyncio.Event()

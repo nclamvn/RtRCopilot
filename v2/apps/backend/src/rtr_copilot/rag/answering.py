@@ -19,6 +19,14 @@ from rtr_copilot.limits.breaker import CircuitBreaker, ProviderUnavailable
 from rtr_copilot.limits.budget import BudgetExhausted, CostBudget
 from rtr_copilot.limits.redis_support import open_redis
 from rtr_copilot.limits.settings_access import effective_int_setting
+from rtr_copilot.observability.metrics import (
+    PROVIDER_BREAKER_OPEN,
+    PROVIDER_BREAKER_REFUSALS,
+    PROVIDER_BUDGET_DEBIT_UNITS,
+    PROVIDER_BUDGET_EXHAUSTED,
+    PROVIDER_CALL_DURATION,
+    PROVIDER_CALL_FAILURES,
+)
 from rtr_copilot.rag.adapters import (
     AnswerAdapter,
     OfflineExtractiveAnswer,
@@ -510,6 +518,7 @@ class AnswerService:
             )
             await budget.check(subject.user_id)
         except BudgetExhausted as breach:
+            PROVIDER_BUDGET_EXHAUSTED.labels(scope=breach.scope).inc()
             await self._audit_budget_event(
                 subject,
                 request_id=request_id,
@@ -564,6 +573,9 @@ class AnswerService:
             except RedisError:
                 admitted, cooldown_left = True, 0
             if not admitted:
+                # AC-08: breaker refused the call (open) — reflect state locally.
+                PROVIDER_BREAKER_OPEN.labels(self.provider.name).set(1)
+                PROVIDER_BREAKER_REFUSALS.labels(self.provider.name).inc()
                 await self._audit_budget_event(
                     subject,
                     request_id=request_id,
@@ -583,6 +595,7 @@ class AnswerService:
             output: ProviderAnswer | None = None
             grounding_error = "grounding_failed"
             for _ in range(2):
+                call_started = time.monotonic()
                 try:
                     async with asyncio.timeout(
                         self.settings.rag_provider_timeout_seconds,
@@ -597,10 +610,19 @@ class AnswerService:
                             ),
                         )
                 except Exception:
+                    # Timeout or provider error: record latency + failure (AC-08).
+                    PROVIDER_CALL_DURATION.labels(
+                        self.provider.name, "error",
+                    ).observe(time.monotonic() - call_started)
+                    PROVIDER_CALL_FAILURES.labels(self.provider.name).inc()
                     grounding_error = "provider_error"
                     with contextlib.suppress(RedisError):
                         await breaker.record_failure()
                     continue
+                PROVIDER_CALL_DURATION.labels(
+                    self.provider.name, "success",
+                ).observe(time.monotonic() - call_started)
+                PROVIDER_BREAKER_OPEN.labels(self.provider.name).set(0)
                 with contextlib.suppress(RedisError):
                     await breaker.record_success()
                 try:
@@ -652,6 +674,7 @@ class AnswerService:
                 "request_id": request_id,
             }))
             return
+        PROVIDER_BUDGET_DEBIT_UNITS.inc(units)
         await self._audit_budget_event(
             subject,
             request_id=request_id,

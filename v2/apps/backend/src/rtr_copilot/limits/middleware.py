@@ -31,6 +31,8 @@ from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.limits.errors import limit_response
 from rtr_copilot.limits.rate_limit import RateLimiter
 from rtr_copilot.limits.redis_support import open_redis
+from rtr_copilot.observability.http import meter_error
+from rtr_copilot.observability.metrics import RATE_LIMIT_REJECTIONS
 from rtr_copilot.repositories.audit import AuditRepository
 
 logger = logging.getLogger("rtr_copilot.limits")
@@ -305,6 +307,15 @@ def install_limits_middleware(app: FastAPI) -> None:
         try:
             rejection = await apply_limits(request, redis, settings)
             if rejection is not None:
+                # Meter the limit hit (AC-08): bounded reason/class/scope labels
+                # plus the typed-error counter. Metrics only; never affects the
+                # decision Builder 2 already made.
+                RATE_LIMIT_REJECTIONS.labels(
+                    reason=rejection.reason,
+                    route_class=str(rejection.details.get("class", "other")),
+                    scope=str(rejection.details.get("scope", "-")),
+                ).inc()
+                meter_error(rejection.reason, request.url.path)
                 await _audit_rejection(
                     redis,
                     settings,

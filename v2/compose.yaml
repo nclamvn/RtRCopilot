@@ -209,6 +209,14 @@ services:
       MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
       RETENTION_POLICY_JSON: ${RETENTION_POLICY_JSON:-}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-}
+      # TIP-012 Task 3 — worker Prometheus endpoint (internal, compose-network
+      # only; never published in the hardened profile). Prometheus scrapes
+      # worker:9100 per infra/observability/prometheus.yml.
+      WORKER_METRICS_PORT: ${WORKER_METRICS_PORT:-9100}
+    # Documentation only: the metrics port is reachable by other services on the
+    # compose network without being published to the host.
+    expose:
+      - "9100"
     depends_on:
       redis:
         condition: service_healthy

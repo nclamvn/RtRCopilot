@@ -44,6 +44,7 @@ from rtr_copilot.documents.renderers import MIME_BY_FORMAT, canonical_json, rend
 from rtr_copilot.documents.validation import validate_schema, validate_template
 from rtr_copilot.ingestion.api import _effective_principal_ids
 from rtr_copilot.ingestion.service import IngestionService
+from rtr_copilot.observability.worker import log_job_request_id
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.identity_postgres import PostgresSubjectRepository
@@ -1118,6 +1119,9 @@ class DocumentOSService:
             """), {"job_id": job_id})).mappings().all()
         if job is None or job["state"] == "completed":
             return
+        # AC-09: log the originating request-id the api persisted on the job row
+        # while the worker processes it (proves the ingress→api→worker chain).
+        log_job_request_id("render", str(job["request_id"]), job_id=str(job_id))
         created: dict[str, Any] | None = None
         cleanup_keys: list[str] = []
         try:

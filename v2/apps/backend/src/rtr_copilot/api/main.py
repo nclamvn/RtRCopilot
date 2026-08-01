@@ -22,8 +22,11 @@ from rtr_copilot.config import get_settings
 from rtr_copilot.documents.api import router as documents_router
 from rtr_copilot.governance.admin_api import router as governance_admin_router
 from rtr_copilot.governance.api import router as governance_router
+from rtr_copilot.governance.audit_export import router as audit_export_router
 from rtr_copilot.ingestion.api import router as files_router
 from rtr_copilot.limits.middleware import install_limits_middleware
+from rtr_copilot.observability.db import refresh_db_pool_metrics
+from rtr_copilot.observability.http import install_metrics_middleware, meter_error
 from rtr_copilot.rag.api import router as rag_router
 from rtr_copilot.research.api import router as research_router
 from rtr_copilot.sot.api import router as sot_router
@@ -51,6 +54,7 @@ app.include_router(rag_router)
 app.include_router(documents_router)
 app.include_router(governance_router)
 app.include_router(governance_admin_router)
+app.include_router(audit_export_router)
 app.include_router(research_router)
 if get_settings().app_env in {"development", "test"} and get_settings().dev_oidc_enabled:
     app.include_router(auth_dev_router)
@@ -84,6 +88,7 @@ async def request_context(
             "error_code": "internal_error",
             "error_fingerprint": fingerprint,
         }))
+        meter_error("internal_error", request.url.path)
         return JSONResponse(
             status_code=500,
             content={"error": {"code": "internal_error", "message": "Internal server error"},
@@ -96,6 +101,12 @@ async def request_context(
                             "status": response.status_code,
                             "duration_ms": round((time.monotonic() - started) * 1000, 2)}))
     return response
+
+
+# Installed last so the metrics middleware is the OUTERMOST layer: it observes
+# the terminal status of every response, including limit rejections (429/413)
+# and the synthesized 500 above.
+install_metrics_middleware(app)
 
 
 class ErrorDetail(BaseModel):
@@ -119,12 +130,15 @@ def error_response(request: Request, status_code: int, code: str, message: str) 
 @app.exception_handler(StarletteHTTPException)
 async def http_error(request: Request, error: StarletteHTTPException) -> JSONResponse:
     if error.status_code == 404:
+        meter_error("not_found", request.url.path)
         return error_response(request, 404, "not_found", "Resource not found")
+    meter_error("http_error", request.url.path)
     return error_response(request, error.status_code, "http_error", "HTTP request failed")
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_error(request: Request, _: RequestValidationError) -> JSONResponse:
+    meter_error("validation_error", request.url.path)
     return error_response(
         request,
         422,
@@ -154,6 +168,9 @@ async def info() -> ServiceInfo:
 async def metrics() -> Any:
     from fastapi.responses import Response
 
+    # Sample the connection-pool gauges at scrape time so DB pool occupancy is
+    # fresh in the exposition. Internal port only — never routed via the ingress.
+    refresh_db_pool_metrics()
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 

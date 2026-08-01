@@ -159,6 +159,11 @@ class Settings(BaseSettings):
     limits_breaker_cooldown_seconds: int = Field(default=30, ge=1, le=3600)
     # Retry-After guidance (seconds) returned with a queue_saturated rejection.
     limits_queue_retry_after_seconds: int = Field(default=15, ge=1, le=3600)
+    # TIP-012 Task 3 (D-012-05) — the worker has no request HTTP app, so it
+    # publishes the Prometheus registry on this dedicated port. Scraped on the
+    # compose network only (never published in the hardened profile), matching
+    # the api's internal-only /metrics posture.
+    worker_metrics_port: int = Field(default=9100, ge=1024, le=65535)
 
     @field_validator("oidc_issuer", mode="before")
     @classmethod

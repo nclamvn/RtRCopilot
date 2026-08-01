@@ -21,6 +21,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from rtr_copilot.limits.settings_access import effective_int_setting
+from rtr_copilot.observability.metrics import JOB_QUEUE_SATURATION
 
 JobFamily = Literal["ingestion", "render", "index"]
 
@@ -81,6 +82,7 @@ async def check_capacity(
     cap = await effective_int_setting(session, FAMILY_CAP_KEY[family])
     outstanding = await outstanding_count(session, family)
     if outstanding >= cap:
+        JOB_QUEUE_SATURATION.labels(family=family).inc()
         raise QueueSaturated(
             family,
             retry_after=retry_after,

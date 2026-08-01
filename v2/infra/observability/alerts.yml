@@ -1,0 +1,171 @@
+# TIP-012 Task 3 (AC-08) — curated Prometheus alert rules for RtR Copilot v2.
+#
+# Every rule carries a one-line `runbook` annotation pointing at the matching
+# playbook in docs/runbook.md (anchors cross-linked by alert name). Metrics are
+# the ones exposed by the api and worker (src/rtr_copilot/observability/metrics.py).
+#
+# Lint: `promtool check rules infra/observability/alerts.yml`
+#       (run via the official prom/prometheus container — see docs/runbook.md).
+
+groups:
+  - name: rtr-http
+    rules:
+      - alert: HighApiErrorRate
+        expr: |
+          (
+            sum(rate(rtr_http_request_duration_seconds_count{service="api",status=~"5.."}[5m]))
+            /
+            clamp_min(sum(rate(rtr_http_request_duration_seconds_count{service="api"}[5m])), 1)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API 5xx error rate above 5% (5m)"
+          description: >-
+            {{ $value | humanizePercentage }} of API requests are returning 5xx
+            over the last 5 minutes. Triage upstream (provider/DB) before it
+            trips the SLO error budget.
+          runbook: "docs/runbook.md#high-api-error-rate"
+
+      - alert: HighApiLatencyP95
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(rtr_http_request_duration_seconds_bucket{service="api"}[5m]))
+          ) > 1.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API p95 latency above 1.5s (10m)"
+          description: >-
+            API p95 request latency is {{ $value | humanizeDuration }} — past the
+            ask SLO ceiling. Check provider latency, DB pool saturation and queue
+            pressure.
+          runbook: "docs/runbook.md#high-api-latency"
+
+  - name: rtr-queues
+    rules:
+      - alert: JobQueueDepthHigh
+        expr: max by (family) (rtr_job_queue_depth) > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Job queue depth high for family {{ $labels.family }}"
+          description: >-
+            {{ $labels.family }} has {{ $value }} outstanding (non-terminal) jobs
+            for 10m — the worker is not draining as fast as work arrives.
+          runbook: "docs/runbook.md#queue-saturation"
+
+      - alert: JobQueueSaturation
+        expr: sum by (family) (increase(rtr_job_queue_saturation_total[10m])) > 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Job submissions shed at the cap for family {{ $labels.family }}"
+          description: >-
+            {{ $labels.family }} submissions are being rejected/flagged at the
+            configured cap (typed queue_saturated). Sustained backpressure.
+          runbook: "docs/runbook.md#queue-saturation"
+
+  - name: rtr-provider
+    rules:
+      - alert: ProviderBreakerOpen
+        expr: max by (provider) (rtr_provider_breaker_open) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Circuit breaker OPEN for provider {{ $labels.provider }}"
+          description: >-
+            The breaker for {{ $labels.provider }} has been open for 5m; ask is
+            returning typed 503 provider_unavailable. Provider is unhealthy.
+          runbook: "docs/runbook.md#breaker-storm"
+
+      - alert: ProviderCallFailureRateHigh
+        expr: sum by (provider) (rate(rtr_provider_call_failures_total[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Provider {{ $labels.provider }} call failure rate high"
+          description: >-
+            {{ $labels.provider }} is failing/timing out at
+            {{ $value | humanize }}/s over 5m — the breaker will open if this
+            continues.
+          runbook: "docs/runbook.md#provider-outage"
+
+      - alert: ProviderBudgetExhaustionSpike
+        expr: sum(increase(rtr_provider_budget_exhausted_total[15m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Provider budget exhaustion spike"
+          description: >-
+            {{ $value }} budget_exhausted refusals in 15m. Either a runaway
+            caller or the daily cap is too low for real demand — review
+            limits.budget.* in governance settings.
+          runbook: "docs/runbook.md#budget-exhaustion"
+
+  - name: rtr-integrity
+    rules:
+      - alert: AuditChainVerifyFailure
+        expr: rtr_audit_chain_valid == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Audit hash-chain verification FAILED"
+          description: >-
+            The worker's periodic audit-chain verification reports the
+            append-only chain no longer verifies end to end. Treat as a
+            potential integrity incident.
+          runbook: "docs/runbook.md#audit-chain-failure"
+
+      - alert: AuditChainVerifyStale
+        expr: (time() - rtr_audit_chain_last_verified_timestamp_seconds) > 900
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Audit-chain verification is stale"
+          description: >-
+            The audit-chain integrity gauge has not refreshed in over 15m — the
+            worker may be down or wedged. Check the worker before trusting the
+            green integrity signal.
+          runbook: "docs/runbook.md#audit-chain-failure"
+
+  - name: rtr-platform
+    rules:
+      - alert: TargetDown
+        expr: up{job=~"rtr-.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Scrape target down: {{ $labels.job }} ({{ $labels.service }})"
+          description: >-
+            Prometheus cannot scrape {{ $labels.job }} for 2m — the api or worker
+            is unreachable or crash-looping.
+          runbook: "docs/runbook.md#service-down"
+
+      # cert-expiry PLACEHOLDER (AC-08). TLS is terminated at the Caddy ingress,
+      # which manages certificate lifetime itself; the app emits no cert metric.
+      # This rule is inert until a TLS cert exporter feeds
+      # `rtr_tls_cert_expiry_timestamp_seconds` (a later choice, D-012-05). Kept
+      # committed and lint-valid so the wiring exists the day a cert exporter lands.
+      - alert: TlsCertExpirySoon
+        expr: (rtr_tls_cert_expiry_timestamp_seconds - time()) < (14 * 24 * 3600)
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "TLS certificate expires in under 14 days (placeholder)"
+          description: >-
+            The ingress TLS certificate is within 14 days of expiry. Renew per
+            the cert-renewal playbook. (Inert until a cert exporter is wired.)
+          runbook: "docs/runbook.md#cert-renewal"

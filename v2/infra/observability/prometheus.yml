@@ -1,0 +1,62 @@
+# TIP-012 Task 3 (D-012-05, AC-08) — Prometheus scrape configuration.
+#
+# Scrapes the api and worker Prometheus endpoints on the COMPOSE NETWORK only.
+# Neither /metrics is routed through the Caddy ingress (Builder-1 posture): the
+# api exposes /metrics on its internal app port (8000) and the worker on a
+# dedicated internal port (WORKER_METRICS_PORT, default 9100), neither of which
+# is published to the host in the hardened profile. To scrape, run Prometheus
+# as a service on the same compose network (it resolves `api` / `worker` by
+# service name); this file is the committed artifact, not an always-on service
+# (D-012-05: "no new always-on infra service is REQUIRED to run the app").
+#
+# Lint: `promtool check config infra/observability/prometheus.yml`
+#       (run via the official prom/prometheus container — see docs/runbook.md).
+
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+  external_labels:
+    deployment: rtr-copilot-v2
+    stack: compose
+
+# Curated alert rules live alongside this file and are evaluated by the same
+# Prometheus. Each rule carries a `runbook` annotation pointing at docs/runbook.md.
+rule_files:
+  - alerts.yml
+
+scrape_configs:
+  # ----------------------------------------------------------------------- #
+  # API — HTTP latency/errors, provider calls, cost budget, breaker, rate
+  # limits, DB pool. Internal app port; NOT via the ingress.
+  # ----------------------------------------------------------------------- #
+  - job_name: rtr-api
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ["api:8000"]
+        labels:
+          service: api
+
+  # ----------------------------------------------------------------------- #
+  # Worker — job queue depth/duration by family, queue saturation, DB pool,
+  # audit-chain integrity. Dedicated internal metrics port.
+  # ----------------------------------------------------------------------- #
+  - job_name: rtr-worker
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ["worker:9100"]
+        labels:
+          service: worker
+
+  # ----------------------------------------------------------------------- #
+  # Prometheus self-scrape — cheap liveness of the monitor itself, so the
+  # TargetDown alert can distinguish "app down" from "monitor down".
+  # ----------------------------------------------------------------------- #
+  - job_name: prometheus
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          service: prometheus
