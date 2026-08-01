@@ -183,6 +183,70 @@ class GovernanceRepository:
         """), {"lifecycle": lifecycle})).mappings()
         return [ResearchSource(**row) for row in rows]
 
+    async def update_source(
+        self,
+        session: AsyncSession,
+        source_id: uuid.UUID,
+        *,
+        display_name: str | None = None,
+        description: str | None = None,
+        owner_subject_id: uuid.UUID | None = None,
+        classification: Classification | None = None,
+        lifecycle: ResearchSourceLifecycle | None = None,
+    ) -> ResearchSource:
+        """Apply a bounded metadata/classification/lifecycle update to a source.
+
+        Only the governed columns above can change; stable key, origin and
+        creation time are immutable. A classification change is the AC-14
+        revocation lever: research visibility binds at source level, so every
+        read recomputes against the new value immediately.
+        """
+        row = (await session.execute(text(f"""
+            UPDATE research_sources SET
+              display_name = COALESCE(CAST(:display_name AS text), display_name),
+              description = COALESCE(CAST(:description AS text), description),
+              owner_subject_id = COALESCE(CAST(:owner AS uuid), owner_subject_id),
+              classification = COALESCE(CAST(:classification AS text),
+                classification),
+              lifecycle = COALESCE(CAST(:lifecycle AS text), lifecycle),
+              updated_at = now()
+            WHERE source_id = :source_id
+            RETURNING {SOURCE_COLUMNS}
+        """), {
+            "source_id": source_id,
+            "display_name": display_name,
+            "description": description,
+            "owner": owner_subject_id,
+            "classification": classification,
+            "lifecycle": lifecycle,
+        })).mappings().one_or_none()
+        if row is None:
+            raise GovernanceError("research_source_not_found")
+        return ResearchSource(**row)
+
+    async def set_gap_priority(
+        self,
+        session: AsyncSession,
+        gap_id: uuid.UUID,
+        *,
+        priority: GapPriority,
+    ) -> Gap:
+        """Change the queue priority of a still-open gap; closed gaps freeze."""
+        row = (await session.execute(text(f"""
+            UPDATE gaps SET priority = :priority
+            WHERE gap_id = :gap_id
+              AND lifecycle IN ('open','triaged','assigned','answered')
+            RETURNING {GAP_COLUMNS}
+        """), {"gap_id": gap_id, "priority": priority})).mappings().one_or_none()
+        if row is not None:
+            return Gap(**row)
+        exists = await session.scalar(text(
+            "SELECT 1 FROM gaps WHERE gap_id = :gap_id",
+        ), {"gap_id": gap_id})
+        raise GovernanceError(
+            "gap_not_found" if exists is None else "gap_state_unsupported",
+        )
+
     async def register_package(
         self,
         session: AsyncSession,

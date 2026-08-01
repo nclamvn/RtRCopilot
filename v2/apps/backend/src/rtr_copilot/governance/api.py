@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from rtr_copilot.auth.api import current_subject
 from rtr_copilot.auth.models import Subject
 from rtr_copilot.config import get_settings
+from rtr_copilot.governance.dashboard import DashboardService, GovernanceDashboard
 from rtr_copilot.governance.models import GapPriority, GapState, QueueKind, ReviewTask
 from rtr_copilot.governance.queues import QueuePage
 from rtr_copilot.governance.service import (
@@ -101,6 +102,16 @@ STATUS_BY_CODE: dict[str, int] = {
     "research_source_inactive": 409,
     "research_record_not_graduatable": 422,
     "graduation_claim_invalid": 422,
+    # TIP-010 admin governance surfaces (Task 6) codes.
+    "research_source_not_found": 404,
+    "research_source_exists": 409,
+    "owner_subject_unknown": 422,
+    "source_update_empty": 422,
+    "subject_not_found": 404,
+    "role_unknown": 422,
+    "group_unknown": 422,
+    "binding_exists": 409,
+    "binding_not_found": 404,
 }
 
 
@@ -211,6 +222,20 @@ async def transition_gap(
             resolving_version_id=payload.resolving_version_id,
             decline_reason=payload.decline_reason,
         ),
+        request_id=str(request.state.request_id),
+    ))
+
+
+@router.get("/governance/dashboard", response_model=GovernanceDashboard)
+async def governance_dashboard(
+    request: Request,
+    subject: Annotated[Subject | None, Depends(governance_subject)],
+) -> Any:
+    """Live, policy-scoped tiles (AC-12); every export is audited."""
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    return await call(request, DashboardService().dashboard(
+        subject,
         request_id=str(request.state.request_id),
     ))
 

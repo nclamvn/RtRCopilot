@@ -519,10 +519,19 @@ async def test_queues_compute_live_membership_with_thresholds_and_scoping(
     stranger_ids = {entry.record_version_id for entry in stranger_view.entries}
     assert not {expired_version, expiring_version} & stranger_ids
     assert stranger_view.aggregates.total == len(stranger_view.entries) == 0
-    curator_view = await service.queue_page(
-        subject(Role.CURATOR, curator_id), "freshness", request_id="queue-5",
-    )
-    curator_ids = {entry.record_version_id for entry in curator_view.entries}
+    curator_ids: set[uuid.UUID] = set()
+    curator_cursor: str | None = None
+    for _ in range(20):
+        curator_view = await service.queue_page(
+            subject(Role.CURATOR, curator_id), "freshness",
+            request_id="queue-5", limit=100, cursor=curator_cursor,
+        )
+        curator_ids.update(
+            entry.record_version_id for entry in curator_view.entries
+        )
+        curator_cursor = curator_view.next_cursor
+        if curator_cursor is None:
+            break
     assert {expired_version, expiring_version} <= curator_ids
 
 
