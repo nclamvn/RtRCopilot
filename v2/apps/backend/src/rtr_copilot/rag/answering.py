@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from rtr_copilot.auth.models import Subject
 from rtr_copilot.config import Settings, get_settings
 from rtr_copilot.db.uow import UnitOfWork
+from rtr_copilot.governance.models import GapReasonCategory
 from rtr_copilot.rag.adapters import (
     AnswerAdapter,
     OfflineExtractiveAnswer,
@@ -25,6 +26,7 @@ from rtr_copilot.rag.models import (
 )
 from rtr_copilot.rag.retrieval import RetrievalService, scope_fingerprint
 from rtr_copilot.repositories.audit import AuditRepository
+from rtr_copilot.repositories.governance import GovernanceRepository
 
 MARKER_RE = re.compile(r"\[(C\d+)\]")
 CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
@@ -223,35 +225,23 @@ class AnswerService:
         subject: Subject,
         run_id: uuid.UUID,
         question: str,
-        reason: str,
+        reason: GapReasonCategory,
     ) -> uuid.UUID:
+        """Route the honest-null event into the governed TIP-010 gap queue."""
         fingerprint = hashlib.sha256(normalize_query(question).encode()).hexdigest()
-        candidate = uuid.uuid5(
-            uuid.NAMESPACE_URL,
-            f"rtr-gap:{subject.user_id}:{fingerprint}:internal",
+        gap = await GovernanceRepository().create_or_increment_gap(
+            session,
+            question_digest=fingerprint,
+            sanitized_question=question,
+            sanitized_summary="Knowledge coverage gap",
+            requester_id=uuid.UUID(subject.user_id),
+            routing_key=self.settings.rag_gap_routing_key,
+            origin="honest_null",
+            reason_category=reason,
+            classification="internal",
+            answer_run_id=run_id,
         )
-        return uuid.UUID(str((await session.execute(text("""
-            INSERT INTO gaps(
-              gap_id,question_fingerprint,sanitized_question,sanitized_summary,
-              reason_category,classification,requester_id,routing_key,answer_run_id
-            ) VALUES (
-              :gap_id,:fingerprint,:question,:summary,:reason,'internal',
-              :requester,:routing,:run_id
-            ) ON CONFLICT(question_fingerprint,requester_id,classification)
-            DO UPDATE SET occurrence_count=gaps.occurrence_count+1,
-              last_seen_at=now(),answer_run_id=excluded.answer_run_id,
-              reason_category=excluded.reason_category
-            RETURNING gap_id
-        """), {
-            "gap_id": candidate,
-            "fingerprint": fingerprint,
-            "question": question,
-            "summary": "Knowledge coverage gap",
-            "reason": reason,
-            "requester": uuid.UUID(subject.user_id),
-            "routing": self.settings.rag_gap_routing_key,
-            "run_id": run_id,
-        })).scalar_one()))
+        return gap.gap_id
 
     async def _honest_null(
         self,
@@ -261,7 +251,7 @@ class AnswerService:
         run_id: uuid.UUID,
         question: str,
         request_id: str,
-        reason: str,
+        reason: GapReasonCategory,
         started: float,
         provider_calls: int = 0,
     ) -> AskResponse:

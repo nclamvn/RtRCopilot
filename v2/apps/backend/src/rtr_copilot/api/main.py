@@ -20,6 +20,7 @@ from rtr_copilot.auth.api import dev_router as auth_dev_router
 from rtr_copilot.auth.api import router as auth_router
 from rtr_copilot.config import get_settings
 from rtr_copilot.documents.api import router as documents_router
+from rtr_copilot.governance.api import router as governance_router
 from rtr_copilot.ingestion.api import router as files_router
 from rtr_copilot.rag.api import router as rag_router
 from rtr_copilot.sot.api import router as sot_router
@@ -45,6 +46,7 @@ app.include_router(files_router)
 app.include_router(sot_router)
 app.include_router(rag_router)
 app.include_router(documents_router)
+app.include_router(governance_router)
 if get_settings().app_env in {"development", "test"} and get_settings().dev_oidc_enabled:
     app.include_router(auth_dev_router)
 

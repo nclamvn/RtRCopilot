@@ -1,0 +1,57 @@
+# TIP-010 Builder 2 Completion Report — gap intake/lifecycle service+API, freshness/conflict/owner-review queues
+
+STATUS: DONE
+
+## FILES CHANGED
+
+Created:
+- `v2/apps/backend/src/rtr_copilot/governance/service.py` — `GovernanceService`: policy-scoped gap listing (HMAC-signed cursor wrapping Builder 1's keyset cursor), gap detail with transition history, `transition_gap` (triage / assign / answer / decline) with SLA due-date from `governance_settings`, live queue computation + pagination + scope-safe aggregates, `assign_queue_task` / `complete_queue_task`, typed settings read/write (`SETTING_REGISTRY` bounds, `validate_setting_bounds`, `update_setting`, `setting_value`). Every mutation audits via `AuditRepository().append` in the same transaction.
+- `v2/apps/backend/src/rtr_copilot/governance/queues.py` — queue view models (`QueueEntry`, `QueueConflictSide`, `QueueAggregates`, `QueuePage`) and pure status/aggregate functions (`freshness_status`, `review_status`, `conflict_status`, `aggregate_entries`); doc-notes the D-010-05 invariant (membership always live, `review_tasks` records assignment only).
+- `v2/apps/backend/src/rtr_copilot/governance/api.py` — router (registered in `api/main.py` exactly like sot/documents): `GET /api/v1/gaps` (state/owner/priority filters, limit, signed cursor), `GET /api/v1/gaps/{gap_id}`, `POST /api/v1/gaps/{gap_id}/{triage|assign|answer|decline}`, `GET /api/v1/governance/queues/{freshness|conflict|owner-review}`, `POST /api/v1/governance/queues/{queue}/assign`, `POST /api/v1/governance/review-tasks/{task_id}/complete`. Typed error envelope (house shape), `STATUS_BY_CODE` map for `GovernanceError` codes, fixed generic message (no content leak).
+- `v2/apps/backend/tests/test_governance_service_unit.py` — 9 unit tests, no Postgres: signed-cursor round-trip/tamper/kind-binding, settings registry bounds/typing, exact expiring/expired and due/overdue boundaries, conflict status vocabulary, scope-safe aggregates, gap visibility matrix (requester/owner/stranger/curator × internal/restricted/highly_restricted), mutation-role matrix, anonymous 401 probes on all six endpoints, unknown queue/operation 404, tampered cursors rejected before any data access.
+- `v2/apps/backend/tests/test_governance_service_integration.py` — 8 integration tests (house skip marker `INTEGRATION_DATABASE_DSN`): settings admin-gated/bounded/versioned/audited; full lifecycle with SLA due-date derived from a live setting (48h window asserted) and per-step audit; immutable decline through the service; cross-owner/stranger probes leak nothing (list, detail, transition → typed 404; requester mutation → typed 403); cursor stability under policy filtering; live queue thresholds (expired/expiring/absent), conflict surfacing with both sides' evidence refs, owner-review overdue, per-caller scoping incl. zero-count aggregates for strangers; completed-but-unchanged task reopens on next computation while a genuinely resolved record leaves the queue with the task staying completed; assignment requires curator + live membership (`queue_membership_stale`), stranger probes get 404.
+
+Modified:
+- `v2/apps/backend/src/rtr_copilot/api/main.py` — governance router import + `include_router` (2 lines, same pattern as documents).
+- `v2/apps/backend/src/rtr_copilot/rag/answering.py` — TIP-007 honest-null gap upsert now routes through Builder 1's `GovernanceRepository.create_or_increment_gap` (policy-safe digest, occurrence increment, `origin='honest_null'`, `answer_run_id` linkage); `reason` params tightened to `GapReasonCategory`. No behavior change — all 13 TIP-007 RAG integration tests pass unchanged, including the gap-dedupe/occurrence test.
+- `v2/apps/backend/src/rtr_copilot/repositories/governance.py` — 3 ADDITIVE methods only (see DEVIATIONS D1): `get_review_task`, `list_review_tasks_for_versions`, `reopen_completed_tasks`. No existing method or semantic touched.
+
+Untouched: migrations 0001–0009, `governance/models.py`, all TIP-001…009 modules and tests, Builder 1's test files.
+
+## TEST RESULTS (before → after)
+
+Official gates in `v2/apps/backend`:
+- `uv run ruff check .` — PASS → PASS ("All checks passed!")
+- `uv run mypy` — 71 files, 0 issues → **74 files, 0 issues** (strict; zero ignores added; the two `cast`s follow the existing `api/main.py` precedent)
+- `uv run pytest` (unit phase, no infra) — 182 passed / 46 skipped → **191 passed / 54 skipped** (+9 unit, +8 integration-skipped)
+
+Live-infrastructure verification in this container (PostgreSQL 16 at revision `0009_governance_research`, MinIO and Redis via docker, DSNs: `POSTGRES_DSN`/`INTEGRATION_DATABASE_DSN` as `rtr_app`, `MIGRATION_DSN` as owner role):
+- **Full suite: 242 passed, 3 skipped, 0 failed** — every TIP-001…009 integration test green on the extended code, including `test_rag_integration.py` (13/13 — proves the honest-null → governed-gap wiring end-to-end), `test_sot_integration.py`, `test_documents_integration.py`, `test_ingestion_integration.py`, `test_data_integration.py` and Builder 1's `test_governance_integration.py` (8/8).
+- New `test_governance_service_integration.py`: 8/8 passed.
+
+## ISSUES
+
+- LOW: `make verify` (docker-compose containerized gate) was not executed; the equivalent was run natively (full pytest against live Postgres + MinIO + Redis, all green). Contractor should still run the compose gate.
+- LOW: audit `resource_id` carries an FK to `resources`; discovered during integration testing (a first attempt to audit with `gap_id` as `resource_id` fails FK). Resolved per DEVIATION D2 — flagging because Builder 3/4 will hit the same FK if they pass research/proposal ids as `resource_id`.
+
+## DEVIATIONS (all L1)
+
+- D1 — Added 3 new methods to `repositories/governance.py` (permitted by handoff): `get_review_task` (task lookup by id), `list_review_tasks_for_versions` (batch task load for queue merge), `reopen_completed_tasks` (completed→reopened flip for versions still in live membership; complements Builder 1's `upsert_review_task` reopen-on-reassign). All follow Builder 1's conventions (AsyncSession param, textual SQL, `REVIEW_TASK_COLUMNS`, typed models, storage-invariant-only logic).
+- D2 — Audit events for gap transitions and setting updates use `resource_id=NULL` with the ids in `details` (`gap_id`, `setting_id`), because `audit_events.resource_id` FK-references `resources` and gaps/settings are not resource rows — exactly the TIP-007 precedent (`rag.ask` audits `answer_run` via details). Queue audits use the record's real resource id (`resource_type='record'`) with `record_version_id`/`task_id` in details.
+- D3 — No settings API endpoint (Builder 4's slice per handoff). Service surface only: `update_setting` (admin `manage_policies`-gated, registry-bounded, versioned, audited) and `setting_value` (typed effective read with registry default).
+- D4 — Honest-null gap ids are now repository-generated `uuid4` instead of the previous deterministic `uuid5` candidate; dedupe is carried entirely by the `(question_fingerprint, requester_id, classification)` unique upsert, which the TIP-007 tests assert on (`first.gap_id == second.gap_id` still holds). No test or code referenced the uuid5 value.
+- D5 — Live-metadata mapping for the two dated queues: freshness = `record_versions.effective_to` (expiry window; `expired` at `<= now`, `expiring` within `queue.freshness.expiring_hours`); owner-review = `record_versions.freshness_due_at` (scheduled review date; `overdue`/`due` within `queue.owner_review.upcoming_hours`). Conflict = live-derived: >1 active version per record (`disputed`) or an active record whose active version is superseded by another still-active record's version (`superseded_ambiguous`), with all sides' `evidence_refs`/checksums returned. Only current-active versions of active records are queue members; the stored `freshness_state` column is never trusted for membership.
+- D6 — Queue reads perform the reopen of stale completed tasks in a small side transaction (audited as `actor_kind='service'`, action `governance.queue.reopen`); under maintenance mode the reopen is skipped but membership stays live-computed, so a stale row still cannot mask an expiry.
+
+## SUGGESTIONS (Builder 3/4 must-know)
+
+- **Service surface** (`rtr_copilot.governance.service.GovernanceService`, construct with `GovernanceService(uow=UnitOfWork(factory))` in tests): `list_gaps`, `gap_detail`, `transition_gap(subject, gap_id, operation, GapTransitionInput, request_id=…)`, `queue_page(subject, queue_kind, …)`, `assign_queue_task`, `complete_queue_task`, `setting_value`, `update_setting`. Typed failures: `GovernanceError(code)` (repository codes plus new `queue_entry_not_found`, `queue_membership_stale`, `review_task_not_found`, `setting_unknown`, `setting_out_of_bounds`) and `PermissionError("curator_required"|"admin_required")`.
+- **Error mapping** lives in `governance/api.py::STATUS_BY_CODE` (default 409); extend it for research/graduation codes rather than inventing a second envelope. 404-before-403 ordering is deliberate (existence discipline): out-of-scope → `*_not_found` 404; in-scope but unprivileged → 403.
+- **Policy semantics implemented** — gap visible iff caller passes `view` on the gap's classification AND (is requester/assigned owner OR passes `curate`); queue entry visible iff `view` on the record AND (record owner OR `curate`); `answer` pre-checks the resolving record version is within caller `view` scope (missing and denied versions raise the identical code). Restricted/highly_restricted question content is clearance-gated for everyone including curators.
+- **Cursors**: `encode_signed_cursor/decode_signed_cursor(kind, …)` in `service.py` — HMAC-SHA256 over canonical JSON with a `kind` binding (`"gaps"`, `"queue:freshness"`, …) so cursors cannot be replayed across endpoints. Reuse for research/package/proposal lists.
+- **`published` transition**: the state machine supports `answered → published` (repository-level) but no API endpoint exposes it — publishing should be flipped by the publish-gate integration when the linked record version activates (Builder 3 graduation / Contractor wiring decision). `GovernanceService.transition_gap` only accepts the four operations; call `repository.transition_gap(to_state="published")` from the publish path.
+- **Settings registry** (`SETTING_REGISTRY`): `gap.sla.triage_hours` (default 24), `gap.sla.assign_hours` (72), `queue.freshness.expiring_hours` (336), `queue.owner_review.upcoming_hours` (336) — all `duration_hours` with min/max. Builder 4's admin endpoint should call `update_setting` (already admin-gated, bounded, versioned, audited) and may extend the registry; unknown keys are rejected fail-closed.
+- **Gap priority** is set at intake and has no mutation path (repository has none); if the admin workspace needs priority changes, add a new audited repository+service method — do not widen `transition_gap`.
+- **Audit FK**: `audit_events.resource_id` must be a `resources` row or NULL (see D2) — research packages/records/proposals are NOT resources; put their ids in `details`.
+- **Local verify recipe** used here (for Contractor): `ALTER ROLE rtr_app PASSWORD …` on the existing `rtr_v2_verify` DB (already at 0009), docker `minio/minio` on :9000 (`local`/`local-secret`, bucket `rtr-test`) and `redis:7-alpine` on :6379, then run pytest with `POSTGRES_DSN` + `INTEGRATION_DATABASE_DSN` (rtr_app) + `MIGRATION_DSN` (owner) → 242 passed / 3 skipped.
+- Working tree left uncommitted on branch `tip-010` per TIP-010 BUILDER HANDOFF rule 5.

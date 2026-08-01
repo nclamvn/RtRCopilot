@@ -613,6 +613,60 @@ class GovernanceRepository:
             raise GovernanceError("review_task_state_conflict")
         return ReviewTask(**row)
 
+    async def get_review_task(
+        self,
+        session: AsyncSession,
+        task_id: uuid.UUID,
+    ) -> ReviewTask | None:
+        row = (await session.execute(text(f"""
+            SELECT {REVIEW_TASK_COLUMNS} FROM review_tasks
+            WHERE task_id = :task_id
+        """), {"task_id": task_id})).mappings().one_or_none()
+        return ReviewTask(**row) if row else None
+
+    async def list_review_tasks_for_versions(
+        self,
+        session: AsyncSession,
+        *,
+        queue_kind: QueueKind,
+        record_version_ids: list[uuid.UUID],
+    ) -> list[ReviewTask]:
+        if not record_version_ids:
+            return []
+        rows = (await session.execute(text(f"""
+            SELECT {REVIEW_TASK_COLUMNS} FROM review_tasks
+            WHERE queue_kind = :queue_kind
+              AND record_version_id = ANY(:record_version_ids)
+            ORDER BY task_id
+        """), {
+            "queue_kind": queue_kind,
+            "record_version_ids": record_version_ids,
+        })).mappings()
+        return [ReviewTask(**row) for row in rows]
+
+    async def reopen_completed_tasks(
+        self,
+        session: AsyncSession,
+        *,
+        queue_kind: QueueKind,
+        record_version_ids: list[uuid.UUID],
+    ) -> list[ReviewTask]:
+        """Reopen completed tasks whose record version is still live queue work."""
+        if not record_version_ids:
+            return []
+        rows = (await session.execute(text(f"""
+            UPDATE review_tasks SET state = 'reopened', completed_at = NULL,
+              updated_at = now()
+            WHERE queue_kind = :queue_kind
+              AND record_version_id = ANY(:record_version_ids)
+              AND state = 'completed'
+            RETURNING {REVIEW_TASK_COLUMNS}
+        """), {
+            "queue_kind": queue_kind,
+            "record_version_ids": record_version_ids,
+        })).mappings()
+        return [ReviewTask(**row) for row in rows]
+
     async def list_review_tasks(
         self,
         session: AsyncSession,
