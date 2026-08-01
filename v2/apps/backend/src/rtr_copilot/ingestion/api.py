@@ -36,6 +36,8 @@ from rtr_copilot.ingestion.models import (
 )
 from rtr_copilot.ingestion.service import IngestionService
 from rtr_copilot.ingestion.validators import VIEWER_KINDS, normalize_display_name
+from rtr_copilot.limits.backpressure import QueueSaturated, check_capacity
+from rtr_copilot.limits.errors import limit_response
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.resources import ResourceRecord, ResourceRepository
 from rtr_copilot.storage.s3 import S3ObjectStorage
@@ -499,6 +501,34 @@ async def upload(
             resource_type="upload_parent",
         )
         return _error(request, 403, "policy_denied")
+    try:
+        async with UnitOfWork().factory() as session:
+            await check_capacity(
+                session,
+                "ingestion",
+                retry_after=get_settings().limits_queue_retry_after_seconds,
+            )
+    except QueueSaturated as saturated:
+        async with UnitOfWork().transaction() as session:
+            await AuditRepository().append(
+                session,
+                actor_kind="user",
+                actor_user_id=uuid.UUID(subject.user_id),
+                action="ingestion.queue.shed",
+                result="deny",
+                reason_code="queue_saturated",
+                request_id=request_id,
+                resource_type="request_limit",
+                details={
+                    "family": "ingestion",
+                    "outstanding": saturated.outstanding,
+                    "cap": saturated.cap,
+                    "parent_resource_id": str(parent_resource_id),
+                },
+            )
+        return limit_response(
+            request_id, "queue_saturated", retry_after=saturated.retry_after,
+        )
     try:
         upload_id, job_id = await IngestionService().receive(
             request.stream(),

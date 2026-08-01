@@ -13,7 +13,10 @@ from rtr_copilot.config import get_settings
 from rtr_copilot.documents.service import DocumentOSService
 from rtr_copilot.ingestion.jobs import INGESTION_QUEUE, JobRepository
 from rtr_copilot.ingestion.service import IngestionService
+from rtr_copilot.limits.backpressure import outstanding_count
+from rtr_copilot.limits.settings_access import effective_int_setting
 from rtr_copilot.rag.reindex import ReindexService
+from rtr_copilot.repositories.audit import AuditRepository
 
 QUEUE = "rtr:jobs"
 HEARTBEAT = "rtr:worker:heartbeat"
@@ -46,10 +49,58 @@ async def execute(
     await client.set(key, json.dumps(result), ex=60, nx=True)
 
 
+async def audit_index_backpressure(
+    jobs: JobRepository,
+    worker_id: str,
+    *,
+    previously_saturated: bool,
+) -> bool:
+    """Worker-side index backpressure (AC-07).
+
+    The worker is a single sequential consumer, so runtime concurrency is
+    already bounded to one; this bounds *backlog growth* by surfacing it. When
+    the pending SOT reindex backlog crosses its configured cap the episode is
+    logged and audited once (rising edge only, so the globally-serialized audit
+    chain is never flooded). The worker keeps draining — reindex work is never
+    dropped.
+    """
+    async with jobs.uow.factory() as session:
+        cap = await effective_int_setting(session, "limits.jobs.index_max_backlog")
+        outstanding = await outstanding_count(session, "index")
+    saturated = outstanding >= cap
+    if saturated and not previously_saturated:
+        logger.warning(json.dumps({
+            "event": "index_backlog_saturated",
+            "outstanding": outstanding,
+            "cap": cap,
+        }))
+        try:
+            async with jobs.uow.transaction() as session:
+                await AuditRepository().append(
+                    session,
+                    actor_kind="service",
+                    actor_user_id=None,
+                    action="sot.reindex.backpressure",
+                    result="deny",
+                    reason_code="queue_saturated",
+                    request_id=f"worker:{worker_id}",
+                    resource_type="request_limit",
+                    details={
+                        "family": "index",
+                        "outstanding": outstanding,
+                        "cap": cap,
+                    },
+                )
+        except Exception:
+            logger.warning(json.dumps({"event": "index_backpressure_audit_failed"}))
+    return saturated
+
+
 async def run() -> None:
     settings = get_settings()
     client: Redis = Redis.from_url(settings.redis_url, decode_responses=True)
     worker_id = str(uuid.uuid4())
+    index_saturated = False
     try:
         while True:
             heartbeat = json.dumps({"worker_id": worker_id, "at": time.time()})
@@ -57,6 +108,9 @@ async def run() -> None:
             jobs = JobRepository()
             await jobs.dispatch_outbox(client)
             await jobs.refresh_metrics()
+            index_saturated = await audit_index_backpressure(
+                jobs, worker_id, previously_saturated=index_saturated,
+            )
             try:
                 await ReindexService().process_next()
             except Exception as error:

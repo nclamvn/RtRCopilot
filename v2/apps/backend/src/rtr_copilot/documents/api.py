@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 
 from rtr_copilot.auth.models import Subject
+from rtr_copilot.config import get_settings
+from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.documents.models import (
     BindRequest,
     BindResult,
@@ -21,6 +23,9 @@ from rtr_copilot.documents.models import (
 )
 from rtr_copilot.documents.service import DocumentOSService
 from rtr_copilot.ingestion.api import file_subject
+from rtr_copilot.limits.backpressure import QueueSaturated, check_capacity
+from rtr_copilot.limits.errors import limit_response
+from rtr_copilot.repositories.audit import AuditRepository
 
 router = APIRouter(prefix="/api/v1", tags=["documents"])
 
@@ -178,8 +183,37 @@ async def create_render(
     actor = subject_or_error(request, subject)
     if isinstance(actor, JSONResponse):
         return actor
+    request_id = str(request.state.request_id)
+    try:
+        async with UnitOfWork().factory() as session:
+            await check_capacity(
+                session,
+                "render",
+                retry_after=get_settings().limits_queue_retry_after_seconds,
+            )
+    except QueueSaturated as saturated:
+        async with UnitOfWork().transaction() as session:
+            await AuditRepository().append(
+                session,
+                actor_kind="user",
+                actor_user_id=uuid.UUID(actor.user_id),
+                action="document.render.shed",
+                result="deny",
+                reason_code="queue_saturated",
+                request_id=request_id,
+                resource_type="request_limit",
+                details={
+                    "family": "render",
+                    "outstanding": saturated.outstanding,
+                    "cap": saturated.cap,
+                    "template_version_id": str(version_id),
+                },
+            )
+        return limit_response(
+            request_id, "queue_saturated", retry_after=saturated.retry_after,
+        )
     return await call(request, DocumentOSService().create_render(
-        actor, version_id, payload, request_id=str(request.state.request_id),
+        actor, version_id, payload, request_id=request_id,
     ))
 
 

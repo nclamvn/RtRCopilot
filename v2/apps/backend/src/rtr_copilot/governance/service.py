@@ -92,6 +92,31 @@ SETTING_REGISTRY: dict[str, SettingSpec] = {
         value_type="duration_hours", default=336, minimum=1, maximum=8760,
         description="Look-ahead window for scheduled owner reviews",
     ),
+    # TIP-012 Task 2 (REQ-031) — provider cost budgets. Usage unit = provider
+    # call (a grounding-repair retry counts as two). Admin-editable, versioned,
+    # audited via the existing settings surface; enforced in rag/answering.py.
+    "limits.budget.subject_daily_units": SettingSpec(
+        value_type="integer", default=500, minimum=1, maximum=100_000_000,
+        description="Per-subject daily AI provider usage budget (calls)",
+    ),
+    "limits.budget.global_daily_units": SettingSpec(
+        value_type="integer", default=20_000, minimum=1, maximum=1_000_000_000,
+        description="Global daily AI provider usage budget (calls)",
+    ),
+    # TIP-012 Task 2 (AC-07) — job backpressure caps (outstanding, non-terminal
+    # jobs per family). Enforced at the submission API layer.
+    "limits.jobs.ingestion_max_inflight": SettingSpec(
+        value_type="integer", default=100, minimum=1, maximum=1_000_000,
+        description="Max outstanding ingestion jobs before new uploads are shed",
+    ),
+    "limits.jobs.render_max_inflight": SettingSpec(
+        value_type="integer", default=50, minimum=1, maximum=1_000_000,
+        description="Max outstanding render jobs before new renders are shed",
+    ),
+    "limits.jobs.index_max_backlog": SettingSpec(
+        value_type="integer", default=200, minimum=1, maximum=1_000_000,
+        description="Max pending SOT reindex backlog before publishes are shed",
+    ),
 }
 
 QUEUE_HORIZON_SETTING: dict[QueueKind, str] = {

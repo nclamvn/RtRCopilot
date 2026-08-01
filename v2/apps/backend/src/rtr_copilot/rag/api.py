@@ -13,6 +13,9 @@ from rtr_copilot.governance.service import (
     decode_signed_cursor,
     encode_signed_cursor,
 )
+from rtr_copilot.limits.breaker import ProviderUnavailable
+from rtr_copilot.limits.budget import BudgetExhausted
+from rtr_copilot.limits.errors import limit_response
 from rtr_copilot.rag.answering import AnswerService, GroundingError
 from rtr_copilot.rag.models import (
     AskRequest,
@@ -111,6 +114,7 @@ async def ask(
 ) -> AskResponse | JSONResponse:
     if subject is None:
         return _error(request, 401, "authentication_required")
+    request_id = str(request.state.request_id)
     try:
         return await AnswerService().ask(
             subject,
@@ -118,10 +122,18 @@ async def ask(
             filters=body.filters,
             require_verified=body.require_verified,
             conversation_id=body.conversation_id,
-            request_id=str(request.state.request_id),
+            request_id=request_id,
         )
     except RetrievalError as error:
         return _error(request, 413 if "budget" in error.code else 400, error.code)
+    except BudgetExhausted as breach:
+        return limit_response(
+            request_id, "budget_exhausted", retry_after=breach.retry_after,
+        )
+    except ProviderUnavailable as outage:
+        return limit_response(
+            request_id, "provider_unavailable", retry_after=outage.retry_after,
+        )
     except GroundingError:
         return _error(request, 404, "conversation_not_found")
 

@@ -116,6 +116,13 @@ STATUS_BY_CODE: dict[str, int] = {
     "group_unknown": 422,
     "binding_exists": 409,
     "binding_not_found": 404,
+    # TIP-012 Task 2 — app-layer limit codes (also in limits.errors).
+    "rate_limited": 429,
+    "budget_exhausted": 429,
+    "queue_saturated": 429,
+    "body_too_large": 413,
+    "provider_unavailable": 503,
+    "rate_limiter_unavailable": 503,
 }
 
 

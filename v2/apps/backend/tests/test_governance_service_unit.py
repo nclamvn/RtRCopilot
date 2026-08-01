@@ -114,9 +114,22 @@ def test_setting_registry_is_typed_and_bounded() -> None:
         "gap.sla.assign_hours",
         "queue.freshness.expiring_hours",
         "queue.owner_review.upcoming_hours",
+        # TIP-012 Task 2 — cost budgets and job concurrency caps.
+        "limits.budget.subject_daily_units",
+        "limits.budget.global_daily_units",
+        "limits.jobs.ingestion_max_inflight",
+        "limits.jobs.render_max_inflight",
+        "limits.jobs.index_max_backlog",
     }
     spec = validate_setting_bounds("gap.sla.assign_hours", 48)
     assert spec.value_type == "duration_hours"
+    # New integer limit settings are typed and bounded like the rest.
+    budget_spec = validate_setting_bounds("limits.budget.subject_daily_units", 500)
+    assert budget_spec.value_type == "integer"
+    with pytest.raises(GovernanceError, match="setting_out_of_bounds"):
+        validate_setting_bounds("limits.budget.subject_daily_units", 0)
+    with pytest.raises(GovernanceError, match="setting_value_type_mismatch"):
+        validate_setting_bounds("limits.jobs.ingestion_max_inflight", 1.5)
     with pytest.raises(GovernanceError, match="setting_unknown"):
         validate_setting_bounds("gap.sla.unregistered", 1)
     with pytest.raises(GovernanceError, match="setting_out_of_bounds"):

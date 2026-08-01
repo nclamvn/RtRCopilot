@@ -445,7 +445,15 @@ async def test_settings_overview_and_versions_are_typed_and_admin_gated(
         "gap.sla.assign_hours",
         "queue.freshness.expiring_hours",
         "queue.owner_review.upcoming_hours",
+        # TIP-012 Task 2 — cost budgets and job concurrency caps.
+        "limits.budget.subject_daily_units",
+        "limits.budget.global_daily_units",
+        "limits.jobs.ingestion_max_inflight",
+        "limits.jobs.render_max_inflight",
+        "limits.jobs.index_max_backlog",
     }
+    assert overview["limits.budget.subject_daily_units"].value_type == "integer"
+    assert overview["limits.jobs.index_max_backlog"].value == 200
     triage = overview["gap.sla.triage_hours"]
     assert triage.value == 36
     assert triage.version == second.version

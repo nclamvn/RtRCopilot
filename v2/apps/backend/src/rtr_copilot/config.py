@@ -137,6 +137,28 @@ class Settings(BaseSettings):
     malware_scanner_port: int = Field(default=3310, ge=1, le=65535)
     malware_signature_max_age_seconds: int = Field(default=172800, ge=3600)
     viewer_capability_ttl_seconds: int = Field(default=300, ge=30, le=900)
+    # TIP-012 Task 2 (D-012-03) — app-layer rate limiting (Redis-backed, keyed on
+    # subject id AND client IP). Deploy-time infrastructure limits enforced in
+    # middleware on every request; kept out of governance_settings so the hot
+    # path never depends on Postgres. Cost budgets and job caps live in
+    # governance SETTING_REGISTRY (admin-editable at runtime) instead.
+    limits_enabled: bool = True
+    limits_rate_window_seconds: int = Field(default=60, ge=1, le=3600)
+    limits_rate_auth_max: int = Field(default=20, ge=1, le=1_000_000)
+    limits_rate_ask_max: int = Field(default=30, ge=1, le=1_000_000)
+    limits_rate_upload_max: int = Field(default=20, ge=1, le=1_000_000)
+    limits_rate_render_max: int = Field(default=30, ge=1, le=1_000_000)
+    limits_rate_admin_max: int = Field(default=60, ge=1, le=1_000_000)
+    limits_rate_default_read_max: int = Field(default=120, ge=1, le=1_000_000)
+    # App-layer body-size limit (typed 413) for non-upload JSON bodies; keep in
+    # sync with the ingress `request_body max_size` hook. Uploads use the larger
+    # ingestion_max_upload_bytes bound instead.
+    limits_max_body_bytes: int = Field(default=1_048_576, ge=1024, le=104_857_600)
+    # Provider circuit breaker (per provider, Redis-shared state).
+    limits_breaker_failure_threshold: int = Field(default=5, ge=1, le=1000)
+    limits_breaker_cooldown_seconds: int = Field(default=30, ge=1, le=3600)
+    # Retry-After guidance (seconds) returned with a queue_saturated rejection.
+    limits_queue_retry_after_seconds: int = Field(default=15, ge=1, le=3600)
 
     @field_validator("oidc_issuer", mode="before")
     @classmethod

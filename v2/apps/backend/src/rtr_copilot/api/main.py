@@ -23,6 +23,7 @@ from rtr_copilot.documents.api import router as documents_router
 from rtr_copilot.governance.admin_api import router as governance_admin_router
 from rtr_copilot.governance.api import router as governance_router
 from rtr_copilot.ingestion.api import router as files_router
+from rtr_copilot.limits.middleware import install_limits_middleware
 from rtr_copilot.rag.api import router as rag_router
 from rtr_copilot.research.api import router as research_router
 from rtr_copilot.sot.api import router as sot_router
@@ -54,13 +55,21 @@ app.include_router(research_router)
 if get_settings().app_env in {"development", "test"} and get_settings().dev_oidc_enabled:
     app.include_router(auth_dev_router)
 
+# Registered first so the request-context middleware below stays the OUTERMOST
+# layer (request-id + logging wrap every response, including limit rejections).
+install_limits_middleware(app)
+
 
 @app.middleware("http")
 async def request_context(
     request: Request,
     call_next: Callable[[Request], Awaitable[Any]],
 ) -> Any:
-    request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    request_id = (
+        getattr(request.state, "request_id", None)
+        or request.headers.get("X-Request-ID")
+        or str(uuid.uuid4())
+    )
     request.state.request_id = request_id
     started = time.monotonic()
     try:
