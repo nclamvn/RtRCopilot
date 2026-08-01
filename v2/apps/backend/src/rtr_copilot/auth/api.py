@@ -190,7 +190,7 @@ async def callback(
             session_id,
             max_age=settings.session_ttl_seconds,
             httponly=True,
-            secure=settings.app_env == "production",
+            secure=settings.session_cookie_secure_effective,
             samesite="lax",
             path="/",
         )

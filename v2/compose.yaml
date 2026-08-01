@@ -138,6 +138,7 @@ services:
       RAG_GAP_ROUTING_KEY: ${RAG_GAP_ROUTING_KEY:-curator:sot}
       MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
       RETENTION_POLICY_JSON: ${RETENTION_POLICY_JSON:-}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -207,6 +208,7 @@ services:
       RAG_GAP_ROUTING_KEY: ${RAG_GAP_ROUTING_KEY:-curator:sot}
       MAINTENANCE_MODE: ${MAINTENANCE_MODE:-false}
       RETENTION_POLICY_JSON: ${RETENTION_POLICY_JSON:-}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-}
     depends_on:
       redis:
         condition: service_healthy
@@ -228,7 +230,9 @@ services:
     environment:
       CLAMAV_NO_FRESHCLAMD: "false"
       CLAMD_CONF_SelfCheck: "30"
-      MALWARE_SIGNATURE_MAX_AGE_SECONDS: "172800"
+      # Default unchanged (2 days). Overridable because sandboxed environments
+      # cannot reach database.clamav.net (TIP-012 environment note).
+      MALWARE_SIGNATURE_MAX_AGE_SECONDS: ${MALWARE_SIGNATURE_MAX_AGE_SECONDS:-172800}
     volumes:
       - clamav-data:/var/lib/clamav
     healthcheck:
@@ -263,8 +267,47 @@ services:
       retries: 20
     restart: unless-stopped
 
+  # TIP-012 Task 1 (D-012-01): TLS ingress. Inert in the default/dev profile;
+  # activated by the `hardened` profile together with compose.hardened.yaml,
+  # which unpublishes every other service port (AC-01). Digest pinned —
+  # caddy:2 (v2.11.4) as tested for this TIP.
+  ingress:
+    profiles: ["hardened"]
+    image: caddy:2.11.4@sha256:844f60b64e4724a5aa8245e019dace0d3f199f7433ce6c57676cb30a920dbad9
+    read_only: true
+    cap_drop: ["ALL"]
+    cap_add: ["NET_BIND_SERVICE"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:size=16777216
+    environment:
+      INGRESS_HOST: ${INGRESS_HOST:-rtr.local}
+      INGRESS_HSTS_MAX_AGE: ${INGRESS_HSTS_MAX_AGE:-604800}
+      INGRESS_TLS_MODE: ${INGRESS_TLS_MODE:-internal}
+    volumes:
+      - ./infra/ingress/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${INGRESS_CERTS_DIR:-./infra/ingress/certs}:/certs:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    ports:
+      - "127.0.0.1:${INGRESS_HTTP_PORT:-80}:80"
+      - "127.0.0.1:${INGRESS_HTTPS_PORT:-443}:443"
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
 volumes:
   clamav-data:
   postgres-data:
   redis-data:
   minio-data:
+  caddy-data:
+  caddy-config:

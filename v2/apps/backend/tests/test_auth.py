@@ -331,3 +331,40 @@ def test_fake_flow_rejects_pkce_failure(monkeypatch: MonkeyPatch) -> None:
         )
         assert rejected.status_code == 401
         assert rejected.json()["error"]["code"] == "oidc_rejected"
+
+
+def test_session_cookie_is_secure_behind_https_ingress(monkeypatch: MonkeyPatch) -> None:
+    """TIP-012 Task 1: served through the TLS ingress the session cookie
+    must carry Secure + HttpOnly + SameSite (derived from PUBLIC_BASE_URL)."""
+    from rtr_copilot.config import get_settings
+
+    redis = FakeRedis()
+    monkeypatch.setattr(auth_api.Redis, "from_url", lambda *_args, **_kwargs: redis)
+    monkeypatch.setattr(auth_api, "audit", MemoryAudit())
+    monkeypatch.setattr(
+        auth_api,
+        "identity_repository",
+        lambda _request_id: RedisSubjectRepository(redis),
+    )
+    base = get_settings()
+    ingress_settings = type(base).model_validate({
+        **base.model_dump(),
+        "public_base_url": "https://rtr.local",
+    })
+    assert ingress_settings.session_cookie_secure_effective is True
+    monkeypatch.setattr(auth_api, "get_settings", lambda: ingress_settings)
+    with TestClient(app, follow_redirects=False) as client:
+        login = client.get("/auth/login")
+        assert login.status_code == 302
+        authorize = client.get(login.headers["location"].replace("/api/auth/", "/auth/"))
+        callback_url = urlparse(authorize.headers["location"])
+        assert callback_url.scheme == "https"
+        assert callback_url.hostname == "rtr.local"
+        callback = client.get(
+            f"{callback_url.path.replace('/api/auth/', '/auth/')}?{callback_url.query}",
+        )
+        assert callback.status_code == 302
+        cookie = callback.headers["set-cookie"]
+        assert "Secure" in cookie
+        assert "HttpOnly" in cookie
+        assert "SameSite=lax" in cookie

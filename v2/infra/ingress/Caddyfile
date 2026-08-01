@@ -1,0 +1,73 @@
+# RtR Copilot V2 — TLS ingress (TIP-012 Task 1, D-012-01).
+#
+# One hostname terminates TLS for web + API:
+#   /api/v1/*   -> api:8000  (the platform API surface, passthrough shape —
+#                             the same paths the web same-origin proxies use)
+#   everything  -> web:3000  (UI plus the /api/* same-origin proxy routes:
+#                             auth, files, ask, governance, document-os,
+#                             status — their validation stays in the web edge)
+#
+# Internal-only backend surfaces (/auth, /health, /metrics, /system) are NOT
+# routed: through the ingress they fall through to web and return its 404.
+#
+# TLS:
+#   Local/dev  — INGRESS_TLS_MODE=internal (default): Caddy's internal CA
+#                issues the certificate. Export the root with:
+#                docker compose cp ingress:/data/caddy/pki/authorities/local/root.crt .
+#   Real certs — mount them into /certs (see compose.hardened.yaml) and set
+#                INGRESS_TLS_MODE="/certs/fullchain.pem /certs/privkey.pem"
+#                No Caddyfile change is required. See docs/ingress-hardening.md.
+
+{
+	admin 127.0.0.1:2019
+}
+
+# AC-01: plain HTTP always redirects to the TLS endpoint.
+http://{$INGRESS_HOST} {
+	header {
+		defer
+		-Server
+	}
+	redir https://{$INGRESS_HOST}{uri} 308
+}
+
+https://{$INGRESS_HOST} {
+	tls {$INGRESS_TLS_MODE}
+
+	encode zstd gzip
+
+	# AC-02: security headers on every response (deferred so they also apply
+	# to proxied responses, overriding upstream values consistently).
+	header {
+		defer
+		-Server
+		-Via
+		Strict-Transport-Security "max-age={$INGRESS_HSTS_MAX_AGE}; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+	}
+
+	# File preview renditions are embedded same-origin by the files viewer
+	# (PDF <iframe>); a blanket DENY would break it. Everything else is
+	# never legitimately framed.
+	@embedded_content path /api/files/*
+	header @embedded_content {
+		defer
+		X-Frame-Options "SAMEORIGIN"
+		Content-Security-Policy "frame-ancestors 'self'"
+	}
+	@page not path /api/files/*
+	header @page {
+		defer
+		X-Frame-Options "DENY"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self' blob:; frame-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+	}
+
+	handle /api/v1/* {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}

@@ -1,6 +1,9 @@
+import json
+import logging
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlsplit
 
 from pydantic import (
     Field,
@@ -12,6 +15,39 @@ from pydantic import (
     model_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger("rtr_copilot")
+
+#: TIP-012 AC-03 — every known-default/placeholder credential value that ships
+#: in `.env.example` (or common vendor defaults). `APP_ENV=production` refuses
+#: to boot while any catalogued secret still holds one of these values.
+#: Maintain this list together with `.env.example`.
+KNOWN_DEFAULT_SECRETS: frozenset[str] = frozenset({
+    # .env.example shipped defaults
+    "change-this-local-password",           # POSTGRES_PASSWORD / MIGRATION_DSN
+    "change-this-runtime-password",         # POSTGRES_RUNTIME_PASSWORD / POSTGRES_DSN
+    "change-this-local-secret",             # S3_SECRET_KEY
+    "rtr-local",                            # S3_ACCESS_KEY
+    "development-only-sot-signing-secret-32bytes",              # code default
+    "replace-with-a-dedicated-random-secret-at-least-32-bytes",  # SOT_SIGNING_SECRET
+    # common vendor/tutorial defaults that must never reach production
+    "minioadmin",
+    "postgres",
+    "password",
+    "secret",
+    "changeme",
+    "change-me",
+    "rtr_owner_pw",
+    "rtr_app_pw",
+})
+
+
+def _dsn_passwords(dsn: PostgresDsn) -> list[str]:
+    return [
+        str(host["password"])
+        for host in dsn.hosts()
+        if host.get("password")
+    ]
 
 
 class Settings(BaseSettings):
@@ -35,6 +71,7 @@ class Settings(BaseSettings):
     dev_oidc_enabled: bool = True
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86400)
     session_cookie_name: str = "rtr_session"
+    session_cookie_secure: bool | None = None
     expected_schema_revision: str = "0009_governance_research"
     sot_staging_root: Path = Path("/tmp/rtr-sot-staging")
     research_staging_root: Path = Path("/tmp/rtr-research-staging")
@@ -106,6 +143,11 @@ class Settings(BaseSettings):
     def empty_oidc_issuer_is_unset(cls, value: object) -> object:
         return None if value == "" else value
 
+    @field_validator("session_cookie_secure", mode="before")
+    @classmethod
+    def empty_session_cookie_secure_is_unset(cls, value: object) -> object:
+        return None if value == "" else value
+
     @model_validator(mode="after")
     def production_identity_config(self) -> "Settings":
         if self.rag_metadata_scan_limit < self.rag_candidate_limit:
@@ -125,8 +167,36 @@ class Settings(BaseSettings):
             raise ValueError("required:" + ",".join(sorted(missing)))
         if self.public_base_url.scheme != "https":
             raise ValueError("public_base_url:https_required")
+        if self.oidc_issuer is not None and self.oidc_issuer.scheme != "https":
+            raise ValueError("oidc_issuer:https_required")
         if self.dev_oidc_enabled:
             raise ValueError("dev_oidc_enabled:forbidden_in_production")
+        if self.session_cookie_secure is False:
+            raise ValueError("session_cookie_secure:required_in_production")
+        secret_catalog: dict[str, list[str]] = {
+            "postgres_dsn": _dsn_passwords(self.postgres_dsn),
+            "migration_dsn": (
+                _dsn_passwords(self.migration_dsn) if self.migration_dsn else []
+            ),
+            "redis_url": (
+                [urlsplit(self.redis_url).password or ""]
+                if urlsplit(self.redis_url).password
+                else []
+            ),
+            "s3_access_key": [self.s3_access_key],
+            "s3_secret_key": [self.s3_secret_key],
+            "oidc_client_secret": (
+                [self.oidc_client_secret] if self.oidc_client_secret else []
+            ),
+            "sot_signing_secret": [self.sot_signing_secret.get_secret_value()],
+        }
+        defaulted = sorted(
+            key
+            for key, values in secret_catalog.items()
+            if any(value.lower() in KNOWN_DEFAULT_SECRETS for value in values)
+        )
+        if defaulted:
+            raise ValueError("default_secret:" + ",".join(defaulted))
         signing_secret = self.sot_signing_secret.get_secret_value()
         if (
             len(signing_secret) < 32
@@ -141,6 +211,22 @@ class Settings(BaseSettings):
         ):
             raise ValueError("rag_external_provider:policy_required")
         return self
+
+    @property
+    def session_cookie_secure_effective(self) -> bool:
+        """Whether session cookies carry the `Secure` attribute.
+
+        Explicit `SESSION_COOKIE_SECURE` wins; otherwise production is always
+        secure and other environments follow the public base URL scheme, so a
+        dev stack served through the HTTPS ingress marks cookies `Secure`
+        while the plain-HTTP dev profile keeps today's behavior.
+        """
+        if self.session_cookie_secure is not None:
+            return self.session_cookie_secure
+        return (
+            self.app_env == "production"
+            or self.public_base_url.scheme == "https"
+        )
 
     @property
     def allowed_domains(self) -> frozenset[str]:
@@ -171,11 +257,21 @@ def get_settings() -> Settings:
                         for item in reason.removeprefix("required:").split(",")
                     )
                     continue
+                if reason.startswith("default_secret:"):
+                    issues.extend(
+                        f"{item}:known_default_forbidden"
+                        for item in reason.removeprefix("default_secret:").split(",")
+                    )
+                    continue
                 if ":" in reason:
                     safe_key, safe_reason = reason.split(":", 1)
                     issues.append(f"{safe_key}:{safe_reason}")
                     continue
             issues.append(f"{key}:{issue['type']}")
+        logger.error(json.dumps({
+            "event": "configuration_rejected",
+            "issues": sorted(issues),
+        }))
         raise ConfigurationError(
             "Invalid configuration: " + ", ".join(sorted(issues)),
         ) from None

@@ -42,6 +42,24 @@ make dev
 MinIO; dependency lỗi trả 503 nhưng không lộ endpoint hay secret. Mọi API response có
 `X-Request-ID`, cùng ID xuất hiện trong structured log.
 
+## Hardened profile · TLS ingress (TIP-012)
+
+Profile `hardened` đặt Caddy ingress (digest-pinned) trước toàn bộ stack: một
+hostname (`INGRESS_HOST`, mặc định `rtr.local`) phục vụ HTTPS trên 443, HTTP 80
+chỉ redirect; `/api/v1/*` → api, còn lại → web; KHÔNG service nào khác publish
+port. Dev profile (`make dev`) giữ nguyên như trên.
+
+```bash
+echo "127.0.0.1 rtr.local" | sudo tee -a /etc/hosts   # một lần
+make hardened-up      # infra -> migrate -> app + ingress (chờ qua ingress)
+make hardened-probe   # probe header/redirect/leak/auth qua ingress
+make hardened-down
+```
+
+Chi tiết certificate (local CA vs certificate thật), security header, secret
+catalog + production boot guard và quy trình inject secret: xem
+[`docs/ingress-hardening.md`](docs/ingress-hardening.md).
+
 ## Verify, stop và persistence
 
 ```bash

@@ -1,6 +1,14 @@
 SHELL := /bin/bash
 
-.PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs
+.PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe
+
+# TIP-012 Task 1 — hardened profile (TLS ingress fronts everything, AC-01).
+# Requires the ingress hostname to resolve to 127.0.0.1 for probes/browsers:
+#   echo "127.0.0.1 rtr.local" | sudo tee -a /etc/hosts
+# See docs/ingress-hardening.md. Dev profile (`make dev`) is unchanged.
+HARDENED_COMPOSE := docker compose -f compose.yaml -f compose.hardened.yaml
+INGRESS_HOST ?= rtr.local
+HARDENED_PUBLIC_BASE_URL ?= https://$(INGRESS_HOST)
 
 dev:
 	docker compose up --build -d postgres redis minio minio-init clamav
@@ -26,6 +34,21 @@ backup:
 
 restore-drill:
 	./scripts/restore-data.sh "$(BACKUP_ARCHIVE)" "$(RESTORE_TARGET)" "$(CONFIRM_TARGET)"
+
+hardened-up:
+	$(HARDENED_COMPOSE) up -d postgres redis minio minio-init clamav
+	$(HARDENED_COMPOSE) --profile tools run --rm migrate
+	PUBLIC_BASE_URL=$(HARDENED_PUBLIC_BASE_URL) INGRESS_HOST=$(INGRESS_HOST) \
+		$(HARDENED_COMPOSE) --profile hardened up -d api worker web ingress
+	INGRESS_HOST=$(INGRESS_HOST) ./scripts/wait-ready-hardened.sh
+
+hardened-down:
+	$(HARDENED_COMPOSE) --profile hardened down
+
+hardened-probe:
+	cd apps/backend && \
+		INGRESS_PROBE_ORIGIN=https://$(INGRESS_HOST) \
+		uv run pytest tests/test_ingress_probe.py -v
 
 down:
 	docker compose down

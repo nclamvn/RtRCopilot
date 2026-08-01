@@ -1,0 +1,21 @@
+# TIP-012 Task 1 (AC-01) — hardened profile override.
+#
+# Usage (always together with the base file and the `hardened` profile):
+#   docker compose -f compose.yaml -f compose.hardened.yaml --profile hardened ...
+# or simply: make hardened-up / make hardened-down
+#
+# In the hardened shape ONLY the ingress publishes ports (127.0.0.1:80/443 in
+# this environment); every other service is reachable exclusively on the
+# internal compose network. postgres, redis, clamav and worker publish no
+# ports in the base file already; the three below are the only ones to reset.
+#
+# The default profile (plain `docker compose` / `make dev`) is untouched and
+# keeps today's 127.0.0.1 port binds for every existing gate.
+
+services:
+  minio:
+    ports: !reset []
+  api:
+    ports: !reset []
+  web:
+    ports: !reset []
