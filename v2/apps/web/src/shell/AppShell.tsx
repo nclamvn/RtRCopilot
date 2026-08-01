@@ -16,7 +16,7 @@
  *   Files workspace renders at `/files` and "/" is a server redirect there.
  */
 
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import Link from "next/link";
 import {usePathname, useSearchParams} from "next/navigation";
 import {LOCALES, MessageKey} from "../i18n/messages";
@@ -90,6 +90,18 @@ export function AppShell({children}: {children: React.ReactNode}) {
       ))
       .catch(() => setIdentity(null)).finally(() => setAuthReady(true));
   }, []);
+  // TIP-011 Builder D (AC-11): after a route change, focus lands on the work
+  // surface (`main`, which holds the page's single H1) so keyboard and
+  // screen-reader users start at the new content instead of a stale control.
+  // Only pathname changes count — query-only updates (locator params,
+  // knowledge-ops views) must not steal focus. Initial load keeps the
+  // document focus untouched (the skip link stays the first tab stop).
+  const focusPathname = useRef(pathname);
+  useEffect(() => {
+    if (focusPathname.current === pathname) return;
+    focusPathname.current = pathname;
+    document.getElementById("main")?.focus();
+  }, [pathname]);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setNavOpen(false);

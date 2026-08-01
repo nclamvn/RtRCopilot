@@ -20,6 +20,7 @@ import {
 } from "../../../files/contracts";
 import {manifestEvidence} from "../../../files/evidence";
 import {FileViewer} from "../../../files/viewers";
+import type {MessageKey} from "../../../i18n/messages";
 import {useI18n} from "../../../i18n/provider";
 import {EvidenceRail} from "../../../rail/EvidenceRail";
 import {PageHeader} from "../../../shell/AppShell";
@@ -33,11 +34,13 @@ type UploadStatus = {
   error_code?: string | null; failed_stage?: string | null; version_id?: string | null;
 };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const TYPES: Array<{value: "" | ViewerKind; label: string}> = [
-  {value: "", label: "Tất cả"}, {value: "image", label: "Ảnh"},
-  {value: "pdf", label: "PDF"}, {value: "docx", label: "DOCX"},
-  {value: "xlsx", label: "XLSX"}, {value: "pptx", label: "PPTX"},
-  {value: "video", label: "Video"}, {value: "audio", label: "Audio"},
+/** Format acronyms are locale-neutral; only the two words go through i18n. */
+const TYPES: Array<{value: "" | ViewerKind; labelKey: MessageKey | null; label: string}> = [
+  {value: "", labelKey: "files.type.all", label: ""},
+  {value: "image", labelKey: "files.type.image", label: ""},
+  {value: "pdf", labelKey: null, label: "PDF"}, {value: "docx", labelKey: null, label: "DOCX"},
+  {value: "xlsx", labelKey: null, label: "XLSX"}, {value: "pptx", labelKey: null, label: "PPTX"},
+  {value: "video", labelKey: null, label: "Video"}, {value: "audio", labelKey: null, label: "Audio"},
 ];
 
 function readableBytes(bytes: number) {
@@ -58,7 +61,7 @@ export default function FilesPage() {
   const [kind, setKind] = useState<"" | ViewerKind>("");
   const [selected, setSelected] = useState<string | null>(null);
   const [manifest, setManifest] = useState<ViewerManifest | null>(null);
-  const [viewerError, setViewerError] = useState("");
+  const [viewerError, setViewerError] = useState<MessageKey | "">("");
   const [locator, setLocator] = useState<Locator>({});
   const [targets, setTargets] = useState<UploadTarget[]>([]);
   const [upload, setUpload] = useState<UploadStatus | null>(null);
@@ -194,7 +197,7 @@ export default function FilesPage() {
       .then(value => { if (active) setManifest(value); })
       .catch(error => {
         if (active && error instanceof Error && error.message !== "access_revoked") {
-          setViewerError("Không thể mở bản xem an toàn.");
+          setViewerError("files.viewerOpenError");
         }
       });
     return () => { active = false; };
@@ -221,7 +224,7 @@ export default function FilesPage() {
         if (response.ok) setManifest(parseManifest(await response.json()));
       } catch (error) {
         if (!(error instanceof DOMException && error.name === "AbortError")) {
-          setViewerError("Không thể xác minh lại quyền xem.");
+          setViewerError("files.viewerRevalidateError");
         }
       } finally {
         running = false;
@@ -374,7 +377,8 @@ export default function FilesPage() {
         </label>
         <div className="type-filters" aria-label={t("files.typeFilter")}>
           {TYPES.map(type => <button key={type.value || "all"} type="button"
-            aria-pressed={kind === type.value} onClick={() => setKind(type.value)}>{type.label}</button>)}
+            aria-pressed={kind === type.value} onClick={() => setKind(type.value)}>
+            {type.labelKey ? t(type.labelKey) : type.label}</button>)}
         </div>
         <ul className="file-list">
           {files.map(file => <li key={file.version_id}>
@@ -401,10 +405,12 @@ export default function FilesPage() {
             locator.t !== undefined ? `${(locator.t / 1000).toFixed(1)}s` : "—"
           )
         }</span></div>
-        {!selected && <div className="viewer-empty"><p className="eyebrow">Safe rendition surface</p>
-          <h2>Chọn một tệp để bắt đầu</h2><p>Chỉ các bản xem đã qua kiểm tra mới xuất hiện ở đây.</p></div>}
-        {selected && !manifest && !viewerError && <p className="loading" role="status">Đang mở bản xem…</p>}
-        {viewerError && <div className="partial" role="alert">{viewerError}</div>}
+        {!selected && <div className="viewer-empty">
+          <p className="eyebrow">{t("files.viewerEmptyEyebrow")}</p>
+          <h2>{t("files.viewerEmptyTitle")}</h2><p>{t("files.viewerEmptyBody")}</p></div>}
+        {selected && !manifest && !viewerError
+          && <p className="loading" role="status">{t("files.viewerLoading")}</p>}
+        {viewerError && <div className="partial" role="alert">{t(viewerError)}</div>}
         {manifest && <FileViewer manifest={manifest} locator={locator}
           onLocator={updateLocator} onAccessLoss={handleAccessLoss}/>}
       </section>
@@ -420,12 +426,13 @@ export default function FilesPage() {
             <div><dt>{t("files.download")}</dt>
               <dd>{manifest.capabilities.download_original
                 ? t("files.downloadAllowed") : t("files.downloadDenied")}</dd></div>
-            <div><dt>Checksum</dt><dd><code>{manifest.source_sha256.slice(0, 16)}…</code>
+            <div><dt>{t("files.checksumLabel")}</dt>
+              <dd><code>{manifest.source_sha256.slice(0, 16)}…</code>
               <button type="button"
                 onClick={() => void navigator.clipboard.writeText(manifest.source_sha256)}>
                 {t("files.copyChecksum")}
               </button></dd></div>
-            <div><dt>Locator</dt>
+            <div><dt>{t("files.locatorLabel")}</dt>
               <dd><code>rtr.locator.v1/{locatorQuery(locator) || "root"}</code>
                 <button type="button"
                   onClick={() => void navigator.clipboard.writeText(location.href)}>
@@ -442,7 +449,8 @@ export default function FilesPage() {
         </div> : null}/>
     </div>
     {(catalogOpen || railOpen) && <button className="scrim" type="button"
-      aria-label="Đóng bảng điều khiển" onClick={() => {setCatalogOpen(false); setRailOpen(false);}}/>}
+      aria-label={t("shell.closePanels")}
+      onClick={() => {setCatalogOpen(false); setRailOpen(false);}}/>}
   </div>;
 }
 
@@ -463,20 +471,21 @@ function UploadPanel({targets, upload, error, onUpload, onRetry}: {
     onDrop={event => {event.preventDefault(); submit(event.dataTransfer.files[0]);}}>
     <h2>{t("files.upload.title")}</h2>
     {targets.length ? <>
-      <label>Đích lưu<select value={effectiveTarget} onChange={event => setTarget(event.target.value)}>
-        {targets.map(item => <option key={item.target_id} value={item.target_id}>
-          {item.label} · {item.classification}
-        </option>)}
-      </select></label>
+      <label>{t("files.upload.target")}
+        <select value={effectiveTarget} onChange={event => setTarget(event.target.value)}>
+          {targets.map(item => <option key={item.target_id} value={item.target_id}>
+            {item.label} · {item.classification}
+          </option>)}
+        </select></label>
       <input ref={input} className="sr-only" type="file" accept={accept}
         onChange={event => submit(event.target.files?.[0])}/>
       <button type="button" onClick={() => input.current?.click()}>{t("files.upload.pick")}</button>
-      <small>Ảnh, PDF, DOCX, XLSX, PPTX, video và audio · tối đa theo chính sách máy chủ</small>
-    </> : <p>Chưa có vị trí tải lên được cấp quyền.</p>}
+      <small>{t("files.upload.hint")}</small>
+    </> : <p>{t("files.upload.noTargets")}</p>}
     {upload && <div className="upload-progress" aria-live="polite">
       <progress max="100" value={upload.progress}/><span>{upload.state} · {upload.progress}%</span>
       {upload.retryable && <button type="button" onClick={() => void onRetry()}>{t("surface.retry")}</button>}
     </div>}
-    {error && <p role="alert">Tải lên thất bại: {error}</p>}
+    {error && <p role="alert">{t("files.upload.failed")} {error}</p>}
   </section>;
 }

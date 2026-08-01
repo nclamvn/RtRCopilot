@@ -379,7 +379,10 @@ export default function AskPage() {
       actions={<button className="ask-rail-toggle" type="button"
         onClick={() => setRailOpen(true)}>{t("ask.evidenceButton")}</button>}/>
     <div className="ask-layout">
-      <section className="ask-surface" aria-label={t("ask.answer.title")}>
+      {/* Distinct landmark name — the grounded-answer region below carries
+          "Câu trả lời"; duplicate names were an axe landmark-unique finding
+          (TIP-011 Builder D, AC-10). */}
+      <section className="ask-surface" aria-label={t("ask.surfaceAria")}>
         <form className="ask-form" onSubmit={event => void submit(event)}>
           <label className="ask-question">{t("ask.question.label")}
             <input value={question} placeholder={t("ask.question.placeholder")}

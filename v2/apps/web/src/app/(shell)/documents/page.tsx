@@ -12,6 +12,8 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {lockedFieldEvidence} from "../../../documents/evidence";
 import {Locator, parseManifest, ViewerManifest} from "../../../files/contracts";
 import {FileViewer} from "../../../files/viewers";
+import {formatDateTime} from "../../../i18n/format";
+import type {MessageKey} from "../../../i18n/messages";
 import {useI18n} from "../../../i18n/provider";
 import {EvidenceRail} from "../../../rail/EvidenceRail";
 import {PageHeader} from "../../../shell/AppShell";
@@ -59,7 +61,7 @@ const api = (path: string, init?: RequestInit) => fetch(`/api/document-os/${path
 });
 
 export default function DocumentsPage() {
-  const {t} = useI18n();
+  const {t, locale} = useI18n();
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -72,7 +74,7 @@ export default function DocumentsPage() {
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [manifest, setManifest] = useState<ViewerManifest | null>(null);
   const [locator, setLocator] = useState<Locator>({});
-  const [error, setError] = useState("");
+  const [error, setError] = useState<MessageKey | "">("");
   const [reason, setReason] = useState("");
   const [ledgerOpen, setLedgerOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
@@ -104,7 +106,7 @@ export default function DocumentsPage() {
   const loadTemplates = useCallback(async () => {
     const response = await api("templates?limit=50");
     if ([401, 403].includes(response.status)) return loseAccess();
-    if (!response.ok) return setError("Không tải được registry mẫu.");
+    if (!response.ok) return setError("documents.error.registry");
     const page = await response.json() as {items: Template[]};
     setTemplates(page.items);
     const requested = new URLSearchParams(location.search).get("template");
@@ -135,7 +137,7 @@ export default function DocumentsPage() {
           value.schema.bindings.filter(item => item.source === "user")
             .map(item => [item.field_path, ""]),
         ));
-      }).catch(() => setError("Không thể mở schema mẫu."));
+      }).catch(() => setError("documents.error.schema"));
   }, [selected]);
 
   const userBindings = useMemo(
@@ -157,7 +159,7 @@ export default function DocumentsPage() {
     const response = await api(`templates/${selected.version_id}/bind`, {
       method: "POST", body: JSON.stringify({parameters}),
     });
-    if (!response.ok) return setError("Thông tin chưa hợp lệ hoặc nguồn SOT chưa sẵn sàng.");
+    if (!response.ok) return setError("documents.error.bind");
     setBinding(await response.json() as BindResult);
   }
 
@@ -200,11 +202,11 @@ export default function DocumentsPage() {
       method: "POST",
       body: JSON.stringify({idempotency_key: crypto.randomUUID(), parameters}),
     });
-    if (!response.ok) return setError("Không thể khởi tạo bản dựng.");
+    if (!response.ok) return setError("documents.error.render");
     const status = await response.json() as RenderStatus;
     setRenderJob(status);
     try { await pollRender(status.render_job_id); } catch {
-      setError("Mất kết nối khi theo dõi bản dựng.");
+      setError("documents.error.renderLost");
     }
   }
 
@@ -213,9 +215,11 @@ export default function DocumentsPage() {
     const operation = ["approve", "reject"].includes(action)
       ? `decision/${action}` : action;
     const response = await api(`documents/generated/${renderJob.generated_file_id}/${operation}`, {
-      method: "POST", body: withReason ? JSON.stringify({reason: reason || "Đã kiểm tra"}) : undefined,
+      method: "POST",
+      body: withReason
+        ? JSON.stringify({reason: reason || t("documents.defaultReason")}) : undefined,
     });
-    if (!response.ok) return setError("Thao tác không được phép ở trạng thái hiện tại.");
+    if (!response.ok) return setError("documents.error.action");
     const fresh = await api(`documents/generated/${renderJob.generated_file_id}`);
     if (fresh.ok) setGenerated(await fresh.json() as Generated);
   }
@@ -246,10 +250,13 @@ export default function DocumentsPage() {
         </button>
       </div>}/>
     <div className="doc-layout">
-      <aside className={`template-ledger ${ledgerOpen ? "open" : ""}`} aria-label="Template registry">
-        <div className="panel-heading"><div><p className="eyebrow">Governed registry</p>
+      <aside className={`template-ledger ${ledgerOpen ? "open" : ""}`}
+        aria-label={t("documents.registryAria")}>
+        <div className="panel-heading"><div>
+          <p className="eyebrow">{t("documents.registryEyebrow")}</p>
           <h2>{t("documents.registryTitle")}</h2></div>
-          <button className="close-mobile" onClick={() => setLedgerOpen(false)}>×</button></div>
+          <button className="close-mobile" aria-label={t("shell.closePanels")}
+            onClick={() => setLedgerOpen(false)}>×</button></div>
         <ol>{templates.map(item => <li key={item.version_id}><button type="button"
           aria-current={selected?.version_id === item.version_id ? "true" : undefined}
           onClick={() => {setSelected(item); setLedgerOpen(false);}}>
@@ -258,12 +265,12 @@ export default function DocumentsPage() {
         </button></li>)}</ol>
         {!templates.length && <p>{t("documents.registryEmpty")}</p>}
       </aside>
-      <section className="assembly-desk" aria-label="Structured assembly desk">
+      <section className="assembly-desk" aria-label={t("documents.deskAria")}>
         <div className="assembly-form">
-          <p className="eyebrow">Structured assembly</p>
+          <p className="eyebrow">{t("documents.assemblyEyebrow")}</p>
           <h2>{selected?.display_name ?? t("documents.pickTemplate")}</h2>
           {userBindings.map(item => <label key={item.field_path}>{item.field_path}
-            {item.required && <span aria-label="bắt buộc"> *</span>}
+            {item.required && <span aria-label={t("documents.required")}> *</span>}
             <input value={parameters[item.field_path] ?? ""}
               required={item.required}
               onChange={event => setParameters(current => ({
@@ -275,21 +282,25 @@ export default function DocumentsPage() {
               onClick={() => void renderDocument()}>{t("documents.render")}</button>
           </div>
           {binding && <p role="status" className={binding.valid ? "valid" : "invalid"}>
-            {binding.valid ? "Dữ liệu hợp lệ và đã khóa nguồn." :
-              `Thiếu: ${binding.missing.join(", ") || "không"} · Chặn: ${binding.blocked.map(x => x.code).join(", ") || "không"}`}
+            {binding.valid ? t("documents.bind.valid") :
+              `${t("documents.bind.missing")}: ${binding.missing.join(", ")
+                || t("documents.bind.none")} · ${t("documents.bind.blocked")}: ${
+                binding.blocked.map(x => x.code).join(", ") || t("documents.bind.none")}`}
           </p>}
           {renderJob && !manifest && <div className="render-progress" aria-live="polite">
             <progress max="100" value={renderJob.progress}/><span>{renderJob.state}</span>
           </div>}
-          {error && <p role="alert" className="invalid">{error}</p>}
+          {error && <p role="alert" className="invalid">{t(error)}</p>}
         </div>
         <div className="document-preview">
-          {!manifest && <div className="viewer-empty"><p className="eyebrow">TIP-008 safe viewer</p>
-            <h2>Bản xem thật xuất hiện tại đây</h2></div>}
+          {!manifest && <div className="viewer-empty">
+            <p className="eyebrow">{t("documents.previewEyebrow")}</p>
+            <h2>{t("documents.previewEmpty")}</h2></div>}
           {manifest && <><FileViewer manifest={manifest} locator={locator}
             onLocator={setLocator} onAccessLoss={loseAccess}/>
             {selected?.document_class !== "internal" && generated?.lifecycle !== "issued"
-              && <div className="draft-watermark" aria-label="Trạng thái bản nháp">DRAFT · CHƯA PHÁT HÀNH</div>}
+              && <div className="draft-watermark" aria-label={t("documents.watermarkAria")}>
+                {t("documents.watermark")}</div>}
           </>}
         </div>
       </section>
@@ -300,19 +311,21 @@ export default function DocumentsPage() {
           {!lockedFields.length && <p>{t("documents.lockedEmpty")}</p>}
         </div>}
         footer={generated ? <section className="approval-timeline doc-note">
-          <h3>Phiên bản & trạng thái</h3>
+          <h3>{t("documents.rail.version")}</h3>
           <p className={`state-chip ${generated.lifecycle}`}>{generated.lifecycle}</p>
           <div className="checksum-row"><code title={generated.checksum}>{generated.checksum}</code>
             <button type="button" onClick={() => void navigator.clipboard.writeText(generated.checksum)}>
-              Sao chép
+              {t("documents.copy")}
             </button></div>
           {generated.approvals.map(item => <article key={item.approval_id}>
             <strong>{item.decision}</strong><p>{item.reason}</p>
-            <small>{item.reviewer_display_name ?? "Reviewer"} · {new Date(item.decided_at).toLocaleString("vi-VN")}</small>
+            <small>{item.reviewer_display_name ?? t("documents.reviewerFallback")} · {
+              formatDateTime(item.decided_at, locale)}</small>
           </article>)}
           {generated.issuance && <article><strong>{generated.issuance.issue_number}</strong>
             <p>{generated.issuance.state}</p></article>}
-          <label>Lý do<input value={reason} onChange={event => setReason(event.target.value)}/></label>
+          <label>{t("documents.reason")}
+            <input value={reason} onChange={event => setReason(event.target.value)}/></label>
           <div className="rail-actions">
             {generated.lifecycle === "draft" && <button onClick={() => void generatedAction("submit")}>
               {t("documents.action.submit")}</button>}
@@ -325,25 +338,27 @@ export default function DocumentsPage() {
             {generated.lifecycle === "issued" && <button onClick={() => void generatedAction("revoke", true)}>
               {t("documents.action.revoke")}</button>}
           </div>
-          <h3>Lịch sử & so sánh</h3>
+          <h3>{t("documents.rail.history")}</h3>
           <ol className="generated-history">{historyItems.map((item, index) =>
             <li key={item.generated_file_id}>
               <strong>V{historyItems.length - index} · {item.lifecycle}</strong>
               <code title={item.checksum}>{item.checksum.slice(0, 16)}…</code>
-              <small>{new Date(item.created_at).toLocaleString("vi-VN")}</small>
-              <p>Tham số đổi: {item.comparison.changed_parameters.join(", ") || "—"}</p>
-              <p>SOT đổi: {item.comparison.changed_locked_facts.join(", ") || "—"}</p>
+              <small>{formatDateTime(item.created_at, locale)}</small>
+              <p>{t("documents.paramsChanged")} {
+                item.comparison.changed_parameters.join(", ") || "—"}</p>
+              <p>{t("documents.sotChanged")} {
+                item.comparison.changed_locked_facts.join(", ") || "—"}</p>
               {(item.comparison.template_changed || item.comparison.checksum_changed
                 || item.comparison.lifecycle_changed) && <small>
                 {item.comparison.template_changed ? "template · " : ""}
                 {item.comparison.checksum_changed ? "checksum · " : ""}
-                {item.comparison.lifecycle_changed ? "trạng thái" : ""}
+                {item.comparison.lifecycle_changed ? t("documents.lifecycleChanged") : ""}
               </small>}
             </li>)}
           </ol>
         </section> : null}/>
     </div>
-    {(ledgerOpen || railOpen) && <button className="scrim" aria-label="Đóng bảng"
+    {(ledgerOpen || railOpen) && <button className="scrim" aria-label={t("shell.closePanels")}
       onClick={() => {setLedgerOpen(false); setRailOpen(false);}}/>}
   </div>;
 }

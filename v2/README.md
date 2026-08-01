@@ -184,3 +184,17 @@ về. Backend bổ sung (không migration, không đổi retrieval/grounding):
   lưu sẵn — không lưu gì mới);
 - `GET /api/v1/research/scope` trả `{allowed: bool}` từ đúng policy predicate
   của research search — content-free, thay probe search mỗi lần tải trang Ask.
+
+Hoàn thiện UX (TIP-011 Task 4): i18n phủ kín vi/en cho mọi chuỗi giao diện
+(catalog typed trong `src/i18n/messages.ts`, parity ép bằng tsc + runtime
+guard; ngày/số theo `formatDateTime`/`formatNumber`); form giao việc và trả
+lời gap trong Knowledge Ops dùng picker typeahead theo WAI-ARIA combobox
+(`src/governance/Picker.tsx`) trên hai endpoint picker ở trên — UUID thô vẫn
+dùng được cho record qua tùy chọn "Dùng UUID này trực tiếp". Gate trình duyệt
+bắt buộc: `tests/browser/a11y.spec.ts` (axe-core: 0 vi phạm critical/serious —
+thực tế 0 ở mọi mức — trên 5 trang chính × 4 viewport × 2 locale + các trạng
+thái drawer/sheet/picker/watermark, kèm kiểm overflow và prefers-reduced-motion)
+và `tests/browser/keyboard.spec.ts` (flow chỉ-bàn-phím: mở tệp → deep locator,
+documents render → duyệt trong rail, ops triage → giao → trả lời qua picker,
+đổi ngôn ngữ, focus về `main` sau khi đổi route). Chạy:
+`PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @rtr/web test:browser`.

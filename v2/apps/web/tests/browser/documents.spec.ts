@@ -115,13 +115,13 @@ test("mobile Documents workspace has no page overflow and opens both drawers", a
   await page.setViewportSize({width: 360, height: 800});
   await page.goto("/documents");
   await page.getByRole("button", {name: "Mẫu", exact: true}).click();
-  await expect(page.getByRole("complementary", {name: "Template registry"})).toHaveClass(/open/);
+  await expect(page.getByRole("complementary", {name: "Sổ mẫu"})).toHaveClass(/open/);
   await page.waitForTimeout(250);
   await page.screenshot({path: "test-results/tip009-documents-mobile-ledger.png", fullPage: true});
   await page.getByRole("button", {name: /Báo cáo vận hành/}).click();
   await page.getByRole("button", {name: "SOT / duyệt"}).click();
   await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"})).toHaveClass(/open/);
-  await expect(page.getByRole("complementary", {name: "Template registry"})).not.toHaveClass(/open/);
+  await expect(page.getByRole("complementary", {name: "Sổ mẫu"})).not.toHaveClass(/open/);
   await page.waitForTimeout(250);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

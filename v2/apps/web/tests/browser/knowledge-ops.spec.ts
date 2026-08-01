@@ -130,6 +130,20 @@ async function mockKnowledgeOps(page: Page) {
     if (path.startsWith("/api/governance/governance/queues/owner-review")) {
       return route.fulfill({json: queuePage("owner_review", [], {})});
     }
+    if (path === "/api/governance/governance/pickers/subjects") {
+      // TIP-011 policy-filtered subject picker (AC-06 consumer).
+      return route.fulfill({json: {items: [
+        {subject_id: peerId, display_name: "RtR Peer", email: "peer@rtrobotics.com"},
+      ], next_cursor: null}});
+    }
+    if (path === "/api/governance/governance/pickers/records") {
+      // TIP-011 policy-filtered active-record picker; literal server zone label.
+      return route.fulfill({json: {items: [
+        {zone_label: "sot", record_key: "company.warranty",
+          record_version_id: versionId, title: "Bảo hành robot",
+          classification: "internal"},
+      ], next_cursor: null}});
+    }
     if (path === "/api/governance/gaps") {
       return route.fulfill({json: {items: [gapJson(gap)], next_cursor: null}});
     }
@@ -197,7 +211,7 @@ async function mockKnowledgeOps(page: Page) {
   });
 }
 
-test("curator completes triage → assign → answer keyboard-reachable flow", async ({page}) => {
+test("curator completes triage → assign → answer through the policy-filtered pickers", async ({page}) => {
   await mockKnowledgeOps(page);
   await page.goto("/knowledge-ops?view=gaps");
   // AC-07: the gap row chip renders from the gap payload's own zone_label.
@@ -208,13 +222,31 @@ test("curator completes triage → assign → answer keyboard-reachable flow", a
   await page.getByLabel("Lý do thao tác").fill("Câu hỏi lặp lại 3 lần");
   await page.getByRole("button", {name: "Nhận xử lý"}).click();
   await expect(page.locator(".transition-history")).toContainText("open → triaged");
-  await page.getByLabel("Giao cho (subject ID)").fill(peerId);
-  await page.getByRole("button", {name: "Giao cho", exact: true}).click();
+  // TIP-011 Task 4: the assign form consumes the subject picker (typeahead
+  // combobox over /governance/pickers/subjects) instead of a raw UUID input.
+  const assignButton = page.getByRole("button", {name: "Giao cho", exact: true});
+  await expect(assignButton).toBeDisabled();
+  const subjectBox = page.getByRole("combobox", {name: "Người phụ trách"});
+  await subjectBox.fill("RtR");
+  await expect(page.getByRole("option", {name: /RtR Peer/})).toBeVisible();
+  await subjectBox.press("Enter");
+  await expect(page.getByText("Đã chọn:")).toBeVisible();
+  await expect(assignButton).toBeEnabled();
+  await assignButton.click();
   await expect(page.locator(".transition-history")).toContainText("triaged → assigned");
   await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
     .toContainText("internal");
-  await page.getByLabel("Bản ghi SOT đã kích hoạt (version ID)").fill(versionId);
-  await page.getByRole("button", {name: "Trả lời bằng bản ghi đã phát hành"}).click();
+  // Answer via the active-record picker (SOT chip from the literal label).
+  const answerButton = page.getByRole("button", {name: "Trả lời bằng bản ghi đã phát hành"});
+  await expect(answerButton).toBeDisabled();
+  const recordBox = page.getByRole("combobox", {name: "Bản ghi SOT trả lời"});
+  await recordBox.fill("warranty");
+  const recordOption = page.getByRole("option", {name: /company\.warranty/});
+  await expect(recordOption).toBeVisible();
+  await expect(recordOption.locator(".zone-chip.zone-sot")).toBeVisible();
+  await recordBox.press("Enter");
+  await expect(answerButton).toBeEnabled();
+  await answerButton.click();
   await expect(page.locator(".transition-history")).toContainText("assigned → answered");
   await page.screenshot({path: "test-results/tip010-gap-flow.png", fullPage: true});
 });
@@ -284,7 +316,11 @@ test("freshness queue surfaces expired SLA state and assignment action", async (
   await expect(surface.locator(".queue-entries .zone-chip.zone-sot").first()).toBeVisible();
   const assign = page.getByRole("button", {name: "Giao cho", exact: true});
   await expect(assign).toBeDisabled();
-  await page.getByLabel("Giao cho (subject ID)").fill(peerId);
+  // TIP-011 Task 4: queue assignment also flows through the subject picker.
+  const subjectBox = page.getByRole("combobox", {name: "Người phụ trách"});
+  await subjectBox.fill("RtR");
+  await expect(page.getByRole("option", {name: /RtR Peer/})).toBeVisible();
+  await subjectBox.press("Enter");
   await expect(assign).toBeEnabled();
 });
 

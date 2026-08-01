@@ -267,3 +267,28 @@ code.rail-redacted{border:1px solid var(--signal);padding:2px 4px;font:700 9px/1
   .files-layout{grid-template-columns:1fr;height:calc(100vh - 210px)}
   .files-catalog-toggle{display:block}
 }
+/* TIP-011 Builder D — policy-filtered pickers (append-only; tokens frozen) */
+.picker{display:grid;gap:5px;color:var(--muted);font-size:11px}
+.picker>label{color:var(--muted)}
+.picker input{color:var(--ink);background:var(--bg);border:1px solid var(--line);padding:10px}
+.picker-selected{margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--ink)}
+.picker-selected code{color:var(--locator);font:11px ui-monospace,monospace;overflow-wrap:anywhere}
+.picker-selected button{width:max-content;background:transparent;border:1px solid var(--line);color:var(--ink);padding:5px 8px;cursor:pointer;font-size:10px}
+.picker-pop{border:1px solid var(--line);background:var(--panel);padding:8px;display:grid;gap:6px}
+.picker-pop .surface-denied,.picker-pop .surface-error{margin:0}
+.picker-options{list-style:none;margin:0;padding:0;max-height:240px;overflow:auto}
+.picker-option{border-top:1px solid var(--line);padding:9px 8px;display:grid;gap:3px;cursor:pointer;color:var(--ink);font-size:12px}
+.picker-option:first-child{border-top:0}
+.picker-option small{color:var(--muted)}
+.picker-option code{font:10px ui-monospace,monospace;color:var(--locator);overflow-wrap:anywhere}
+.picker-option.active{background:#1d2428;box-shadow:inset 3px 0 var(--locator)}
+/* TIP-011 Builder D — axe fixes (AC-10; append-only, tokens untouched).
+   1. Rail-note copy buttons rendered with the browser's default buttonface
+      background (color-contrast serious): restyle to the house underline
+      button (muted #92999f on panel #15191c = 6.1:1).
+   2. Draft watermark text was rgba(229,107,70,.55) over arbitrary previews
+      (≈2.5:1 on the dark sheet, indeterminate over white PDF): give it its
+      own chip background — #f5a184 on rgba(13,15,17,.85) is ≥6.2:1 even
+      over a white PDF page and ≈9:1 over the dark stage. */
+.evidence-rail .rail-note dd button{background:transparent;border:0;padding:0;margin-top:5px;display:block;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:11px}
+.draft-watermark{background:rgba(13,15,17,.85);color:#f5a184;border-color:rgba(229,107,70,.7)}

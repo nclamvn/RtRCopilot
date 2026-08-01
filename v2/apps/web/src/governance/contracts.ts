@@ -622,6 +622,60 @@ export function parseProposalPage(value: unknown): ProposalPage {
   return {items: page.items.map(parseProposalItem), next_cursor: page.next_cursor};
 }
 
+/** TIP-011 policy-filtered pickers (AC-06 consumers). */
+export type SubjectPickerItem = {
+  subject_id: string; display_name: string; email: string | null;
+};
+export type SubjectPickerPage = {items: SubjectPickerItem[]; next_cursor: string | null};
+export type RecordPickerItem = {
+  /** Literal server zone label; any other value is forged and rejects. */
+  zone_label: "sot";
+  record_key: string; record_version_id: string; title: string | null;
+  classification: Classification;
+};
+export type RecordPickerPage = {items: RecordPickerItem[]; next_cursor: string | null};
+
+export function parseSubjectPickerPage(value: unknown): SubjectPickerPage {
+  const page = parsePageShape(value);
+  const items = page.items.map((item): SubjectPickerItem => {
+    if (!record(item) || !uuid(item.subject_id) || !text(item.display_name, 200)
+        || !item.display_name
+        || !optional(item.email, input => text(input, 320))) {
+      throw new Error("invalid_subject_picker_item");
+    }
+    return {
+      subject_id: item.subject_id,
+      display_name: item.display_name as string,
+      email: text(item.email, 320) && item.email ? item.email as string : null,
+    };
+  });
+  return {items, next_cursor: page.next_cursor};
+}
+
+export function parseRecordPickerPage(value: unknown): RecordPickerPage {
+  const page = parsePageShape(value);
+  const items = page.items.map((item): RecordPickerItem => {
+    if (!record(item)) throw new Error("invalid_record_picker_item");
+    // Client-edge zone gate: the record picker payload always carries the
+    // literal SOT label; anything else is forged and rejects the page.
+    if (item.zone_label !== "sot") throw new Error("zone_label_forged");
+    if (!text(item.record_key, 500) || !item.record_key
+        || !uuid(item.record_version_id)
+        || !optional(item.title, input => text(input, 500))
+        || !CLASSIFICATIONS.has(item.classification as Classification)) {
+      throw new Error("invalid_record_picker_item");
+    }
+    return {
+      zone_label: "sot",
+      record_key: item.record_key as string,
+      record_version_id: item.record_version_id,
+      title: text(item.title, 500) && item.title ? item.title as string : null,
+      classification: item.classification as Classification,
+    };
+  });
+  return {items, next_cursor: page.next_cursor};
+}
+
 /** URL-restorable workspace state; ids only, no restricted metadata. */
 export type WorkspaceView =
   | "dashboard" | "gaps" | "freshness" | "conflict" | "owner-review"

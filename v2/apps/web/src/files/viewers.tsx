@@ -1,6 +1,9 @@
 "use client";
 
 import React, {useEffect, useMemo, useRef, useState} from "react";
+import {formatNumber} from "../i18n/format";
+import type {MessageKey} from "../i18n/messages";
+import {useI18n} from "../i18n/provider";
 import {
   Locator,
   proxyContentUrl,
@@ -22,15 +25,20 @@ function rendition(manifest: ViewerManifest, ...kinds: string[]) {
   return manifest.renditions.find(item => kinds.includes(item.kind));
 }
 
+/**
+ * Fetches a JSON rendition. Errors are stored as catalog KEYS (not rendered
+ * strings) so the surface translates them at render time — switching the
+ * locale never leaves a stale-language error on screen (AC-09).
+ */
 function useJson(item: Rendition | undefined, onAccessLoss: Props["onAccessLoss"]) {
   const [value, setValue] = useState<unknown>();
-  const [error, setError] = useState("");
+  const [error, setError] = useState<MessageKey | "">("");
   useEffect(() => {
     let active = true;
     if (!item) return;
     if (item.byte_size > 20_000_000) {
       Promise.resolve().then(() => {
-        if (active) setError("Nội dung trích xuất vượt giới hạn xem an toàn.");
+        if (active) setError("files.viewer.payloadTooLarge");
       });
       return;
     }
@@ -48,7 +56,7 @@ function useJson(item: Rendition | undefined, onAccessLoss: Props["onAccessLoss"
       .then(data => { if (active) setValue(data); })
       .catch(error => {
         if (active && (!(error instanceof Error) || error.message !== "access_revoked")) {
-          setError("Không thể đọc dữ liệu trích xuất.");
+          setError("files.viewer.payloadUnreadable");
         }
       });
     return () => { active = false; };
@@ -95,19 +103,20 @@ function collectHits(value: unknown, query: string): SearchHit[] {
 }
 
 function SearchPanel({payload, onLocator}: {payload: unknown; onLocator: Props["onLocator"]}) {
+  const {t, locale} = useI18n();
   const [query, setQuery] = useState("");
   const hits = useMemo(() => collectHits(payload, query), [payload, query]);
-  return <section className="within-search" aria-label="Tìm trong tệp">
-    <label htmlFor="within-query">Tìm trong tệp</label>
+  return <section className="within-search" aria-label={t("files.viewer.searchLabel")}>
+    <label htmlFor="within-query">{t("files.viewer.searchLabel")}</label>
     <input id="within-query" value={query} onChange={event => setQuery(event.target.value)}
-      placeholder="Nhập ít nhất 2 ký tự"/>
+      placeholder={t("files.viewer.searchPlaceholder")}/>
     {query.length >= 2 && <p className="result-note" aria-live="polite">
-      {hits.length} kết quả hiển thị (tối đa 100)
+      {formatNumber(hits.length, locale)} {t("files.viewer.searchResults")}
     </p>}
     <ol className="search-hits">
       {hits.map((hit, index) => <li key={`${hit.label}-${index}`}>
         <button type="button" onClick={() => onLocator(hit.locator)}>
-          <small>{hit.label || "Nội dung"}</small><span>{hit.text}</span>
+          <small>{hit.label || t("files.viewer.searchFallback")}</small><span>{hit.text}</span>
         </button>
       </li>)}
     </ol>
@@ -117,50 +126,58 @@ function SearchPanel({payload, onLocator}: {payload: unknown; onLocator: Props["
 function PdfSurface({
   manifest, locator, onLocator, onAccessLoss, office,
 }: Props & {office?: boolean}) {
+  const {t, locale} = useI18n();
   const preview = rendition(manifest, "preview_pdf");
   const textItem = rendition(manifest, "page_text_json", "structured_text_json");
   const {value, error} = useJson(textItem, onAccessLoss);
-  if (!preview) return <Partial reason="Không có bản PDF xem an toàn."/>;
+  if (!preview) return <Partial reason={t("files.viewer.noPdf")}/>;
   const page = locator.page ?? locator.slide ?? 1;
   return <div className="viewer-split">
     <div className="pdf-stage">
-      {office && <p className="fidelity">Bản xem an toàn theo nội dung; bố cục có thể khác tệp Office gốc.</p>}
-      <iframe title="Bản xem PDF an toàn" src={`${proxyContentUrl(preview)}#page=${page}`}/>
+      {office && <p className="fidelity">{t("files.viewer.fidelity")}</p>}
+      <iframe title={t("files.viewer.pdfTitle")}
+        src={`${proxyContentUrl(preview)}#page=${page}`}/>
     </div>
     <div className="viewer-tools">
       <div className="pager">
-        <button type="button" onClick={() => onLocator({page: Math.max(1, page - 1)})}>Trang trước</button>
-        <output>Trang {page}</output>
-        <button type="button" onClick={() => onLocator({page: page + 1})}>Trang sau</button>
+        <button type="button" onClick={() => onLocator({page: Math.max(1, page - 1)})}>
+          {t("files.viewer.prevPage")}</button>
+        <output>{t("rail.locator.page")} {formatNumber(page, locale)}</output>
+        <button type="button" onClick={() => onLocator({page: page + 1})}>
+          {t("files.viewer.nextPage")}</button>
       </div>
-      {error ? <p role="status">{error}</p> : <SearchPanel payload={value} onLocator={onLocator}/>}
+      {error ? <p role="status">{t(error)}</p> : <SearchPanel payload={value} onLocator={onLocator}/>}
     </div>
   </div>;
 }
 
 function ImageViewer(props: Props) {
+  const {t} = useI18n();
   const image = rendition(props.manifest, "safe_image_preview");
   const ocr = rendition(props.manifest, "ocr_json");
   const {value, error} = useJson(ocr, props.onAccessLoss);
   const [actual, setActual] = useState(false);
-  if (!image) return <Partial reason="Không có ảnh xem an toàn."/>;
+  if (!image) return <Partial reason={t("files.viewer.noImage")}/>;
   return <div className="viewer-split">
     <div className={`image-stage ${actual ? "actual" : ""}`}>
       {/* Safe authenticated rendition URLs cannot use the Next image optimizer. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={proxyContentUrl(image)} alt="Bản ảnh an toàn đã loại metadata"/>
-      {props.locator.region && <span className="region-indicator">Vùng {props.locator.region}</span>}
+      <img src={proxyContentUrl(image)} alt={t("files.viewer.imageAlt")}/>
+      {props.locator.region && <span className="region-indicator">
+        {t("files.viewer.region")} {props.locator.region}</span>}
     </div>
     <div className="viewer-tools">
       <button type="button" onClick={() => setActual(value => !value)}>
-        {actual ? "Vừa khung" : "Kích thước thật"}
+        {actual ? t("files.viewer.fit") : t("files.viewer.actualSize")}
       </button>
-      {error ? <p role="status">{error}</p> : <SearchPanel payload={value} onLocator={props.onLocator}/>}
+      {error ? <p role="status">{t(error)}</p>
+        : <SearchPanel payload={value} onLocator={props.onLocator}/>}
     </div>
   </div>;
 }
 
 function SheetViewer(props: Props) {
+  const {t} = useI18n();
   const preview = rendition(props.manifest, "sheet_preview_json");
   const {value, error} = useJson(preview, props.onAccessLoss);
   const root = safeRecord(value);
@@ -173,23 +190,23 @@ function SheetViewer(props: Props) {
   const selected = safeRecord(
     sheets.find(item => safeRecord(item)?.sheet === activeName) ?? sheets[0],
   );
-  if (error) return <Partial reason={error}/>;
-  if (!root) return <p className="loading" role="status">Đang đọc bảng tính…</p>;
+  if (error) return <Partial reason={t(error)}/>;
+  if (!root) return <p className="loading" role="status">{t("files.viewer.sheetLoading")}</p>;
   const rows = Array.isArray(selected?.rows) ? selected.rows.slice(0, 5000) : [];
   const mergedRanges = Array.isArray(selected?.merged_ranges)
     ? selected.merged_ranges.filter(item => typeof item === "string").slice(0, 100)
     : [];
   return <div className="sheet-layout">
-    <div className="sheet-tabs" role="tablist" aria-label="Trang tính">
+    <div className="sheet-tabs" role="tablist" aria-label={t("files.viewer.sheetTabs")}>
       {sheets.map(item => {
         const name = String(safeRecord(item)?.sheet ?? "");
         return <button type="button" role="tab" aria-selected={name === activeName}
           key={name} onClick={() => props.onLocator({sheet: name})}>{name}</button>;
       })}
     </div>
-    <div className="sheet-grid" role="region" aria-label="Lưới bảng tính" tabIndex={0}>
+    <div className="sheet-grid" role="region" aria-label={t("files.viewer.sheetGrid")} tabIndex={0}>
       {mergedRanges.length > 0 && <p className="merged-ranges">
-        Ô gộp: {mergedRanges.join(", ")}
+        {t("files.viewer.mergedRanges")} {mergedRanges.join(", ")}
       </p>}
       <table><tbody>{rows.map((row, rowIndex) => {
         const rowData = safeRecord(row);
@@ -202,7 +219,8 @@ function SheetViewer(props: Props) {
             return <td key={coordinate || cellIndex} className={
           props.locator.sheet === activeName && props.locator.cell === coordinate ? "active-cell" : ""
             }><button type="button" onClick={() => props.onLocator({sheet: activeName, cell: coordinate})}>
-              <span>{String(data?.value ?? "")}</span>{formula && <code title="Công thức">{formula}</code>}
+              <span>{String(data?.value ?? "")}</span>
+              {formula && <code title={t("files.viewer.formula")}>{formula}</code>}
             </button></td>;
           })}</tr>;
       })}</tbody></table>
@@ -212,6 +230,7 @@ function SheetViewer(props: Props) {
 }
 
 function MediaViewer(props: Props & {video: boolean}) {
+  const {t} = useI18n();
   const mediaItem = rendition(props.manifest, props.video ? "browser_video" : "browser_audio");
   const poster = rendition(props.manifest, props.video ? "poster" : "waveform");
   const transcript = rendition(props.manifest, "transcript_json");
@@ -220,7 +239,7 @@ function MediaViewer(props: Props & {video: boolean}) {
   useEffect(() => {
     if (ref.current && props.locator.t !== undefined) ref.current.currentTime = props.locator.t / 1000;
   }, [props.locator.t]);
-  if (!mediaItem) return <Partial reason="Không có media xem an toàn."/>;
+  if (!mediaItem) return <Partial reason={t("files.viewer.noMedia")}/>;
   const common = {
     ref,
     controls: true,
@@ -238,17 +257,22 @@ function MediaViewer(props: Props & {video: boolean}) {
         : <><audio {...common}/>{poster &&
           /* Safe authenticated rendition URLs cannot use the Next image optimizer. */
           // eslint-disable-next-line @next/next/no-img-element
-          <img className="waveform" src={proxyContentUrl(poster)} alt="Dạng sóng âm thanh"/>}</>}
+          <img className="waveform" src={proxyContentUrl(poster)}
+            alt={t("files.viewer.waveformAlt")}/>}</>}
     </div>
-    {error ? <p role="status">{error}</p> : <SearchPanel payload={value} onLocator={props.onLocator}/>}
+    {error ? <p role="status">{t(error)}</p>
+      : <SearchPanel payload={value} onLocator={props.onLocator}/>}
   </div>;
 }
 
 function Partial({reason}: {reason: string}) {
-  return <div className="partial" role="status"><strong>Chỉ xem được một phần</strong><p>{reason}</p></div>;
+  const {t} = useI18n();
+  return <div className="partial" role="status">
+    <strong>{t("files.viewer.partial")}</strong><p>{reason}</p></div>;
 }
 
 export function FileViewer(props: Props) {
+  const {t} = useI18n();
   const kind = viewerFor(props.manifest.viewer_kind);
   if (kind === "image") return <ImageViewer {...props}/>;
   if (kind === "pdf") return <PdfSurface {...props}/>;
@@ -256,5 +280,5 @@ export function FileViewer(props: Props) {
   if (kind === "xlsx") return <SheetViewer {...props}/>;
   if (kind === "video") return <MediaViewer {...props} video/>;
   if (kind === "audio") return <MediaViewer {...props} video={false}/>;
-  return <Partial reason="Định dạng viewer không được hỗ trợ."/>;
+  return <Partial reason={t("files.viewer.unsupported")}/>;
 }

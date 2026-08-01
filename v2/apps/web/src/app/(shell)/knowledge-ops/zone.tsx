@@ -1,5 +1,7 @@
 import React from "react";
 import {Proposal} from "../../../governance/contracts";
+import type {MessageKey} from "../../../i18n/messages";
+import {useI18n} from "../../../i18n/provider";
 
 /**
  * TIP-011: the trust-zone chip lives in the shared rail module
@@ -17,15 +19,11 @@ export function crossingPhase(proposal: Proposal): CrossingPhase {
   return proposal.publish_package_id ? "approved_staged" : "approved_unsubmitted";
 }
 
-const PHASE_TEXT: Record<CrossingPhase, string> = {
-  proposed:
-    "Đề xuất đang ở vùng RESEARCH, chờ một curator khác quyết định trước cổng phát hành.",
-  approved_staged:
-    "Đã duyệt: bản nháp claim dừng tại cổng phát hành SOT, chưa kích hoạt — cổng vẫn có thể từ chối.",
-  approved_unsubmitted:
-    "Đã duyệt nhưng chưa vào được cổng phát hành; cần đề xuất lại để nộp.",
-  rejected:
-    "Bị từ chối: đề xuất ở lại vùng RESEARCH, quyết định là bất biến.",
+const PHASE_KEYS: Record<CrossingPhase, MessageKey> = {
+  proposed: "ops.crossing.proposed",
+  approved_staged: "ops.crossing.approvedStaged",
+  approved_unsubmitted: "ops.crossing.approvedUnsubmitted",
+  rejected: "ops.crossing.rejected",
 };
 
 /**
@@ -35,16 +33,17 @@ const PHASE_TEXT: Record<CrossingPhase, string> = {
  * conveyed as text, so reduced-motion users lose nothing.
  */
 export function GatedCrossing({proposal}: {proposal: Proposal}) {
+  const {t} = useI18n();
   const phase = crossingPhase(proposal);
   return <figure className="gated-crossing">
-    <div className="crossing-track" role="img" aria-label={PHASE_TEXT[phase]}>
+    <div className="crossing-track" role="img" aria-label={t(PHASE_KEYS[phase])}>
       <span className="crossing-zone research" aria-hidden>RESEARCH</span>
       <span className={`crossing-marker ${phase}`} aria-hidden>
         {phase === "rejected" ? "×" : "▸"}
       </span>
-      <span className="crossing-gate" aria-hidden>CỔNG PHÁT HÀNH</span>
+      <span className="crossing-gate" aria-hidden>{t("ops.crossing.gate")}</span>
       <span className="crossing-zone sot" aria-hidden>SOT</span>
     </div>
-    <figcaption data-phase={phase}>{PHASE_TEXT[phase]}</figcaption>
+    <figcaption data-phase={phase}>{t(PHASE_KEYS[phase])}</figcaption>
   </figure>;
 }

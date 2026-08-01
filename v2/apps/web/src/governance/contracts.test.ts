@@ -5,8 +5,10 @@ import {
   parseGapPage,
   parseProposal,
   parseQueuePage,
+  parseRecordPickerPage,
   parseResearchPackagePage,
   parseResearchRecord,
+  parseSubjectPickerPage,
   parseTypedError,
   parseWorkspaceState,
   workspaceQuery,
@@ -192,6 +194,46 @@ describe("governance payload contracts", () => {
     })).toEqual({code: "curator_required", message: "x", requestId: "req-9"});
     expect(parseTypedError("garbage", "fallback").code).toBe("unknown_error");
     expect(parseTypedError(null).requestId).toBe("");
+  });
+});
+
+describe("picker pages (TIP-011 AC-06 consumers)", () => {
+  test("subject picker parses directory rows and rejects malformed items", () => {
+    const page = parseSubjectPickerPage({
+      items: [
+        {subject_id: id("1"), display_name: "RtR Curator", email: "c@rtrobotics.com"},
+        {subject_id: id("2"), display_name: "RtR Staff", email: null},
+      ],
+      next_cursor: null,
+    });
+    expect(page.items).toHaveLength(2);
+    expect(page.items[0].display_name).toBe("RtR Curator");
+    expect(page.items[1].email).toBeNull();
+    expect(() => parseSubjectPickerPage({
+      items: [{subject_id: "not-a-uuid", display_name: "x"}], next_cursor: null,
+    })).toThrow("invalid_subject_picker_item");
+    expect(() => parseSubjectPickerPage({
+      items: [{subject_id: id("1"), display_name: ""}], next_cursor: null,
+    })).toThrow("invalid_subject_picker_item");
+  });
+
+  test("record picker requires the literal SOT zone label; a forged label rejects the page", () => {
+    const item = {
+      zone_label: "sot", record_key: "company.warranty",
+      record_version_id: id("3"), title: "Bảo hành robot",
+      classification: "internal",
+    };
+    const page = parseRecordPickerPage({items: [item], next_cursor: null});
+    expect(page.items[0].zone_label).toBe("sot");
+    expect(page.items[0].record_version_id).toBe(id("3"));
+    for (const forged of ["research", "private", "SOT", undefined]) {
+      expect(() => parseRecordPickerPage({
+        items: [{...item, zone_label: forged}], next_cursor: null,
+      })).toThrow("zone_label_forged");
+    }
+    expect(() => parseRecordPickerPage({
+      items: [{...item, classification: "top_secret"}], next_cursor: null,
+    })).toThrow("invalid_record_picker_item");
   });
 });
 
