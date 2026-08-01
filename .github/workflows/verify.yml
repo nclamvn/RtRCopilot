@@ -1,0 +1,157 @@
+# TIP-012 Task 4 (D-012-06, AC-11) — CI gate.
+#
+# Stage-by-stage mirror of the local gate (v2/scripts/verify-scaffold.sh) plus
+# the two policy gates, identical in sequence to v2/scripts/ci-local.sh:
+#   migration-gate → image-policy → backend → web → stack(build/Trivy/data-
+#   integration) → browser(mocked Playwright).
+#
+# Merge protection: require the `verify` job as a branch-protection status check;
+# any failing stage fails `verify` and blocks the merge.
+#
+# All third-party actions are pinned to a commit SHA (tag in the trailing
+# comment); the runner is pinned to ubuntu-24.04. On a hosted runner the compose
+# build needs no workaround (the backend image fetches the VOSK model from its
+# upstream release) — the sandbox source-policy/mirror flags live only in
+# ci-local.sh.
+name: verify
+
+on:
+  push:
+    branches: [main, tip-012]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+    working-directory: v2
+
+jobs:
+  migration-gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Migration gate (exactly one head == config pin)
+        run: ./scripts/migration-gate.sh
+
+  image-policy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Materialize dev env (for docker compose config interpolation)
+        run: cp .env.example .env
+      - name: Ensure PyYAML (structural containment check)
+        run: python3 -c 'import yaml' || python3 -m pip install --break-system-packages pyyaml || true
+      - name: Image and runtime policy (digest pins, containment, non-root)
+        run: ./scripts/verify-image-policy.sh
+
+  backend:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: v2/apps/backend/uv.lock
+      - name: Backend lint + type + unit
+        working-directory: v2/apps/backend
+        run: |
+          uv sync --frozen
+          uv run ruff check .
+          uv run mypy
+          uv run pytest
+
+  web:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: pnpm/action-setup@008330803749db0355799c700092d9a85fd074e9 # v6.0.9
+        with:
+          version: "11.15.1"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: "22.14.0"
+          cache: pnpm
+          cache-dependency-path: v2/pnpm-lock.yaml
+      - name: Web lint + type + unit + build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm verify:web
+
+  # Build/Trivy/data-integration share one runner so the compose-built images
+  # are local to each step (mirrors the back half of verify-scaffold.sh).
+  stack:
+    needs: [backend, web]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: Materialize dev env
+        run: cp .env.example .env
+      - name: Compose config (dev + hardened profiles)
+        run: |
+          docker compose config --quiet
+          docker compose -f compose.yaml -f compose.hardened.yaml --profile hardened config --quiet
+      - name: Compose build
+        run: docker compose build
+      - name: Trivy image vulnerability scan
+        run: ./scripts/verify-container-vulnerabilities.sh
+      - name: Containerized data-integration
+        run: ./scripts/verify-data-integration.sh
+
+  browser:
+    needs: [web]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: pnpm/action-setup@008330803749db0355799c700092d9a85fd074e9 # v6.0.9
+        with:
+          version: "11.15.1"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: "22.14.0"
+          cache: pnpm
+          cache-dependency-path: v2/pnpm-lock.yaml
+      - name: Materialize dev env
+        run: cp .env.example .env
+      - name: Install web deps + build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Install Playwright chromium
+        working-directory: v2/apps/web
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Mocked Playwright browser suite
+        working-directory: v2/apps/web
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+        run: |
+          pnpm exec next start --hostname 127.0.0.1 --port 3000 &
+          server=$!
+          trap 'kill $server 2>/dev/null || true' EXIT
+          for _ in $(seq 1 60); do
+            curl -fsS -o /dev/null "$PLAYWRIGHT_BASE_URL/api/status" && break
+            sleep 1
+          done
+          pnpm exec playwright test
+
+  # Single required status check: fails if any stage above failed or was skipped.
+  verify:
+    needs: [migration-gate, image-policy, backend, web, stack, browser]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Assert all stages succeeded
+        working-directory: ${{ github.workspace }}
+        run: |
+          result='${{ join(needs.*.result, ',') }}'
+          echo "stage results: $result"
+          case "$result" in
+            *failure*|*cancelled*|*skipped*) echo "one or more stages did not succeed" >&2; exit 1 ;;
+            *) echo "all verify stages passed" ;;
+          esac

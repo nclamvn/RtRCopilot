@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe
+.PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback
 
 # TIP-012 Task 1 — hardened profile (TLS ingress fronts everything, AC-01).
 # Requires the ingress hostname to resolve to 127.0.0.1 for probes/browsers:
@@ -67,3 +67,24 @@ ps:
 
 logs:
 	docker compose logs --tail=200
+
+# TIP-012 Task 4 — CI/CD, migration gate, versioned deploy/rollback, image
+# policy. Additive targets; `verify` and every other recipe above are untouched.
+# ci-local mirrors .github/workflows/verify.yml stage-by-stage in this
+# environment. Layer the sandbox compose-build workaround with RTR_SANDBOX_BUILD=1
+# (see scripts/ci-common.sh). deploy/rollback take an optional VERSION:
+#   make deploy VERSION=<sha>     make rollback VERSION=<sha>
+ci-local:
+	./scripts/ci-local.sh
+
+migration-gate:
+	./scripts/migration-gate.sh
+
+image-policy:
+	./scripts/verify-image-policy.sh
+
+deploy:
+	./scripts/deploy.sh $(VERSION)
+
+rollback:
+	./scripts/rollback.sh $(VERSION)

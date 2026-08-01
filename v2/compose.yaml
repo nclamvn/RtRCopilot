@@ -2,7 +2,8 @@ name: rtr-copilot-v2
 
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    # TIP-012 Task 4 — digest-pinned (image policy). Tag kept for readability.
+    image: pgvector/pgvector:pg16@sha256:a36250871de0833b8757561c72f2477ef1ddd1101afa4e617fb552e0de514c6b
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -39,7 +40,8 @@ services:
     restart: "no"
 
   redis:
-    image: redis:7.2.5-alpine
+    # TIP-012 Task 4 — digest-pinned (image policy). Tag kept for readability.
+    image: redis:7.2.5-alpine@sha256:6aaf3f5e6bc8a592fbfe2cccf19eb36d27c39d12dab4f4b01556b7449e7b1f44
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
@@ -51,7 +53,8 @@ services:
     restart: unless-stopped
 
   minio:
-    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    # TIP-012 Task 4 — digest-pinned (image policy). Tag kept for readability.
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e
     command: ["server", "/data", "--console-address", ":9001"]
     environment:
       MINIO_ROOT_USER: ${S3_ACCESS_KEY}
@@ -68,7 +71,8 @@ services:
     restart: unless-stopped
 
   minio-init:
-    image: quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z
+    # TIP-012 Task 4 — digest-pinned (image policy). Tag kept for readability.
+    image: quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z@sha256:aead63c77f9db9107f1696fb08ecb0faeda23729cde94b0f663edf4fe09728e3
     depends_on:
       minio:
         condition: service_healthy
@@ -234,7 +238,8 @@ services:
     restart: unless-stopped
 
   clamav:
-    image: clamav/clamav-debian:1.4.5
+    # TIP-012 Task 4 — digest-pinned (image policy). Tag kept for readability.
+    image: clamav/clamav-debian:1.4.5@sha256:50296b62b23764b474be18310521f64a720524d69334ea5236aab5fac44ff993
     environment:
       CLAMAV_NO_FRESHCLAMD: "false"
       CLAMD_CONF_SelfCheck: "30"

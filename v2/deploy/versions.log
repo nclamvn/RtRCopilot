@@ -1,0 +1,3 @@
+2026-08-01T18:28:44Z	deploy	version=drill-a	git=c9617c2d81d018ba1264d0a7e783511be18eac08	prev=none	health_s=3	started=2026-08-01T18:27:09Z
+2026-08-01T18:29:32Z	deploy	version=drill-b	git=c9617c2d81d018ba1264d0a7e783511be18eac08	prev=drill-a	health_s=1	started=2026-08-01T18:28:54Z
+2026-08-01T18:30:19Z	rollback	version=drill-a	from=drill-b	health_s=3	schema=not_downgraded
