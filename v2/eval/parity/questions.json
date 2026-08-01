@@ -1,0 +1,78 @@
+{
+  "description": "TIP-013 Phase A V1-parity question set (AC-A3). Synthetic facts, mirrored into both the phase-1 pilot oracle (GOI_L3.yaml fixture) and V2 seeded SOT. Each question is asked against the pilot's deterministic MOCK answering AND V2's grounded RAG path; the runner reports answer agreement, citation presence and honest-null agreement, and triages divergences. Real 137/162-record re-run is a Phase-B step (D-013-04).",
+  "facts": [
+    {
+      "key": "hera",
+      "source_key": "parity.hera",
+      "record_key": "HERA-END",
+      "text": "HERA autonomous drone flight endurance is 55 minutes on a single charge."
+    },
+    {
+      "key": "vega",
+      "source_key": "parity.vega",
+      "record_key": "VEGA-PAY",
+      "text": "VEGA platform payload capacity is 14 kg maximum lift."
+    },
+    {
+      "key": "omni",
+      "source_key": "parity.omni",
+      "record_key": "OMNI-DEF",
+      "text": "OmniSight is the multi sensor gimbal payload used for inspection missions."
+    }
+  ],
+  "questions": [
+    {
+      "id": "P1",
+      "category": "fact_lookup",
+      "question": "What is the HERA flight endurance?",
+      "scope_fact": "hera",
+      "expect": "answered",
+      "expected_fact": "hera"
+    },
+    {
+      "id": "P2",
+      "category": "fact_lookup",
+      "question": "What is the VEGA payload capacity?",
+      "scope_fact": "vega",
+      "expect": "answered",
+      "expected_fact": "vega"
+    },
+    {
+      "id": "P3",
+      "category": "fact_lookup",
+      "question": "What is OmniSight used for?",
+      "scope_fact": "omni",
+      "expect": "answered",
+      "expected_fact": "omni"
+    },
+    {
+      "id": "P4",
+      "category": "honest_null",
+      "question": "What is the warranty period for the maintenance contract?",
+      "scope_fact": "hera",
+      "expect": "null"
+    },
+    {
+      "id": "P5",
+      "category": "honest_null",
+      "question": "What is the annual maintenance cost?",
+      "scope_fact": "vega",
+      "expect": "null"
+    },
+    {
+      "id": "P6",
+      "category": "honest_null",
+      "question": "What is the noise level in decibels?",
+      "scope_fact": "omni",
+      "expect": "null"
+    },
+    {
+      "id": "P7",
+      "category": "honest_null_unscoped",
+      "question": "What is the warranty period for the maintenance contract?",
+      "scope_fact": null,
+      "expect": "null",
+      "note": "Deliberately UNSCOPED to probe divergence: the pilot honest-nulls, but V2's non-semantic offline hash embedding (REQ-010, functional-not-semantic) returns an arbitrary nearest neighbour and the offline extractive provider grounds on it. Triaged as a synthetic-harness artefact; re-measured with the real semantic embedding + provider in Phase B."
+    }
+  ]
+}

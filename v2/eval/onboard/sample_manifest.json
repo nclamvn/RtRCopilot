@@ -1,0 +1,27 @@
+{
+  "_comment": "TIP-013 sample onboarding manifest (TEMPLATE — synthetic only). staging_name values reference packages the curator has already staged into sot_staging_root / research_staging_root. curator_subject_id must match the attestation signer on each SOT package and must be an existing subject. Replace the placeholder ids/names before use; this file will NOT run as-is (the referenced packages do not exist). The integration test builds real synthetic packages and drives this same flow.",
+  "batch_id": "sample-synthetic-batch",
+  "curator_subject_id": "00000000-0000-0000-0000-0000000000c0",
+  "sot_items": [
+    {
+      "staging_name": "package-REPLACE-WITH-STAGED-SOT-PACKAGE-DIR",
+      "expected_source_key": "rtr.sample",
+      "expected_revision": 1
+    }
+  ],
+  "research_items": [
+    {
+      "staging_name": "research-REPLACE-WITH-STAGED-REFINERY-PACKAGE",
+      "source_key": "refinery.sample",
+      "graduation": {
+        "proposer_subject_id": "00000000-0000-0000-0000-0000000000c1",
+        "decider_subject_id": "00000000-0000-0000-0000-0000000000c2",
+        "target_record_key": "company.claims.sample",
+        "record_keys": ["IND.SAMPLE001"],
+        "claim_text": "Company operates the sample synthetic capability",
+        "value": {"category": "capability"},
+        "rationale": "verbatim synthetic evidence supports the claim"
+      }
+    }
+  ]
+}

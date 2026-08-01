@@ -39,10 +39,15 @@ def build_package(
     acl_effect: str = "allow",
     text: str = "Approved internal capability statement.",
     additional_records: list[tuple[str, str]] | None = None,
+    provenance_level: str = "approved_internal",
+    verification_state: str = "approved",
+    fact_state: str = "approved",
+    source_classification: str | None = None,
 ) -> Path:
     curator_id = curator_id or uuid.uuid4()
     owner_id = owner_id or curator_id
     package_id = package_id or uuid.uuid4()
+    source_classification = source_classification or classification
     package_root = root / f"package-{package_id}"
     package_root.mkdir(parents=True)
     source_ref = "specs/company.yaml"
@@ -71,10 +76,10 @@ def build_package(
         "project_id": None,
         "value": {"capability": text},
         "searchable_text": text,
-        "provenance_level": "approved_internal",
+        "provenance_level": provenance_level,
         "confidence": 0.95,
-        "verification_state": "approved",
-        "fact_state": "approved",
+        "verification_state": verification_state,
+        "fact_state": fact_state,
         "effective_from": NOW.isoformat(),
         "effective_to": None,
         "freshness_policy": {"maximum_age_days": 365},
@@ -129,7 +134,7 @@ def build_package(
             canonical_json(item) + b"\n" for item in evidence_rows
         ),
         "source_hashes.json": canonical_json({
-            source_ref: {"sha256": "a" * 64, "classification": classification},
+            source_ref: {"sha256": "a" * 64, "classification": source_classification},
         }),
     }
     for name, content in files.items():

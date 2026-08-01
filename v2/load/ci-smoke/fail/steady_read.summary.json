@@ -1,0 +1,1 @@
+{"metrics":{"point_read_duration":{"p(95)":900.0},"dashboard_read_duration":{"p(95)":250.0},"errors":{"value":0.001},"avail_ok":{"value":0.999}}}

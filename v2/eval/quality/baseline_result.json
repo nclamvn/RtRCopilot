@@ -1,0 +1,96 @@
+{
+  "cases": [
+    {
+      "answer_preview": "HERA autonomous drone flight endurance is 55 minutes on a single charge. [C1]",
+      "category": "fact_lookup",
+      "cited_record_keys": [
+        "EVAL-HERA"
+      ],
+      "expect": "grounded",
+      "expected_record_key": "EVAL-HERA",
+      "got_state": "grounded",
+      "id": "E1"
+    },
+    {
+      "answer_preview": "VEGA platform payload capacity is 14 kg maximum lift. [C1]",
+      "category": "fact_lookup",
+      "cited_record_keys": [
+        "EVAL-VEGA"
+      ],
+      "expect": "grounded",
+      "expected_record_key": "EVAL-VEGA",
+      "got_state": "grounded",
+      "id": "E2"
+    },
+    {
+      "answer_preview": "Kh\u00f4ng t\u00ecm th\u1ea5y b\u1eb1ng ch\u1ee9ng \u0111\u01b0\u1ee3c ph\u00e9p v\u00e0 \u0111\u1ee7 tin c\u1eady \u0111\u1ec3 tr\u1ea3 l\u1eddi.",
+      "category": "honest_null",
+      "cited_record_keys": [],
+      "expect": "null",
+      "expected_record_key": null,
+      "got_state": "honest_null",
+      "id": "E3"
+    },
+    {
+      "answer_preview": "Kh\u00f4ng t\u00ecm th\u1ea5y b\u1eb1ng ch\u1ee9ng \u0111\u01b0\u1ee3c ph\u00e9p v\u00e0 \u0111\u1ee7 tin c\u1eady \u0111\u1ec3 tr\u1ea3 l\u1eddi.",
+      "category": "acl_restricted",
+      "cited_record_keys": [],
+      "expect": "null",
+      "expected_record_key": null,
+      "got_state": "honest_null",
+      "id": "E4"
+    },
+    {
+      "answer_preview": "Kh\u00f4ng t\u00ecm th\u1ea5y b\u1eb1ng ch\u1ee9ng \u0111\u01b0\u1ee3c ph\u00e9p v\u00e0 \u0111\u1ee7 tin c\u1eady \u0111\u1ec3 tr\u1ea3 l\u1eddi.",
+      "category": "verification_gating",
+      "cited_record_keys": [],
+      "expect": "null",
+      "expected_record_key": null,
+      "got_state": "honest_null",
+      "id": "E5"
+    },
+    {
+      "answer_preview": "Titan endurance is 55 minutes current spec fresh. [C1]",
+      "category": "cross_version_freshness",
+      "cited_record_keys": [
+        "EVAL-TITAN"
+      ],
+      "expect": "grounded",
+      "expected_record_key": "EVAL-TITAN",
+      "got_state": "grounded",
+      "id": "E6"
+    },
+    {
+      "answer_preview": "Kh\u00f4ng t\u00ecm th\u1ea5y b\u1eb1ng ch\u1ee9ng \u0111\u01b0\u1ee3c ph\u00e9p v\u00e0 \u0111\u1ee7 tin c\u1eady \u0111\u1ec3 tr\u1ea3 l\u1eddi.",
+      "category": "research_vs_sot",
+      "cited_record_keys": [],
+      "expect": "null",
+      "expected_record_key": null,
+      "got_state": "honest_null",
+      "id": "E7"
+    }
+  ],
+  "generated_at": "2026-08-01T23:47:05.478710+00:00",
+  "harness": "tip-013 phase-a quality eval (synthetic)",
+  "metrics": {
+    "citation_accuracy": 1.0,
+    "citation_misses": [],
+    "grounded_expected": 3,
+    "grounded_rate": 1.0,
+    "honest_null_quality": 1.0,
+    "leak_count": 0,
+    "leaks": [],
+    "null_expected": 4,
+    "passed": true,
+    "state_mismatches": [],
+    "total": 7
+  },
+  "side_checks": [
+    {
+      "all_labeled_research": true,
+      "beacon_in_research": true,
+      "case_id": "E7",
+      "research_hits": 1
+    }
+  ]
+}

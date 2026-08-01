@@ -1,0 +1,22 @@
+ngay_sinh: '2026-07-31'
+records:
+- record: HERA-END
+  domain: spec
+  kernel_ref: L3F.SPEC.HERA
+  provenance_level: verified_primary
+  content: HERA autonomous drone flight endurance is 55 minutes on a single charge.
+- record: VEGA-PAY
+  domain: spec
+  kernel_ref: L3F.SPEC.VEGA
+  provenance_level: verified_primary
+  content: VEGA platform payload capacity is 14 kg maximum lift.
+- record: OMNI-DEF
+  domain: dinh_nghia
+  kernel_ref: L3F.DEF.OMNI
+  provenance_level: approved_internal
+  content: OmniSight is the multi sensor gimbal payload used for inspection missions.
+- record: RTR-OVERVIEW
+  domain: company
+  kernel_ref: L3F.COMPANY.OVERVIEW
+  provenance_level: verified_primary
+  content: RtR Real-time Robotics la cong ty robotics chuyen ve UAV tu hanh cho khao sat cong nghiep.

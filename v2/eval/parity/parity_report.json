@@ -1,0 +1,171 @@
+{
+  "agreement_count": 6,
+  "agreement_rate": 0.8571,
+  "divergence_count": 1,
+  "generated_at": "2026-08-01T23:47:07.785142+00:00",
+  "harness": "tip-013 phase-a parity (synthetic)",
+  "question_count": 7,
+  "rows": [
+    {
+      "agree": true,
+      "answer_agreement": true,
+      "category": "fact_lookup",
+      "citation_presence_pilot": true,
+      "citation_presence_v2": true,
+      "expect": "answered",
+      "expected_record_key": "HERA-END",
+      "honest_null_agreement": true,
+      "id": "P1",
+      "note": null,
+      "pilot_citation_correct": true,
+      "pilot_cited": [
+        "HERA-END"
+      ],
+      "pilot_state": "answered",
+      "question": "What is the HERA flight endurance?",
+      "scope_source_key": "parity.hera",
+      "v2_citation_correct": true,
+      "v2_cited": [
+        "HERA-END"
+      ],
+      "v2_state": "grounded"
+    },
+    {
+      "agree": true,
+      "answer_agreement": true,
+      "category": "fact_lookup",
+      "citation_presence_pilot": true,
+      "citation_presence_v2": true,
+      "expect": "answered",
+      "expected_record_key": "VEGA-PAY",
+      "honest_null_agreement": true,
+      "id": "P2",
+      "note": null,
+      "pilot_citation_correct": true,
+      "pilot_cited": [
+        "VEGA-PAY"
+      ],
+      "pilot_state": "answered",
+      "question": "What is the VEGA payload capacity?",
+      "scope_source_key": "parity.vega",
+      "v2_citation_correct": true,
+      "v2_cited": [
+        "VEGA-PAY"
+      ],
+      "v2_state": "grounded"
+    },
+    {
+      "agree": true,
+      "answer_agreement": true,
+      "category": "fact_lookup",
+      "citation_presence_pilot": true,
+      "citation_presence_v2": true,
+      "expect": "answered",
+      "expected_record_key": "OMNI-DEF",
+      "honest_null_agreement": true,
+      "id": "P3",
+      "note": null,
+      "pilot_citation_correct": true,
+      "pilot_cited": [
+        "OMNI-DEF"
+      ],
+      "pilot_state": "answered",
+      "question": "What is OmniSight used for?",
+      "scope_source_key": "parity.omni",
+      "v2_citation_correct": true,
+      "v2_cited": [
+        "OMNI-DEF"
+      ],
+      "v2_state": "grounded"
+    },
+    {
+      "agree": true,
+      "answer_agreement": true,
+      "category": "honest_null",
+      "citation_presence_pilot": null,
+      "citation_presence_v2": null,
+      "expect": "null",
+      "expected_record_key": null,
+      "honest_null_agreement": true,
+      "id": "P4",
+      "note": null,
+      "pilot_citation_correct": null,
+      "pilot_cited": [],
+      "pilot_state": "null",
+      "question": "What is the warranty period for the maintenance contract?",
+      "scope_source_key": "parity.hera",
+      "v2_citation_correct": null,
+      "v2_cited": [],
+      "v2_state": "honest_null"
+    },
+    {
+      "agree": true,
+      "answer_agreement": true,
+      "category": "honest_null",
+      "citation_presence_pilot": null,
+      "citation_presence_v2": null,
+      "expect": "null",
+      "expected_record_key": null,
+      "honest_null_agreement": true,
+      "id": "P5",
+      "note": null,
+      "pilot_citation_correct": null,
+      "pilot_cited": [],
+      "pilot_state": "null",
+      "question": "What is the annual maintenance cost?",
+      "scope_source_key": "parity.vega",
+      "v2_citation_correct": null,
+      "v2_cited": [],
+      "v2_state": "honest_null"
+    },
+    {
+      "agree": true,
+      "answer_agreement": true,
+      "category": "honest_null",
+      "citation_presence_pilot": null,
+      "citation_presence_v2": null,
+      "expect": "null",
+      "expected_record_key": null,
+      "honest_null_agreement": true,
+      "id": "P6",
+      "note": null,
+      "pilot_citation_correct": null,
+      "pilot_cited": [],
+      "pilot_state": "null",
+      "question": "What is the noise level in decibels?",
+      "scope_source_key": "parity.omni",
+      "v2_citation_correct": null,
+      "v2_cited": [],
+      "v2_state": "honest_null"
+    },
+    {
+      "agree": false,
+      "answer_agreement": false,
+      "category": "honest_null_unscoped",
+      "citation_presence_pilot": null,
+      "citation_presence_v2": true,
+      "expect": "null",
+      "expected_record_key": null,
+      "honest_null_agreement": false,
+      "id": "P7",
+      "note": "Deliberately UNSCOPED to probe divergence: the pilot honest-nulls, but V2's non-semantic offline hash embedding (REQ-010, functional-not-semantic) returns an arbitrary nearest neighbour and the offline extractive provider grounds on it. Triaged as a synthetic-harness artefact; re-measured with the real semantic embedding + provider in Phase B.",
+      "pilot_citation_correct": null,
+      "pilot_cited": [],
+      "pilot_state": "null",
+      "question": "What is the warranty period for the maintenance contract?",
+      "scope_source_key": null,
+      "v2_citation_correct": null,
+      "v2_cited": [
+        "OMNI-DEF"
+      ],
+      "v2_state": "grounded"
+    }
+  ],
+  "triage": [
+    {
+      "disposition": "Expected synthetic-harness artefact: V2's non-semantic offline hash embedding (REQ-010) returns an arbitrary nearest neighbour on an UNSCOPED query and the offline extractive provider grounds on it. Source-scoped asks agree. Re-measured with the real semantic embedding + provider on the real corpus in Phase B.",
+      "id": "P7",
+      "kind": "v2_grounds_pilot_nulls"
+    }
+  ]
+}

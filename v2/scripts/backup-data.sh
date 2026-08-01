@@ -157,4 +157,10 @@ PY
 
 archive="$destination/rtr-copilot-v2-$timestamp.tar.gz"
 tar -C "$work_dir" -czf "$archive" database.dump manifest.json minio-inventory.json objects
-echo "BACKUP PASS archive=$archive bytes=$(stat -f%z "$archive") duration_seconds=$duration"
+# Portable file size: GNU coreutils `stat -c%s` (Linux/CI) first, BSD `stat -f%z`
+# (macOS) as a fallback, then wc -c as a last resort. `stat -f%z` alone was a
+# BSDism that misreports on the Linux CI runner (TIP-013 deferred-ledger fix).
+archive_bytes="$(stat -c%s "$archive" 2>/dev/null \
+  || stat -f%z "$archive" 2>/dev/null \
+  || wc -c <"$archive")"
+echo "BACKUP PASS archive=$archive bytes=$archive_bytes duration_seconds=$duration"

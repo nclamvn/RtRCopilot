@@ -17,7 +17,7 @@ name: verify
 
 on:
   push:
-    branches: [main, tip-012]
+    branches: [main, tip-013]
   pull_request:
 
 permissions:
@@ -140,9 +140,35 @@ jobs:
           done
           pnpm exec playwright test
 
+  # TIP-013 deferred-ledger fix (REQ-029): wire a load/SLO SMOKE into CI. The
+  # sustained k6 run against the hardened stack stays a drill (`make load`, see
+  # docs/slo.md). Here we (a) parse every k6 scenario with `k6 inspect` so a broken
+  # scenario script fails CI, and (b) run the SLO evaluator against committed
+  # pass/breach fixtures so the SLO gate provably has teeth — all without standing
+  # up the heavyweight hardened+load stack.
+  load-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - name: k6 scenarios parse (k6 inspect)
+        run: |
+          image="grafana/k6:0.49.0@sha256:8cd78f9d0de5f50bc8821cceecf356d5d9e839e6611c226a3fcf13c591080fbd"
+          for scenario in steady_read ask_burst upload_stream spike_recover rate_limit_probe; do
+            echo "inspecting $scenario"
+            docker run --rm -v "$PWD/load:/load:ro" "$image" inspect "/load/$scenario.js"
+          done
+      - name: SLO evaluator gate has teeth (in-target then breach fixtures)
+        run: |
+          RESULTS_DIR="$PWD/load/ci-smoke/pass" ./scripts/evaluate-slo.sh
+          if RESULTS_DIR="$PWD/load/ci-smoke/fail" ./scripts/evaluate-slo.sh; then
+            echo "evaluate-slo.sh did not fail on a breach fixture" >&2
+            exit 1
+          fi
+          echo "SLO evaluator passed the in-target fixture and failed the breach"
+
   # Single required status check: fails if any stage above failed or was skipped.
   verify:
-    needs: [migration-gate, image-policy, backend, web, stack, browser]
+    needs: [migration-gate, image-policy, backend, web, stack, browser, load-smoke]
     if: always()
     runs-on: ubuntu-24.04
     steps:

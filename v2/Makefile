@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo
+.PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
 
 # TIP-012 Task 1 — hardened profile (TLS ingress fronts everything, AC-01).
 # Requires the ingress hostname to resolve to 127.0.0.1 for probes/browsers:
@@ -114,3 +114,18 @@ load-probe:
 
 slo:
 	./scripts/evaluate-slo.sh
+
+# TIP-013 Phase A tooling — additive; `verify` and every recipe above are
+# untouched. `onboard-batch` is a curator-gated batch onboarding driver (dry-run by
+# default; pass ARGS='--manifest … --apply --approve'). `parity` and `eval` run the
+# V1-parity and answer-quality harnesses and (re)write the committed report
+# artefacts under eval/. Both harnesses require a migrated SYNTHETIC database via
+# INTEGRATION_DATABASE_DSN — never a real corpus.
+onboard-batch:
+	./scripts/onboard-batch.sh $(ARGS)
+
+parity:
+	cd apps/backend && uv run python ../../eval/run_parity.py
+
+eval:
+	cd apps/backend && uv run python ../../eval/run_eval.py

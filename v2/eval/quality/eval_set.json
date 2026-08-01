@@ -1,0 +1,109 @@
+{
+  "description": "TIP-013 Phase A representative answer-quality eval set (AC-A4). Synthetic-by-construction, covering fact-lookup, honest-null, cross-version/freshness, ACL-restricted (V2 MUST refuse — any leak is P0), verification gating, and research-vs-SOT labelling. The runner seeds each fixture through the real publish/import gates, asks V2, and the pure scorer emits grounded-rate, honest-null-quality, leak-count (must be 0) and citation-accuracy. Real-corpus re-baseline is Phase B (D-013-05).",
+  "cases": [
+    {
+      "id": "E1",
+      "category": "fact_lookup",
+      "expect": "grounded",
+      "question": "What is the HERA flight endurance?",
+      "fixture": {
+        "kind": "sot",
+        "source_key": "eval.hera",
+        "record_key": "EVAL-HERA",
+        "text": "HERA autonomous drone flight endurance is 55 minutes on a single charge."
+      },
+      "scope": "self",
+      "expected_record_key": "EVAL-HERA"
+    },
+    {
+      "id": "E2",
+      "category": "fact_lookup",
+      "expect": "grounded",
+      "question": "What is the VEGA payload capacity?",
+      "fixture": {
+        "kind": "sot",
+        "source_key": "eval.vega",
+        "record_key": "EVAL-VEGA",
+        "text": "VEGA platform payload capacity is 14 kg maximum lift."
+      },
+      "scope": "self",
+      "expected_record_key": "EVAL-VEGA"
+    },
+    {
+      "id": "E3",
+      "category": "honest_null",
+      "expect": "null",
+      "question": "What is the warranty period for the maintenance contract?",
+      "fixture": {
+        "kind": "sot",
+        "source_key": "eval.hera",
+        "record_key": "EVAL-HERA",
+        "text": "HERA autonomous drone flight endurance is 55 minutes on a single charge."
+      },
+      "scope": "self"
+    },
+    {
+      "id": "E4",
+      "category": "acl_restricted",
+      "expect": "null",
+      "question": "What is the CLASSIFIED-ROTOR-BLUEPRINT?",
+      "fixture": {
+        "kind": "sot",
+        "source_key": "eval.restricted",
+        "record_key": "EVAL-ACL",
+        "text": "CLASSIFIED-ROTOR-BLUEPRINT restricted synthetic operational detail.",
+        "classification": "restricted",
+        "deny_asker": true
+      },
+      "scope": "self",
+      "forbidden_texts": ["CLASSIFIED-ROTOR-BLUEPRINT"]
+    },
+    {
+      "id": "E5",
+      "category": "verification_gating",
+      "expect": "null",
+      "question": "What does the market rumor say about payload?",
+      "fixture": {
+        "kind": "sot",
+        "source_key": "eval.claim",
+        "record_key": "EVAL-CLAIM",
+        "text": "UNVERIFIED-CLAIM synthetic market rumor about payload numbers.",
+        "provenance_level": "claim",
+        "verification_state": "claim",
+        "fact_state": "claim"
+      },
+      "scope": "self",
+      "require_verified": true,
+      "forbidden_texts": ["UNVERIFIED-CLAIM"]
+    },
+    {
+      "id": "E6",
+      "category": "cross_version_freshness",
+      "expect": "grounded",
+      "question": "What is the Titan endurance?",
+      "fixture": {
+        "kind": "sot_versioned",
+        "source_key": "eval.titan",
+        "record_key": "EVAL-TITAN",
+        "rev1_text": "STALE-REV1-MARKER Titan endurance is 50 minutes old spec.",
+        "rev2_text": "Titan endurance is 55 minutes current spec fresh."
+      },
+      "scope": "self",
+      "expected_record_key": "EVAL-TITAN",
+      "forbidden_texts": ["STALE-REV1-MARKER", "50 minutes"]
+    },
+    {
+      "id": "E7",
+      "category": "research_vs_sot",
+      "expect": "null",
+      "question": "What does RESEARCH-ONLY-BEACON describe?",
+      "fixture": {
+        "kind": "research",
+        "record_key": "IND-BEACON",
+        "text": "RESEARCH-ONLY-BEACON external corroboration of beacon relays."
+      },
+      "scope": "none",
+      "forbidden_texts": ["RESEARCH-ONLY-BEACON"]
+    }
+  ]
+}
