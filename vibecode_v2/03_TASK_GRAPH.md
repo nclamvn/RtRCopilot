@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** Blueprint APPROVED · TIP-012 VERIFIED (01/08/2026)
+**Trạng thái:** Blueprint APPROVED · TIP-012 VERIFIED · TIP-013 ISSUED — Phase A auto / Phase B Homeowner-gated (01/08/2026)
 
 ```text
 TIP-001 Security containment
