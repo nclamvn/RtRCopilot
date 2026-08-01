@@ -23,6 +23,7 @@ from rtr_copilot.documents.api import router as documents_router
 from rtr_copilot.governance.api import router as governance_router
 from rtr_copilot.ingestion.api import router as files_router
 from rtr_copilot.rag.api import router as rag_router
+from rtr_copilot.research.api import router as research_router
 from rtr_copilot.sot.api import router as sot_router
 from rtr_copilot.worker.main import HEARTBEAT, QUEUE
 
@@ -47,6 +48,7 @@ app.include_router(sot_router)
 app.include_router(rag_router)
 app.include_router(documents_router)
 app.include_router(governance_router)
+app.include_router(research_router)
 if get_settings().app_env in {"development", "test"} and get_settings().dev_oidc_enabled:
     app.include_router(auth_dev_router)
 

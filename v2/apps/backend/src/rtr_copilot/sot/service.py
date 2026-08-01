@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from rtr_copilot.config import Settings, get_settings
 from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.repositories.audit import AuditRepository
+from rtr_copilot.repositories.governance import GovernanceError, GovernanceRepository
 from rtr_copilot.sot.models import (
     ActiveEvidence,
     ActiveRecord,
@@ -412,6 +413,12 @@ class SOTPublishService:
                         "revision": package.manifest.revision,
                     }),
                 })
+                await self._publish_linked_gaps(
+                    session,
+                    package_id,
+                    actor_id=actor_id,
+                    request_id=request_id,
+                )
                 if inject_failure == "before_audit":
                     raise PublishError("injected_failure")
                 event_id = await self._audit(
@@ -461,6 +468,50 @@ class SOTPublishService:
             revision=package.manifest.revision,
             state="active",
         )
+
+    async def _publish_linked_gaps(
+        self,
+        session: AsyncSession,
+        package_id: uuid.UUID,
+        *,
+        actor_id: uuid.UUID,
+        request_id: str,
+    ) -> None:
+        """TIP-010: flip answered gaps to published when their record activates.
+
+        The flip rides inside the activation transaction, so a failed publish
+        never publishes a gap. A gap that concurrently left the ``answered``
+        state is skipped fail-closed rather than aborting the activation.
+        """
+        governance = GovernanceRepository()
+        for gap_id in await governance.answered_gap_ids_for_package(
+            session,
+            package_id,
+        ):
+            try:
+                await governance.transition_gap(
+                    session,
+                    gap_id,
+                    to_state="published",
+                    actor_subject_id=actor_id,
+                    reason="Linked record activated through the publish gate",
+                )
+            except GovernanceError:
+                continue
+            await AuditRepository().append(
+                session,
+                actor_kind="user",
+                actor_user_id=actor_id,
+                action="governance.gap.publish",
+                result="success",
+                reason_code="linked_record_activated",
+                request_id=request_id,
+                resource_type="gap",
+                details={
+                    "gap_id": str(gap_id),
+                    "package_id": str(package_id),
+                },
+            )
 
     async def _record_failure(
         self,

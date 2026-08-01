@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     session_cookie_name: str = "rtr_session"
     expected_schema_revision: str = "0009_governance_research"
     sot_staging_root: Path = Path("/tmp/rtr-sot-staging")
+    research_staging_root: Path = Path("/tmp/rtr-research-staging")
     sot_signing_secret: SecretStr = SecretStr(
         "development-only-sot-signing-secret-32bytes",
     )

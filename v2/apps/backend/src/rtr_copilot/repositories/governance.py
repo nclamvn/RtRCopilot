@@ -544,6 +544,27 @@ class GovernanceRepository:
         })
         return Gap(**row)
 
+    async def answered_gap_ids_for_package(
+        self,
+        session: AsyncSession,
+        package_id: uuid.UUID,
+    ) -> list[uuid.UUID]:
+        """Answered gaps whose linked record has a version in this package.
+
+        Used by the publish-gate path to flip ``answered -> published`` when
+        the linked record activates through the gate.
+        """
+        rows = (await session.execute(text("""
+            SELECT DISTINCT g.gap_id FROM gaps g
+            JOIN record_versions linked
+              ON linked.version_id = g.resolving_version_id
+            JOIN record_versions activated
+              ON activated.record_id = linked.record_id
+              AND activated.package_id = :package_id
+            WHERE g.lifecycle = 'answered'
+        """), {"package_id": package_id})).scalars()
+        return list(rows)
+
     async def list_gap_transitions(
         self,
         session: AsyncSession,
