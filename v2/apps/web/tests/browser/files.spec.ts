@@ -97,7 +97,7 @@ for (const kind of ["image", "pdf", "docx", "xlsx", "pptx", "video", "audio"]) {
     await mockWorkspace(page, kind);
     await page.goto("/");
     await page.getByRole("button", {name: `fixture.${kind}`}).click();
-    await expect(page.getByRole("complementary", {name: "Evidence Rail"}))
+    await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
       .toContainText(kind);
     if (kind === "image") await expect(page.getByAltText("Bản ảnh an toàn đã loại metadata")).toBeVisible();
     if (["pdf", "docx", "pptx"].includes(kind)) {
@@ -203,7 +203,7 @@ test("retryable upload exposes progress and opens the accepted version without r
   await expect(page.getByText("failed · 64%")).toBeVisible();
   await page.getByRole("button", {name: "Thử lại"}).click();
   await expect(page.getByText("accepted · 100%")).toBeVisible();
-  await expect(page.getByRole("complementary", {name: "Evidence Rail"})).toContainText("pdf");
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"})).toContainText("pdf");
 });
 
 test("revoked JSON rendition clears selected content and evidence metadata", async ({page}) => {
@@ -215,8 +215,8 @@ test("revoked JSON rendition clears selected content and evidence metadata", asy
   await page.goto("/");
   await page.getByRole("button", {name: "fixture.xlsx"}).click();
   await expect(page.getByRole("heading", {name: "Chọn một tệp để bắt đầu"})).toBeVisible();
-  await expect(page.getByRole("complementary", {name: "Evidence Rail"}))
-    .toContainText("Chưa chọn tệp");
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
+    .toContainText("Chưa có bằng chứng để hiển thị.");
 });
 
 test("focus revalidation clears an image after access is revoked", async ({page}) => {
@@ -252,9 +252,11 @@ test("catalog session revocation clears the entire workspace", async ({page}) =>
   ));
   await page.goto("/");
   await page.getByRole("button", {name: "fixture.pdf"}).click();
-  await expect(page.getByRole("complementary", {name: "Evidence Rail"})).toContainText("pdf");
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"})).toContainText("pdf");
   revoked = true;
   await page.getByRole("textbox", {name: "Tìm tệp"}).fill("revoked");
-  await expect(page.getByRole("link", {name: "Đăng nhập công ty"})).toBeVisible();
+  // Shell adoption (TIP-011): the page drops to its gate lede — the shell
+  // topbar keeps its own session state, so the page-level gate is the proof.
+  await expect(page.getByText(/Đăng nhập bằng email công ty/)).toBeVisible();
   await expect(page.getByRole("button", {name: "fixture.pdf"})).toHaveCount(0);
 });

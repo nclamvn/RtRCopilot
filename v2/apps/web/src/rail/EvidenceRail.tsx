@@ -116,7 +116,9 @@ function EntryFacts({entry}: {entry: EvidenceEntry}) {
   </dl>;
 }
 
-export function EvidenceRail({entries, activeKey, onActivateLocator, open, onClose, note}: {
+export function EvidenceRail({
+  entries, activeKey, onActivateLocator, open, onClose, note, footer,
+}: {
   entries: EvidenceEntry[];
   /** Key of the entry a citation currently points at (aria-current). */
   activeKey?: string | null;
@@ -126,6 +128,9 @@ export function EvidenceRail({entries, activeKey, onActivateLocator, open, onClo
   open?: boolean;
   onClose?: () => void;
   note?: React.ReactNode;
+  /** Surface-specific content after the entries (TIP-011 Task 3 adoption,
+   *  e.g. the Documents approval timeline). */
+  footer?: React.ReactNode;
 }) {
   const {t, locale} = useI18n();
   return <aside id="evidence-rail" tabIndex={-1} data-shell-region
@@ -136,7 +141,8 @@ export function EvidenceRail({entries, activeKey, onActivateLocator, open, onClo
         aria-label={t("rail.close")} onClick={onClose}>×</button>}
     </div>
     {note}
-    {entries.length === 0 && <p className="surface-empty">{t("rail.empty")}</p>}
+    {entries.length === 0 && !note && !footer
+      && <p className="surface-empty">{t("rail.empty")}</p>}
     {entries.length > 0 && <ol className="rail-entries">
       {entries.map(entry => {
         const href = evidenceHref(entry);
@@ -164,5 +170,6 @@ export function EvidenceRail({entries, activeKey, onActivateLocator, open, onClo
         </li>;
       })}
     </ol>}
+    {footer}
   </aside>;
 }

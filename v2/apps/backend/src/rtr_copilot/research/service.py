@@ -140,6 +140,20 @@ class ResearchService:
             return True
         return policy.decide(subject, "curate", attributes, context).allow
 
+    def _search_scope_decision(
+        self,
+        subject: Subject,
+        attributes: ResourceAttributes,
+        request_id: str,
+    ) -> bool:
+        """The one search-scope policy predicate (view + search on research-zone
+        attributes) shared by per-source search filtering and the content-free
+        `/research/scope` capability so the two can never drift (TIP-011)."""
+        context = PolicyContext(request_id=request_id)
+        if not policy.decide(subject, "view", attributes, context).allow:
+            return False
+        return policy.decide(subject, "search", attributes, context).allow
+
     def source_searchable(
         self,
         subject: Subject,
@@ -149,12 +163,27 @@ class ResearchService:
         """Research queries are a separately authorized scope (AC-08)."""
         if not self.source_visible(subject, source, request_id):
             return False
-        return policy.decide(
+        return self._search_scope_decision(
             subject,
-            "search",
             self._source_attributes(source),
-            PolicyContext(request_id=request_id),
-        ).allow
+            request_id,
+        )
+
+    def search_scope_allowed(self, subject: Subject, request_id: str) -> bool:
+        """Content-free research-scope capability (TIP-011 Task 5).
+
+        Evaluates the SAME policy predicate the research search applies per
+        source, against the generic research-zone attributes; no source row is
+        ever read, so the boolean cannot leak the existence of anything. The
+        per-source owner/curator visibility filter still applies inside the
+        search itself — this only answers "may this caller use the research
+        scope at all".
+        """
+        return self._search_scope_decision(
+            subject,
+            ResourceAttributes(classification="internal", source_zone="research"),
+            request_id,
+        )
 
     def _curator_gate(self, subject: Subject, request_id: str) -> None:
         attributes = ResourceAttributes(

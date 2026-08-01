@@ -161,6 +161,30 @@ async def record_detail(
     ))
 
 
+class ResearchScopeResponse(BaseModel):
+    allowed: bool
+
+
+@router.get("/research/scope", response_model=ResearchScopeResponse)
+async def research_scope(
+    request: Request,
+    subject: Annotated[Subject | None, Depends(governance_subject)],
+) -> Any:
+    """Content-free research-scope capability for the Ask UI (TIP-011).
+
+    Returns only a boolean computed from the same policy predicate the
+    research search uses; nothing is disclosed and no row is read, so there
+    is nothing to audit and no existence to leak — this replaces the Ask
+    page's per-load audited search probe.
+    """
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    return ResearchScopeResponse(allowed=ResearchService().search_scope_allowed(
+        subject,
+        str(request.state.request_id),
+    ))
+
+
 @router.post("/research/search", response_model=ResearchSearchResponse)
 async def search(
     request: Request,

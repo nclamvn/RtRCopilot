@@ -4,7 +4,7 @@ import "@testing-library/jest-dom/vitest";
 import {render, screen, waitFor} from "@testing-library/react";
 import React from "react";
 import {afterEach, expect, test, vi} from "vitest";
-import Home from "./page";
+import FilesPage from "./page";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -22,9 +22,13 @@ test("anonymous identity gate never requests catalog or viewer data", async () =
       status: 401, headers: {"content-type": "application/json"},
     });
   }));
-  render(<Home/>);
-  await screen.findByRole("link", {name: "Đăng nhập công ty"});
-  expect(screen.getByRole("heading", {name: "File Workspace"})).toBeInTheDocument();
+  render(<FilesPage/>);
+  // Shell adoption (TIP-011): the sign-in affordance lives in the AppShell
+  // topbar; the page renders its gate lede and exactly one H1 (PageHeader).
+  await screen.findByText(/Đăng nhập bằng email công ty/);
+  const headings = screen.getAllByRole("heading", {level: 1});
+  expect(headings.length).toBe(1);
+  expect(headings[0]).toHaveTextContent("Tệp");
   await waitFor(() => expect(calls).toEqual(["/api/status", "/api/auth/me"]));
   expect(calls.some(url => url.startsWith("/api/files"))).toBe(false);
 });

@@ -81,6 +81,28 @@ class FreshnessTile(StrictModel):
     unassigned: int
 
 
+class ConflictTile(StrictModel):
+    """Live conflict-queue aggregates under the caller's scope (TIP-011)."""
+
+    zone_label: Literal["sot"] = "sot"
+    total: int
+    disputed: int
+    superseded_ambiguous: int
+    assigned: int
+    unassigned: int
+
+
+class OwnerReviewTile(StrictModel):
+    """Live owner-review aggregates under the caller's scope (TIP-011)."""
+
+    zone_label: Literal["sot"] = "sot"
+    total: int
+    due: int
+    overdue: int
+    assigned: int
+    unassigned: int
+
+
 class GapFlowTile(StrictModel):
     zone_label: Literal["sot"] = "sot"
     open_total: int
@@ -110,6 +132,8 @@ class GovernanceDashboard(StrictModel):
     computed_at: datetime
     coverage: CoverageTile
     freshness: FreshnessTile
+    conflict: ConflictTile
+    owner_review: OwnerReviewTile
     gap_flow: GapFlowTile
     research_intake: ResearchIntakeTile
     graduation: GraduationFunnelTile
@@ -187,6 +211,46 @@ class DashboardService:
             total=page.aggregates.total,
             expiring=page.aggregates.by_status.get("expiring", 0),
             expired=page.aggregates.by_status.get("expired", 0),
+            assigned=page.aggregates.assigned,
+            unassigned=page.aggregates.unassigned,
+        )
+
+    async def _conflict(self, subject: Subject, request_id: str) -> ConflictTile:
+        """Live conflict aggregates via Builder 2's queue computation; the
+        aggregates only count caller-visible entries, so hidden rows never
+        enter any number (same leak-safety as the freshness tile)."""
+        page = await self.governance.queue_page(
+            subject,
+            "conflict",
+            request_id=request_id,
+            limit=1,
+        )
+        return ConflictTile(
+            total=page.aggregates.total,
+            disputed=page.aggregates.by_status.get("disputed", 0),
+            superseded_ambiguous=page.aggregates.by_status.get(
+                "superseded_ambiguous",
+                0,
+            ),
+            assigned=page.aggregates.assigned,
+            unassigned=page.aggregates.unassigned,
+        )
+
+    async def _owner_review(
+        self,
+        subject: Subject,
+        request_id: str,
+    ) -> OwnerReviewTile:
+        page = await self.governance.queue_page(
+            subject,
+            "owner_review",
+            request_id=request_id,
+            limit=1,
+        )
+        return OwnerReviewTile(
+            total=page.aggregates.total,
+            due=page.aggregates.by_status.get("due", 0),
+            overdue=page.aggregates.by_status.get("overdue", 0),
             assigned=page.aggregates.assigned,
             unassigned=page.aggregates.unassigned,
         )
@@ -325,6 +389,8 @@ class DashboardService:
         """One live computation pass; the export is audited (no content)."""
         now = datetime.now(UTC)
         freshness = await self._freshness(subject, request_id)
+        conflict = await self._conflict(subject, request_id)
+        owner_review = await self._owner_review(subject, request_id)
         async with self.uow.factory() as session:
             coverage = await self._coverage(session, subject, request_id)
             gap_flow = await self._gap_flow(session, subject, request_id, now=now)
@@ -338,6 +404,8 @@ class DashboardService:
             computed_at=now,
             coverage=coverage,
             freshness=freshness,
+            conflict=conflict,
+            owner_review=owner_review,
             gap_flow=gap_flow,
             research_intake=research_intake,
             graduation=graduation,
@@ -354,6 +422,8 @@ class DashboardService:
         details: dict[str, Any] = {
             "coverage_total": report.coverage.total_records,
             "freshness_total": report.freshness.total,
+            "conflict_total": report.conflict.total,
+            "owner_review_total": report.owner_review.total,
             "gaps_open": report.gap_flow.open_total,
             "gaps_closed": report.gap_flow.closed_total,
             "research_sources": report.research_intake.sources_total,

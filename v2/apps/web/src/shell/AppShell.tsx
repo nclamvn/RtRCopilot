@@ -12,8 +12,8 @@
  * - Focus shortcut: F6 / Shift+F6 cycles every `[data-shell-region]`
  *   element (nav ⇄ work surface today). Builder B's Evidence Rail joins the
  *   cycle by adding `data-shell-region` + `tabIndex={-1}` to the rail.
- * - Active-area rules live in `activeArea()`; "/" counts as Files until
- *   Builder C moves the Files workspace to `/files`.
+ * - Active-area rules live in `activeArea()`; since Builder C's migration the
+ *   Files workspace renders at `/files` and "/" is a server redirect there.
  */
 
 import React, {useCallback, useEffect, useState} from "react";
@@ -45,7 +45,7 @@ export const NAV_AREAS: ReadonlyArray<{
  */
 export function activeArea(pathname: string, view: string | null): ShellArea | null {
   if (pathname === "/ask" || pathname.startsWith("/ask/")) return "ask";
-  if (pathname === "/" || pathname === "/files" || pathname.startsWith("/files/")) {
+  if (pathname === "/files" || pathname.startsWith("/files/")) {
     return "files";
   }
   if (pathname === "/documents" || pathname.startsWith("/documents/")) {

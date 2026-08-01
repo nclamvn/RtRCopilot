@@ -18,7 +18,7 @@ type GapMock = {
 
 function gapJson(state: GapMock) {
   return {
-    gap_id: gapId, question_fingerprint: sha,
+    zone_label: "sot", gap_id: gapId, question_fingerprint: sha,
     sanitized_question: "Chính sách bảo hành robot RtR là gì?",
     sanitized_summary: "Bảo hành robot", reason_category: "no_evidence",
     classification: "internal", requester_id: peerId,
@@ -37,6 +37,10 @@ const dashboard = {
     by_owner: {curator: 24}, by_classification: {internal: 20, restricted: 4}},
   freshness: {zone_label: "sot", total: 5, expiring: 3, expired: 2,
     assigned: 1, unassigned: 4},
+  conflict: {zone_label: "sot", total: 1, disputed: 1, superseded_ambiguous: 0,
+    assigned: 0, unassigned: 1},
+  owner_review: {zone_label: "sot", total: 2, due: 1, overdue: 1,
+    assigned: 0, unassigned: 2},
   gap_flow: {zone_label: "sot", open_total: 4, closed_total: 9, overdue: 1,
     by_state: {open: 3, triaged: 1}, aging: {under_24h: 2, days_1_3: 2}},
   research_intake: {zone_label: "research", sources_total: 2, sources_active: 2,
@@ -83,6 +87,7 @@ function proposalJson(state: {state: string; publish: string | null; decidedBy: 
 
 function queuePage(kind: string, entries: unknown[], byStatus: Record<string, number>) {
   return {
+    zone_label: "sot",
     queue_kind: kind, computed_at: "2026-08-01T00:00:00Z", entries,
     aggregates: {
       total: entries.length, by_status: byStatus,
@@ -111,6 +116,7 @@ async function mockKnowledgeOps(page: Page) {
     }
     if (path.startsWith("/api/governance/governance/queues/freshness")) {
       return route.fulfill({json: queuePage("freshness", [{
+        zone_label: "sot",
         queue_kind: "freshness", record_id: peerId, record_key: "company.warranty",
         record_version_id: versionId, owner_subject_id: curatorId,
         classification: "internal", status: "expired",
@@ -194,6 +200,8 @@ async function mockKnowledgeOps(page: Page) {
 test("curator completes triage → assign → answer keyboard-reachable flow", async ({page}) => {
   await mockKnowledgeOps(page);
   await page.goto("/knowledge-ops?view=gaps");
+  // AC-07: the gap row chip renders from the gap payload's own zone_label.
+  await expect(page.locator(".ops-list .zone-chip.zone-sot").first()).toBeVisible();
   await page.getByRole("button", {name: /Bảo hành robot/}).click();
   await expect(page.getByRole("heading", {name: "Chính sách bảo hành robot RtR là gì?"}))
     .toBeVisible();
@@ -203,7 +211,7 @@ test("curator completes triage → assign → answer keyboard-reachable flow", a
   await page.getByLabel("Giao cho (subject ID)").fill(peerId);
   await page.getByRole("button", {name: "Giao cho", exact: true}).click();
   await expect(page.locator(".transition-history")).toContainText("triaged → assigned");
-  await expect(page.getByRole("complementary", {name: "Bằng chứng và xuất xứ"}))
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
     .toContainText("internal");
   await page.getByLabel("Bản ghi SOT đã kích hoạt (version ID)").fill(versionId);
   await page.getByRole("button", {name: "Trả lời bằng bản ghi đã phát hành"}).click();
@@ -221,7 +229,7 @@ test("research package inspection shows tier, snapshot and verbatim evidence —
   await expect(surface).toContainText("ABB manufactures industrial robots");
   await expect(surface.getByText("RESEARCH").first()).toBeVisible();
   await expect(surface.getByText("SOT", {exact: true})).toHaveCount(0);
-  const rail = page.getByRole("complementary", {name: "Bằng chứng và xuất xứ"});
+  const rail = page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"});
   await expect(rail).toContainText("Tier");
   await expect(rail).toContainText(sha.slice(0, 16));
   await expect(rail.getByText("SOT", {exact: true})).toHaveCount(0);
@@ -247,7 +255,7 @@ test("propose → decide stops at the publish gate with separation-of-duties mes
   await page.getByRole("button", {name: "Đưa vào cổng phát hành"}).click();
   await expect(crossing).toHaveAttribute("data-phase", "approved_staged");
   await expect(crossing).toContainText("dừng tại cổng phát hành SOT");
-  await expect(page.getByRole("complementary", {name: "Bằng chứng và xuất xứ"}))
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
     .toContainText(publishPackageId);
   await page.screenshot({path: "test-results/tip010-gated-crossing.png", fullPage: true});
 });
@@ -257,7 +265,8 @@ test("dashboard tiles render server-labeled zones and live counts", async ({page
   await page.goto("/knowledge-ops");
   const surface = page.getByRole("region", {name: "Bàn xử lý"});
   await expect(surface.getByRole("heading", {name: "Bảng điều hành tri thức"})).toBeVisible();
-  await expect(surface.getByText("SOT", {exact: true})).toHaveCount(3);
+  // TIP-011: conflict + owner-review tiles join the three existing SOT tiles.
+  await expect(surface.getByText("SOT", {exact: true})).toHaveCount(5);
   await expect(surface.getByText("RESEARCH", {exact: true})).toHaveCount(2);
   await expect(surface).toContainText("24");
   await expect(page.getByRole("navigation", {name: "Sổ hàng đợi"}))
@@ -271,6 +280,8 @@ test("freshness queue surfaces expired SLA state and assignment action", async (
   const surface = page.getByRole("region", {name: "Bàn xử lý"});
   await expect(surface.getByText("Đã hết hạn", {exact: true})).toBeVisible();
   await expect(surface.getByText("company.warranty")).toBeVisible();
+  // AC-07: the queue entry chip renders from the entry payload's zone_label.
+  await expect(surface.locator(".queue-entries .zone-chip.zone-sot").first()).toBeVisible();
   const assign = page.getByRole("button", {name: "Giao cho", exact: true});
   await expect(assign).toBeDisabled();
   await page.getByLabel("Giao cho (subject ID)").fill(peerId);
@@ -310,7 +321,7 @@ test("mobile drawers: queue ledger and evidence sheet open, Escape closes", asyn
   await page.getByRole("button", {name: /Khoảng trống/}).click();
   await expect(page.getByRole("navigation", {name: "Sổ hàng đợi"})).not.toHaveClass(/open/);
   await page.getByRole("button", {name: "Bằng chứng", exact: true}).click();
-  await expect(page.getByRole("complementary", {name: "Bằng chứng và xuất xứ"}))
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
     .toHaveClass(/open/);
   await page.waitForTimeout(250);
   const overflow = await page.evaluate(
@@ -319,7 +330,7 @@ test("mobile drawers: queue ledger and evidence sheet open, Escape closes", asyn
   expect(overflow).toBeLessThanOrEqual(0);
   await page.screenshot({path: "test-results/tip010-mobile-rail.png", fullPage: true});
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("complementary", {name: "Bằng chứng và xuất xứ"}))
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
     .not.toHaveClass(/open/);
 });
 

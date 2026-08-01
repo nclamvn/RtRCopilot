@@ -100,7 +100,7 @@ test("authorized user binds SOT, renders and sees official draft truth", async (
   await page.getByLabel("customer_name").fill("Nhà máy A");
   await page.getByRole("button", {name: "Kiểm tra dữ liệu"}).click();
   await expect(page.getByText("Dữ liệu hợp lệ và đã khóa nguồn.")).toBeVisible();
-  await expect(page.getByRole("complementary", {name: "Fact and approval rail"}))
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
     .toContainText("verified_primary");
   await page.getByRole("button", {name: "Tạo bản xem"}).click();
   await expect(page.getByRole("region", {name: "Lưới bảng tính"})).toBeVisible();
@@ -120,7 +120,7 @@ test("mobile Documents workspace has no page overflow and opens both drawers", a
   await page.screenshot({path: "test-results/tip009-documents-mobile-ledger.png", fullPage: true});
   await page.getByRole("button", {name: /Báo cáo vận hành/}).click();
   await page.getByRole("button", {name: "SOT / duyệt"}).click();
-  await expect(page.getByRole("complementary", {name: "Fact and approval rail"})).toHaveClass(/open/);
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"})).toHaveClass(/open/);
   await expect(page.getByRole("complementary", {name: "Template registry"})).not.toHaveClass(/open/);
   await page.waitForTimeout(250);
   const overflow = await page.evaluate(
@@ -129,7 +129,7 @@ test("mobile Documents workspace has no page overflow and opens both drawers", a
   expect(overflow).toBeLessThanOrEqual(0);
   await page.screenshot({path: "test-results/tip009-documents-mobile-rail.png", fullPage: true});
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("complementary", {name: "Fact and approval rail"})).not.toHaveClass(/open/);
+  await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"})).not.toHaveClass(/open/);
   await page.waitForTimeout(250);
   await page.screenshot({path: "test-results/tip009-documents-mobile.png", fullPage: true});
 });

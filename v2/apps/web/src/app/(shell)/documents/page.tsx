@@ -1,9 +1,20 @@
 "use client";
 
+/**
+ * Documents workspace (TIP-009), living inside the unified shell since
+ * TIP-011: the AppShell owns the topbar/nav/`<main>`; this page renders ONE
+ * `PageHeader`, the template registry + assembly desk, and the SHARED
+ * Evidence Rail (`src/rail`) — locked SOT facts as typed entries, approval
+ * timeline as the rail footer.
+ */
+
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import Link from "next/link";
-import {Locator, parseManifest, ViewerManifest} from "../../files/contracts";
-import {FileViewer} from "../../files/viewers";
+import {lockedFieldEvidence} from "../../../documents/evidence";
+import {Locator, parseManifest, ViewerManifest} from "../../../files/contracts";
+import {FileViewer} from "../../../files/viewers";
+import {useI18n} from "../../../i18n/provider";
+import {EvidenceRail} from "../../../rail/EvidenceRail";
+import {PageHeader} from "../../../shell/AppShell";
 
 type Identity = {user_id: string; email: string; display_name: string; roles: string[]};
 type Template = {
@@ -48,6 +59,7 @@ const api = (path: string, init?: RequestInit) => fetch(`/api/document-os/${path
 });
 
 export default function DocumentsPage() {
+  const {t} = useI18n();
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -130,7 +142,14 @@ export default function DocumentsPage() {
     () => detail?.schema.bindings.filter(item => item.source === "user") ?? [],
     [detail],
   );
-  const lockedFields = binding?.fields.filter(item => item.source === "locked_fact") ?? [];
+  const lockedFields = useMemo(
+    () => binding?.fields.filter(item => item.source === "locked_fact") ?? [],
+    [binding],
+  );
+  const railEntries = useMemo(
+    () => lockedFields.map(lockedFieldEvidence),
+    [lockedFields],
+  );
 
   async function bind() {
     if (!selected) return;
@@ -201,126 +220,130 @@ export default function DocumentsPage() {
     if (fresh.ok) setGenerated(await fresh.json() as Generated);
   }
 
-  if (!authReady || !identity) return <main className="gate">
-    <header><span className="mark">RT</span><span>RT ROBOTICS / DOCUMENTS</span></header>
-    <section className="gate-content"><p className="eyebrow">Document Operating System</p>
-      <h1>Documents</h1><p className="lede">Đăng nhập email công ty để dùng mẫu và dữ liệu SOT được phân quyền.</p>
-      {authReady
-        ? <>
-            {/* OIDC must navigate through the same-origin callback. */}
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a className="primary" href="/api/auth/login">Đăng nhập công ty</a>
-          </>
-        : <span role="status">Đang kiểm tra phiên…</span>}
-    </section>
-  </main>;
+  if (!authReady || !identity) {
+    return <>
+      <PageHeader eyebrow={t("documents.eyebrow")} title={t("documents.title")}/>
+      <section className="placeholder-card">
+        {!authReady && <p role="status">{t("shell.sessionChecking")}</p>}
+        {authReady && <p className="lede">{t("documents.gate.lede")}</p>}
+      </section>
+    </>;
+  }
 
-  return <main className="document-workspace">
-    <header className="document-topbar">
-      <Link className="brand nav-brand" href="/"><span className="mark">RT</span><span>RT / DOCUMENTS</span></Link>
-      <div><strong>{identity.display_name || identity.email}</strong>
-        <span className="top-state">{renderJob ? `${renderJob.state} ${renderJob.progress}%` : "Sẵn sàng"}</span></div>
-      <button type="button" onClick={() => {setRailOpen(false); setLedgerOpen(true);}}>Mẫu</button>
-      <button type="button" onClick={() => {setLedgerOpen(false); setRailOpen(true);}}>SOT / duyệt</button>
-    </header>
-    <aside className={`template-ledger ${ledgerOpen ? "open" : ""}`} aria-label="Template registry">
-      <div className="panel-heading"><div><p className="eyebrow">Governed registry</p><h1>Mẫu đã duyệt</h1></div>
-        <button className="close-mobile" onClick={() => setLedgerOpen(false)}>×</button></div>
-      <ol>{templates.map(item => <li key={item.version_id}><button type="button"
-        aria-current={selected?.version_id === item.version_id ? "true" : undefined}
-        onClick={() => {setSelected(item); setLedgerOpen(false);}}>
-        <span>{item.format} · V{item.version_ordinal}</span><strong>{item.display_name}</strong>
-        <small>{item.category} · {item.document_class}</small>
-      </button></li>)}</ol>
-      {!templates.length && <p>Không có mẫu được cấp quyền.</p>}
-    </aside>
-    <section className="assembly-desk" aria-label="Structured assembly desk">
-      <div className="assembly-form">
-        <p className="eyebrow">Structured assembly</p>
-        <h2>{selected?.display_name ?? "Chọn mẫu"}</h2>
-        {userBindings.map(item => <label key={item.field_path}>{item.field_path}
-          {item.required && <span aria-label="bắt buộc"> *</span>}
-          <input value={parameters[item.field_path] ?? ""}
-            required={item.required}
-            onChange={event => setParameters(current => ({
-              ...current, [item.field_path]: event.target.value,
-            }))}/></label>)}
-        <div className="assembly-actions">
-          <button type="button" onClick={() => void bind()}>Kiểm tra dữ liệu</button>
-          <button className="primary" type="button" disabled={!detail}
-            onClick={() => void renderDocument()}>Tạo bản xem</button>
+  return <div className="document-workspace-embed">
+    <PageHeader eyebrow={t("documents.eyebrow")} title={t("documents.title")}
+      actions={<div className="page-actions">
+        <span className="top-state">
+          {renderJob ? `${renderJob.state} ${renderJob.progress}%` : t("documents.ready")}
+        </span>
+        <button className="ledger-toggle" type="button"
+          onClick={() => {setRailOpen(false); setLedgerOpen(true);}}>
+          {t("documents.templatesButton")}
+        </button>
+        <button className="rail-sheet-toggle" type="button"
+          onClick={() => {setLedgerOpen(false); setRailOpen(true);}}>
+          {t("documents.railButton")}
+        </button>
+      </div>}/>
+    <div className="doc-layout">
+      <aside className={`template-ledger ${ledgerOpen ? "open" : ""}`} aria-label="Template registry">
+        <div className="panel-heading"><div><p className="eyebrow">Governed registry</p>
+          <h2>{t("documents.registryTitle")}</h2></div>
+          <button className="close-mobile" onClick={() => setLedgerOpen(false)}>×</button></div>
+        <ol>{templates.map(item => <li key={item.version_id}><button type="button"
+          aria-current={selected?.version_id === item.version_id ? "true" : undefined}
+          onClick={() => {setSelected(item); setLedgerOpen(false);}}>
+          <span>{item.format} · V{item.version_ordinal}</span><strong>{item.display_name}</strong>
+          <small>{item.category} · {item.document_class}</small>
+        </button></li>)}</ol>
+        {!templates.length && <p>{t("documents.registryEmpty")}</p>}
+      </aside>
+      <section className="assembly-desk" aria-label="Structured assembly desk">
+        <div className="assembly-form">
+          <p className="eyebrow">Structured assembly</p>
+          <h2>{selected?.display_name ?? t("documents.pickTemplate")}</h2>
+          {userBindings.map(item => <label key={item.field_path}>{item.field_path}
+            {item.required && <span aria-label="bắt buộc"> *</span>}
+            <input value={parameters[item.field_path] ?? ""}
+              required={item.required}
+              onChange={event => setParameters(current => ({
+                ...current, [item.field_path]: event.target.value,
+              }))}/></label>)}
+          <div className="assembly-actions">
+            <button type="button" onClick={() => void bind()}>{t("documents.bind")}</button>
+            <button className="primary" type="button" disabled={!detail}
+              onClick={() => void renderDocument()}>{t("documents.render")}</button>
+          </div>
+          {binding && <p role="status" className={binding.valid ? "valid" : "invalid"}>
+            {binding.valid ? "Dữ liệu hợp lệ và đã khóa nguồn." :
+              `Thiếu: ${binding.missing.join(", ") || "không"} · Chặn: ${binding.blocked.map(x => x.code).join(", ") || "không"}`}
+          </p>}
+          {renderJob && !manifest && <div className="render-progress" aria-live="polite">
+            <progress max="100" value={renderJob.progress}/><span>{renderJob.state}</span>
+          </div>}
+          {error && <p role="alert" className="invalid">{error}</p>}
         </div>
-        {binding && <p role="status" className={binding.valid ? "valid" : "invalid"}>
-          {binding.valid ? "Dữ liệu hợp lệ và đã khóa nguồn." :
-            `Thiếu: ${binding.missing.join(", ") || "không"} · Chặn: ${binding.blocked.map(x => x.code).join(", ") || "không"}`}
-        </p>}
-        {renderJob && !manifest && <div className="render-progress" aria-live="polite">
-          <progress max="100" value={renderJob.progress}/><span>{renderJob.state}</span>
-        </div>}
-        {error && <p role="alert" className="invalid">{error}</p>}
-      </div>
-      <div className="document-preview">
-        {!manifest && <div className="viewer-empty"><p className="eyebrow">TIP-008 safe viewer</p>
-          <h2>Bản xem thật xuất hiện tại đây</h2></div>}
-        {manifest && <><FileViewer manifest={manifest} locator={locator}
-          onLocator={setLocator} onAccessLoss={loseAccess}/>
-          {selected?.document_class !== "internal" && generated?.lifecycle !== "issued"
-            && <div className="draft-watermark" aria-label="Trạng thái bản nháp">DRAFT · CHƯA PHÁT HÀNH</div>}
-        </>}
-      </div>
-    </section>
-    <aside className={`document-rail ${railOpen ? "open" : ""}`} aria-label="Fact and approval rail">
-      <div className="panel-heading"><h2>SOT & Approval</h2>
-        <button className="close-mobile" onClick={() => setRailOpen(false)}>×</button></div>
-      <h3>Nguồn đã khóa</h3>
-      {lockedFields.map(item => <article key={item.field_path}>
-        <strong>{item.field_path}</strong><p>{String(item.value ?? "")}</p>
-        <code>{item.record_key}<br/>{item.record_checksum?.slice(0, 16)}…</code>
-        <small>{item.provenance_level} · {item.freshness_state}</small>
-      </article>)}
-      {!lockedFields.length && <p>Kiểm tra dữ liệu để xem bằng chứng khóa.</p>}
-      {generated && <section className="approval-timeline">
-        <h3>Phiên bản & trạng thái</h3>
-        <p className={`state-chip ${generated.lifecycle}`}>{generated.lifecycle}</p>
-        <div className="checksum-row"><code title={generated.checksum}>{generated.checksum}</code>
-          <button type="button" onClick={() => void navigator.clipboard.writeText(generated.checksum)}>
-            Sao chép
-          </button></div>
-        {generated.approvals.map(item => <article key={item.approval_id}>
-          <strong>{item.decision}</strong><p>{item.reason}</p>
-          <small>{item.reviewer_display_name ?? "Reviewer"} · {new Date(item.decided_at).toLocaleString("vi-VN")}</small>
-        </article>)}
-        {generated.issuance && <article><strong>{generated.issuance.issue_number}</strong>
-          <p>{generated.issuance.state}</p></article>}
-        <label>Lý do<input value={reason} onChange={event => setReason(event.target.value)}/></label>
-        <div className="rail-actions">
-          {generated.lifecycle === "draft" && <button onClick={() => void generatedAction("submit")}>Gửi duyệt</button>}
-          {generated.lifecycle === "in_review" && <>
-            <button onClick={() => void generatedAction("approve", true)}>Duyệt</button>
-            <button onClick={() => void generatedAction("reject", true)}>Từ chối</button>
+        <div className="document-preview">
+          {!manifest && <div className="viewer-empty"><p className="eyebrow">TIP-008 safe viewer</p>
+            <h2>Bản xem thật xuất hiện tại đây</h2></div>}
+          {manifest && <><FileViewer manifest={manifest} locator={locator}
+            onLocator={setLocator} onAccessLoss={loseAccess}/>
+            {selected?.document_class !== "internal" && generated?.lifecycle !== "issued"
+              && <div className="draft-watermark" aria-label="Trạng thái bản nháp">DRAFT · CHƯA PHÁT HÀNH</div>}
           </>}
-          {generated.lifecycle === "approved" && <button onClick={() => void generatedAction("issue")}>Phát hành</button>}
-          {generated.lifecycle === "issued" && <button onClick={() => void generatedAction("revoke", true)}>Thu hồi</button>}
         </div>
-        <h3>Lịch sử & so sánh</h3>
-        <ol className="generated-history">{historyItems.map((item, index) =>
-          <li key={item.generated_file_id}>
-            <strong>V{historyItems.length - index} · {item.lifecycle}</strong>
-            <code title={item.checksum}>{item.checksum.slice(0, 16)}…</code>
-            <small>{new Date(item.created_at).toLocaleString("vi-VN")}</small>
-            <p>Tham số đổi: {item.comparison.changed_parameters.join(", ") || "—"}</p>
-            <p>SOT đổi: {item.comparison.changed_locked_facts.join(", ") || "—"}</p>
-            {(item.comparison.template_changed || item.comparison.checksum_changed
-              || item.comparison.lifecycle_changed) && <small>
-              {item.comparison.template_changed ? "template · " : ""}
-              {item.comparison.checksum_changed ? "checksum · " : ""}
-              {item.comparison.lifecycle_changed ? "trạng thái" : ""}
-            </small>}
-          </li>)}
-        </ol>
-      </section>}
-    </aside>
+      </section>
+      <EvidenceRail entries={railEntries} open={railOpen}
+        onClose={() => setRailOpen(false)}
+        note={<div className="doc-note">
+          <h3>{t("documents.lockedSources")}</h3>
+          {!lockedFields.length && <p>{t("documents.lockedEmpty")}</p>}
+        </div>}
+        footer={generated ? <section className="approval-timeline doc-note">
+          <h3>Phiên bản & trạng thái</h3>
+          <p className={`state-chip ${generated.lifecycle}`}>{generated.lifecycle}</p>
+          <div className="checksum-row"><code title={generated.checksum}>{generated.checksum}</code>
+            <button type="button" onClick={() => void navigator.clipboard.writeText(generated.checksum)}>
+              Sao chép
+            </button></div>
+          {generated.approvals.map(item => <article key={item.approval_id}>
+            <strong>{item.decision}</strong><p>{item.reason}</p>
+            <small>{item.reviewer_display_name ?? "Reviewer"} · {new Date(item.decided_at).toLocaleString("vi-VN")}</small>
+          </article>)}
+          {generated.issuance && <article><strong>{generated.issuance.issue_number}</strong>
+            <p>{generated.issuance.state}</p></article>}
+          <label>Lý do<input value={reason} onChange={event => setReason(event.target.value)}/></label>
+          <div className="rail-actions">
+            {generated.lifecycle === "draft" && <button onClick={() => void generatedAction("submit")}>
+              {t("documents.action.submit")}</button>}
+            {generated.lifecycle === "in_review" && <>
+              <button onClick={() => void generatedAction("approve", true)}>{t("documents.action.approve")}</button>
+              <button onClick={() => void generatedAction("reject", true)}>{t("documents.action.reject")}</button>
+            </>}
+            {generated.lifecycle === "approved" && <button onClick={() => void generatedAction("issue")}>
+              {t("documents.action.issue")}</button>}
+            {generated.lifecycle === "issued" && <button onClick={() => void generatedAction("revoke", true)}>
+              {t("documents.action.revoke")}</button>}
+          </div>
+          <h3>Lịch sử & so sánh</h3>
+          <ol className="generated-history">{historyItems.map((item, index) =>
+            <li key={item.generated_file_id}>
+              <strong>V{historyItems.length - index} · {item.lifecycle}</strong>
+              <code title={item.checksum}>{item.checksum.slice(0, 16)}…</code>
+              <small>{new Date(item.created_at).toLocaleString("vi-VN")}</small>
+              <p>Tham số đổi: {item.comparison.changed_parameters.join(", ") || "—"}</p>
+              <p>SOT đổi: {item.comparison.changed_locked_facts.join(", ") || "—"}</p>
+              {(item.comparison.template_changed || item.comparison.checksum_changed
+                || item.comparison.lifecycle_changed) && <small>
+                {item.comparison.template_changed ? "template · " : ""}
+                {item.comparison.checksum_changed ? "checksum · " : ""}
+                {item.comparison.lifecycle_changed ? "trạng thái" : ""}
+              </small>}
+            </li>)}
+          </ol>
+        </section> : null}/>
+    </div>
     {(ledgerOpen || railOpen) && <button className="scrim" aria-label="Đóng bảng"
       onClick={() => {setLedgerOpen(false); setRailOpen(false);}}/>}
-  </main>;
+  </div>;
 }

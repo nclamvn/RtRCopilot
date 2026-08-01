@@ -112,11 +112,12 @@ test("language switch persists across navigation and reload via cookie only", as
   expect(storage).toBe(0);
 });
 
-test("/files route redirects to the files workspace", async ({page}) => {
+test("the legacy root URL redirects to the files workspace under the shell", async ({page}) => {
+  // TIP-011 Task 3 inverted the redirect: /files IS the workspace, "/" redirects.
   await mockShell(page, false);
-  await page.goto("/files");
-  await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole("heading", {name: "File Workspace"})).toBeVisible();
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/files$/);
+  await expect(page.getByRole("heading", {level: 1, name: "Tệp"})).toBeVisible();
 });
 
 test("anonymous shell keeps placeholders public and offers company sign-in", async ({page}) => {

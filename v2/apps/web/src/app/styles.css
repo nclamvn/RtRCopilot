@@ -222,3 +222,48 @@ code.rail-redacted{border:1px solid var(--signal);padding:2px 4px;font:700 9px/1
 .ask-scrim{display:none}
 @media(max-width:1100px){.ask-layout{grid-template-columns:1fr}.evidence-rail{position:fixed;left:0;right:0;bottom:0;top:44%;max-height:none;transform:translateY(110%);transition:transform .18s ease;border-top:1px solid var(--locator);z-index:30}.evidence-rail.open{transform:none}.ask-rail-toggle{display:block;background:transparent;border:1px solid var(--line);color:var(--ink);padding:8px;cursor:pointer}.ask-scrim{display:block;position:fixed;inset:64px 0 0;background:rgba(0,0,0,.6);border:0;z-index:20}}
 @media(max-width:760px){.ask-history li{grid-template-columns:1fr;gap:4px;justify-items:start}}
+/* TIP-011 Builder C — files/documents/knowledge-ops shell adoption (append-only; tokens frozen) */
+.page-actions{display:flex;align-items:center;gap:9px}
+.page-actions .top-state{margin-right:4px}
+.files-catalog-toggle,.ledger-toggle,.rail-sheet-toggle{display:none;background:transparent;border:1px solid var(--line);color:var(--ink);padding:8px;cursor:pointer}
+.files-layout{display:grid;grid-template-columns:minmax(220px,250px) minmax(0,1fr) minmax(220px,270px);height:calc(100vh - 250px);min-height:460px;border:1px solid var(--line)}
+.files-layout>.catalog{border-right:1px solid var(--line)}
+/* The topbar global search moved into the shell; the catalog search is now
+   the Files search at every width (it was mobile-only pre-TIP-011). */
+.files-layout .catalog-search{display:block}
+.doc-layout{display:grid;grid-template-columns:280px minmax(0,1fr) 300px;height:calc(100vh - 250px);min-height:500px;border:1px solid var(--line)}
+.doc-layout>.template-ledger{border-right:1px solid var(--line)}
+.doc-layout>.assembly-desk{min-width:0;min-height:0}
+.ops-layout{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr) 300px;gap:0;align-items:start;border:1px solid var(--line)}
+.ops-layout>.ops-ledger{border-right:1px solid var(--line);position:sticky;top:0;max-height:calc(100vh - 140px)}
+.ops-layout>.ops-surface{padding:22px clamp(14px,2vw,28px)}
+@media(min-width:1101px){
+  .files-layout>.evidence-rail,.doc-layout>.evidence-rail{position:static;max-height:none;border:0;border-left:1px solid var(--line)}
+  .ops-layout>.evidence-rail{border:0;border-left:1px solid var(--line)}
+}
+.evidence-rail .doc-note h3{font:700 13px "Arial Narrow",Arial,sans-serif;text-transform:uppercase;letter-spacing:.1em;margin-top:20px}
+.evidence-rail .doc-note article{border-top:1px solid var(--line);padding:11px 0;display:grid;gap:5px}
+.evidence-rail .doc-note article p{margin:0;font-size:12px;overflow-wrap:anywhere}
+.evidence-rail .doc-note article code{font:9px/1.5 ui-monospace,monospace;color:var(--locator);overflow-wrap:anywhere}
+.evidence-rail .doc-note article small{color:var(--muted)}
+.evidence-rail .doc-note label{display:grid;gap:6px;margin:11px 0;color:var(--muted);font-size:11px}
+.evidence-rail .doc-note input{color:var(--ink);background:var(--bg);border:1px solid var(--line);padding:11px}
+.evidence-rail .rail-note{margin-bottom:8px}
+@media(max-width:1100px){
+  .files-layout{grid-template-columns:280px minmax(0,1fr)}
+  .doc-layout{grid-template-columns:260px minmax(0,1fr)}
+  .ops-layout{grid-template-columns:minmax(220px,280px) minmax(0,1fr)}
+  .rail-sheet-toggle{display:block}
+}
+@media(max-width:760px){
+  .doc-layout{grid-template-columns:1fr;height:auto;min-height:calc(100vh - 200px)}
+  .doc-layout>.assembly-desk{grid-row:auto;display:grid;grid-template-rows:auto minmax(320px,1fr)}
+  .ops-layout{grid-template-columns:1fr}
+  .ledger-toggle{display:block}
+  .page-actions{flex-wrap:wrap;justify-content:flex-end}
+  .page-head{align-items:start}
+}
+@media(max-width:720px){
+  .files-layout{grid-template-columns:1fr;height:calc(100vh - 210px)}
+  .files-catalog-toggle{display:block}
+}

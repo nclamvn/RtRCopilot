@@ -11,9 +11,11 @@ from typing import Literal
 from pydantic import Field
 
 from rtr_copilot.governance.models import (
+    SOT_ZONE_LABEL,
     Classification,
     QueueKind,
     ReviewTask,
+    SotZone,
     StrictModel,
 )
 
@@ -36,6 +38,10 @@ class QueueConflictSide(StrictModel):
 
 
 class QueueEntry(StrictModel):
+    """Queue membership over live SOT metadata; structurally zone-labeled
+    with the server constant (TIP-011 AC-07 — chips render from payloads)."""
+
+    zone_label: SotZone = SOT_ZONE_LABEL
     queue_kind: QueueKind
     record_id: uuid.UUID
     record_key: str
@@ -58,6 +64,7 @@ class QueueAggregates(StrictModel):
 
 
 class QueuePage(StrictModel):
+    zone_label: SotZone = SOT_ZONE_LABEL
     queue_kind: QueueKind
     computed_at: datetime
     entries: list[QueueEntry]

@@ -28,6 +28,8 @@ export type CorroborationState = "uncorroborated" | "corroborated" | "disputed";
 export type TypedError = {code: string; message: string; requestId: string};
 
 export type Gap = {
+  /** Literal server zone label (TIP-011 AC-07); null = absent (older shape). */
+  zone_label: "sot" | null;
   gap_id: string; question_fingerprint: string; sanitized_question: string;
   sanitized_summary: string; reason_category: string;
   classification: Classification; requester_id: string;
@@ -48,6 +50,7 @@ export type GapTransition = {
 export type GapDetail = {gap: Gap; transitions: GapTransition[]};
 
 export type ReviewTask = {
+  zone_label: "sot" | null;
   task_id: string; queue_kind: QueueKind; record_version_id: string;
   assignee_subject_id: string; assigned_by: string; state: ReviewTaskState;
   due_at: string | null; note: string; created_at: string; updated_at: string;
@@ -59,6 +62,7 @@ export type QueueConflictSide = {
   evidence_refs: string[]; effective_from: string; external: boolean;
 };
 export type QueueEntry = {
+  zone_label: "sot" | null;
   queue_kind: QueueKind; record_id: string; record_key: string;
   record_version_id: string; owner_subject_id: string;
   classification: Classification; status: QueueStatus; sort_at: string;
@@ -70,6 +74,7 @@ export type QueueAggregates = {
   assigned: number; unassigned: number;
 };
 export type QueuePage = {
+  zone_label: "sot" | null;
   queue_kind: QueueKind; computed_at: string; entries: QueueEntry[];
   aggregates: QueueAggregates; next_cursor: string | null;
 };
@@ -84,6 +89,14 @@ export type Dashboard = {
   };
   freshness: SotTile & {
     total: number; expiring: number; expired: number;
+    assigned: number; unassigned: number;
+  };
+  conflict: SotTile & {
+    total: number; disputed: number; superseded_ambiguous: number;
+    assigned: number; unassigned: number;
+  };
+  owner_review: SotTile & {
+    total: number; due: number; overdue: number;
     assigned: number; unassigned: number;
   };
   gap_flow: SotTile & {
@@ -195,6 +208,17 @@ function researchZone(value: Record<string, unknown>): "research" {
   return "research";
 }
 
+/**
+ * SOT-plane payload gate (TIP-011 AC-07): the literal server label renders
+ * the chip; an absent label (older shape) renders no chip; any OTHER value
+ * is forged and rejects the payload.
+ */
+function sotZoneOptional(value: Record<string, unknown>): "sot" | null {
+  if (value.zone_label === undefined) return null;
+  if (value.zone_label !== "sot") throw new Error("zone_label_forged");
+  return "sot";
+}
+
 export function parseTypedError(value: unknown, fallbackRequestId = ""): TypedError {
   const body = record(value) ? value : {};
   const error = record(body.error) ? body.error : {};
@@ -226,6 +250,7 @@ function parseGapItem(value: unknown): Gap {
     throw new Error("invalid_gap");
   }
   return {
+    zone_label: sotZoneOptional(value),
     gap_id: value.gap_id, question_fingerprint: value.question_fingerprint,
     sanitized_question: value.sanitized_question,
     sanitized_summary: value.sanitized_summary,
@@ -306,6 +331,7 @@ export function parseReviewTask(value: unknown): ReviewTask {
     throw new Error("invalid_review_task");
   }
   return {
+    zone_label: sotZoneOptional(value),
     task_id: value.task_id, queue_kind: value.queue_kind as QueueKind,
     record_version_id: value.record_version_id,
     assignee_subject_id: value.assignee_subject_id,
@@ -347,6 +373,7 @@ function parseQueueEntry(value: unknown): QueueEntry {
     };
   });
   return {
+    zone_label: sotZoneOptional(value),
     queue_kind: value.queue_kind as QueueKind, record_id: value.record_id,
     record_key: value.record_key, record_version_id: value.record_version_id,
     owner_subject_id: value.owner_subject_id,
@@ -379,6 +406,7 @@ export function parseQueuePage(value: unknown): QueuePage {
     throw new Error("invalid_queue_page");
   }
   return {
+    zone_label: sotZoneOptional(value),
     queue_kind: value.queue_kind as QueueKind, computed_at: value.computed_at,
     entries: value.entries.map(parseQueueEntry),
     aggregates: parseQueueAggregates(value.aggregates),
@@ -401,6 +429,8 @@ export function parseDashboard(value: unknown): Dashboard {
   if (!record(value) || !stamp(value.computed_at)) throw new Error("invalid_dashboard");
   const coverage = sotTile(value.coverage);
   const freshness = sotTile(value.freshness);
+  const conflict = sotTile(value.conflict);
+  const ownerReview = sotTile(value.owner_review);
   const gapFlow = sotTile(value.gap_flow);
   const intake = researchTile(value.research_intake);
   const graduation = researchTile(value.graduation);
@@ -409,6 +439,12 @@ export function parseDashboard(value: unknown): Dashboard {
       || !count(freshness.total) || !count(freshness.expiring)
       || !count(freshness.expired) || !count(freshness.assigned)
       || !count(freshness.unassigned)
+      || !count(conflict.total) || !count(conflict.disputed)
+      || !count(conflict.superseded_ambiguous) || !count(conflict.assigned)
+      || !count(conflict.unassigned)
+      || !count(ownerReview.total) || !count(ownerReview.due)
+      || !count(ownerReview.overdue) || !count(ownerReview.assigned)
+      || !count(ownerReview.unassigned)
       || !count(gapFlow.open_total) || !count(gapFlow.closed_total)
       || !count(gapFlow.overdue) || !countMap(gapFlow.by_state)
       || !countMap(gapFlow.aging)
@@ -430,6 +466,16 @@ export function parseDashboard(value: unknown): Dashboard {
       zone_label: "sot", total: freshness.total, expiring: freshness.expiring,
       expired: freshness.expired, assigned: freshness.assigned,
       unassigned: freshness.unassigned,
+    },
+    conflict: {
+      zone_label: "sot", total: conflict.total, disputed: conflict.disputed,
+      superseded_ambiguous: conflict.superseded_ambiguous,
+      assigned: conflict.assigned, unassigned: conflict.unassigned,
+    },
+    owner_review: {
+      zone_label: "sot", total: ownerReview.total, due: ownerReview.due,
+      overdue: ownerReview.overdue, assigned: ownerReview.assigned,
+      unassigned: ownerReview.unassigned,
     },
     gap_flow: {
       zone_label: "sot", open_total: gapFlow.open_total,

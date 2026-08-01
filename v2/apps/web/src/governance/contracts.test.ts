@@ -20,6 +20,10 @@ const dashboard = {
   coverage: {zone_label: "sot", total_records: 12, by_source_key: {kernel: 12},
     by_owner: {curator: 12}, by_classification: {internal: 10, restricted: 2}},
   freshness: {zone_label: "sot", total: 3, expiring: 2, expired: 1, assigned: 1, unassigned: 2},
+  conflict: {zone_label: "sot", total: 2, disputed: 1, superseded_ambiguous: 1,
+    assigned: 1, unassigned: 1},
+  owner_review: {zone_label: "sot", total: 4, due: 3, overdue: 1,
+    assigned: 2, unassigned: 2},
   gap_flow: {zone_label: "sot", open_total: 4, closed_total: 6, overdue: 1,
     by_state: {open: 3, triaged: 1}, aging: {under_24h: 2, days_1_3: 2}},
   research_intake: {zone_label: "research", sources_total: 2, sources_active: 1,
@@ -85,12 +89,34 @@ describe("zone label unforgeability at the client edge", () => {
     const parsed = parseDashboard(dashboard);
     expect(parsed.gap_flow.zone_label).toBe("sot");
     expect(parsed.research_intake.zone_label).toBe("research");
+    expect(parsed.conflict.zone_label).toBe("sot");
+    expect(parsed.conflict.disputed).toBe(1);
+    expect(parsed.owner_review.zone_label).toBe("sot");
+    expect(parsed.owner_review.overdue).toBe(1);
     expect(() => parseDashboard({
       ...dashboard, research_intake: {...dashboard.research_intake, zone_label: "sot"},
     })).toThrow("zone_label_forged");
     expect(() => parseDashboard({
       ...dashboard, coverage: {...dashboard.coverage, zone_label: "research"},
     })).toThrow("invalid_tile_zone");
+    expect(() => parseDashboard({
+      ...dashboard, conflict: {...dashboard.conflict, zone_label: "research"},
+    })).toThrow("invalid_tile_zone");
+  });
+
+  test("gap and queue payloads gate the literal SOT zone label (AC-07)", () => {
+    // Absent label (older shape) parses with no chip; the literal parses;
+    // any other value is forged and rejects the payload.
+    expect(parseGapPage({items: [gap], next_cursor: null})
+      .items[0].zone_label).toBeNull();
+    expect(parseGapPage({items: [{...gap, zone_label: "sot"}], next_cursor: null})
+      .items[0].zone_label).toBe("sot");
+    expect(() => parseGapPage({
+      items: [{...gap, zone_label: "research"}], next_cursor: null,
+    })).toThrow("zone_label_forged");
+    expect(() => parseGapPage({
+      items: [{...gap, zone_label: "SOT"}], next_cursor: null,
+    })).toThrow("zone_label_forged");
   });
 });
 
@@ -115,8 +141,10 @@ describe("governance payload contracts", () => {
 
   test("parses live queue pages with conflict sides and assignment tasks", () => {
     const page = parseQueuePage({
+      zone_label: "sot",
       queue_kind: "conflict", computed_at: "2026-08-01T00:00:00Z",
       entries: [{
+        zone_label: "sot",
         queue_kind: "conflict", record_id: id("1"), record_key: "company.name",
         record_version_id: id("2"), owner_subject_id: id("4"),
         classification: "internal", status: "disputed",
@@ -134,6 +162,8 @@ describe("governance payload contracts", () => {
       next_cursor: null,
     });
     expect(page.entries[0].sides[0].provenance_level).toBe("verified_primary");
+    expect(page.zone_label).toBe("sot");
+    expect(page.entries[0].zone_label).toBe("sot");
     expect(page.aggregates.assigned).toBe(1);
     expect(() => parseQueuePage({
       queue_kind: "conflict", computed_at: "2026-08-01T00:00:00Z",

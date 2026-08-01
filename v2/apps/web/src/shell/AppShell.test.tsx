@@ -65,7 +65,8 @@ test("shell renders topbar, six nav areas and marks the active area", async () =
 
 test("active-area rules cover every route, including knowledge-ops views", () => {
   expect(activeArea("/ask", null)).toBe("ask");
-  expect(activeArea("/", null)).toBe("files");
+  // "/" is a server redirect to /files since TIP-011 Task 3 (never shell-rendered).
+  expect(activeArea("/", null)).toBeNull();
   expect(activeArea("/files", null)).toBe("files");
   expect(activeArea("/documents", null)).toBe("documents");
   expect(activeArea("/knowledge-ops", null)).toBe("operations");

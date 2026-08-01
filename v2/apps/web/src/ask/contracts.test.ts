@@ -69,8 +69,14 @@ describe("ask answer contract", () => {
   });
 
   test("a forged zone label inside a citation rejects the whole answer", () => {
-    expect(() => parseAskAnswer({
+    // TIP-011: the literal server "sot" is the legitimate label…
+    const labeled = parseAskAnswer({
       ...grounded, citations: [{...citation, zone_label: "sot"}],
+    });
+    expect(labeled.entries[0].zone).toBe("sot");
+    // …anything else smuggled onto a citation still rejects the answer.
+    expect(() => parseAskAnswer({
+      ...grounded, citations: [{...citation, zone_label: "research"}],
     })).toThrow("zone_label_forged");
   });
 

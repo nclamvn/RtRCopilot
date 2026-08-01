@@ -19,6 +19,10 @@ const dashboard = {
     by_owner: {curator: 12}, by_classification: {internal: 12}},
   freshness: {zone_label: "sot", total: 3, expiring: 2, expired: 1,
     assigned: 1, unassigned: 2},
+  conflict: {zone_label: "sot", total: 2, disputed: 1, superseded_ambiguous: 1,
+    assigned: 0, unassigned: 2},
+  owner_review: {zone_label: "sot", total: 4, due: 3, overdue: 1,
+    assigned: 1, unassigned: 3},
   gap_flow: {zone_label: "sot", open_total: 4, closed_total: 6, overdue: 1,
     by_state: {open: 4}, aging: {under_24h: 4}},
   research_intake: {zone_label: "research", sources_total: 2, sources_active: 1,
@@ -26,11 +30,6 @@ const dashboard = {
   graduation: {zone_label: "research", proposed: 2, approved: 1,
     rejected: 0, submitted: 1},
 };
-const emptyQueue = (kind: string) => ({
-  queue_kind: kind, computed_at: "2026-08-01T00:00:00Z", entries: [],
-  aggregates: {total: 0, by_status: {}, assigned: 0, unassigned: 0},
-  next_cursor: null,
-});
 const researchPackage = {
   zone_label: "research", package_id: id("2"), source_key: "refinery.industry",
   fingerprint: sha, payload_sha256: sha, captured_at: "2026-07-01T00:00:00Z",
@@ -82,8 +81,11 @@ test("anonymous identity gate never requests governance data", async () => {
     return json({error: {code: "authentication_required"}}, 401);
   }));
   render(<KnowledgeOpsPage/>);
-  await screen.findByRole("link", {name: "Đăng nhập công ty"});
+  // Shell adoption (TIP-011): the sign-in affordance lives in the AppShell
+  // topbar; the page renders its gate lede and exactly one H1 (PageHeader).
+  await screen.findByText(/Đăng nhập email công ty/);
   expect(screen.getByRole("heading", {name: "Vận hành tri thức"})).toBeInTheDocument();
+  expect(screen.getAllByRole("heading", {level: 1}).length).toBe(1);
   await waitFor(() => expect(calls).toEqual(["/api/auth/me"]));
   expect(calls.some(url => url.includes("/api/governance/"))).toBe(false);
 });
@@ -91,16 +93,17 @@ test("anonymous identity gate never requests governance data", async () => {
 test("dashboard renders self-labeled tiles with server-provided zone chips", async () => {
   stubFetch({
     "governance/dashboard": () => json(dashboard),
-    "governance/queues/conflict?limit=1": () => json(emptyQueue("conflict")),
-    "governance/queues/owner-review?limit=1": () => json(emptyQueue("owner_review")),
   });
   render(<KnowledgeOpsPage/>);
   const surface = within(await screen.findByRole("region", {name: "Bàn xử lý"}));
   await surface.findByRole("heading", {name: "Bảng điều hành tri thức"});
   await surface.findByRole("heading", {name: "Phễu nâng cấp"});
-  expect(surface.getAllByText("SOT").length).toBe(3);
+  // TIP-011: conflict + owner-review tiles join the three existing SOT tiles.
+  expect(surface.getAllByText("SOT").length).toBe(5);
   expect(surface.getAllByText("RESEARCH").length).toBe(2);
   expect(surface.getByText("Tiếp nhận nghiên cứu")).toBeInTheDocument();
+  expect(surface.getByRole("heading", {name: "Xung đột"})).toBeInTheDocument();
+  expect(surface.getByRole("heading", {name: "Rà soát định kỳ"})).toBeInTheDocument();
   expect(screen.getByRole("navigation", {name: "Sổ hàng đợi"}))
     .toHaveTextContent("1 quá hạn SLA");
 });
@@ -110,8 +113,6 @@ test("policy denial renders a typed denied state, not an empty dashboard", async
     "governance/dashboard": () => json({
       error: {code: "curator_required", message: ""}, request_id: "req-77",
     }, 403),
-    "governance/queues/conflict?limit=1": () => json(emptyQueue("conflict")),
-    "governance/queues/owner-review?limit=1": () => json(emptyQueue("owner_review")),
   });
   render(<KnowledgeOpsPage/>);
   const alerts = await screen.findAllByRole("alert");
@@ -126,8 +127,6 @@ test("upstream failure renders a typed error with retry", async () => {
     "governance/dashboard": () => json({
       error: {code: "governance_service_unavailable", message: ""}, request_id: "req-9",
     }, 503),
-    "governance/queues/conflict?limit=1": () => json(emptyQueue("conflict")),
-    "governance/queues/owner-review?limit=1": () => json(emptyQueue("owner_review")),
   });
   render(<KnowledgeOpsPage/>);
   const alerts = await screen.findAllByRole("alert");
@@ -140,8 +139,6 @@ test("empty gap queue shows the scoped empty state", async () => {
   history.replaceState({}, "", "/knowledge-ops?view=gaps");
   stubFetch({
     "governance/dashboard": () => json(dashboard),
-    "governance/queues/conflict?limit=1": () => json(emptyQueue("conflict")),
-    "governance/queues/owner-review?limit=1": () => json(emptyQueue("owner_review")),
     "gaps?limit=50": () => json({items: [], next_cursor: null}),
   });
   render(<KnowledgeOpsPage/>);
@@ -155,8 +152,6 @@ test("zone-chip regression: research content renders the research chip and never
   );
   stubFetch({
     "governance/dashboard": () => json(dashboard),
-    "governance/queues/conflict?limit=1": () => json(emptyQueue("conflict")),
-    "governance/queues/owner-review?limit=1": () => json(emptyQueue("owner_review")),
     "research/packages?limit=50": () => json({items: [researchPackage], next_cursor: null}),
     [`research/packages/${id("2")}/records?limit=50`]: () =>
       json({items: [researchRecord], next_cursor: null}),
@@ -167,7 +162,8 @@ test("zone-chip regression: research content renders the research chip and never
   await surface.findByRole("heading", {name: "vendor.abb.profile"});
   expect(surface.getAllByText("RESEARCH").length).toBeGreaterThan(0);
   expect(surface.queryByText("SOT")).toBeNull();
-  const rail = within(screen.getByRole("complementary", {name: "Bằng chứng và xuất xứ"}));
+  // TIP-011: the shared Evidence Rail renders the payload-labeled entry.
+  const rail = within(screen.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}));
   expect(rail.getAllByText("RESEARCH").length).toBeGreaterThan(0);
   expect(rail.queryByText("SOT")).toBeNull();
   expect(surface.getByText("ABB manufactures industrial robots.")).toBeInTheDocument();
@@ -180,8 +176,6 @@ test("zone-chip regression: a forged SOT label on research content blocks render
   );
   stubFetch({
     "governance/dashboard": () => json(dashboard),
-    "governance/queues/conflict?limit=1": () => json(emptyQueue("conflict")),
-    "governance/queues/owner-review?limit=1": () => json(emptyQueue("owner_review")),
     "research/packages?limit=50": () => json({items: [researchPackage], next_cursor: null}),
     [`research/packages/${id("2")}/records?limit=50`]: () =>
       json({items: [researchRecord], next_cursor: null}),

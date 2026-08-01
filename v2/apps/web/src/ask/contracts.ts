@@ -39,6 +39,21 @@ export type Conversation = {
   requestId: string;
 };
 
+/** One row of the caller's own conversation list (TIP-011 backend). */
+export type ConversationSummary = {
+  conversationId: string;
+  startedAt: string;
+  lastActivityAt: string;
+  /** First user message's stored content digest — never message content. */
+  firstQuestionDigest: string | null;
+};
+
+export type ConversationListPage = {
+  items: ConversationSummary[];
+  nextCursor: string | null;
+  requestId: string;
+};
+
 /** Minimal ACL-scoped catalog row for the file-scope picker. */
 export type FileScopeItem = {
   documentId: string;
@@ -127,6 +142,46 @@ export function parseConversation(value: unknown): Conversation {
     messages,
     requestId: value.request_id as string,
   };
+}
+
+const HEX64 = /^[0-9a-f]{64}$/i;
+
+export function parseConversationList(value: unknown): ConversationListPage {
+  if (!record(value) || !Array.isArray(value.items) || value.items.length > 100
+      || !text(value.request_id, 128)) {
+    throw new Error("invalid_conversation_list");
+  }
+  const items = value.items.map((item): ConversationSummary => {
+    if (!record(item) || !uuid(item.conversation_id)
+        || !stamp(item.started_at) || !stamp(item.last_activity_at)
+        || !(item.first_question_digest === null
+          || item.first_question_digest === undefined
+          || HEX64.test(String(item.first_question_digest)))) {
+      throw new Error("invalid_conversation_summary");
+    }
+    return {
+      conversationId: item.conversation_id as string,
+      startedAt: item.started_at as string,
+      lastActivityAt: item.last_activity_at as string,
+      firstQuestionDigest: typeof item.first_question_digest === "string"
+        && HEX64.test(item.first_question_digest)
+        ? item.first_question_digest : null,
+    };
+  });
+  return {
+    items,
+    nextCursor: text(value.next_cursor, 512) && value.next_cursor
+      ? value.next_cursor as string : null,
+    requestId: value.request_id as string,
+  };
+}
+
+/** Content-free research-scope capability (TIP-011 `/research/scope`). */
+export function parseResearchScope(value: unknown): boolean {
+  if (!record(value) || typeof value.allowed !== "boolean") {
+    throw new Error("invalid_research_scope");
+  }
+  return value.allowed;
 }
 
 export function parseFileScopePage(value: unknown): {

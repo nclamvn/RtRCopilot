@@ -15,6 +15,8 @@ const answerMessageId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const sha = "a".repeat(64);
 
 const citation = {
+  // TIP-011: the backend serializes the literal server SOT zone label.
+  zone_label: "sot",
   marker: "C1", chunk_id: chunkId, record_key: "company.warranty",
   record_version_id: versionId, evidence_key: "company.warranty.e1",
   record_checksum: sha, evidence_checksum: "b".repeat(64),
@@ -105,13 +107,11 @@ async function mockAsk(page: Page, options: AskMockOptions = {}) {
   }}));
   await page.route("**/api/governance/**", route => {
     const path = new URL(route.request().url()).pathname;
+    if (path === "/api/governance/research/scope") {
+      // TIP-011: content-free capability replaces the audited search probe.
+      return route.fulfill({json: {allowed: options.research !== "denied"}});
+    }
     if (path === "/api/governance/research/search") {
-      if (options.research === "denied") {
-        return route.fulfill({status: 403, json: {
-          error: {code: "curator_required", message: ""},
-          request_id: "req-research-403",
-        }});
-      }
       if (options.research === "results") {
         return route.fulfill({json: {
           zone_label: "research", grounding: "research_supported",
@@ -132,6 +132,18 @@ async function mockAsk(page: Page, options: AskMockOptions = {}) {
     if (path === "/api/ask/ask") {
       askBodies.push(route.request().postDataJSON() as Record<string, unknown>);
       return route.fulfill({json: options.ask ?? groundedAnswer});
+    }
+    if (path === "/api/ask/conversations") {
+      // TIP-011 owner-only list: metadata + stored first-question digest.
+      return route.fulfill({json: {
+        items: [{
+          conversation_id: conversationId,
+          started_at: "2026-08-01T00:00:00Z",
+          last_activity_at: "2026-08-01T00:00:10Z",
+          first_question_digest: sha,
+        }],
+        next_cursor: null, request_id: "req-list-1",
+      }});
     }
     if (path === `/api/ask/conversations/${conversationId}`) {
       return route.fulfill({json: {
@@ -205,7 +217,8 @@ test("grounded answer: citation focuses the rail entry and the locator opens the
   const rail = page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"});
   await expect(rail.getByText("[C1]")).toBeVisible();
   await expect(rail.getByText("Sự thật SOT (grounded)")).toBeVisible();
-  await expect(rail.getByText("Không có nhãn vùng từ máy chủ")).toBeVisible();
+  // TIP-011: the citation's literal server zone label renders the SOT chip.
+  await expect(rail.locator(".zone-chip.zone-sot").first()).toBeVisible();
   // Locator activation → TIP-008 deep link, same tab, exact position.
   const locatorLink = rail.getByRole("link", {name: "Mở đúng vị trí — Trang 4"});
   await expect(locatorLink)
@@ -252,12 +265,14 @@ test("research scope renders results exactly as the backend labels them, distinc
   await expect(rail.locator(".zone-chip.zone-research").first()).toBeVisible();
 });
 
-test("a typed 403 disables the research scope with the denied state", async ({page}) => {
+test("a denied scope capability disables the research option", async ({page}) => {
+  // TIP-011: the content-free /research/scope capability ({allowed:false})
+  // replaces the audited search probe's typed 403.
   await mockAsk(page, {research: "denied"});
   await page.goto("/ask");
   await expect(page.getByLabel("Kèm vùng nghiên cứu")).toBeDisabled();
   await expect(page.getByText(/Phạm vi nghiên cứu bị từ chối theo chính sách/))
-    .toContainText("curator_required · req-research-403");
+    .toBeVisible();
 });
 
 test("denied file catalog renders the typed state inside the picker", async ({page}) => {
@@ -378,6 +393,20 @@ test("the primary flow is fully translated under the en locale", async ({page}) 
   await expect(page.getByText("Câu trả lời")).toHaveCount(0);
   await expect(page.getByText("Gửi câu hỏi")).toHaveCount(0);
   await page.screenshot({path: "test-results/tip011-ask-desktop-en.png", fullPage: true});
+});
+
+test("the history panel lists the caller's server conversations and reopens one", async ({page}) => {
+  // TIP-011: the panel is fed by GET /conversations (owner-only metadata:
+  // id, timestamps, stored first-question digest — never content).
+  await mockAsk(page);
+  await page.goto("/ask");
+  const historyPanel = page.getByRole("region", {name: "Hội thoại của bạn"});
+  await expect(historyPanel.getByText(`${sha.slice(0, 12)}…`)).toBeVisible();
+  await historyPanel.getByRole("button", {name: "Mở lại"}).click();
+  await expect(page).toHaveURL(new RegExp(`conversation=${conversationId}`));
+  await expect(page.getByRole("heading", {name: "Hội thoại", exact: true})).toBeVisible();
+  await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
+  expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
 });
 
 test("a conversation reopens from the URL with citations wired to the rail", async ({page}) => {

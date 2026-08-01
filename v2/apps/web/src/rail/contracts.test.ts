@@ -55,6 +55,7 @@ describe("ask citation adapter", () => {
     const entry = evidenceFromAskCitation(citation, "grounded");
     expect(entry.key).toBe("C1");
     expect(entry.marker).toBe("C1");
+    // Absent server label (pre-TIP-011 payload shape) → no chip, no guess.
     expect(entry.zone).toBeNull();
     expect(entry.grounding).toBe("grounded");
     expect(entry.sourceKey).toBe("rtr.specs");
@@ -68,10 +69,17 @@ describe("ask citation adapter", () => {
     expect(entry.locator).toEqual({page: 4});
   });
 
-  test("a citation smuggling any zone label refuses to parse (client-edge gate)", () => {
-    expect(() => evidenceFromAskCitation({...citation, zone_label: "sot"}, "grounded"))
-      .toThrow("zone_label_forged");
+  test("the literal server sot label renders the chip; any other label is forged", () => {
+    const labeled = evidenceFromAskCitation(
+      {...citation, zone_label: "sot"},
+      "grounded",
+    );
+    expect(labeled.zone).toBe("sot");
     expect(() => evidenceFromAskCitation({...citation, zone_label: "research"}, "grounded"))
+      .toThrow("zone_label_forged");
+    expect(() => evidenceFromAskCitation({...citation, zone_label: "private"}, "grounded"))
+      .toThrow("zone_label_forged");
+    expect(() => evidenceFromAskCitation({...citation, zone_label: "SOT"}, "grounded"))
       .toThrow("zone_label_forged");
   });
 

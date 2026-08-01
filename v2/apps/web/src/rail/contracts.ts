@@ -10,9 +10,10 @@
  * `governance/contracts`):
  * - research-shaped evidence must carry the exact `zone_label: "research"` —
  *   any other label (including a forged `"sot"`) refuses to parse;
- * - TIP-007 Ask citations carry NO zone label by contract (the backend model
- *   forbids extra fields), so a citation payload that smuggles any
- *   `zone_label` refuses to parse and the entry renders with no chip;
+ * - TIP-007 Ask citations carry the literal server `zone_label: "sot"`
+ *   (TIP-011 backend addition — retrieval is SOT-only by construction); any
+ *   OTHER label smuggled onto a citation refuses to parse, and an absent
+ *   label (older payload shape) renders without a chip;
  * - `zone: null` means "no server label" and the chip never renders — the
  *   client never guesses a zone.
  */
@@ -147,17 +148,23 @@ function researchZone(value: Record<string, unknown>): "research" {
 }
 
 /**
- * Adapt one TIP-007 Ask citation. The frozen backend model carries no zone
- * label (extra fields are forbidden server-side), so a payload that smuggles
- * one is treated as forged and refused; the entry renders without a chip.
- * `grounding` comes from the enclosing response's server state.
+ * Adapt one TIP-007 Ask citation. Since TIP-011 the backend serializes the
+ * literal server constant `zone_label: "sot"` on every citation (retrieval
+ * is SOT-only by construction); any other label is forged and refuses to
+ * parse. An absent label (older payload shape) renders without a chip —
+ * the client never infers a zone. `grounding` comes from the enclosing
+ * response's server state.
  */
 export function evidenceFromAskCitation(
   value: unknown,
   grounding: "grounded",
 ): EvidenceEntry {
   if (!record(value)) throw new Error("invalid_citation");
-  if ("zone_label" in value) throw new Error("zone_label_forged");
+  let zone: EvidenceZone | null = null;
+  if ("zone_label" in value) {
+    if (value.zone_label !== "sot") throw new Error("zone_label_forged");
+    zone = "sot";
+  }
   if (!text(value.marker, 8) || !MARKER.test(value.marker as string)
       || !uuid(value.chunk_id) || !text(value.record_key, 500)
       || !uuid(value.record_version_id)
@@ -174,7 +181,7 @@ export function evidenceFromAskCitation(
   return {
     key: value.marker as string,
     marker: value.marker as string,
-    zone: null,
+    zone,
     grounding,
     tier: null,
     sourceKey: value.source_key as string,

@@ -18,6 +18,8 @@ from rtr_copilot.governance.service import (
     GapOperation,
     GapTransitionInput,
     GovernanceService,
+    RecordPickerPage,
+    SubjectPickerPage,
 )
 from rtr_copilot.repositories.governance import GovernanceError
 
@@ -52,6 +54,8 @@ STATUS_BY_CODE: dict[str, int] = {
     "queue_entry_not_found": 404,
     "review_task_not_found": 404,
     "invalid_cursor": 400,
+    # TIP-011 policy-filtered pickers.
+    "picker_query_invalid": 400,
     "gap_owner_required": 422,
     "gap_resolution_record_required": 422,
     "gap_decline_reason_required": 422,
@@ -223,6 +227,46 @@ async def transition_gap(
             decline_reason=payload.decline_reason,
         ),
         request_id=str(request.state.request_id),
+    ))
+
+
+@router.get("/governance/pickers/subjects", response_model=SubjectPickerPage)
+async def picker_subjects(
+    request: Request,
+    subject: Annotated[Subject | None, Depends(governance_subject)],
+    query: Annotated[str, Query(min_length=1, max_length=100)],
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+    cursor: Annotated[str | None, Query(max_length=512)] = None,
+) -> Any:
+    """Bounded prefix search over the subject directory (TIP-011 AC-06)."""
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    return await call(request, GovernanceService().search_subjects(
+        subject,
+        query,
+        request_id=str(request.state.request_id),
+        cursor=cursor,
+        limit=limit,
+    ))
+
+
+@router.get("/governance/pickers/records", response_model=RecordPickerPage)
+async def picker_records(
+    request: Request,
+    subject: Annotated[Subject | None, Depends(governance_subject)],
+    query: Annotated[str, Query(min_length=1, max_length=100)],
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+    cursor: Annotated[str | None, Query(max_length=512)] = None,
+) -> Any:
+    """Policy-filtered active-record search for gap answering (AC-06)."""
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    return await call(request, GovernanceService().search_records(
+        subject,
+        query,
+        request_id=str(request.state.request_id),
+        cursor=cursor,
+        limit=limit,
     ))
 
 

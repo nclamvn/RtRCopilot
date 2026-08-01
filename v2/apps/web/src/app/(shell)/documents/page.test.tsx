@@ -17,8 +17,12 @@ test("anonymous identity gate never requests template or document metadata", asy
     });
   }));
   render(<DocumentsPage/>);
-  await screen.findByRole("link", {name: "Đăng nhập công ty"});
-  expect(screen.getByRole("heading", {name: "Documents"})).toBeInTheDocument();
+  // Shell adoption (TIP-011): the sign-in affordance lives in the AppShell
+  // topbar; the page renders its gate lede and exactly one H1 (PageHeader).
+  await screen.findByText(/Đăng nhập email công ty/);
+  const headings = screen.getAllByRole("heading", {level: 1});
+  expect(headings.length).toBe(1);
+  expect(headings[0]).toHaveTextContent("Tài liệu");
   await waitFor(() => expect(calls).toEqual(["/api/auth/me"]));
   expect(calls.some(url => url.includes("/api/document-os/"))).toBe(false);
 });

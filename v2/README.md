@@ -97,7 +97,9 @@ python -m rtr_copilot.commands.sot_kernel_guard \
 
 ## Files workspace
 
-Người dùng đã đăng nhập mở Files tại web root. Trình duyệt chỉ gọi same-origin
+Người dùng đã đăng nhập mở Files tại `/files` bên trong shell hợp nhất
+(TIP-011); web root `/` redirect sang `/files` và giữ nguyên query để deep link
+`?version=…&page=…` cũ vẫn mở đúng vị trí. Trình duyệt chỉ gọi same-origin
 `/api/files`; route này proxy có allowlist sang `/api/v1/files` và không chuyển
 object key, token hay internal hostname.
 
@@ -161,3 +163,24 @@ make db-verify
 Nếu worker bị ngắt giữa render và Files registration, retry job sau khi dependency
 ready. Không sửa trực tiếp generated row, approval hoặc issuance; các bảng lịch sử
 có trigger bất biến và mutation trái phép phải được xử lý như sự cố audit.
+
+## Unified shell và additive API (TIP-011)
+
+Ask, Files, Documents, Knowledge Ops và Admin render trong MỘT shell (topbar,
+nav sáu khu vực, `<main>` duy nhất) và dùng chung MỘT Evidence Rail
+(`src/rail`); nhãn vùng tin cậy chỉ đến từ `zone_label` literal do máy chủ trả
+về. Backend bổ sung (không migration, không đổi retrieval/grounding):
+
+- `zone_label: "sot"` literal trên gap, queue entry/page, review task và trên
+  citation của answer API (TIP-007 retrieval vốn SOT-only);
+- picker policy-filtered, cursor HMAC, audited:
+  `GET /api/v1/governance/pickers/subjects?query=…` (curator/admin; prefix trên
+  display name/email) và `GET /api/v1/governance/pickers/records?query=…`
+  (record key/title → active version id; chỉ record caller được thấy);
+- dashboard thêm hai tile `conflict` và `owner_review`, tính sống theo phạm vi
+  chính sách của caller như các tile hiện có;
+- `GET /api/v1/conversations`: danh sách hội thoại CỦA CHÍNH caller, mới nhất
+  trước, cursor HMAC, metadata DLP-safe (id, thời điểm, digest câu hỏi đầu đã
+  lưu sẵn — không lưu gì mới);
+- `GET /api/v1/research/scope` trả `{allowed: bool}` từ đúng policy predicate
+  của research search — content-free, thay probe search mỗi lần tải trang Ask.

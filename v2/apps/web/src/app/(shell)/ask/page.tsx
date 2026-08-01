@@ -6,17 +6,21 @@
  * renders every result through the shared Evidence Rail.
  *
  * - Scope control: company SOT (default) plus an explicit research scope
- *   probed against the research search API — a typed 403 renders the option
- *   disabled with the denied state; research results render exactly as the
- *   backend labels them (zone_label/tier/grounding).
+ *   gated by the content-free `/research/scope` capability (TIP-011 backend,
+ *   same policy predicate as the research search — no per-load audited
+ *   search probe); a false capability renders the option disabled with the
+ *   denied state; research results render exactly as the backend labels
+ *   them (zone_label/tier/grounding).
  * - Optional file scope: picker over the ACL-filtered Files catalog proxy;
  *   the frozen ask API scopes retrieval by `filters.source_key`, so the
  *   picked file's logical name is sent as that key — evidence outside the
  *   caller's policy scope never appears either way.
  * - Honest-null is first-class: the recorded gap id (and its state when the
  *   caller may read the gap) with a Knowledge Ops link for curators.
- * - Conversations reopen via the TIP-007 conversation API; the id is
- *   URL-restorable and nothing touches localStorage/sessionStorage.
+ * - Conversations reopen via the TIP-007 conversation API; the history
+ *   panel lists the caller's own conversations from the TIP-011 list
+ *   endpoint (id + timestamps + stored first-question digest only); the id
+ *   is URL-restorable and nothing touches localStorage/sessionStorage.
  */
 
 import React, {useCallback, useEffect, useMemo, useState} from "react";
@@ -25,11 +29,14 @@ import {
   AskAnswer,
   askQuery,
   Conversation,
+  ConversationListPage,
   FileScopeItem,
   parseAskAnswer,
   parseAskState,
   parseConversation,
+  parseConversationList,
   parseFileScopePage,
+  parseResearchScope,
 } from "../../../ask/contracts";
 import {GapDetail, parseGapDetail} from "../../../governance/contracts";
 import {formatDateTime} from "../../../i18n/format";
@@ -51,7 +58,6 @@ import {
 import {PageHeader} from "../../../shell/AppShell";
 
 type Identity = {user_id: string; email: string; display_name: string; roles: string[]};
-type SessionConversation = {conversationId: string; question: string; at: string};
 
 const MARKER_SPLIT = /(\[C\d{1,3}\])/g;
 const MARKER_EXACT = /^\[(C\d{1,3})\]$/;
@@ -80,7 +86,7 @@ export default function AskPage() {
   const [authReady, setAuthReady] = useState(false);
   const [question, setQuestion] = useState("");
   const [includeResearch, setIncludeResearch] = useState(false);
-  const [researchAccess, setResearchAccess] = useState<Load<true>>(IDLE);
+  const [researchAccess, setResearchAccess] = useState<Load<boolean>>(IDLE);
   const [fileScope, setFileScope] = useState<FileScopeItem | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [fileQuery, setFileQuery] = useState("");
@@ -91,7 +97,7 @@ export default function AskPage() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [urlConversation, setUrlConversation] = useState<string | null>(null);
   const [conversation, setConversation] = useState<Load<Conversation>>(IDLE);
-  const [history, setHistory] = useState<SessionConversation[]>([]);
+  const [history, setHistory] = useState<Load<ConversationListPage>>(IDLE);
   const [activeCitation, setActiveCitation] = useState<string | null>(null);
   const [railOpen, setRailOpen] = useState(false);
   const [asking, setAsking] = useState(false);
@@ -100,7 +106,7 @@ export default function AskPage() {
     setIdentity(null);
     setResearchAccess(IDLE); setCatalog(IDLE); setAnswer(IDLE);
     setResearch(IDLE); setGap(IDLE); setConversation(IDLE);
-    setFileScope(null); setPickerOpen(false); setHistory([]);
+    setFileScope(null); setPickerOpen(false); setHistory(IDLE);
     setConversationId(null); setActiveCitation(null);
   }, []);
 
@@ -126,37 +132,64 @@ export default function AskPage() {
     return () => removeEventListener("keydown", close);
   }, []);
 
-  // Research scope authorization probe: a typed 403 disables the option.
+  // Research-scope capability (TIP-011): a content-free boolean from the
+  // same policy predicate the research search uses — no audited probe.
   useEffect(() => {
     if (!identity) return;
     let active = true;
     const timer = setTimeout(() => {
       setResearchAccess({state: "loading"});
-      fetch("/api/governance/research/search", {
-        method: "POST", cache: "no-store",
-        headers: {"content-type": "application/json"},
-        body: JSON.stringify({query: "rtr", limit: 1}),
-      }).then(async response => {
-        if (!active) return;
-        if (response.status === 401) return loseAccess();
-        const body: unknown = await response.json().catch(() => null);
-        if (response.status === 403) {
-          return setResearchAccess({state: "denied", error: parseTypedError(body)});
-        }
-        if (!response.ok) {
-          return setResearchAccess({state: "error", error: parseTypedError(body)});
-        }
-        setResearchAccess({state: "ready", data: true});
-      }).catch(() => {
-        if (active) {
-          setResearchAccess({state: "error", error: {
-            code: "ask_service_unavailable", message: "", requestId: "",
-          }});
-        }
-      });
+      fetch("/api/governance/research/scope", {cache: "no-store"})
+        .then(async response => {
+          if (!active) return;
+          if (response.status === 401) return loseAccess();
+          const body: unknown = await response.json().catch(() => null);
+          if (response.status === 403) {
+            return setResearchAccess({state: "denied", error: parseTypedError(body)});
+          }
+          if (!response.ok) {
+            return setResearchAccess({state: "error", error: parseTypedError(body)});
+          }
+          setResearchAccess({state: "ready", data: parseResearchScope(body)});
+        }).catch(() => {
+          if (active) {
+            setResearchAccess({state: "error", error: {
+              code: "ask_service_unavailable", message: "", requestId: "",
+            }});
+          }
+        });
     }, 0);
     return () => { active = false; clearTimeout(timer); };
   }, [identity, loseAccess]);
+
+  // The caller's own conversation history (TIP-011 list endpoint):
+  // metadata only, refreshed after every completed ask.
+  const loadHistory = useCallback(() => {
+    fetch("/api/ask/conversations?limit=25", {cache: "no-store"})
+      .then(async response => {
+        if (response.status === 401) return loseAccess();
+        const body: unknown = await response.json().catch(() => null);
+        if (response.status === 403) {
+          return setHistory({state: "denied", error: parseTypedError(body)});
+        }
+        if (!response.ok) {
+          return setHistory({state: "error", error: parseTypedError(body)});
+        }
+        setHistory({state: "ready", data: parseConversationList(body)});
+      })
+      .catch(() => setHistory({state: "error", error: {
+        code: "contract_violation", message: "", requestId: "",
+      }}));
+  }, [loseAccess]);
+
+  useEffect(() => {
+    if (!identity) return;
+    const timer = setTimeout(() => {
+      setHistory({state: "loading"});
+      loadHistory();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [identity, loadHistory]);
 
   // File-scope picker over the ACL-filtered Files catalog proxy.
   useEffect(() => {
@@ -282,13 +315,7 @@ export default function AskPage() {
       setConversationId(parsed.conversationId);
       // URL-restorable conversation id only — never content, never storage.
       window.history.replaceState({}, "", `/ask?${askQuery(parsed.conversationId)}`);
-      setHistory(current => current.some(
-        item => item.conversationId === parsed.conversationId,
-      ) ? current : [
-        {conversationId: parsed.conversationId, question: trimmed,
-          at: new Date().toISOString()},
-        ...current,
-      ]);
+      loadHistory();
       if (parsed.state === "honest_null" && parsed.gapId) loadGap(parsed.gapId);
     } catch {
       setAnswer({state: "error", error: {
@@ -297,7 +324,10 @@ export default function AskPage() {
     } finally {
       setAsking(false);
     }
-  }, [question, asking, includeResearch, conversationId, fileScope, loadGap, loseAccess]);
+  }, [
+    question, asking, includeResearch, conversationId, fileScope,
+    loadGap, loadHistory, loseAccess,
+  ]);
 
   const openCitation = useCallback((key: string) => {
     setActiveCitation(key);
@@ -364,12 +394,15 @@ export default function AskPage() {
             </label>
             <label>
               <input type="radio" name="ask-scope" checked={includeResearch}
-                disabled={researchAccess.state !== "ready"}
+                disabled={researchAccess.state !== "ready" || !researchAccess.data}
                 onChange={() => setIncludeResearch(true)}/>
               {t("ask.scope.research")}
             </label>
             {researchAccess.state === "loading"
               && <p role="status" className="form-note">{t("ask.scope.researchChecking")}</p>}
+            {researchAccess.state === "ready" && !researchAccess.data
+              && <p role="note" className="surface-denied">
+                {t("ask.scope.researchDenied")}</p>}
             {researchAccess.state === "denied" && <p role="note" className="surface-denied">
               {t("ask.scope.researchDenied")} · {errorText(researchAccess.error)}</p>}
             {researchAccess.state === "error" && <p role="note" className="surface-error">
@@ -520,16 +553,24 @@ export default function AskPage() {
 
         <section className="ask-history" aria-label={t("ask.history.title")}>
           <h2>{t("ask.history.title")}</h2>
-          {history.length === 0
-            ? <p className="surface-empty">{t("ask.history.empty")}</p>
-            : <ol>{history.map(item => <li key={item.conversationId}>
-                <span className="ask-history-question">{item.question}</span>
-                <small>{formatDateTime(item.at, locale)}</small>
-                <button type="button"
-                  onClick={() => reopenConversation(item.conversationId)}>
-                  {t("ask.history.reopen")}
-                </button>
-              </li>)}</ol>}
+          <Surface load={history} empty={t("ask.history.empty")}>{page =>
+            page.items.length === 0
+              ? <p className="surface-empty">{t("ask.history.empty")}</p>
+              : <ol>{page.items.map(item => <li key={item.conversationId}>
+                  <span className="ask-history-question">
+                    <code title={item.firstQuestionDigest ?? undefined}>
+                      {item.firstQuestionDigest
+                        ? `${item.firstQuestionDigest.slice(0, 12)}…`
+                        : item.conversationId.slice(0, 8)}
+                    </code>
+                  </span>
+                  <small>{formatDateTime(item.lastActivityAt, locale)}</small>
+                  <button type="button"
+                    onClick={() => reopenConversation(item.conversationId)}>
+                    {t("ask.history.reopen")}
+                  </button>
+                </li>)}</ol>}
+          </Surface>
         </section>
       </section>
 

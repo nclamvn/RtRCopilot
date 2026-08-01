@@ -6,7 +6,7 @@ import hmac
 import json
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Literal
+from typing import Any, Literal
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -62,6 +62,9 @@ GAP_OPERATION_TARGET: dict[GapOperation, GapState] = {
 GAP_SCAN_LIMIT = 1000
 GAP_BATCH_SIZE = 200
 QUEUE_SCAN_LIMIT = 1000
+PICKER_SCAN_LIMIT = 500
+PICKER_QUERY_MAX_CHARS = 100
+PICKER_LIMIT_MAX = 50
 
 
 class SettingSpec(StrictModel):
@@ -127,6 +130,48 @@ class GapTransitionInput(StrictModel):
     owner_subject_id: uuid.UUID | None = None
     resolving_version_id: uuid.UUID | None = None
     decline_reason: str | None = None
+
+
+class SubjectPickerItem(StrictModel):
+    """Directory row disclosed to authorized assigners (TIP-011 AC-06)."""
+
+    subject_id: uuid.UUID
+    display_name: str
+    email: str | None = None
+
+
+class SubjectPickerPage(StrictModel):
+    items: list[SubjectPickerItem]
+    next_cursor: str | None = None
+
+
+class RecordPickerItem(StrictModel):
+    """Active SOT record row for the gap-answer picker (TIP-011 AC-06)."""
+
+    zone_label: Literal["sot"] = "sot"
+    record_key: str
+    record_version_id: uuid.UUID
+    title: str | None = None
+    classification: str
+
+
+class RecordPickerPage(StrictModel):
+    items: list[RecordPickerItem]
+    next_cursor: str | None = None
+
+
+def escape_like(value: str) -> str:
+    """Escape LIKE/ILIKE wildcards so picker queries stay literal."""
+    return (
+        value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    )
+
+
+def validate_picker_query(query: str) -> str:
+    stripped = query.strip()
+    if not stripped or len(stripped) > PICKER_QUERY_MAX_CHARS:
+        raise GovernanceError("picker_query_invalid")
+    return stripped
 
 
 def _signature(payload: bytes, secret: str) -> bytes:
@@ -208,6 +253,25 @@ CONFLICT_MEMBERSHIP_SQL = """
     LEFT JOIN external_supersede es ON es.record_id = r.record_id
     WHERE r.lifecycle = 'active' AND rv.lifecycle = 'active'
       AND (ac.active_count > 1 OR es.record_id IS NOT NULL)
+    ORDER BY rv.created_at, rv.version_id
+    LIMIT :scan_limit
+"""
+SUBJECT_PICKER_SQL = """
+    SELECT user_id, display_name, email, created_at
+    FROM subjects
+    WHERE status = 'active'
+      AND (display_name ILIKE :prefix OR email ILIKE :prefix)
+    ORDER BY created_at, user_id
+    LIMIT :scan_limit
+"""
+RECORD_PICKER_SQL = """
+    SELECT r.record_id, r.record_key, r.owner_subject_id,
+      r.current_version_id AS version_id, rv.classification, rv.created_at,
+      rv.value_payload->>'title' AS title
+    FROM records r JOIN record_versions rv ON rv.version_id = r.current_version_id
+    WHERE r.lifecycle = 'active' AND rv.lifecycle = 'active'
+      AND (r.record_key ILIKE :pattern
+           OR rv.value_payload->>'title' ILIKE :pattern)
     ORDER BY rv.created_at, rv.version_id
     LIMIT :scan_limit
 """
@@ -894,6 +958,191 @@ class GovernanceService:
                 },
             )
         return completed
+
+    async def search_subjects(
+        self,
+        subject: Subject,
+        query: str,
+        *,
+        request_id: str,
+        cursor: str | None = None,
+        limit: int = 20,
+    ) -> SubjectPickerPage:
+        """Policy-gated subject picker for queue/gap assignment (AC-06).
+
+        The subject directory is only visible to callers who can assign work
+        (curators) or manage users (admins); everyone else receives the same
+        typed 403 regardless of what exists, so probing discloses nothing.
+        """
+        limit = max(1, min(limit, PICKER_LIMIT_MAX))
+        normalized = validate_picker_query(query)
+        boundary = (
+            decode_signed_cursor("picker:subjects", cursor, self._secret())
+            if cursor
+            else None
+        )
+        attributes = ResourceAttributes(classification="internal", source_zone="sot")
+        context = PolicyContext(request_id=request_id)
+        allowed = (
+            policy.decide(subject, "curate", attributes, context).allow
+            or policy.decide(subject, "manage_users", attributes, context).allow
+        )
+        if not allowed:
+            raise PermissionError("curator_required")
+        async with self.uow.factory() as session:
+            rows = (await session.execute(text(SUBJECT_PICKER_SQL), {
+                "prefix": f"{escape_like(normalized)}%",
+                "scan_limit": PICKER_SCAN_LIMIT,
+            })).mappings().all()
+        matches = [
+            row for row in rows
+            if boundary is None or (row["created_at"], row["user_id"]) > boundary
+        ]
+        page = matches[:limit]
+        next_cursor = (
+            encode_signed_cursor(
+                "picker:subjects",
+                page[-1]["created_at"],
+                page[-1]["user_id"],
+                self._secret(),
+            )
+            if len(matches) > limit
+            else None
+        )
+        await self._audit_picker(
+            subject,
+            action="governance.picker.subjects",
+            request_id=request_id,
+            resource_type="subject_directory",
+            returned_count=len(page),
+            normalized_query=normalized,
+        )
+        return SubjectPickerPage(
+            items=[
+                SubjectPickerItem(
+                    subject_id=row["user_id"],
+                    display_name=str(row["display_name"]),
+                    email=str(row["email"]) if row["email"] is not None else None,
+                )
+                for row in page
+            ],
+            next_cursor=next_cursor,
+        )
+
+    async def search_records(
+        self,
+        subject: Subject,
+        query: str,
+        *,
+        request_id: str,
+        cursor: str | None = None,
+        limit: int = 20,
+    ) -> RecordPickerPage:
+        """Policy-filtered active-record picker for gap answering (AC-06).
+
+        Only records the caller can view — and owns or curates, mirroring the
+        queue visibility rule — ever appear; denied existence is invisible
+        through results, counts and cursors alike.
+        """
+        limit = max(1, min(limit, PICKER_LIMIT_MAX))
+        normalized = validate_picker_query(query)
+        boundary = (
+            decode_signed_cursor("picker:records", cursor, self._secret())
+            if cursor
+            else None
+        )
+        context = PolicyContext(request_id=request_id)
+        caller = uuid.UUID(subject.user_id)
+        visible: list[dict[str, Any]] = []
+        async with self.uow.factory() as session:
+            rows = (await session.execute(text(RECORD_PICKER_SQL), {
+                "pattern": f"%{escape_like(normalized)}%",
+                "scan_limit": PICKER_SCAN_LIMIT,
+            })).mappings().all()
+            principals = await _effective_principal_ids(session, subject)
+            for row in rows:
+                attributes = await ResourceRepository().policy_attributes(
+                    session,
+                    row["record_id"],
+                    action="view",
+                    principal_ids=principals,
+                )
+                if attributes is None:
+                    continue
+                if not policy.decide(subject, "view", attributes, context).allow:
+                    continue
+                if row["owner_subject_id"] != caller and not policy.decide(
+                    subject,
+                    "curate",
+                    attributes,
+                    context,
+                ).allow:
+                    continue
+                visible.append(dict(row))
+        matches = [
+            row for row in visible
+            if boundary is None or (row["created_at"], row["version_id"]) > boundary
+        ]
+        page = matches[:limit]
+        next_cursor = (
+            encode_signed_cursor(
+                "picker:records",
+                page[-1]["created_at"],
+                page[-1]["version_id"],
+                self._secret(),
+            )
+            if len(matches) > limit
+            else None
+        )
+        await self._audit_picker(
+            subject,
+            action="governance.picker.records",
+            request_id=request_id,
+            resource_type="record_picker",
+            returned_count=len(page),
+            normalized_query=normalized,
+        )
+        return RecordPickerPage(
+            items=[
+                RecordPickerItem(
+                    record_key=str(row["record_key"]),
+                    record_version_id=row["version_id"],
+                    title=str(row["title"]) if row["title"] is not None else None,
+                    classification=str(row["classification"]),
+                )
+                for row in page
+            ],
+            next_cursor=next_cursor,
+        )
+
+    async def _audit_picker(
+        self,
+        subject: Subject,
+        *,
+        action: str,
+        request_id: str,
+        resource_type: str,
+        returned_count: int,
+        normalized_query: str,
+    ) -> None:
+        """Audited disclosure per house rule: counts + query digest only."""
+        async with self.uow.transaction() as session:
+            await AuditRepository().append(
+                session,
+                actor_kind="user",
+                actor_user_id=uuid.UUID(subject.user_id),
+                action=action,
+                result="success",
+                reason_code="picker_results_disclosed",
+                request_id=request_id,
+                resource_type=resource_type,
+                details={
+                    "returned_count": returned_count,
+                    "query_fingerprint": hashlib.sha256(
+                        normalized_query.casefold().encode(),
+                    ).hexdigest(),
+                },
+            )
 
     async def setting_value(self, setting_key: str) -> SettingValue:
         """Effective typed value for one registered governance setting."""

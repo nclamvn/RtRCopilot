@@ -15,6 +15,7 @@ ResearchSourceLifecycle = Literal["active", "suspended", "retired"]
 PackageImportState = Literal["received", "validating", "imported", "rejected"]
 ResearchTier = Literal["P", "S", "H", "X"]
 ResearchZone = Literal["research"]
+SotZone = Literal["sot"]
 CorroborationState = Literal["uncorroborated", "corroborated", "disputed"]
 GapOrigin = Literal["honest_null", "manual"]
 GapState = Literal["open", "triaged", "assigned", "answered", "published", "declined"]
@@ -36,6 +37,7 @@ SettingValueType = Literal["integer", "decimal", "boolean", "string", "duration_
 SettingValue = int | float | bool | str
 
 RESEARCH_ZONE_LABEL: ResearchZone = "research"
+SOT_ZONE_LABEL: SotZone = "sot"
 
 
 def _utcnow() -> datetime:
@@ -107,6 +109,13 @@ class ResearchRecord(StrictModel):
 
 
 class Gap(StrictModel):
+    """One knowledge gap; a structural SOT-plane record (TIP-011 AC-07).
+
+    ``zone_label`` is a server constant, never stored and never client-set:
+    gaps always live on the SOT plane, so the label is typed as the literal.
+    """
+
+    zone_label: SotZone = SOT_ZONE_LABEL
     gap_id: uuid.UUID
     question_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
     sanitized_question: str
@@ -150,6 +159,9 @@ class GapTransition(StrictModel):
 
 
 class ReviewTask(StrictModel):
+    """Queue assignment/completion record over SOT record versions (AC-07)."""
+
+    zone_label: SotZone = SOT_ZONE_LABEL
     task_id: uuid.UUID
     queue_kind: QueueKind
     record_version_id: uuid.UUID

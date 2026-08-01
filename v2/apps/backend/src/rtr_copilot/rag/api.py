@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
@@ -9,19 +9,26 @@ from rtr_copilot.auth.api import current_subject
 from rtr_copilot.auth.models import Subject
 from rtr_copilot.config import get_settings
 from rtr_copilot.db.uow import UnitOfWork
+from rtr_copilot.governance.service import (
+    decode_signed_cursor,
+    encode_signed_cursor,
+)
 from rtr_copilot.rag.answering import AnswerService, GroundingError
 from rtr_copilot.rag.models import (
     AskRequest,
     AskResponse,
     Citation,
+    ConversationListPage,
     ConversationMessage,
     ConversationResponse,
+    ConversationSummary,
     KnowledgeErrorEnvelope,
     SearchRequest,
     SearchResponse,
 )
 from rtr_copilot.rag.retrieval import RetrievalError, RetrievalService
 from rtr_copilot.repositories.audit import AuditRepository
+from rtr_copilot.repositories.governance import GovernanceError
 
 router = APIRouter(
     prefix="/api/v1",
@@ -138,6 +145,99 @@ def _citation(row: dict[str, Any]) -> Citation:
         source_label=row["source_label"],
         locator=dict(row["locator"]),
         redacted=row["redacted"],
+    )
+
+
+CONVERSATION_LIST_SQL = """
+    SELECT c.conversation_id, c.created_at AS started_at,
+      COALESCE(MAX(m.created_at), c.created_at) AS last_activity_at,
+      (ARRAY_AGG(m.content_sha256 ORDER BY m.created_at, m.message_id)
+         FILTER (WHERE m.role = 'user'))[1] AS first_question_digest
+    FROM conversations c
+    LEFT JOIN messages m ON m.conversation_id = c.conversation_id
+    WHERE c.owner_subject_id = :owner AND c.lifecycle = 'active'
+    GROUP BY c.conversation_id, c.created_at
+    HAVING CAST(:cursor_at AS timestamptz) IS NULL
+      OR (COALESCE(MAX(m.created_at), c.created_at), c.conversation_id)
+         < (CAST(:cursor_at AS timestamptz), CAST(:cursor_id AS uuid))
+    ORDER BY last_activity_at DESC, c.conversation_id DESC
+    LIMIT :limit
+"""
+
+
+@router.get("/conversations", response_model=ConversationListPage)
+async def conversations(
+    request: Request,
+    subject: Annotated[Subject | None, Depends(rag_subject)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    cursor: Annotated[str | None, Query(max_length=512)] = None,
+) -> ConversationListPage | JSONResponse:
+    """The caller's own conversations, newest activity first (TIP-011).
+
+    Metadata only, exactly as TIP-007 already stores it: ids, timestamps and
+    the first user message's stored content digest — never message content.
+    Ownership is enforced in the query itself, so other subjects' history is
+    structurally invisible (no counts, no cursors, no timing signal).
+    """
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    request_id = str(request.state.request_id)
+    settings = get_settings()
+    secret = settings.sot_signing_secret.get_secret_value()
+    try:
+        boundary = (
+            decode_signed_cursor("conversations", cursor, secret)
+            if cursor
+            else None
+        )
+    except GovernanceError as failure:
+        return _error(request, 400, failure.code)
+    async with UnitOfWork().factory() as session:
+        rows = (await session.execute(text(CONVERSATION_LIST_SQL), {
+            "owner": uuid.UUID(subject.user_id),
+            "cursor_at": boundary[0] if boundary else None,
+            "cursor_id": boundary[1] if boundary else None,
+            "limit": limit + 1,
+        })).mappings().all()
+    items = [
+        ConversationSummary(
+            conversation_id=row["conversation_id"],
+            started_at=row["started_at"],
+            last_activity_at=row["last_activity_at"],
+            first_question_digest=(
+                str(row["first_question_digest"])
+                if row["first_question_digest"] is not None
+                else None
+            ),
+        )
+        for row in rows[:limit]
+    ]
+    next_cursor = (
+        encode_signed_cursor(
+            "conversations",
+            items[-1].last_activity_at,
+            items[-1].conversation_id,
+            secret,
+        )
+        if len(rows) > limit
+        else None
+    )
+    async with UnitOfWork().transaction() as session:
+        await AuditRepository().append(
+            session,
+            actor_kind="user",
+            actor_user_id=uuid.UUID(subject.user_id),
+            action="rag.conversation.list",
+            result="success",
+            reason_code="owner_metadata_disclosed",
+            request_id=request_id,
+            resource_type="conversation",
+            details={"returned_count": len(items)},
+        )
+    return ConversationListPage(
+        items=items,
+        next_cursor=next_cursor,
+        request_id=request_id,
     )
 
 

@@ -89,8 +89,10 @@ test("anonymous ask is fully translated under the en locale", async () => {
 test("grounded ask renders citation markers wired to the shared rail; research denial disables the scope", async () => {
   mockFetch({
     "/api/auth/me": () => ({json: identity}),
-    "/api/governance/research/search": () => ({status: 403, json: {
-      error: {code: "curator_required", message: ""}, request_id: "req-9",
+    // TIP-011: the content-free scope capability replaces the search probe.
+    "/api/governance/research/scope": () => ({json: {allowed: false}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-1",
     }}),
     "/api/ask/ask": () => ({json: {
       state: "grounded",
@@ -103,10 +105,10 @@ test("grounded ask renders citation markers wired to the shared rail; research d
   });
   render(<AskPage/>);
   const input = await screen.findByLabelText("Câu hỏi");
-  // Typed 403 → the research scope renders disabled with the denied state.
+  // {allowed: false} → the research scope renders disabled with the denied state.
   await waitFor(() => expect(screen.getByLabelText("Kèm vùng nghiên cứu")).toBeDisabled());
   expect(screen.getByText(/Phạm vi nghiên cứu bị từ chối theo chính sách/))
-    .toHaveTextContent("curator_required · req-9");
+    .toBeInTheDocument();
   fireEvent.change(input, {target: {value: "Chính sách bảo hành robot?"}});
   fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
   expect(await screen.findByText(/Robot RtR được bảo hành 24 tháng/)).toBeInTheDocument();
@@ -130,9 +132,9 @@ test("grounded ask renders citation markers wired to the shared rail; research d
 test("honest-null is a first-class state showing the recorded gap id and state", async () => {
   mockFetch({
     "/api/auth/me": () => ({json: identity}),
-    "/api/governance/research/search": () => ({json: {
-      zone_label: "research", grounding: "research_supported",
-      results: [], request_id: "req-8",
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-2",
     }}),
     "/api/ask/ask": () => ({json: {
       state: "honest_null",
@@ -167,6 +169,10 @@ test("honest-null is a first-class state showing the recorded gap id and state",
 test("research-scoped results render exactly the server zone, tier and grounding labels", async () => {
   mockFetch({
     "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-3",
+    }}),
     "/api/governance/research/search": () => ({json: {
       zone_label: "research", grounding: "research_supported",
       results: [{
@@ -215,9 +221,9 @@ test("research-scoped results render exactly the server zone, tier and grounding
 test("denied file catalog renders the typed state inside the picker", async () => {
   mockFetch({
     "/api/auth/me": () => ({json: identity}),
-    "/api/governance/research/search": () => ({json: {
-      zone_label: "research", grounding: "research_supported",
-      results: [], request_id: "req-6",
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-4",
     }}),
     "/api/files": () => ({status: 403, json: {
       error: {code: "policy_denied", message: ""}, request_id: "req-5",

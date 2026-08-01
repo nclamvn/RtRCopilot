@@ -35,6 +35,16 @@ class AskRequest(StrictModel):
 
 
 class Citation(StrictModel):
+    """Deep citation into SOT evidence (TIP-007, frozen retrieval semantics).
+
+    ``zone_label`` (TIP-011 AC-07) is a server constant on the response model
+    only: TIP-007 retrieval is SOT-only by construction (D-011-03), so every
+    citation is structurally SOT-plane. Nothing is stored and no retrieval or
+    grounding logic changes — the literal simply makes the existing invariant
+    visible to clients.
+    """
+
+    zone_label: Literal["sot"] = "sot"
     marker: str
     chunk_id: uuid.UUID
     record_key: str
@@ -111,6 +121,26 @@ class ConversationMessage(StrictModel):
 class ConversationResponse(StrictModel):
     conversation_id: uuid.UUID
     messages: list[ConversationMessage]
+    request_id: str
+
+
+class ConversationSummary(StrictModel):
+    """DLP-safe conversation metadata for the caller's own list (TIP-011).
+
+    ``first_question_digest`` is the first user message's ``content_sha256``
+    exactly as TIP-007 already stores it — no new content is stored or
+    disclosed by this surface.
+    """
+
+    conversation_id: uuid.UUID
+    started_at: datetime
+    last_activity_at: datetime
+    first_question_digest: str | None = None
+
+
+class ConversationListPage(StrictModel):
+    items: list[ConversationSummary]
+    next_cursor: str | None = None
     request_id: str
 
 

@@ -1,12 +1,12 @@
 import React from "react";
-import {Proposal} from "../../governance/contracts";
+import {Proposal} from "../../../governance/contracts";
 
 /**
- * TIP-011 Task 2: the trust-zone chip now lives in the shared rail module
- * (`src/rail/ZoneChip`) so Ask, Files, Documents and Knowledge Ops render
- * the identical element. Re-exported here with zero behavior change.
+ * TIP-011: the trust-zone chip lives in the shared rail module
+ * (`src/rail/ZoneChip`); the temporary re-export shim was collapsed when
+ * this workspace adopted the shell — import the chip from `src/rail`.
+ * `GatedCrossing` stays knowledge-ops-local (it is not the rail).
  */
-export {ZoneChip} from "../../rail/ZoneChip";
 
 export type CrossingPhase =
   | "proposed" | "approved_staged" | "approved_unsubmitted" | "rejected";

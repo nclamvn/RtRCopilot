@@ -1,7 +1,15 @@
 "use client";
 
+/**
+ * Knowledge Ops workspace (TIP-010), living inside the unified shell since
+ * TIP-011: the AppShell owns the topbar/nav/`<main>`; this page renders ONE
+ * `PageHeader`, the queue ledger + work surface, and the SHARED Evidence
+ * Rail (`src/rail`). Zone chips render ONLY from literal server
+ * `zone_label` payload fields — gaps/queues carry them since TIP-011
+ * (AC-07), so no chip waits on the dashboard response.
+ */
+
 import React, {useCallback, useEffect, useMemo, useState} from "react";
-import Link from "next/link";
 import {
   Dashboard,
   Gap,
@@ -31,9 +39,15 @@ import {
   workspaceQuery,
   WorkspaceState,
   WorkspaceView,
-} from "../../governance/contracts";
-import {IDLE, Surface, errorText, type Load} from "../../shared/surface";
-import {GatedCrossing, ZoneChip} from "./zone";
+} from "../../../governance/contracts";
+import {gapEvidence, researchRecordEvidence} from "../../../governance/evidence";
+import {useI18n} from "../../../i18n/provider";
+import type {EvidenceEntry} from "../../../rail/contracts";
+import {EvidenceRail} from "../../../rail/EvidenceRail";
+import {ZoneChip} from "../../../rail/ZoneChip";
+import {IDLE, Surface, errorText, type Load} from "../../../shared/surface";
+import {PageHeader} from "../../../shell/AppShell";
+import {GatedCrossing} from "./zone";
 
 type Identity = {user_id: string; email: string; display_name: string; roles: string[]};
 type Evidence = {records: ResearchRecord[]; missing: number};
@@ -69,12 +83,11 @@ function slaBadge(gap: Gap) {
 }
 
 export default function KnowledgeOpsPage() {
+  const {t} = useI18n();
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [ws, setWs] = useState<WorkspaceState>({view: "dashboard"});
   const [dash, setDash] = useState<Load<Dashboard>>(IDLE);
-  const [conflictAgg, setConflictAgg] = useState<Load<QueuePage>>(IDLE);
-  const [reviewAgg, setReviewAgg] = useState<Load<QueuePage>>(IDLE);
   const [gaps, setGaps] = useState<Load<GapPage>>(IDLE);
   const [gapDetail, setGapDetail] = useState<Load<GapDetail>>(IDLE);
   const [queue, setQueue] = useState<Load<QueuePage>>(IDLE);
@@ -99,7 +112,7 @@ export default function KnowledgeOpsPage() {
 
   const loseAccess = useCallback(() => {
     setIdentity(null);
-    setDash(IDLE); setConflictAgg(IDLE); setReviewAgg(IDLE);
+    setDash(IDLE);
     setGaps(IDLE); setGapDetail(IDLE); setQueue(IDLE);
     setPackages(IDLE); setRecords(IDLE); setResearchRecord(IDLE);
     setProposals(IDLE); setProposal(IDLE); setEvidence(IDLE);
@@ -159,10 +172,10 @@ export default function KnowledgeOpsPage() {
     return () => removeEventListener("keydown", close);
   }, []);
 
+  // The dashboard carries ALL six SOT/research tiles incl. conflict and
+  // owner-review since TIP-011, so the ledger needs no extra queue fetches.
   const loadLedger = useCallback(() => {
     void fetchInto("governance/dashboard", parseDashboard, setDash);
-    void fetchInto("governance/queues/conflict?limit=1", parseQueuePage, setConflictAgg);
-    void fetchInto("governance/queues/owner-review?limit=1", parseQueuePage, setReviewAgg);
   }, [fetchInto]);
   useEffect(() => {
     if (!identity) return;
@@ -365,71 +378,44 @@ export default function KnowledgeOpsPage() {
     );
   }, [act, ws.proposalId, reason, loadProposal, loadProposals, loadLedger]);
 
-  async function logout() {
-    await fetch("/api/auth/logout", {method: "POST"});
-    loseAccess();
-  }
-
-  /** SOT chips render only the zone label the dashboard API returned. */
+  /** Ledger/graduation rows without their own payload label reuse the
+   *  dashboard tiles' server labels (payload data, never a client guess). */
   const sotZone = dash.state === "ready" ? dash.data.gap_flow.zone_label : null;
   const researchZone = dash.state === "ready"
     ? dash.data.research_intake.zone_label : null;
 
   const ledgerRows = useMemo(() => {
     const d = dash.state === "ready" ? dash.data : null;
-    const conflictTotal = conflictAgg.state === "ready"
-      ? String(conflictAgg.data.aggregates.total) : "…";
-    const reviewOverdue = reviewAgg.state === "ready"
-      ? reviewAgg.data.aggregates.by_status.overdue ?? 0 : 0;
     const rows: Array<{
       view: WorkspaceView; label: string; zone: "sot" | "research" | null;
       count: string; badge: string;
     }> = [
-      {view: "gaps", label: "Khoảng trống", zone: sotZone,
+      {view: "gaps", label: t("ops.row.gaps"), zone: sotZone,
         count: d ? String(d.gap_flow.open_total) : "…",
         badge: d && d.gap_flow.overdue > 0 ? `${d.gap_flow.overdue} quá hạn SLA` : ""},
-      {view: "freshness", label: "Độ tươi", zone: sotZone,
+      {view: "freshness", label: t("ops.row.freshness"), zone: sotZone,
         count: d ? String(d.freshness.total) : "…",
         badge: d && d.freshness.expired > 0 ? `${d.freshness.expired} đã hết hạn` : ""},
-      {view: "conflict", label: "Xung đột", zone: sotZone,
-        count: conflictTotal, badge: ""},
-      {view: "owner-review", label: "Rà soát định kỳ", zone: sotZone,
-        count: reviewAgg.state === "ready"
-          ? String(reviewAgg.data.aggregates.total) : "…",
-        badge: reviewOverdue > 0 ? `${reviewOverdue} quá hạn` : ""},
-      {view: "research", label: "Gói nghiên cứu", zone: researchZone,
+      {view: "conflict", label: t("ops.row.conflict"), zone: sotZone,
+        count: d ? String(d.conflict.total) : "…",
+        badge: d && d.conflict.disputed > 0
+          ? `${d.conflict.disputed} đang tranh chấp` : ""},
+      {view: "owner-review", label: t("ops.row.ownerReview"), zone: sotZone,
+        count: d ? String(d.owner_review.total) : "…",
+        badge: d && d.owner_review.overdue > 0
+          ? `${d.owner_review.overdue} quá hạn` : ""},
+      {view: "research", label: t("ops.row.research"), zone: researchZone,
         count: d ? String(Object.values(d.research_intake.packages_by_state)
           .reduce((sum, item) => sum + item, 0)) : "…",
         badge: d && (d.research_intake.packages_by_state.rejected ?? 0) > 0
           ? `${d.research_intake.packages_by_state.rejected} bị từ chối` : ""},
-      {view: "graduation", label: "Nâng cấp", zone: researchZone,
+      {view: "graduation", label: t("ops.row.graduation"), zone: researchZone,
         count: d ? String(d.graduation.proposed) : "…",
         badge: d && d.graduation.submitted > 0
           ? `${d.graduation.submitted} tại cổng` : ""},
     ];
     return rows;
-  }, [dash, conflictAgg, reviewAgg, sotZone, researchZone]);
-
-  if (!authReady || !identity) {
-    return <main className="gate">
-      <header><span className="mark">RT</span><span>RT ROBOTICS / KNOWLEDGE OPS</span></header>
-      <section className="gate-content">
-        <p className="eyebrow">Bàn điều hành tri thức có kiểm quyền</p>
-        <h1>Vận hành tri thức</h1>
-        <p className="lede">
-          Đăng nhập email công ty để xử lý khoảng trống, độ tươi, xung đột,
-          gói nghiên cứu và cổng nâng cấp theo đúng phân quyền.
-        </p>
-        {authReady
-          ? <>
-              {/* OIDC must navigate through the same-origin callback. */}
-              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-              <a className="primary" href="/api/auth/login">Đăng nhập công ty</a>
-            </>
-          : <span role="status">Đang kiểm tra phiên…</span>}
-      </section>
-    </main>;
-  }
+  }, [dash, sotZone, researchZone, t]);
 
   const selectedGap = gapDetail.state === "ready" ? gapDetail.data : null;
   const selectedRecord = researchRecord.state === "ready" ? researchRecord.data : null;
@@ -437,36 +423,122 @@ export default function KnowledgeOpsPage() {
   const selectedPackage = packages.state === "ready"
     ? packages.data.items.find(item => item.package_id === ws.packageId) ?? null
     : null;
+  const queuePage = queue.state === "ready" ? queue.data : null;
 
-  return <main className="ops-workspace">
-    <header className="ops-topbar">
-      <Link className="brand nav-brand" href="/">
-        <span className="mark">RT</span><span>RT / KNOWLEDGE OPS</span>
-      </Link>
-      <nav aria-label="Không gian làm việc khác" className="ops-nav">
-        <Link href="/">Files</Link>
-        <Link href="/documents">Documents</Link>
-      </nav>
-      <div className="identity"><strong>{identity.display_name || identity.email}</strong>
-        <button type="button" onClick={() => void logout()}>Đăng xuất</button></div>
-      <button className="mobile-control" type="button"
-        onClick={() => {setRailOpen(false); setLedgerOpen(true);}}>Hàng đợi</button>
-      <button className="mobile-control" type="button"
-        onClick={() => {setLedgerOpen(false); setRailOpen(true);}}>Bằng chứng</button>
-    </header>
+  const railEntries = useMemo<EvidenceEntry[]>(() => {
+    if (ws.view === "gaps" && selectedGap) return [gapEvidence(selectedGap.gap)];
+    if (ws.view === "research" && selectedRecord) {
+      return [researchRecordEvidence(selectedRecord)];
+    }
+    return [];
+  }, [ws.view, selectedGap, selectedRecord]);
 
-    <nav className={`ops-ledger ${ledgerOpen ? "open" : ""}`} aria-label="Sổ hàng đợi">
+  const railNote = useMemo<React.ReactNode>(() => {
+    if (ws.view === "dashboard") {
+      return <dl className="rail-facts">
+        <div><dt>Vùng tin cậy</dt><dd>
+          Mỗi số liệu và bản ghi mang nhãn vùng do máy chủ trả về —
+          RESEARCH không bao giờ hiển thị như SOT.</dd></div>
+        {dash.state === "ready" && <div><dt>Tính lúc</dt>
+          <dd>{when(dash.data.computed_at)}</dd></div>}
+      </dl>;
+    }
+    if (ws.view === "gaps" && selectedGap) {
+      return <dl className="rail-facts">
+        <div><dt>Phân loại</dt><dd>{selectedGap.gap.classification}</dd></div>
+        <div><dt>Nguồn gốc</dt><dd>{selectedGap.gap.origin}</dd></div>
+        {selectedGap.gap.resolving_version_id && <div><dt>Bản ghi trả lời</dt>
+          <dd><code>{selectedGap.gap.resolving_version_id}</code></dd></div>}
+        {selectedGap.gap.decline_reason && <div><dt>Lý do từ chối</dt>
+          <dd>{selectedGap.gap.decline_reason}</dd></div>}
+      </dl>;
+    }
+    if (queueView && queuePage) {
+      return <dl className="rail-facts">
+        <div><dt>Vùng</dt><dd><ZoneChip zone={queuePage.zone_label}/></dd></div>
+        <div><dt>Cách tính</dt><dd>
+          Thành viên hàng đợi luôn tính trực tiếp từ metadata SOT sống;
+          bảng nhiệm vụ chỉ ghi việc giao và hoàn tất.</dd></div>
+        <div><dt>Tính lúc</dt><dd>{when(queuePage.computed_at)}</dd></div>
+        {Object.entries(queuePage.aggregates.by_status).map(([key, value]) =>
+          <div key={key}><dt>{STATUS_TEXT[key] ?? key}</dt><dd>{value}</dd></div>)}
+      </dl>;
+    }
+    if (ws.view === "research" && selectedRecord && selectedPackage) {
+      return <dl className="rail-facts">
+        <div><dt>Snapshot</dt><dd>{selectedPackage.snapshot_scope} ·
+          {" "}{when(selectedPackage.captured_at)}</dd></div>
+        <div><dt>Adapter</dt><dd><code>{selectedPackage.adapter_version}</code></dd></div>
+      </dl>;
+    }
+    if (ws.view === "research" && !selectedRecord && selectedPackage) {
+      return <dl className="rail-facts">
+        <div><dt>Vùng</dt><dd><ZoneChip zone={selectedPackage.zone_label}/></dd></div>
+        <div><dt>Fingerprint</dt><dd><code title={selectedPackage.fingerprint}>
+          {selectedPackage.fingerprint.slice(0, 16)}…</code></dd></div>
+        <div><dt>Snapshot</dt><dd>{selectedPackage.snapshot_scope} ·
+          {" "}{when(selectedPackage.captured_at)}</dd></div>
+        <div><dt>Trạng thái nhập</dt><dd>{selectedPackage.import_state}
+          {selectedPackage.rejection_code && <> · {selectedPackage.rejection_code}</>}
+        </dd></div>
+      </dl>;
+    }
+    if (ws.view === "graduation" && selectedProposal) {
+      return <dl className="rail-facts">
+        <div><dt>Vùng</dt><dd><ZoneChip zone={researchZone}/></dd></div>
+        <div><dt>Trạng thái</dt><dd>{selectedProposal.state}</dd></div>
+        {selectedProposal.attestation_hash && <div><dt>Attestation</dt>
+          <dd><code title={selectedProposal.attestation_hash}>
+            {selectedProposal.attestation_hash.slice(0, 16)}…</code></dd></div>}
+        {selectedProposal.publish_package_id && <div><dt>Gói tại cổng phát hành</dt>
+          <dd><code>{selectedProposal.publish_package_id}</code></dd></div>}
+        {selectedProposal.supersedes_proposal_id && <div><dt>Thay thế đề xuất</dt>
+          <dd><code>{selectedProposal.supersedes_proposal_id}</code></dd></div>}
+        <div><dt>Dòng dõi</dt><dd>{selectedProposal.research_record_ids.length} bản
+          ghi nghiên cứu gắn checksum bằng chứng</dd></div>
+      </dl>;
+    }
+    return <p className="surface-empty">Chọn một mục để xem bằng chứng.</p>;
+  }, [
+    ws.view, dash, selectedGap, queueView, queuePage, selectedRecord,
+    selectedPackage, selectedProposal, researchZone,
+  ]);
+
+  if (!authReady || !identity) {
+    return <>
+      <PageHeader eyebrow={t("ops.eyebrow")} title={t("ops.title")}/>
+      <section className="placeholder-card">
+        {!authReady && <p role="status">{t("shell.sessionChecking")}</p>}
+        {authReady && <p className="lede">{t("ops.gate.lede")}</p>}
+      </section>
+    </>;
+  }
+
+  return <div className="ops-workspace-embed">
+    <PageHeader eyebrow={t("ops.eyebrow")} title={t("ops.title")}
+      actions={<div className="page-actions">
+        <button className="ledger-toggle" type="button"
+          onClick={() => {setRailOpen(false); setLedgerOpen(true);}}>
+          {t("ops.ledgerButton")}
+        </button>
+        <button className="rail-sheet-toggle" type="button"
+          onClick={() => {setLedgerOpen(false); setRailOpen(true);}}>
+          {t("rail.toggle")}
+        </button>
+      </div>}/>
+    <div className="ops-layout">
+    <nav className={`ops-ledger ${ledgerOpen ? "open" : ""}`} aria-label={t("ops.ledgerLabel")}>
       <div className="panel-heading">
-        <div><p className="eyebrow">Queue ledger</p><h1>Vận hành tri thức</h1></div>
-        <button className="close-mobile" type="button" aria-label="Đóng sổ hàng đợi"
+        <p className="eyebrow">{t("ops.eyebrow")}</p>
+        <button className="close-mobile" type="button" aria-label={t("ops.ledgerClose")}
           onClick={() => setLedgerOpen(false)}>×</button>
       </div>
       <ol className="queue-list">
         <li><button type="button"
           aria-current={ws.view === "dashboard" ? "true" : undefined}
           onClick={() => apply({view: "dashboard"})}>
-          <strong>Bảng điều hành</strong>
-          <small>Số liệu sống, theo phạm vi chính sách</small>
+          <strong>{t("ops.row.dashboard")}</strong>
+          <small>{t("ops.row.dashboardSub")}</small>
         </button></li>
         {ledgerRows.map(row => <li key={row.view}><button type="button"
           aria-current={ws.view === row.view ? "true" : undefined}
@@ -525,6 +597,26 @@ export default function KnowledgeOpsPage() {
               <div><dt>Chưa giao</dt><dd>{data.freshness.unassigned}</dd></div>
             </dl>
           </article>
+          <article className="tile"><header><ZoneChip zone={data.conflict.zone_label}/>
+            <h3>{t("ops.tile.conflict")}</h3></header>
+            <p className="tile-figure">{data.conflict.total}</p>
+            <dl>
+              <div><dt>Đang tranh chấp</dt><dd>{data.conflict.disputed}</dd></div>
+              <div><dt>Thay thế chưa rõ</dt><dd>{data.conflict.superseded_ambiguous}</dd></div>
+              <div><dt>Đã giao</dt><dd>{data.conflict.assigned}</dd></div>
+              <div><dt>Chưa giao</dt><dd>{data.conflict.unassigned}</dd></div>
+            </dl>
+          </article>
+          <article className="tile"><header><ZoneChip zone={data.owner_review.zone_label}/>
+            <h3>{t("ops.tile.ownerReview")}</h3></header>
+            <p className="tile-figure">{data.owner_review.total}</p>
+            <dl>
+              <div><dt>Đến hạn</dt><dd>{data.owner_review.due}</dd></div>
+              <div><dt>Quá hạn</dt><dd>{data.owner_review.overdue}</dd></div>
+              <div><dt>Đã giao</dt><dd>{data.owner_review.assigned}</dd></div>
+              <div><dt>Chưa giao</dt><dd>{data.owner_review.unassigned}</dd></div>
+            </dl>
+          </article>
           <article className="tile"><header><ZoneChip zone={data.gap_flow.zone_label}/>
             <h3>Dòng khoảng trống</h3></header>
             <p className="tile-figure">{data.gap_flow.open_total}</p>
@@ -568,7 +660,7 @@ export default function KnowledgeOpsPage() {
             : <ol>{page.items.map(gap => <li key={gap.gap_id}><button type="button"
                 aria-current={ws.gapId === gap.gap_id ? "true" : undefined}
                 onClick={() => apply({...ws, gapId: gap.gap_id})}>
-                <span className="row-head"><ZoneChip zone={sotZone}/>
+                <span className="row-head"><ZoneChip zone={gap.zone_label}/>
                   <code>{gap.lifecycle}</code><code>{gap.priority}</code></span>
                 <strong>{gap.sanitized_summary || gap.sanitized_question}</strong>
                 <small>{gap.occurrence_count} lần hỏi · {when(gap.last_seen_at)}</small>
@@ -579,7 +671,7 @@ export default function KnowledgeOpsPage() {
         <div className="ops-detail">
           {!ws.gapId && <p className="surface-empty">Chọn một khoảng trống để xử lý.</p>}
           {ws.gapId && <Surface load={gapDetail} retry={loadGapDetail}>{detail => <>
-            <header className="detail-head"><ZoneChip zone={sotZone}/>
+            <header className="detail-head"><ZoneChip zone={detail.gap.zone_label}/>
               <h3>{detail.gap.sanitized_question}</h3></header>
             <p className="detail-sub">{detail.gap.sanitized_summary}</p>
             <dl className="detail-facts">
@@ -605,18 +697,18 @@ export default function KnowledgeOpsPage() {
                   placeholder="UUID phiên bản trả lời"/></label>
               <div className="action-row">
                 <button type="button" onClick={() => gapAction("triage", {})}>
-                  Nhận xử lý</button>
+                  {t("ops.action.triage")}</button>
                 <button type="button" disabled={!assignee.trim()}
                   onClick={() => gapAction("assign", {owner_subject_id: assignee.trim()})}>
-                  Giao cho</button>
+                  {t("ops.action.assign")}</button>
                 <button type="button" disabled={!resolvingVersion.trim()}
                   onClick={() => gapAction("answer", {
                     resolving_version_id: resolvingVersion.trim(),
-                  })}>Trả lời bằng bản ghi đã phát hành</button>
+                  })}>{t("ops.action.answer")}</button>
                 <button type="button" className="danger"
                   onClick={() => gapAction("decline", {
                     decline_reason: reason.trim() || "Từ chối qua Knowledge Ops",
-                  })}>Từ chối</button>
+                  })}>{t("ops.action.decline")}</button>
               </div>
               <p className="form-note">
                 Khoảng trống chỉ đóng bằng bản ghi đã qua cổng phát hành SOT
@@ -658,7 +750,7 @@ export default function KnowledgeOpsPage() {
             const task = entry.task;
             return <li key={entry.record_version_id}>
               <article>
-                <header className="row-head"><ZoneChip zone={sotZone}/>
+                <header className="row-head"><ZoneChip zone={entry.zone_label}/>
                   <strong>{entry.record_key}</strong>
                   <span className={`sla-badge ${
                     ["expired", "overdue", "disputed"].includes(entry.status)
@@ -685,10 +777,10 @@ export default function KnowledgeOpsPage() {
                 </small>}
                 <div className="action-row">
                   <button type="button" disabled={!assignee.trim()}
-                    onClick={() => assignQueueEntry(entry)}>Giao cho</button>
+                    onClick={() => assignQueueEntry(entry)}>{t("ops.action.assign")}</button>
                   {task && task.state !== "completed"
                     && <button type="button"
-                      onClick={() => completeTask(task.task_id)}>Hoàn tất</button>}
+                      onClick={() => completeTask(task.task_id)}>{t("ops.action.complete")}</button>}
                 </div>
               </article>
             </li>;
@@ -755,7 +847,7 @@ export default function KnowledgeOpsPage() {
               </li>)}</ol>
             {!composerOpen && <button type="button" className="primary"
               onClick={() => {setComposerOpen(true); setTargetKey(item.record_key);}}>
-              Đề xuất nâng cấp</button>}
+              {t("ops.action.propose")}</button>}
             {composerOpen && <form className="action-form"
               onSubmit={event => {event.preventDefault(); propose(item);}}>
               <h4>Đề xuất nâng cấp thành claim công ty</h4>
@@ -776,7 +868,7 @@ export default function KnowledgeOpsPage() {
                   onChange={event => setRationale(event.target.value)}/></label>
               <div className="action-row">
                 <button type="submit" className="primary" disabled={!claimText.trim()}>
-                  Đề xuất nâng cấp</button>
+                  {t("ops.action.propose")}</button>
                 <button type="button" onClick={() => setComposerOpen(false)}>Hủy</button>
               </div>
               <p className="form-note">
@@ -854,9 +946,9 @@ export default function KnowledgeOpsPage() {
                 <input value={reason} onChange={event => setReason(event.target.value)}/></label>
               <div className="action-row">
                 <button type="button" className="primary" onClick={() => decide("approved")}>
-                  Đưa vào cổng phát hành</button>
+                  {t("ops.action.approve")}</button>
                 <button type="button" className="danger" onClick={() => decide("rejected")}>
-                  Từ chối</button>
+                  {t("ops.action.reject")}</button>
               </div>
               <p className="form-note">
                 Phân tách trách nhiệm: người đề xuất không thể tự quyết định;
@@ -869,89 +961,11 @@ export default function KnowledgeOpsPage() {
       </div>}
     </section>
 
-    <aside className={`ops-rail ${railOpen ? "open" : ""}`} aria-label="Bằng chứng và xuất xứ">
-      <div className="panel-heading"><h2>Bằng chứng & xuất xứ</h2>
-        <button className="close-mobile" type="button" aria-label="Đóng bằng chứng"
-          onClick={() => setRailOpen(false)}>×</button></div>
-      {ws.view === "dashboard" && <dl className="rail-facts">
-        <div><dt>Vùng tin cậy</dt><dd>
-          Mỗi số liệu và bản ghi mang nhãn vùng do máy chủ trả về —
-          RESEARCH không bao giờ hiển thị như SOT.</dd></div>
-        {dash.state === "ready" && <div><dt>Tính lúc</dt>
-          <dd>{when(dash.data.computed_at)}</dd></div>}
-      </dl>}
-      {ws.view === "gaps" && selectedGap && <dl className="rail-facts">
-        <div><dt>Vùng</dt><dd><ZoneChip zone={sotZone}/></dd></div>
-        <div><dt>Phân loại</dt><dd>{selectedGap.gap.classification}</dd></div>
-        <div><dt>Fingerprint câu hỏi</dt>
-          <dd><code title={selectedGap.gap.question_fingerprint}>
-            {selectedGap.gap.question_fingerprint.slice(0, 16)}…</code></dd></div>
-        <div><dt>Nguồn gốc</dt><dd>{selectedGap.gap.origin}</dd></div>
-        <div><dt>Routing</dt><dd><code>{selectedGap.gap.routing_key}</code></dd></div>
-        {selectedGap.gap.resolving_version_id && <div><dt>Bản ghi trả lời</dt>
-          <dd><code>{selectedGap.gap.resolving_version_id}</code></dd></div>}
-        {selectedGap.gap.decline_reason && <div><dt>Lý do từ chối</dt>
-          <dd>{selectedGap.gap.decline_reason}</dd></div>}
-      </dl>}
-      {queueView && queue.state === "ready" && <dl className="rail-facts">
-        <div><dt>Vùng</dt><dd><ZoneChip zone={sotZone}/></dd></div>
-        <div><dt>Cách tính</dt><dd>
-          Thành viên hàng đợi luôn tính trực tiếp từ metadata SOT sống;
-          bảng nhiệm vụ chỉ ghi việc giao và hoàn tất.</dd></div>
-        <div><dt>Tính lúc</dt><dd>{when(queue.data.computed_at)}</dd></div>
-        {Object.entries(queue.data.aggregates.by_status).map(([key, value]) =>
-          <div key={key}><dt>{STATUS_TEXT[key] ?? key}</dt><dd>{value}</dd></div>)}
-      </dl>}
-      {ws.view === "research" && selectedRecord && <dl className="rail-facts">
-        <div><dt>Vùng</dt><dd><ZoneChip zone={selectedRecord.zone_label}/></dd></div>
-        <div><dt>Tier</dt><dd>{selectedRecord.tier}</dd></div>
-        <div><dt>Đối chiếu</dt><dd>{selectedRecord.corroboration_state}</dd></div>
-        <div><dt>Fingerprint gói</dt>
-          <dd><code title={selectedRecord.package_fingerprint}>
-            {selectedRecord.package_fingerprint.slice(0, 16)}…</code></dd></div>
-        <div><dt>Checksum nội dung</dt>
-          <dd><code title={selectedRecord.content_sha256}>
-            {selectedRecord.content_sha256.slice(0, 16)}…</code></dd></div>
-        {selectedPackage && <>
-          <div><dt>Snapshot</dt><dd>{selectedPackage.snapshot_scope} ·
-            {" "}{when(selectedPackage.captured_at)}</dd></div>
-          <div><dt>Adapter</dt><dd><code>{selectedPackage.adapter_version}</code></dd></div>
-        </>}
-        <div><dt>Trích dẫn</dt><dd>{selectedRecord.evidence.length} đoạn nguyên văn
-          kèm checksum</dd></div>
-      </dl>}
-      {ws.view === "research" && !selectedRecord && selectedPackage
-        && <dl className="rail-facts">
-          <div><dt>Vùng</dt><dd><ZoneChip zone={selectedPackage.zone_label}/></dd></div>
-          <div><dt>Fingerprint</dt><dd><code title={selectedPackage.fingerprint}>
-            {selectedPackage.fingerprint.slice(0, 16)}…</code></dd></div>
-          <div><dt>Snapshot</dt><dd>{selectedPackage.snapshot_scope} ·
-            {" "}{when(selectedPackage.captured_at)}</dd></div>
-          <div><dt>Trạng thái nhập</dt><dd>{selectedPackage.import_state}
-            {selectedPackage.rejection_code && <> · {selectedPackage.rejection_code}</>}
-          </dd></div>
-        </dl>}
-      {ws.view === "graduation" && selectedProposal && <dl className="rail-facts">
-        <div><dt>Vùng</dt><dd><ZoneChip zone={researchZone}/></dd></div>
-        <div><dt>Trạng thái</dt><dd>{selectedProposal.state}</dd></div>
-        {selectedProposal.attestation_hash && <div><dt>Attestation</dt>
-          <dd><code title={selectedProposal.attestation_hash}>
-            {selectedProposal.attestation_hash.slice(0, 16)}…</code></dd></div>}
-        {selectedProposal.publish_package_id && <div><dt>Gói tại cổng phát hành</dt>
-          <dd><code>{selectedProposal.publish_package_id}</code></dd></div>}
-        {selectedProposal.supersedes_proposal_id && <div><dt>Thay thế đề xuất</dt>
-          <dd><code>{selectedProposal.supersedes_proposal_id}</code></dd></div>}
-        <div><dt>Dòng dõi</dt><dd>{selectedProposal.research_record_ids.length} bản
-          ghi nghiên cứu gắn checksum bằng chứng</dd></div>
-      </dl>}
-      {((ws.view === "gaps" && !selectedGap)
-        || (ws.view === "research" && !selectedRecord && !selectedPackage)
-        || (ws.view === "graduation" && !selectedProposal)
-        || (queueView && queue.state !== "ready"))
-        && <p className="surface-empty">Chọn một mục để xem bằng chứng.</p>}
-    </aside>
+    <EvidenceRail entries={railEntries} open={railOpen}
+      onClose={() => setRailOpen(false)} note={railNote}/>
+    </div>
     {(ledgerOpen || railOpen) && <button className="scrim" type="button"
       aria-label="Đóng bảng điều khiển"
       onClick={() => {setLedgerOpen(false); setRailOpen(false);}}/>}
-  </main>;
+  </div>;
 }
