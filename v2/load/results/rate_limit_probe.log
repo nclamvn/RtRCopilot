@@ -1,0 +1,62 @@
+
+          /\      |‾‾| /‾‾/   /‾‾/   
+     /\  /  \     |  |/  /   /  /    
+    /  \/    \    |     (   /   ‾‾\  
+   /          \   |  |\  \ |  (‾)  | 
+  / __________ \  |__| \__\ \_____/ .io
+
+     execution: local
+        script: /load/rate_limit_probe.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 10 max VUs, 1m10s max duration (incl. graceful stop):
+              * rate_limit_probe: 250 iterations shared among 10 VUs (maxDuration: 40s, gracefulStop: 30s)
+
+
+running (0m01.0s), 10/10 VUs, 0 complete and 0 interrupted iterations
+rate_limit_probe   [   0% ] 10 VUs  00.4s/40s  000/250 shared iters
+
+running (0m02.0s), 10/10 VUs, 18 complete and 0 interrupted iterations
+rate_limit_probe   [   7% ] 10 VUs  01.4s/40s  018/250 shared iters
+
+running (0m03.0s), 10/10 VUs, 57 complete and 0 interrupted iterations
+rate_limit_probe   [  23% ] 10 VUs  02.4s/40s  057/250 shared iters
+
+running (0m04.0s), 10/10 VUs, 95 complete and 0 interrupted iterations
+rate_limit_probe   [  38% ] 10 VUs  03.4s/40s  095/250 shared iters
+
+running (0m05.0s), 10/10 VUs, 118 complete and 0 interrupted iterations
+rate_limit_probe   [  47% ] 10 VUs  04.4s/40s  118/250 shared iters
+
+running (0m06.0s), 10/10 VUs, 211 complete and 0 interrupted iterations
+rate_limit_probe   [  84% ] 10 VUs  05.4s/40s  211/250 shared iters
+
+     ✓ 429 has Retry-After
+     ✓ 429 typed rate_limited
+
+     █ setup
+
+     checks.........................: 100.00% ✓ 260       ✗ 0   
+     data_received..................: 86 kB   14 kB/s
+     data_sent......................: 17 kB   2.7 kB/s
+     http_req_blocked...............: avg=544.49µs min=228ns   med=432ns    max=18.23ms  p(90)=783ns    p(95)=5.84µs  
+     http_req_connecting............: avg=95.94µs  min=0s      med=0s       max=5.36ms   p(90)=0s       p(95)=0s      
+     http_req_duration..............: avg=221.94ms min=31.69ms med=173.29ms max=858.66ms p(90)=487.93ms p(95)=707.48ms
+       { expected_response:true }...: avg=328.92ms min=31.69ms med=269.35ms max=858.66ms p(90)=541.65ms p(95)=811.4ms 
+     http_req_failed................: 50.98%  ✓ 130       ✗ 125 
+     http_req_receiving.............: avg=616.27µs min=35.89µs med=269.87µs max=30.7ms   p(90)=815.84µs p(95)=1.33ms  
+     http_req_sending...............: avg=293.45µs min=39.53µs med=134.55µs max=3.37ms   p(90)=707.49µs p(95)=857.35µs
+     http_req_tls_handshaking.......: avg=434.19µs min=0s      med=0s       max=16.73ms  p(90)=0s       p(95)=0s      
+     http_req_waiting...............: avg=221.03ms min=19.51ms med=172.37ms max=856.83ms p(90)=487.54ms p(95)=707.24ms
+     http_reqs......................: 255     40.644471/s
+     iteration_duration.............: avg=226.44ms min=51.21ms med=174.46ms max=868.93ms p(90)=499.68ms p(95)=728.59ms
+     iterations.....................: 250     39.847521/s
+     status_200.....................: 120     19.12681/s
+   ✓ status_429.....................: 130     20.720711/s
+   ✓ status_5xx.....................: 0       0/s
+     vus............................: 10      min=10      max=10
+     vus_max........................: 10      min=10      max=10
+
+
+running (0m06.3s), 00/10 VUs, 250 complete and 0 interrupted iterations
+rate_limit_probe ✓ [ 100% ] 10 VUs  05.7s/40s  250/250 shared iters

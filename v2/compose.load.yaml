@@ -1,0 +1,32 @@
+# TIP-012 Task 5 (Builder 5) — load-measurement override. ADDITIVE and
+# non-shipping: it is layered ONLY for the SLO latency scenarios and is never
+# part of `make dev`, `make hardened-up`, deploy.sh or CI.
+#
+# Why it exists: the Redis rate limiter (Builder 2) keys per subject AND per
+# client IP. A k6 run is one dev-OIDC subject from one source IP, so at the
+# shipped per-IP quotas (default-read 120/min, ask 30/min, upload 20/min) a
+# single load generator is throttled long before it can stress the server — the
+# limiter, not the server, would set p95. This override RAISES the numeric reject
+# ceilings (still within the pydantic bound le=1_000_000) so the latency numbers
+# reflect the SERVER. The limiter still runs on every request, so its per-request
+# cost is included in the measurement; only the reject threshold is lifted.
+#
+# Enforcement at the shipped DEFAULT thresholds is proven WITHOUT this override
+# by load/rate_limit_probe.js and by Builder 2's integration tests. See
+# docs/slo.md §1 "Rate limits during the SLO measurement".
+#
+# Usage:
+#   docker compose -f compose.yaml -f compose.hardened.yaml -f compose.load.yaml \
+#     --profile hardened up -d postgres redis minio minio-init clamav api worker web ingress
+# (scripts/run-load.sh handles bring-up.)
+
+services:
+  api:
+    environment:
+      LIMITS_RATE_WINDOW_SECONDS: "60"
+      LIMITS_RATE_AUTH_MAX: "1000000"
+      LIMITS_RATE_ASK_MAX: "1000000"
+      LIMITS_RATE_UPLOAD_MAX: "1000000"
+      LIMITS_RATE_RENDER_MAX: "1000000"
+      LIMITS_RATE_ADMIN_MAX: "1000000"
+      LIMITS_RATE_DEFAULT_READ_MAX: "1000000"

@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback
+.PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo
 
 # TIP-012 Task 1 — hardened profile (TLS ingress fronts everything, AC-01).
 # Requires the ingress hostname to resolve to 127.0.0.1 for probes/browsers:
@@ -88,3 +88,29 @@ deploy:
 
 rollback:
 	./scripts/rollback.sh $(VERSION)
+
+# TIP-012 Task 5 — load testing + SLO (Builder 5). Additive targets; `verify`
+# and every recipe above are untouched. `load-up` brings up the hardened stack
+# WITH the load-measurement override (compose.load.yaml raises rate-limit quotas
+# so a single-IP k6 generator measures server latency). `load` runs the k6 SLO
+# scenarios through the ingress and evaluates them. `slo` re-evaluates existing
+# results. `load-probe` runs the R1 rate-limit probe at default limits. In this
+# sandbox export MALWARE_SIGNATURE_MAX_AGE_SECONDS=1209600 (ClamAV freshness).
+LOAD_COMPOSE := docker compose -f compose.yaml -f compose.hardened.yaml -f compose.load.yaml
+
+load-up:
+	$(LOAD_COMPOSE) up -d postgres redis minio minio-init clamav
+	$(LOAD_COMPOSE) --profile tools run --rm migrate
+	PUBLIC_BASE_URL=$(HARDENED_PUBLIC_BASE_URL) INGRESS_HOST=$(INGRESS_HOST) \
+		$(LOAD_COMPOSE) --profile hardened up -d api worker web ingress
+	INGRESS_HOST=$(INGRESS_HOST) ./scripts/wait-ready-hardened.sh
+
+load:
+	./scripts/run-load.sh
+	./scripts/evaluate-slo.sh
+
+load-probe:
+	./scripts/run-load-probe.sh
+
+slo:
+	./scripts/evaluate-slo.sh
