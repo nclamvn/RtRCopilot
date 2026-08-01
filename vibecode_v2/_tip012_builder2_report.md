@@ -182,3 +182,41 @@ limited request opens/closes a fresh Redis client (matches the app-wide
 per-request pattern, ~sub-ms up, ~6 ms fast-fail when down) — a shared pool is a
 p95 optimization if the limiter shows up in the tail. Test through the hardened
 ingress to also cover the `request_body` caps (413) end-to-end.
+
+## REFINE (Contractor VERIFY — test isolation, tests only)
+
+Finding: in the canonical single-shared-DB full backend run,
+`test_job_capacity_admits_when_empty_and_sheds_over_cap` failed (1 failed / 376
+passed / 18 skipped) while passing 7/7 in isolation. Root cause was my own test
+isolation defect, not product: the test asserted `admitted == 0` for the
+ingestion family, assuming an empty `ingestion_jobs` table — but earlier suites
+(`test_ingestion_integration`) leave non-terminal rows in the shared DB, so the
+real count is non-zero.
+
+Fix (test/fixture code only, `tests/test_limits_integration.py` — no product
+code, no schema, no other builders' files):
+1. Rewrote the job-capacity test to be hermetic: it now reads the live
+   `outstanding_count` for ingestion and index, pins the ingestion cap to
+   `outstanding + 100` (admit path asserts `admitted == observed`) and pins the
+   index cap to 1 against a guaranteed backlog ≥ 1 (shed path). No assumption of
+   a pristine schema or default caps.
+2. Audited every limits test: unit tests use fakes (no shared state). The other
+   settings-backed integration tests (budget, breaker) already pin every
+   `limits.budget.*` value they read at setup; confirmed and left intact.
+3. Order-independence for LATER suites: the budget test (sets subject budget 1)
+   and job-capacity test (sets index cap 1) now restore all settings-backed
+   limits to their registry defaults **in-body** at the end via
+   `_restore_defaults`. (An earlier autouse async *teardown fixture* attempt was
+   discarded — its finalizer ran on a different event loop than asyncpg's pool
+   and raised `attached to a different loop` after the ASGITransport rate test;
+   in-body resets run in the test's own loop and are safe.)
+
+Verification in this container:
+- `uv run ruff check .` PASS; `uv run mypy` PASS (98 files);
+  `uv run pytest` (unit) **293 passed / 102 skipped** (unchanged — the fix is in
+  a skip-marked integration file).
+- **Decisive:** fresh DB migrated to head, then `uv run pytest` against that ONE
+  shared DB → **377 passed / 18 skipped / 0 failed** (43 s). Re-run against the
+  now-populated DB → **377 passed / 18 skipped / 0 failed** again (true
+  hermeticity, not a fresh-DB fluke). `test_limits_integration.py` in isolation:
+  7 passed.

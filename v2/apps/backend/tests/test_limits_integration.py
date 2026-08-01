@@ -58,6 +58,25 @@ def factory() -> async_sessionmaker[Any]:
     return async_sessionmaker(engine, expire_on_commit=False)
 
 
+#: Registry defaults, restored in-body by tests that pin a restrictive value so
+#: no later suite in the shared-DB full run inherits it (order-independence).
+_SETTING_DEFAULTS: tuple[tuple[str, int], ...] = (
+    ("limits.budget.subject_daily_units", 500),
+    ("limits.budget.global_daily_units", 20_000),
+    ("limits.jobs.ingestion_max_inflight", 100),
+    ("limits.jobs.render_max_inflight", 50),
+    ("limits.jobs.index_max_backlog", 200),
+)
+
+
+async def _restore_defaults(
+    factory: async_sessionmaker[Any],
+    actor_id: uuid.UUID,
+) -> None:
+    for key, value in _SETTING_DEFAULTS:
+        await _set_int_setting(factory, actor_id, key, value)
+
+
 def _redis() -> Any:
     return Redis.from_url(get_settings().redis_url, decode_responses=True)
 
@@ -296,6 +315,9 @@ async def test_budget_breach_429_on_ask_with_subject_isolation(
             ORDER BY sequence DESC LIMIT 1
         """), {"actor": spender})
     assert reason == "budget_exhausted"
+    # Restore generous defaults in-body (loop-safe) so the shared-DB full suite
+    # never inherits this test's restrictive subject budget of 1.
+    await _restore_defaults(factory, spender)
 
 
 # --------------------------------------------------------------------------- #
@@ -430,30 +452,39 @@ async def test_job_capacity_admits_when_empty_and_sheds_over_cap(
 ) -> None:
     owner = await actor(factory)
     # A fresh source published-but-not-indexed leaves one 'pending' reindex
-    # outbox row -> a real index-family backlog of 1.
+    # outbox row -> a real index-family backlog of at least 1.
     await _publish_pending(tmp_path, factory, owner)
 
-    async with factory() as session, session.begin():
-        await GovernanceRepository().set_setting(
-            session,
-            setting_key="limits.jobs.index_max_backlog",
-            value_type="integer",
-            value=1,
-            updated_by=owner,
-            reason="tip-012 integration index cap",
-        )
+    # The full backend suite shares one DB, so other suites may leave
+    # non-terminal ingestion jobs and may have adjusted caps. Read the live
+    # counts and pin every cap this test reads relative to them, so the outcome
+    # never depends on run order or a pristine schema.
     async with factory() as session:
-        # Ingestion family is empty -> admitted (real counting SQL).
-        admitted = await check_capacity(session, "ingestion", retry_after=15)
-        assert admitted == 0
+        ingestion_outstanding = await outstanding_count(session, "ingestion")
         index_outstanding = await outstanding_count(session, "index")
-        assert index_outstanding >= 1
-        # Index family is at/over its cap -> shed.
+    assert index_outstanding >= 1
+
+    # Admit path: cap set comfortably above the current outstanding count.
+    await _set_int_setting(
+        factory,
+        owner,
+        "limits.jobs.ingestion_max_inflight",
+        ingestion_outstanding + 100,
+    )
+    async with factory() as session:
+        admitted = await check_capacity(session, "ingestion", retry_after=15)
+    assert admitted == ingestion_outstanding
+
+    # Shed path: index cap pinned to 1 with a guaranteed backlog of >= 1.
+    await _set_int_setting(factory, owner, "limits.jobs.index_max_backlog", 1)
+    async with factory() as session:
         with pytest.raises(QueueSaturated) as saturated:
             await check_capacity(session, "index", retry_after=15)
     assert saturated.value.family == "index"
     assert saturated.value.cap == 1
     assert saturated.value.retry_after == 15
+    # Restore generous defaults so no later suite inherits index cap of 1.
+    await _restore_defaults(factory, owner)
 
 
 async def _publish_pending(
