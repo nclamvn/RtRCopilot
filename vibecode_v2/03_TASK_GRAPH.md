@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** Blueprint APPROVED · TIP-011 VERIFIED (01/08/2026)
+**Trạng thái:** Blueprint APPROVED · TIP-011 VERIFIED · TIP-012 ISSUED (01/08/2026)
 
 ```text
 TIP-001 Security containment
