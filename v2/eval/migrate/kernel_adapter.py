@@ -749,6 +749,7 @@ def convert_fact(
     leader_files: frozenset[str],
     denied: frozenset[str],
     overlay: CurationOverlay | None = None,
+    promoted_source_ids: frozenset[str] = frozenset(),
 ) -> tuple[FactOutcome, _ReadyRecord | None]:
     fact_id = str(fact["id"])
     classification, tier = classify(file_key, leader_files)
@@ -756,8 +757,15 @@ def convert_fact(
     # TIP-013B curation overlay (DRY-RUN transform on the emitted packages only;
     # the read-only kernel snapshot is never modified).  When no overlay is passed
     # every branch below is a pure no-op and behavior is identical to the baseline.
+    # ``promoted_source_ids`` (the promoted-capability id set, computed once in
+    # convert_registry) drives the D2B cascade so it is a genuine dependency, not a
+    # hand list.
     original_kernel_prov = kernel_provenance_of(fact)  # before any overlay transform
-    decision = overlay.decide(file_key, fact_id, fact) if overlay is not None else None
+    decision = (
+        overlay.decide(file_key, fact_id, fact, promoted_source_ids=promoted_source_ids)
+        if overlay is not None
+        else None
+    )
     if decision is not None and decision.exclude:
         return (
             _excluded_outcome(
@@ -961,6 +969,16 @@ def convert_registry(
     allowlist = registry.get("leader_allowlist")
     leader_files = leader_only_sources(allowlist)
     denied = denied_ids(allowlist)
+    # Decision 2B cascade support: compute the set of promoted-capability ids ONCE
+    # from the same registry so a curate kernel_ref can resolve whether its source
+    # record is now promoted.  Empty when no overlay is applied (baseline behavior).
+    promoted_source_ids: frozenset[str] = frozenset()
+    if overlay is not None:
+        caps_doc = registry.get("capabilities")
+        cap_list = caps_doc.get("capabilities") if isinstance(caps_doc, dict) else None
+        promoted_source_ids = overlay.promoted_capability_ids(
+            [c for c in (cap_list or []) if isinstance(c, dict)],
+        )
     result = ConversionResult()
     for file_key, fact in iter_facts(registry):
         outcome, ready = convert_fact(
@@ -970,6 +988,7 @@ def convert_registry(
             leader_files=leader_files,
             denied=denied,
             overlay=overlay,
+            promoted_source_ids=promoted_source_ids,
         )
         result.outcomes.append(outcome)
         if ready is not None:
