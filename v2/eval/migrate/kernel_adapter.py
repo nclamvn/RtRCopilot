@@ -67,6 +67,7 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from migrate.curation_overlay import CurationOverlay
 from rtr_copilot.sot.models import (
     PackageEvidence,
     PackageManifest,
@@ -107,18 +108,27 @@ VERIFIED_PROVENANCE_MAP: dict[str, tuple[str, str, str]] = {
 #: never emitted as a ready record in this relaxed-policy migration.
 CLAIM_TRIPLE: tuple[str, str, str] = ("claim", "claim", "claim")
 
-#: Confidence-tier labels (TIP-013B spine).
+#: Confidence-tier labels (TIP-013B spine).  ``strategic`` and ``excluded`` are
+#: TIP-013B curation-overlay tiers (only reachable when the overlay is applied):
+#: ``strategic`` is a ready-with-caveat tier for facts grounded on a staged
+#: strategic doc; ``excluded`` marks a fact the Homeowner removed from the SOT
+#: fact set entirely (emitted in no package, reported for audit).
 TIER_STRICT = "strict"
 TIER_SOFT = "soft"
+TIER_STRATEGIC = "strategic"
 TIER_CURATE = "curate"
 TIER_CLAIM = "claim"
+TIER_EXCLUDED = "excluded"
 
 #: Record ``confidence`` scores by tier.  ``strict`` keeps the rehearsal's 0.9
 #: (verified provenance + verbatim span + locator); ``soft`` is deliberately lower
-#: (0.7) to encode "verified provenance but no formal evidence span" -- the
-#: ``needs_double_check`` marker, not this number, is the load-bearing signal.
+#: (0.7) to encode "verified provenance but no formal evidence span"; ``strategic``
+#: is lower still (0.6) to encode "grounded on a strategic-doctrine doc, not a
+#: verified spec" -- the ``needs_double_check`` marker, not the number, is the
+#: load-bearing signal in both cases.
 CONFIDENCE_STRICT = 0.9
 CONFIDENCE_SOFT = 0.7
+CONFIDENCE_STRATEGIC = 0.6
 
 #: Where the soft double-check marker rides on the emitted record: a single
 #: namespaced key inside the record's ``value`` payload (an existing ``Any`` field,
@@ -676,21 +686,59 @@ def _make_record(
     return record_data
 
 
-def _soft_value_payload(base_payload: Any, source_note: str) -> Any:
-    """Attach the soft double-check marker + source note to a record's ``value``.
+def _signal_value_payload(
+    base_payload: Any,
+    source_note: str,
+    *,
+    tier: str = TIER_SOFT,
+    curation: dict[str, Any] | None = None,
+) -> Any:
+    """Attach the double-check marker + source note to a record's ``value``.
 
     Rides in a single namespaced key inside the existing ``Any`` ``value`` field --
     no schema/gate change -- and flows verbatim into ``ActiveRecord.value`` at
-    ingest, which is where Part B reads it.  Only ``soft`` records carry this key;
-    ``strict`` records are untouched.  If ``base_payload`` is unexpectedly not a
-    dict, it is wrapped so the marker always has a home."""
+    ingest, which is where Part B reads it (it checks ``needs_double_check``).  Only
+    ``soft``/``strategic`` records carry this key; ``strict`` records are untouched.
+    ``curation`` (present only for overlay-promoted records) records which Homeowner
+    decision applied, for audit -- Part B ignores unknown keys.  If ``base_payload``
+    is unexpectedly not a dict it is wrapped so the marker always has a home."""
     payload = dict(base_payload) if isinstance(base_payload, dict) else {"value": base_payload}
-    payload[CONFIDENCE_SIGNAL_KEY] = {
-        "tier": TIER_SOFT,
+    signal: dict[str, Any] = {
+        "tier": tier,
         "needs_double_check": True,
         "source_note": source_note,
     }
+    if curation is not None:
+        signal["curation"] = curation
+    payload[CONFIDENCE_SIGNAL_KEY] = signal
     return payload
+
+
+def _excluded_outcome(
+    fact_id: str,
+    file_key: str,
+    classification: str,
+    tier: str,
+    kernel_prov: str,
+) -> FactOutcome:
+    """A fact the curation overlay removed from the SOT fact set (decision 4).
+
+    Emitted in no package and counted under the ``excluded`` tier -- reported for
+    audit, never fabricated into any ready/curate/claim bucket."""
+    return FactOutcome(
+        fact_id=fact_id,
+        file=file_key,
+        classification=classification,
+        tier=tier,
+        confidence_tier=TIER_EXCLUDED,
+        kernel_provenance=kernel_prov or "(none)",
+        status="excluded",
+        v2_provenance=None,
+        gaps=(),
+        primary_gap=None,
+        reject_code=None,
+        denied_from_packs=False,
+    )
 
 
 def convert_fact(
@@ -700,9 +748,26 @@ def convert_fact(
     registry: dict[str, Any],
     leader_files: frozenset[str],
     denied: frozenset[str],
+    overlay: CurationOverlay | None = None,
 ) -> tuple[FactOutcome, _ReadyRecord | None]:
     fact_id = str(fact["id"])
     classification, tier = classify(file_key, leader_files)
+
+    # TIP-013B curation overlay (DRY-RUN transform on the emitted packages only;
+    # the read-only kernel snapshot is never modified).  When no overlay is passed
+    # every branch below is a pure no-op and behavior is identical to the baseline.
+    original_kernel_prov = kernel_provenance_of(fact)  # before any overlay transform
+    decision = overlay.decide(file_key, fact_id, fact) if overlay is not None else None
+    if decision is not None and decision.exclude:
+        return (
+            _excluded_outcome(
+                fact_id, file_key, classification, tier, original_kernel_prov,
+            ),
+            None,
+        )
+    if decision is not None:
+        fact = decision.apply_to_fact(fact)
+
     kernel_prov = kernel_provenance_of(fact)
     is_denied = _is_denied(fact_id, denied) and file_key in {"derived_costs", "boms"}
     is_claim = kernel_prov == "claim"
@@ -801,10 +866,23 @@ def convert_fact(
     searchable_text = _searchable_text(fact, value)
     base_payload = _record_value(fact, value)
 
+    # Decision 3 relabels an otherwise-soft ready record as ``strategic`` (grounded
+    # on a staged strategic doc, ready-with-caveat).  ``note_suffix`` records which
+    # kernel record / strategic doc the promotion honestly references.
+    is_strategic = decision is not None and decision.tier_label == TIER_STRATEGIC
+    note_suffix = decision.note_suffix if decision is not None else None
+    curation_audit: dict[str, Any] | None = None
+    if decision is not None and decision.decision_ref is not None:
+        curation_audit = {
+            "decision": decision.decision_ref,
+            "origin_provenance": original_kernel_prov or "(none)",
+        }
+
     is_strict = (
         evidence_text is not None
         and locator is not None
         and verification_state in {"verified", "approved"}
+        and not is_strategic
     )
 
     if is_strict:
@@ -820,15 +898,23 @@ def convert_fact(
         needs_double_check = False
         source_note = None
     else:
-        # SOFT: verified provenance + source, but no formal span/locator.  Ready
-        # with an honest source note + double-check marker; no evidence fabricated.
+        # SOFT/STRATEGIC: verified/approved provenance + source, but no formal
+        # span/locator.  Ready with an honest source note + double-check marker; no
+        # evidence fabricated.  ``strategic`` is soft grounded on a strategic doc.
         source_note = build_source_note(fact)
+        if note_suffix:
+            source_note = f"{source_note} · {note_suffix}" if source_note else note_suffix
+        confidence_tier = TIER_STRATEGIC if is_strategic else TIER_SOFT
+        confidence_value = CONFIDENCE_STRATEGIC if is_strategic else CONFIDENCE_SOFT
         evidence_data = None
         record_data = _make_record(
-            fact_id, classification, _soft_value_payload(base_payload, source_note),
-            searchable_text, prov_triple, CONFIDENCE_SOFT, source_ref, [],
+            fact_id, classification,
+            _signal_value_payload(
+                base_payload, source_note,
+                tier=confidence_tier, curation=curation_audit,
+            ),
+            searchable_text, prov_triple, confidence_value, source_ref, [],
         )
-        confidence_tier = TIER_SOFT
         needs_double_check = True
 
     outcome = FactOutcome(
@@ -861,7 +947,17 @@ def convert_fact(
     return outcome, ready
 
 
-def convert_registry(registry: dict[str, Any]) -> ConversionResult:
+def convert_registry(
+    registry: dict[str, Any],
+    *,
+    overlay: CurationOverlay | None = None,
+) -> ConversionResult:
+    """Convert every publishable fact to a readiness outcome (+ ready record).
+
+    When ``overlay`` is ``None`` (default) the conversion is the baseline
+    dress-rehearsal behavior.  When a :class:`CurationOverlay` is passed, the 4
+    approved Homeowner decisions are applied as convert-time transforms on the
+    emitted packages -- DRY-RUN, the kernel snapshot is never modified."""
     allowlist = registry.get("leader_allowlist")
     leader_files = leader_only_sources(allowlist)
     denied = denied_ids(allowlist)
@@ -873,6 +969,7 @@ def convert_registry(registry: dict[str, Any]) -> ConversionResult:
             registry=registry,
             leader_files=leader_files,
             denied=denied,
+            overlay=overlay,
         )
         result.outcomes.append(outcome)
         if ready is not None:
@@ -1006,11 +1103,19 @@ def emit_packages(result: ConversionResult, out_root: Path) -> dict[str, str]:
 # --------------------------------------------------------------------------- #
 
 
-_TIER_ORDER = (TIER_STRICT, TIER_SOFT, TIER_CURATE, TIER_CLAIM)
+_TIER_ORDER = (
+    TIER_STRICT,
+    TIER_SOFT,
+    TIER_STRATEGIC,
+    TIER_CURATE,
+    TIER_CLAIM,
+    TIER_EXCLUDED,
+)
 
 
 def _ordered_tier_counts(counter: Counter[str]) -> dict[str, int]:
-    """Tier counts in the fixed strict->soft->curate->claim order (zeros dropped)."""
+    """Tier counts in the fixed strict->soft->strategic->curate->claim->excluded
+    order (zeros dropped)."""
     return {tier: counter[tier] for tier in _TIER_ORDER if counter[tier]}
 
 
@@ -1064,5 +1169,15 @@ def summarize(result: ConversionResult) -> dict[str, Any]:
         ),
         "soft_ready_fact_ids": sorted(
             item.fact_id for item in result.ready if item.confidence_tier == TIER_SOFT
+        ),
+        "strategic_ready_fact_ids": sorted(
+            item.fact_id
+            for item in result.ready
+            if item.confidence_tier == TIER_STRATEGIC
+        ),
+        "excluded_fact_ids": sorted(
+            outcome.fact_id
+            for outcome in result.outcomes
+            if outcome.confidence_tier == TIER_EXCLUDED
         ),
     }

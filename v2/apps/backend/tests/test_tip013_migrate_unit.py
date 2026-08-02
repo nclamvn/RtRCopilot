@@ -16,6 +16,7 @@ the migration dress rehearsal depends on:
   real ``--apply``.
 """
 
+import copy
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -25,6 +26,14 @@ EVAL = Path(__file__).resolve().parents[3] / "eval"
 if str(EVAL) not in sys.path:
     sys.path.insert(0, str(EVAL))
 
+from migrate.curation_overlay import (  # noqa: E402
+    EXCLUDE,
+    PROMOTE_VERIFIED_PRIMARY,
+    STRATEGIC_DOC,
+    UNIT_FIX,
+    CurationOverlay,
+    OverlayDecision,
+)
 from migrate.kernel_adapter import (  # noqa: E402
     build_source_note,
     classify,
@@ -476,3 +485,212 @@ def test_derived_from_verified_maps_to_soft_secondary() -> None:
     assert dfv.confidence_tier == "soft"
     assert dfv.v2_provenance == "verified_secondary"
     assert dfv.needs_double_check is True
+
+
+# --------------------------------------------------------------------------- #
+# TIP-013B · Homeowner curation-decision OVERLAY (DRY-RUN; kernel never modified)
+# --------------------------------------------------------------------------- #
+
+
+def _overlay_registry() -> dict[str, Any]:
+    """A deep copy of the synthetic registry with one extra strategic-doc
+    kernel_ref, so the overlay's four decisions all have a target."""
+    reg = copy.deepcopy(_registry())
+    reg["l3_facts"]["kernel_refs"].append({
+        "id": "L3R.STRAT",
+        "content": "RtR strategic doctrine statement grounded on a staged doc.",
+        "domain": "company",
+        "tier": "L3",
+        "kernel_ref": "CEO_STRATEGIC_STANCE_2026-07-01",
+        "source_path": "/Users/os/RtR/KnowledgeBase/Factsheet.docx",
+    })
+    return reg
+
+
+def _test_overlay() -> CurationOverlay:
+    """An overlay keyed to the synthetic ids: decision 1a on the kernel_ref
+    ``L3R.K.1``, 1b on ``SPEC.DRIFT``, 3 on ``L3R.STRAT``, 4 on ``SPEC.FLAG``.
+    Decision 2 (claim-with-span) is a built-in RULE and needs no keying; it fires
+    on ``L3F.1`` (an l3 claim with an ``evidence_span``)."""
+    return CurationOverlay(
+        promote_verified_primary=frozenset({"L3R.K.1"}),
+        unit_fix={"SPEC.DRIFT": ("lb", "kg")},
+        strategic_doc=frozenset({"L3R.STRAT"}),
+        exclude=frozenset({"SPEC.FLAG"}),
+    )
+
+
+def _overlay_outcomes(reg: dict[str, Any]) -> dict[str, Any]:
+    result = convert_registry(reg, overlay=_test_overlay())
+    return {o.fact_id: o for o in result.outcomes}
+
+
+def test_overlay_approved_decision_set_is_exactly_the_named_facts() -> None:
+    """Guard the audit trail: the shipped overlay promotes/excludes EXACTLY the
+    facts the Homeowner named (decisions 1a, 1b, 3, 4) -- no drift."""
+    assert sorted(PROMOTE_VERIFIED_PRIMARY) == [
+        "L3R.2.005", "L3R.2.013", "L3R.2.027", "L3R.3.030", "L3R.K.006",
+    ]
+    assert sorted(UNIT_FIX) == [
+        "SPEC.HERA.MTOW", "SPEC.HERA.WEIGHT.EMPTY", "SPEC.HERA.WEIGHT.TAKEOFF",
+    ]
+    assert all(v == ("lb", "kg") for v in UNIT_FIX.values())
+    assert sorted(STRATEGIC_DOC) == [
+        "L3R.2.023", "L3R.2.024", "L3R.2.025", "L3R.2.026", "L3R.2.032", "L3R.K.004",
+    ]
+    assert sorted(EXCLUDE) == ["L3R.K.005"]
+
+
+def test_overlay_decision1a_promotes_named_kernel_ref_to_soft() -> None:
+    """Decision 1a: a named kernel_ref inherits verified_primary -> soft-ready with
+    the double-check marker and a note that cites the kernel record it inherits."""
+    reg = _overlay_registry()
+    # Baseline (no overlay) the kernel_ref is curate/provenance_missing...
+    base = {o.fact_id: o for o in convert_registry(reg).outcomes}["L3R.K.1"]
+    assert base.status == "needs_curation" and base.confidence_tier == "curate"
+    # ...with the overlay it is soft-ready, honestly grounded on HC-042.
+    ov = _overlay_outcomes(reg)["L3R.K.1"]
+    assert ov.status == "ready"
+    assert ov.confidence_tier == "soft"
+    assert ov.v2_provenance == "verified_primary"
+    assert ov.needs_double_check is True
+    assert ov.source_note is not None and "inherits: HC-042" in ov.source_note
+
+
+def test_overlay_decision1b_unit_fix_yields_kg_and_strict(tmp_path: Path) -> None:
+    """Decision 1b: lb -> kg clears the drift and the fact flips to strict (verbatim
+    span + row locator), NO caveat.  The emitted record carries unit ``kg``."""
+    reg = _overlay_registry()
+    # Baseline: SPEC.DRIFT is curate with a unit_drift gap.
+    base = {o.fact_id: o for o in convert_registry(reg).outcomes}["SPEC.DRIFT"]
+    assert base.status == "needs_curation" and base.primary_gap == "unit_drift"
+    # Overlay: strict-ready, no caveat, no gaps.
+    result = convert_registry(reg, overlay=_test_overlay())
+    drift = {o.fact_id: o for o in result.outcomes}["SPEC.DRIFT"]
+    assert drift.status == "ready"
+    assert drift.confidence_tier == "strict"
+    assert drift.needs_double_check is False
+    assert "unit_drift" not in drift.gaps
+    rec = next(r for r in result.ready if r.fact_id == "SPEC.DRIFT")
+    assert rec.record["value"]["unit"] == "kg"
+    assert "confidence_signal" not in rec.record["value"]  # strict stays clean
+
+
+def test_overlay_decision2_promotes_claim_with_span_to_soft_caveat() -> None:
+    """Decision 2 (RULE): an l3 claim that carries a real evidence_span is promoted
+    to soft-ready grounded on that span, WITH the double-check caveat.  The kernel
+    provenance was ``claim`` -> emitted as ``approved_internal`` (never masquerading
+    verified), and the audit records the origin as claim."""
+    reg = _overlay_registry()
+    base = {o.fact_id: o for o in convert_registry(reg).outcomes}["L3F.1"]
+    assert base.confidence_tier == "claim"  # untouched without the overlay
+    result = convert_registry(reg, overlay=_test_overlay())
+    l3 = {o.fact_id: o for o in result.outcomes}["L3F.1"]
+    assert l3.status == "ready"
+    assert l3.confidence_tier == "soft"
+    assert l3.v2_provenance == "approved_internal"
+    assert l3.needs_double_check is True
+    # grounded on the REAL evidence_span text (Sony ILX-LR1 quote)
+    assert l3.source_note is not None and "Sony ILX-LR1" in l3.source_note
+    rec = next(r for r in result.ready if r.fact_id == "L3F.1")
+    signal = rec.record["value"]["confidence_signal"]
+    assert signal["tier"] == "soft"
+    assert signal["curation"] == {
+        "decision": "D2-claim-with-span-promoted",
+        "origin_provenance": "claim",
+    }
+
+
+def test_overlay_non_promoted_claim_stays_claim() -> None:
+    """A claim that is NOT an l3 claim-with-span (e.g. a specs claim) is untouched by
+    the overlay -- it stays ``claim`` and is never auto-promoted."""
+    outcomes = _overlay_outcomes(_overlay_registry())
+    assert outcomes["SPEC.CLAIM_NOSPAN"].confidence_tier == "claim"
+    assert outcomes["SPEC.CLAIM_NOSPAN"].status == "needs_curation"
+    assert outcomes["SPEC.CLAIM_FULL"].confidence_tier == "claim"
+
+
+def test_overlay_decision3_strategic_tier_carries_caveat() -> None:
+    """Decision 3: a strategic-doc kernel_ref becomes the ``strategic`` tier
+    (ready-with-caveat), grounded on the staged doc named in its kernel_ref."""
+    result = convert_registry(_overlay_registry(), overlay=_test_overlay())
+    strat = {o.fact_id: o for o in result.outcomes}["L3R.STRAT"]
+    assert strat.status == "ready"
+    assert strat.confidence_tier == "strategic"
+    assert strat.v2_provenance == "approved_internal"
+    assert strat.needs_double_check is True
+    assert strat.source_note is not None
+    assert "strategic-doc: CEO_STRATEGIC_STANCE_2026-07-01" in strat.source_note
+    rec = next(r for r in result.ready if r.fact_id == "L3R.STRAT")
+    signal = rec.record["value"]["confidence_signal"]
+    assert signal["tier"] == "strategic"
+    assert signal["curation"]["decision"] == "D3-strategic-doc"
+    assert rec.record["confidence"] == 0.6
+
+
+def test_overlay_decision4_excludes_fact_entirely(tmp_path: Path) -> None:
+    """Decision 4: the excluded fact is emitted in NO tier and NO package."""
+    reg = _overlay_registry()
+    result = convert_registry(reg, overlay=_test_overlay())
+    outcomes = {o.fact_id: o for o in result.outcomes}
+    excluded = outcomes["SPEC.FLAG"]
+    assert excluded.status == "excluded"
+    assert excluded.confidence_tier == "excluded"
+    assert "SPEC.FLAG" not in {r.fact_id for r in result.ready}
+    staged = emit_packages(result, tmp_path)
+    parser = PackageParser(tmp_path)
+    for staging_name in staged.values():
+        parsed = parser.parse(staging_name)
+        assert "SPEC.FLAG" not in {r.record_key for r in parsed.records}
+
+
+def test_overlay_emitted_packages_pass_the_real_gate(tmp_path: Path) -> None:
+    """Every overlay-promoted package (soft, strategic, promoted-claim) still PASSES
+    the real publish gate -- approved_internal without evidence is a valid record."""
+    result = convert_registry(_overlay_registry(), overlay=_test_overlay())
+    staged = emit_packages(result, tmp_path)
+    parser = PackageParser(tmp_path)
+    for source_key, staging_name in staged.items():
+        parsed = parser.parse(staging_name)
+        report = validate_package(parsed, now=NOW, allow_claim_as_approved=False)
+        assert report.valid, (source_key, [f.code for f in report.findings])
+
+
+def test_overlay_is_byte_deterministic(tmp_path: Path) -> None:
+    """The overlay conversion + emission is byte-for-byte reproducible."""
+    reg = _overlay_registry()
+    staged_a = emit_packages(convert_registry(reg, overlay=_test_overlay()), tmp_path / "a")
+    staged_b = emit_packages(convert_registry(reg, overlay=_test_overlay()), tmp_path / "b")
+    assert staged_a == staged_b
+    for name in staged_a.values():
+        for member in ("manifest.json", "records.jsonl", "source_hashes.json",
+                       "publish_attestation.json"):
+            a = (tmp_path / "a" / name / member).read_bytes()
+            b = (tmp_path / "b" / name / member).read_bytes()
+            assert a == b
+
+
+def test_overlay_does_not_mutate_the_kernel_snapshot() -> None:
+    """DRY-RUN discipline: applying the overlay must not modify the input registry
+    (the read-only kernel snapshot) -- the unit stays ``lb`` and the claim stays
+    ``claim`` on the source dicts; transforms live only on the emitted copies."""
+    reg = _overlay_registry()
+    before = copy.deepcopy(reg)
+    convert_registry(reg, overlay=_test_overlay())
+    assert reg == before
+    drift = next(f for f in reg["specs"]["facts"] if f["id"] == "SPEC.DRIFT")
+    assert drift["unit"] == "lb"  # untouched on the snapshot
+    l3 = next(f for f in reg["l3_facts"]["facts"] if f["id"] == "L3F.1")
+    assert l3["provenance_level"] == "claim"  # untouched on the snapshot
+
+
+def test_overlay_decision_apply_to_fact_returns_a_copy() -> None:
+    """``OverlayDecision.apply_to_fact`` never mutates its argument."""
+    fact = {"id": "X", "unit": "lb", "provenance_level": "claim", "value": 1}
+    decision = OverlayDecision(fix_unit=("lb", "kg"), set_provenance="verified_primary")
+    out = decision.apply_to_fact(fact)
+    assert out is not fact
+    assert out["unit"] == "kg" and out["provenance_level"] == "verified_primary"
+    assert fact["unit"] == "lb" and fact["provenance_level"] == "claim"  # original intact
+    # a no-op decision returns the same object untouched
+    assert OverlayDecision().apply_to_fact(fact) is fact

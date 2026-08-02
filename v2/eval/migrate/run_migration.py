@@ -27,6 +27,7 @@ EVAL_ROOT = HERE.parent
 if str(EVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(EVAL_ROOT))
 
+from migrate.curation_overlay import CurationOverlay  # noqa: E402
 from migrate.kernel_adapter import (  # noqa: E402
     CURATOR_ID,
     ConversionResult,
@@ -135,12 +136,14 @@ def _final_status_totals(reconciled: list[dict[str, Any]]) -> dict[str, int]:
     return dict(sorted(totals.items()))
 
 
-_TIER_ORDER = ("strict", "soft", "curate", "claim")
+_TIER_ORDER = ("strict", "soft", "strategic", "curate", "claim", "excluded")
+_READY_TIERS = ("strict", "soft", "strategic")
 
 
 def _final_tier_totals(reconciled: list[dict[str, Any]]) -> dict[str, int]:
-    """Confidence-tier split (strict/soft/curate/claim), gate-reconciled: a ready
-    fact the gate rejected is counted under ``rejected`` instead of its tier."""
+    """Confidence-tier split (strict/soft/strategic/curate/claim/excluded),
+    gate-reconciled: a ready fact the gate rejected is counted under ``rejected``
+    instead of its tier."""
     totals: dict[str, int] = {}
     for item in reconciled:
         key = "rejected" if item["status"] == "rejected" else item["confidence_tier"]
@@ -151,15 +154,21 @@ def _final_tier_totals(reconciled: list[dict[str, Any]]) -> dict[str, int]:
     return ordered
 
 
-def build_report(kernel_root: Path, out_root: Path) -> dict[str, Any]:
+def build_report(
+    kernel_root: Path,
+    out_root: Path,
+    *,
+    overlay: CurationOverlay | None = None,
+) -> dict[str, Any]:
     registry = load_registry(kernel_root)
-    result = convert_registry(registry)
+    result = convert_registry(registry, overlay=overlay)
     staged = emit_packages(result, out_root)
     summary = summarize(result)
     dry_run = run_dry_run(result, staged, out_root)
     return {
         "generated_by": "eval/migrate/run_migration.py",
         "mode": "DRY_RUN_ONLY",
+        "curation_overlay": "applied" if overlay is not None else "none",
         "kernel_root": str(kernel_root),
         "staging_root": str(out_root),
         "curator_subject_id": str(CURATOR_ID),
@@ -183,8 +192,11 @@ def _print_summary(report: dict[str, Any]) -> None:
     print(f"kernel_root : {report['kernel_root']}")
     print(f"staging_root: {report['staging_root']}")
     print(f"total facts : {summary['total_facts']}")
+    print(f"curation    : {report['curation_overlay']}")
     print(f"final status: {report['final_status_totals']}")
-    print(f"final tiers : {report['final_tier_totals']}  (strict+soft = ready)")
+    tiers = report["final_tier_totals"]
+    ready = sum(tiers.get(tier, 0) for tier in _READY_TIERS)
+    print(f"final tiers : {tiers}  (strict+soft+strategic = {ready} ready)")
     print("by file (confidence tier):")
     for file_key, counts in summary["by_file_tier"].items():
         print(f"  {file_key:<14} {counts}")
@@ -223,12 +235,22 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="output staging dir for emitted packages",
     )
     parser.add_argument("--report-json", type=Path, help="write the readiness JSON here")
+    parser.add_argument(
+        "--curated",
+        action="store_true",
+        help=(
+            "apply the Homeowner's 4 approved TIP-013B curation decisions as a "
+            "DRY-RUN overlay (unit fix, promotions, strategic tier, exclusion); the "
+            "read-only kernel snapshot is NOT modified and nothing is activated"
+        ),
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _build_arg_parser().parse_args(argv)
-    report = build_report(args.kernel_root, args.out)
+    overlay = CurationOverlay() if args.curated else None
+    report = build_report(args.kernel_root, args.out, overlay=overlay)
     if args.report_json:
         args.report_json.parent.mkdir(parents=True, exist_ok=True)
         args.report_json.write_text(
