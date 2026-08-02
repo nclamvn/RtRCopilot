@@ -68,6 +68,21 @@ describe("ask answer contract", () => {
       .toThrow("invalid_ask_response");
   });
 
+  test("the confidence caveat flag rides only a grounded answer (TIP-013B)", () => {
+    // Absent field → false; the field flips it true on a grounded answer.
+    expect(parseAskAnswer(grounded).confidenceCaveat).toBe(false);
+    expect(parseAskAnswer({...grounded, confidence_caveat: true}).confidenceCaveat)
+      .toBe(true);
+    // A non-grounded answer never carries the caveat, even if the server set it.
+    expect(parseAskAnswer({
+      ...grounded, state: "honest_null", citations: [], gap_id: gapId,
+      confidence_caveat: true,
+    }).confidenceCaveat).toBe(false);
+    // A non-boolean caveat is a contract violation.
+    expect(() => parseAskAnswer({...grounded, confidence_caveat: "yes"}))
+      .toThrow("invalid_ask_response");
+  });
+
   test("a forged zone label inside a citation rejects the whole answer", () => {
     // TIP-011: the literal server "sot" is the legitimate label…
     const labeled = parseAskAnswer({

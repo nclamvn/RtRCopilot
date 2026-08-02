@@ -185,6 +185,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,[t
 .ask-answer h2,.honest-null h2,.ask-research h2,.ask-conversation h2,.ask-history h2{font:700 18px/1 "Arial Narrow",Arial,sans-serif;letter-spacing:.02em;margin:0}
 .grounding-note{margin:4px 0 0;color:var(--locator);font-size:11px}
 .answer-text{margin:0;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+/* TIP-013B AC-4: soft-grounded double-check caveat. Legible on purpose —
+   --ink on --bg is ~15:1 (well above WCAG AA 4.5:1), never a faint grey; the
+   --signal left rule is a ~6:1 non-text accent. Static (reduced-motion safe). */
+.confidence-caveat{margin:10px 0 0;padding:9px 11px;border-left:3px solid var(--signal);background:var(--bg);color:var(--ink);font-size:12px;line-height:1.5}
 .citation-marker{background:transparent;border:1px solid var(--locator);color:#a8d2db;font:700 10px/1 ui-monospace,monospace;padding:2px 4px;margin:0 2px;cursor:pointer;vertical-align:baseline}
 .citation-marker:hover{background:#1d2428}
 .honest-null{border-color:var(--signal)}

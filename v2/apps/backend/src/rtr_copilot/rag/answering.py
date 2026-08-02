@@ -63,6 +63,26 @@ class GroundingError(ValueError):
         self.code = code
 
 
+def needs_double_check(value: object) -> bool:
+    """True iff a record value carries the soft-tier double-check marker.
+
+    TIP-013B Part A attaches
+    ``value["confidence_signal"] = {tier: "soft", needs_double_check: true,
+    source_note: "…"}`` to softly-grounded SOT records; strict and claim
+    records lack the key. This is additive answer-time metadata that only
+    *reads* an already-grounded record value — it never changes retrieval,
+    ranking, DLP or what gets grounded. Pure and total: any value that is not
+    exactly that marker (missing key, wrong shape, ``needs_double_check`` not
+    literally ``True``) returns False and never raises.
+    """
+    if not isinstance(value, dict):
+        return False
+    signal = value.get("confidence_signal")
+    if not isinstance(signal, dict):
+        return False
+    return signal.get("needs_double_check") is True
+
+
 def sanitize_question(value: str, maximum: int) -> str:
     return CONTROL_RE.sub(" ", value).strip()[:maximum]
 
@@ -352,6 +372,34 @@ class AnswerService:
                   AND r.current_version_id=c.record_version_id
             """), {"chunk_ids": [item.chunk_id for item in hits]})
         return int(count or 0) == len(hits)
+
+    async def _soft_cited_version_ids(
+        self,
+        selected: list[RetrievalHit],
+    ) -> set[uuid.UUID]:
+        """Which cited records carry the soft-tier double-check marker.
+
+        TIP-013B AC-3: additive answer metadata that rides ALONG the existing
+        grounding. It reads only the values of records already selected for
+        citation — a read-only lookup of ``record_versions.value_payload`` — and
+        never alters what is retrieved, ranked, filtered or grounded. Returns
+        the empty set for strict-only citations (no ``confidence_signal``).
+        """
+        version_ids = sorted({
+            item.citation.record_version_id for item in selected
+        })
+        if not version_ids:
+            return set()
+        async with self.uow.factory() as session:
+            rows = (await session.execute(text("""
+                SELECT version_id,value_payload FROM record_versions
+                WHERE version_id=ANY(CAST(:version_ids AS uuid[]))
+            """), {"version_ids": version_ids})).mappings().all()
+        return {
+            row["version_id"]
+            for row in rows
+            if needs_double_check(row["value_payload"])
+        }
 
     async def _persist_grounded(
         self,
@@ -842,11 +890,20 @@ class AnswerService:
                 started=started,
                 provider_calls=self.provider.calls - calls_before,
             )
+        # TIP-013B AC-3: read the already-selected records' values and mark the
+        # soft-grounded ones so the answer surfaces the double-check caveat.
+        soft_versions = await self._soft_cited_version_ids(selected)
         return AskResponse(
             state="grounded",
             answer=output.answer,
-            citations=[item.citation for item in selected],
+            citations=[
+                item.citation.model_copy(update={"needs_double_check": True})
+                if item.citation.record_version_id in soft_versions
+                else item.citation
+                for item in selected
+            ],
             conversation_id=conversation_id,
             answer_run_id=run_id,
+            confidence_caveat=bool(soft_versions),
             request_id=request_id,
         )

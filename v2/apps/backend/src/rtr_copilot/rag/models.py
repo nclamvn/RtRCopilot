@@ -60,6 +60,12 @@ class Citation(StrictModel):
     source_label: str
     locator: dict[str, Any]
     redacted: bool = False
+    # TIP-013B AC-3: additive answer-time metadata. True when this cited
+    # record carries the soft-tier ``confidence_signal`` marker (Part A) and
+    # its answer should surface the double-check caveat. Rides ALONG the
+    # existing grounding — nothing about retrieval, ranking or DLP changes,
+    # and it is never persisted (not stored on ``answer_citations``).
+    needs_double_check: bool = False
 
 
 class RetrievalHit(StrictModel):
@@ -85,6 +91,11 @@ class AskResponse(StrictModel):
     conversation_id: uuid.UUID
     answer_run_id: uuid.UUID
     gap_id: uuid.UUID | None = None
+    # TIP-013B AC-3: True iff the answer is grounded on at least one cited
+    # record carrying the soft-tier ``needs_double_check`` marker (Part A).
+    # Strict-only answers and honest-null answers stay False. Additive
+    # response field only — no schema change, nothing stored.
+    confidence_caveat: bool = False
     request_id: str
 
 
