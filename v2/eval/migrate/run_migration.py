@@ -159,10 +159,11 @@ def build_report(
     out_root: Path,
     *,
     overlay: CurationOverlay | None = None,
+    signing_secret: str | None = None,
 ) -> dict[str, Any]:
     registry = load_registry(kernel_root)
     result = convert_registry(registry, overlay=overlay)
-    staged = emit_packages(result, out_root)
+    staged = emit_packages(result, out_root, signing_secret=signing_secret)
     summary = summarize(result)
     dry_run = run_dry_run(result, staged, out_root)
     return {
@@ -181,6 +182,24 @@ def build_report(
         "final_status_totals": _final_status_totals(dry_run["reconciled_outcomes"]),
         "final_tier_totals": _final_tier_totals(dry_run["reconciled_outcomes"]),
         "outcomes": dry_run["reconciled_outcomes"],
+    }
+
+
+def build_manifest(staged: dict[str, str]) -> dict[str, Any]:
+    """Build the ``onboard_batch.BatchManifest`` JSON for the emitted packages.
+
+    One SOT item per source key, each pinned to its ``expected_source_key`` so
+    the onboarding tool fail-closes on any staging/source-key drift.  The curator
+    is the deterministic migration curator the attestations were signed for; the
+    real ``--apply`` binds this same id to the seeded curator subject and the
+    publish gate independently re-verifies the signature."""
+    return {
+        "batch_id": "tip013b-curated-real-kernel",
+        "curator_subject_id": str(CURATOR_ID),
+        "sot_items": [
+            {"staging_name": staged[source_key], "expected_source_key": source_key}
+            for source_key in sorted(staged)
+        ],
     }
 
 
@@ -244,20 +263,72 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "read-only kernel snapshot is NOT modified and nothing is activated"
         ),
     )
+    parser.add_argument(
+        "--emit",
+        action="store_true",
+        help=(
+            "EMIT the ready packages signed with the REAL SOT_SIGNING_SECRET (from "
+            "the env var named by --signing-secret-env) and write the onboarding "
+            "manifest to --manifest-out.  This still does NOT activate anything -- "
+            "it only produces the signed on-disk packages the curator-gated "
+            "onboarding tool (scripts/onboard-batch.sh --apply --approve) consumes"
+        ),
+    )
+    parser.add_argument(
+        "--manifest-out",
+        type=Path,
+        help="write the onboarding BatchManifest JSON here (implies --emit)",
+    )
+    parser.add_argument(
+        "--signing-secret-env",
+        default="SOT_SIGNING_SECRET",
+        help="env var holding the real signing secret for --emit (>=32 chars)",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
+    import os
+
     args = _build_arg_parser().parse_args(argv)
     overlay = CurationOverlay() if args.curated else None
-    report = build_report(args.kernel_root, args.out, overlay=overlay)
+    emit = bool(args.emit or args.manifest_out)
+    signing_secret: str | None = None
+    if emit:
+        signing_secret = os.environ.get(args.signing_secret_env, "")
+        if not signing_secret or len(signing_secret) < 32:
+            print(
+                f"ERROR: --emit requires env {args.signing_secret_env} set to a "
+                "real signing secret of at least 32 characters (the SAME secret "
+                "the running api uses); refusing to emit unverifiable packages.",
+                file=sys.stderr,
+            )
+            return 2
+    report = build_report(
+        args.kernel_root, args.out, overlay=overlay, signing_secret=signing_secret,
+    )
+    if emit:
+        report["mode"] = "EMIT_SIGNED_PACKAGES"
     if args.report_json:
         args.report_json.parent.mkdir(parents=True, exist_ok=True)
         args.report_json.write_text(
             json.dumps(report, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+    if emit and args.manifest_out:
+        manifest = build_manifest(report["staged_packages"])
+        args.manifest_out.parent.mkdir(parents=True, exist_ok=True)
+        args.manifest_out.write_text(
+            json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     _print_summary(report)
+    if emit:
+        print("=" * 72)
+        print("EMITTED SIGNED PACKAGES (real SOT_SIGNING_SECRET). Nothing activated")
+        print("yet — run scripts/onboard-batch.sh --apply --approve to activate.")
+        if args.manifest_out:
+            print(f"manifest: {args.manifest_out}")
     return 0
 
 

@@ -1013,13 +1013,23 @@ def write_package(
     ready: list[_ReadyRecord],
     *,
     revision: int = 1,
+    signing_secret: str | None = None,
 ) -> str:
     """Write ONE staged SOT package (all ready records for a source key).
 
     Mirrors the exact wire layout of ``tests/sot_fixtures.build_package`` -- the
     same members, canonical-json encoding and manifest/attestation construction --
     but for N records.  Returns the staging directory name.
+
+    ``signing_secret`` selects the HMAC key the attestation is signed with.  It
+    defaults to the deterministic dry-run ``ADAPTER_SECRET`` (the dry-run
+    validators never check the signature, so a self-consistent placeholder is
+    correct there).  For a REAL ``--apply`` the caller passes the running api's
+    ``SOT_SIGNING_SECRET`` so the publish gate's signature check
+    (``verify_attestation``) succeeds -- the ONLY difference from the dry-run
+    package.
     """
+    secret = signing_secret or ADAPTER_SECRET
     package_id = uuid.uuid5(_NS, f"package:{source_key}:{revision}")
     staging_name = f"package-{package_id}"
     package_root = out_root / staging_name
@@ -1091,7 +1101,7 @@ def write_package(
     attestation["manifest_sha256"] = manifest_identity_sha(manifest)
     attestation["signature"] = sign_attestation(
         PublishAttestation.model_validate(attestation).model_dump(mode="json"),
-        ADAPTER_SECRET,
+        secret,
     )
     attestation_bytes = canonical_json(attestation)
     _write_bytes(package_root / "publish_attestation.json", attestation_bytes)
@@ -1103,9 +1113,18 @@ def write_package(
     return staging_name
 
 
-def emit_packages(result: ConversionResult, out_root: Path) -> dict[str, str]:
+def emit_packages(
+    result: ConversionResult,
+    out_root: Path,
+    *,
+    signing_secret: str | None = None,
+) -> dict[str, str]:
     """Emit one package per source key that has ready records.  Deterministic
-    ordering.  Returns {source_key: staging_name}."""
+    ordering.  Returns {source_key: staging_name}.
+
+    ``signing_secret`` is threaded to :func:`write_package`; ``None`` keeps the
+    deterministic dry-run signature, a real value signs for the ``--apply``
+    publish gate."""
     out_root.mkdir(parents=True, exist_ok=True)
     by_key: dict[str, list[_ReadyRecord]] = {}
     for item in result.ready:
@@ -1113,7 +1132,9 @@ def emit_packages(result: ConversionResult, out_root: Path) -> dict[str, str]:
     staged: dict[str, str] = {}
     for source_key in sorted(by_key):
         rows = sorted(by_key[source_key], key=lambda item: item.fact_id)
-        staged[source_key] = write_package(out_root, source_key, rows)
+        staged[source_key] = write_package(
+            out_root, source_key, rows, signing_secret=signing_secret,
+        )
     return staged
 
 
