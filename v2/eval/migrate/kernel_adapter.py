@@ -26,10 +26,38 @@ the docstrings below) pushes a doubtful fact toward ``needs_curation``, never
 toward a falsely-"ready" claim.  The wire format is reused verbatim from
 ``rtr_copilot.sot`` (the same primitives ``tests/sot_fixtures.py`` builds on), so
 an emitted package is checked by the REAL parser/validator, not a private copy.
+
+TIP-013B relaxed-ready policy (confidence tiers)
+------------------------------------------------
+The Homeowner (02/08/2026) relaxed the dress-rehearsal policy that REQUIRED a
+verbatim evidence span for a fact to be "ready".  Each converted fact is now
+assigned one of four ``confidence_tier`` values -- the spine of TIP-013B:
+
+* ``strict`` -- verified/approved provenance + a verbatim evidence span WITH a
+  usable structured locator.  Ready, emitted with a real evidence entry, NO
+  double-check marker (unchanged from the strict rehearsal).
+* ``soft``   -- ``verified_primary`` / ``verified_secondary`` /
+  ``approved_internal`` / ``derived_from_verified`` that HAS a value and a source
+  pointer but lacks a formal span/locator.  **Now READY** -- emitted with a
+  deterministic ``source_note`` and a ``needs_double_check`` marker carried on the
+  record's ``value`` payload (an existing ``Any`` field, so no schema/gate change;
+  it flows verbatim into ``ActiveRecord.value`` at ingest, which is where Part B
+  reads it).  No evidence entry is fabricated -- "soft" means exactly "no formal
+  span/locator".  Where the kernel *does* carry a verbatim quote it is preserved
+  honestly inside the ``source_note`` (never invented).
+* ``curate`` -- missing source, missing value, ambiguous/placeholder/flagged/
+  legacy provenance, or unit-drift.  Stays ``needs_curation`` with the precise
+  gap.  Never fabricated, never auto-ready.
+* ``claim``  -- kernel ``claim`` provenance.  NEVER auto-ready as a fact (even if
+  fully grounded); reported as its own bucket for curator promotion.
+
+The soft marker is honest metadata, not a fabricated verbatim span.  DRY-RUN
+ONLY: nothing here activates, applies, or writes to the read-only kernel snapshot.
 """
 
 from __future__ import annotations
 
+import re
 import uuid
 from collections import Counter
 from dataclasses import dataclass, field
@@ -61,15 +89,43 @@ from rtr_copilot.sot.package import (
 # --------------------------------------------------------------------------- #
 
 #: kernel ``provenance_level`` -> (v2 provenance_level, verification_state,
-#: fact_state).  Only these four kernel levels have an HONEST V2 equivalent.  A
-#: kernel ``claim`` maps to a V2 ``claim`` record (never verified/approved) so the
-#: publish gate's ``claim_masquerades_as_approved`` guard stays meaningful.
-PROVENANCE_MAP: dict[str, tuple[str, str, str]] = {
+#: fact_state) for provenance levels that carry an HONEST *verified/approved* V2
+#: equivalent.  ``derived_from_verified`` is grounded on a verified primary, so
+#: under the TIP-013B relaxed policy it maps to ``verified_secondary`` (it was
+#: conservatively withheld -> ``needs_curation`` in the strict dress rehearsal;
+#: see readiness deviation #4).  A kernel ``claim`` is NOT here -- it is handled
+#: separately and NEVER auto-mapped to a verified/approved state, so the publish
+#: gate's ``claim_masquerades_as_approved`` guard stays meaningful.
+VERIFIED_PROVENANCE_MAP: dict[str, tuple[str, str, str]] = {
     "verified_primary": ("verified_primary", "verified", "verified"),
     "verified_secondary": ("verified_secondary", "verified", "verified"),
     "approved_internal": ("approved_internal", "approved", "approved"),
-    "claim": ("claim", "claim", "claim"),
+    "derived_from_verified": ("verified_secondary", "verified", "verified"),
 }
+
+#: The V2 triple for a kernel ``claim`` -- recorded for reporting only; a claim is
+#: never emitted as a ready record in this relaxed-policy migration.
+CLAIM_TRIPLE: tuple[str, str, str] = ("claim", "claim", "claim")
+
+#: Confidence-tier labels (TIP-013B spine).
+TIER_STRICT = "strict"
+TIER_SOFT = "soft"
+TIER_CURATE = "curate"
+TIER_CLAIM = "claim"
+
+#: Record ``confidence`` scores by tier.  ``strict`` keeps the rehearsal's 0.9
+#: (verified provenance + verbatim span + locator); ``soft`` is deliberately lower
+#: (0.7) to encode "verified provenance but no formal evidence span" -- the
+#: ``needs_double_check`` marker, not this number, is the load-bearing signal.
+CONFIDENCE_STRICT = 0.9
+CONFIDENCE_SOFT = 0.7
+
+#: Where the soft double-check marker rides on the emitted record: a single
+#: namespaced key inside the record's ``value`` payload (an existing ``Any`` field,
+#: so no schema/gate change).  It flows verbatim into ``ActiveRecord.value`` at
+#: ingest, so Part B reads it from the answer's citation metadata with no product
+#: change.  ``strict`` records do NOT carry this key (strict is unchanged).
+CONFIDENCE_SIGNAL_KEY = "confidence_signal"
 
 #: kernel provenance levels with NO honest V2 mapping.  ``flagged``/``placeholder``
 #: mean the number is unverified/unresolved; ``legacy`` means a superseded value.
@@ -95,6 +151,20 @@ _GAP_PRIORITY: tuple[str, ...] = (
     "no_evidence_span",
     "evidence_locator_unmappable",
 )
+
+#: Gaps that BLOCK a verified/approved fact from being ready even under the
+#: relaxed TIP-013B policy -- these keep it ``needs_curation`` (``curate`` tier)
+#: because the adapter refuses to fabricate the missing/unresolved field.  A
+#: missing evidence span or unmappable locator is deliberately NOT blocking: for a
+#: verified fact that is exactly the ``soft`` signal (ready + double-check),
+#: whereas for a ``claim`` it is reported informationally.
+_BLOCKING_GAPS: frozenset[str] = frozenset({
+    "missing_source",
+    "provenance_missing",
+    "provenance_unmappable",
+    "missing_value",
+    "unit_drift",
+})
 
 #: The kernel fact files that hold publishable scalar/text facts (the ~259).
 #: ``entities.yaml`` is an entity registry (provinces/organizations), NOT a set of
@@ -138,7 +208,8 @@ class FactOutcome:
     fact_id: str
     file: str
     classification: str
-    tier: str  # "staff" | "leader"
+    tier: str  # "staff" | "leader"  (audience classification)
+    confidence_tier: str  # "strict" | "soft" | "curate" | "claim" (TIP-013B)
     kernel_provenance: str
     status: str  # "ready" | "needs_curation" | "rejected"
     v2_provenance: str | None
@@ -146,6 +217,8 @@ class FactOutcome:
     primary_gap: str | None
     reject_code: str | None
     denied_from_packs: bool
+    needs_double_check: bool = False
+    source_note: str | None = None
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -153,6 +226,7 @@ class FactOutcome:
             "file": self.file,
             "classification": self.classification,
             "tier": self.tier,
+            "confidence_tier": self.confidence_tier,
             "kernel_provenance": self.kernel_provenance,
             "status": self.status,
             "v2_provenance": self.v2_provenance,
@@ -160,19 +234,28 @@ class FactOutcome:
             "primary_gap": self.primary_gap,
             "reject_code": self.reject_code,
             "denied_from_packs": self.denied_from_packs,
+            "needs_double_check": self.needs_double_check,
+            "source_note": self.source_note,
         }
 
 
 @dataclass
 class _ReadyRecord:
-    """A fully-built, gate-eligible record + evidence for a ready fact."""
+    """A fully-built, gate-eligible record for a ready fact.
+
+    ``evidence`` is present only for ``strict`` records (a real verbatim span with
+    a usable locator).  ``soft`` records carry ``evidence=None`` -- "soft" means
+    precisely "no formal span/locator"; the honest source pointer rides in the
+    record's ``value`` payload as a ``source_note`` + ``needs_double_check`` marker.
+    """
 
     fact_id: str
     file: str
     source_key: str
     classification: str
+    confidence_tier: str
     record: dict[str, Any]
-    evidence: dict[str, Any]
+    evidence: dict[str, Any] | None
     source_ref: str
     source_fingerprint: dict[str, str]
 
@@ -371,6 +454,72 @@ def build_locator(fact: dict[str, Any]) -> dict[str, Any] | None:
     return loc or None
 
 
+def _truncate_quote(text: str, limit: int = 120) -> str:
+    """Collapse whitespace/newlines and cut to ``limit`` chars, appending an
+    ellipsis when truncated.  Deterministic and safe for multi-line kernel spans
+    (l3 ``evidence_span`` values embed newlines) and short strings alike."""
+    collapsed = " ".join(text.split())
+    if len(collapsed) <= limit:
+        return collapsed
+    return collapsed[:limit].rstrip() + "…"
+
+
+#: File extensions that mark a source ref as a real filesystem path (so the note
+#: can safely show just the basename).  Deliberately conservative: anything else
+#: (a chat reference, a free-text pointer) is shown whole so a date like
+#: ``"chat team RtR 14/06"`` is never mangled into ``"06"`` by naive basename-ing.
+_FILE_EXT_RE = re.compile(
+    r"\.(xlsx|xlsm|xls|docx|doc|md|csv|tsv|pdf|pptx|ppt|txt|yaml|yml|json)$",
+    re.IGNORECASE,
+)
+
+
+def _display_source_name(ref: str) -> str:
+    """Basename for a genuine file path; the whole string otherwise (honest, never
+    mangled).  ``"/a/b/Report_v1_0.xlsx" -> "Report_v1_0.xlsx"`` but
+    ``"chat team RtR 14/06" -> "chat team RtR 14/06"``."""
+    ref = ref.strip()
+    if "/" in ref:
+        tail = ref.rsplit("/", 1)[1].strip()
+        if _FILE_EXT_RE.search(tail):
+            return tail
+    return ref
+
+
+def build_source_note(fact: dict[str, Any]) -> str:
+    """A deterministic, honest one-line source note for a ``soft`` fact.
+
+    Built ONLY from source metadata really present in the kernel -- never
+    fabricated.  Shape: ``"<file> · <position> · \"<quote truncated ~120>\""`` with
+    any missing part omitted cleanly.  ``<position>`` prefers a spreadsheet ``row``;
+    failing that, a ``sheet``(``!cell``) or bare ``cell``.  ``<quote>`` is the real
+    ``source.raw_text`` or ``evidence_span`` when present; if the kernel carries no
+    verbatim quote the note simply omits it (no quote is invented)."""
+    parts: list[str] = []
+    ref = source_ref_of(fact)
+    if ref:
+        parts.append(_display_source_name(ref))
+    src = fact.get("source")
+    src = src if isinstance(src, dict) else {}
+    row = src.get("row")
+    if isinstance(row, int) and not isinstance(row, bool):
+        parts.append(f"row {row}")
+    else:
+        sheet = src.get("sheet")
+        cell = src.get("cell")
+        if isinstance(sheet, str) and sheet.strip():
+            token = f"sheet {sheet.strip()}"
+            if isinstance(cell, str) and cell.strip():
+                token += f"!{cell.strip()}"
+            parts.append(token)
+        elif isinstance(cell, str) and cell.strip():
+            parts.append(f"cell {cell.strip()}")
+    quote = extract_evidence_text(fact)
+    if quote:
+        parts.append(f'"{_truncate_quote(quote)}"')
+    return " · ".join(parts)
+
+
 def detect_unit_drift(fact: dict[str, Any]) -> bool:
     """True when the recorded unit conflicts with the verbatim source quote."""
     unit = fact.get("unit")
@@ -451,85 +600,17 @@ def _record_value(fact: dict[str, Any], value: Any) -> Any:
     return payload
 
 
-def convert_fact(
+def _make_evidence(
+    fact_id: str,
     file_key: str,
-    fact: dict[str, Any],
-    *,
-    registry: dict[str, Any],
-    leader_files: frozenset[str],
-    denied: frozenset[str],
-) -> tuple[FactOutcome, _ReadyRecord | None]:
-    fact_id = str(fact["id"])
-    classification, tier = classify(file_key, leader_files)
-    kernel_prov = kernel_provenance_of(fact)
-    is_denied = _is_denied(fact_id, denied) and file_key in {"derived_costs", "boms"}
-
-    gaps: list[str] = []
-
-    # 1. provenance
-    v2_prov: str | None = None
-    prov_triple: tuple[str, str, str] | None = None
-    if not kernel_prov:
-        gaps.append("provenance_missing")
-    elif kernel_prov in UNMAPPABLE_PROVENANCE:
-        gaps.append("provenance_unmappable")
-    elif kernel_prov in PROVENANCE_MAP:
-        prov_triple = PROVENANCE_MAP[kernel_prov]
-        v2_prov = prov_triple[0]
-    else:
-        gaps.append("provenance_unmappable")
-
-    # 2. value
-    value = extract_value(fact)
-    if value is None:
-        gaps.append("missing_value")
-
-    # 3. source
-    source_ref = source_ref_of(fact)
-    if source_ref is None:
-        gaps.append("missing_source")
-
-    # 4. evidence span + locator
-    evidence_text = extract_evidence_text(fact)
-    locator = build_locator(fact)
-    if evidence_text is None:
-        gaps.append("no_evidence_span")
-    elif locator is None:
-        gaps.append("evidence_locator_unmappable")
-
-    # 5. unit drift
-    if detect_unit_drift(fact):
-        gaps.append("unit_drift")
-
-    if gaps:
-        primary = next((code for code in _GAP_PRIORITY if code in gaps), gaps[0])
-        outcome = FactOutcome(
-            fact_id=fact_id,
-            file=file_key,
-            classification=classification,
-            tier=tier,
-            kernel_provenance=kernel_prov or "(none)",
-            status="needs_curation",
-            v2_provenance=v2_prov,
-            gaps=tuple(gaps),
-            primary_gap=primary,
-            reject_code=None,
-            denied_from_packs=is_denied,
-        )
-        return outcome, None
-
-    # No gaps -> build a fully-grounded, gate-eligible record + evidence.
-    assert prov_triple is not None and source_ref is not None
-    assert evidence_text is not None and locator is not None
-    v2_provenance, verification_state, fact_state = prov_triple
-    confidence = 0.9 if verification_state in {"verified", "approved"} else 0.5
-    source_key = f"rtr.{file_key}"
-    khash = kernel_source_hash(registry, source_ref)
-    fp_sha = source_fingerprint_sha(source_ref, khash)
-
-    evidence_key = f"{fact_id}.e1"
+    source_ref: str,
+    evidence_text: str,
+    locator: dict[str, Any],
+    classification: str,
+) -> dict[str, Any]:
+    """Build a STRICT record's evidence entry (real verbatim span + locator)."""
     evidence_data: dict[str, Any] = {
-        "evidence_key": evidence_key,
+        "evidence_key": f"{fact_id}.e1",
         "record_key": fact_id,
         "source_ref": source_ref,
         "source_document_id": None,
@@ -545,7 +626,20 @@ def convert_fact(
     evidence_data["evidence_sha256"] = evidence_content_sha(
         PackageEvidence.model_validate(evidence_data),
     )
+    return evidence_data
 
+
+def _make_record(
+    fact_id: str,
+    classification: str,
+    value_payload: Any,
+    searchable_text: str,
+    prov_triple: tuple[str, str, str],
+    confidence: float,
+    source_ref: str,
+    evidence_keys: list[str],
+) -> dict[str, Any]:
+    v2_provenance, verification_state, fact_state = prov_triple
     record_data: dict[str, Any] = {
         "record_key": fact_id,
         "version_ordinal": 1,
@@ -553,8 +647,8 @@ def convert_fact(
         "classification": classification,
         "department_id": None,
         "project_id": None,
-        "value": _record_value(fact, value),
-        "searchable_text": _searchable_text(fact, value),
+        "value": value_payload,
+        "searchable_text": searchable_text,
         "provenance_level": v2_provenance,
         "confidence": confidence,
         "verification_state": verification_state,
@@ -563,7 +657,7 @@ def convert_fact(
         "effective_to": None,
         "freshness_policy": {"maximum_age_days": 365},
         "freshness_due_at": MIGRATION_FRESH_DUE.isoformat(),
-        "evidence_keys": [evidence_key],
+        "evidence_keys": list(evidence_keys),
         "source_refs": [source_ref],
         "content_sha256": "0" * 64,
         "supersedes_record_key": None,
@@ -579,25 +673,186 @@ def convert_fact(
     record_data["content_sha256"] = record_content_sha(
         PackageRecord.model_validate(record_data),
     )
+    return record_data
+
+
+def _soft_value_payload(base_payload: Any, source_note: str) -> Any:
+    """Attach the soft double-check marker + source note to a record's ``value``.
+
+    Rides in a single namespaced key inside the existing ``Any`` ``value`` field --
+    no schema/gate change -- and flows verbatim into ``ActiveRecord.value`` at
+    ingest, which is where Part B reads it.  Only ``soft`` records carry this key;
+    ``strict`` records are untouched.  If ``base_payload`` is unexpectedly not a
+    dict, it is wrapped so the marker always has a home."""
+    payload = dict(base_payload) if isinstance(base_payload, dict) else {"value": base_payload}
+    payload[CONFIDENCE_SIGNAL_KEY] = {
+        "tier": TIER_SOFT,
+        "needs_double_check": True,
+        "source_note": source_note,
+    }
+    return payload
+
+
+def convert_fact(
+    file_key: str,
+    fact: dict[str, Any],
+    *,
+    registry: dict[str, Any],
+    leader_files: frozenset[str],
+    denied: frozenset[str],
+) -> tuple[FactOutcome, _ReadyRecord | None]:
+    fact_id = str(fact["id"])
+    classification, tier = classify(file_key, leader_files)
+    kernel_prov = kernel_provenance_of(fact)
+    is_denied = _is_denied(fact_id, denied) and file_key in {"derived_costs", "boms"}
+    is_claim = kernel_prov == "claim"
+
+    gaps: list[str] = []
+
+    # 1. provenance
+    v2_prov: str | None = None
+    prov_triple: tuple[str, str, str] | None = None
+    if not kernel_prov:
+        gaps.append("provenance_missing")
+    elif is_claim:
+        prov_triple = CLAIM_TRIPLE
+        v2_prov = CLAIM_TRIPLE[0]
+    elif kernel_prov in VERIFIED_PROVENANCE_MAP:
+        prov_triple = VERIFIED_PROVENANCE_MAP[kernel_prov]
+        v2_prov = prov_triple[0]
+    else:
+        # flagged / placeholder / legacy / anything unknown -> no honest V2 state.
+        gaps.append("provenance_unmappable")
+
+    # 2. value
+    value = extract_value(fact)
+    if value is None:
+        gaps.append("missing_value")
+
+    # 3. source
+    source_ref = source_ref_of(fact)
+    if source_ref is None:
+        gaps.append("missing_source")
+
+    # 4. evidence span + locator.  Missing span/locator is NOT blocking under the
+    #    relaxed policy: for a verified fact it is the SOFT signal; it is only
+    #    reported (not a curate gap) here.
+    evidence_text = extract_evidence_text(fact)
+    locator = build_locator(fact)
+    if evidence_text is None:
+        gaps.append("no_evidence_span")
+    elif locator is None:
+        gaps.append("evidence_locator_unmappable")
+
+    # 5. unit drift (blocking -- the recorded unit conflicts with the source).
+    if detect_unit_drift(fact):
+        gaps.append("unit_drift")
+
+    primary = next((code for code in _GAP_PRIORITY if code in gaps), None)
+
+    def _curation_outcome(confidence_tier: str) -> FactOutcome:
+        return FactOutcome(
+            fact_id=fact_id,
+            file=file_key,
+            classification=classification,
+            tier=tier,
+            confidence_tier=confidence_tier,
+            kernel_provenance=kernel_prov or "(none)",
+            status="needs_curation",
+            v2_provenance=v2_prov,
+            gaps=tuple(gaps),
+            primary_gap=primary,
+            reject_code=None,
+            denied_from_packs=is_denied,
+        )
+
+    # CLAIM: never auto-ready as a fact, even when fully grounded.  Reported as its
+    #        own bucket (needs curator promotion), gaps kept for information.
+    if is_claim:
+        return _curation_outcome(TIER_CLAIM), None
+
+    # CURATE: any BLOCKING gap on a non-claim fact keeps it in needs_curation.  The
+    #         primary gap is the most-blocking one; the adapter fabricates nothing.
+    blocking = [code for code in gaps if code in _BLOCKING_GAPS]
+    if blocking:
+        curate_primary = next(code for code in _GAP_PRIORITY if code in blocking)
+        outcome = FactOutcome(
+            fact_id=fact_id,
+            file=file_key,
+            classification=classification,
+            tier=tier,
+            confidence_tier=TIER_CURATE,
+            kernel_provenance=kernel_prov or "(none)",
+            status="needs_curation",
+            v2_provenance=v2_prov,
+            gaps=tuple(gaps),
+            primary_gap=curate_primary,
+            reject_code=None,
+            denied_from_packs=is_denied,
+        )
+        return outcome, None
+
+    # From here: verified/approved provenance, a value, a source, no unit-drift.
+    assert prov_triple is not None and source_ref is not None
+    _, verification_state, _ = prov_triple
+    source_key = f"rtr.{file_key}"
+    khash = kernel_source_hash(registry, source_ref)
+    fp_sha = source_fingerprint_sha(source_ref, khash)
+    searchable_text = _searchable_text(fact, value)
+    base_payload = _record_value(fact, value)
+
+    is_strict = (
+        evidence_text is not None
+        and locator is not None
+        and verification_state in {"verified", "approved"}
+    )
+
+    if is_strict:
+        assert evidence_text is not None and locator is not None
+        evidence_data: dict[str, Any] | None = _make_evidence(
+            fact_id, file_key, source_ref, evidence_text, locator, classification,
+        )
+        record_data = _make_record(
+            fact_id, classification, base_payload, searchable_text, prov_triple,
+            CONFIDENCE_STRICT, source_ref, [f"{fact_id}.e1"],
+        )
+        confidence_tier = TIER_STRICT
+        needs_double_check = False
+        source_note = None
+    else:
+        # SOFT: verified provenance + source, but no formal span/locator.  Ready
+        # with an honest source note + double-check marker; no evidence fabricated.
+        source_note = build_source_note(fact)
+        evidence_data = None
+        record_data = _make_record(
+            fact_id, classification, _soft_value_payload(base_payload, source_note),
+            searchable_text, prov_triple, CONFIDENCE_SOFT, source_ref, [],
+        )
+        confidence_tier = TIER_SOFT
+        needs_double_check = True
 
     outcome = FactOutcome(
         fact_id=fact_id,
         file=file_key,
         classification=classification,
         tier=tier,
+        confidence_tier=confidence_tier,
         kernel_provenance=kernel_prov,
         status="ready",
-        v2_provenance=v2_provenance,
-        gaps=(),
+        v2_provenance=prov_triple[0],
+        gaps=tuple(gaps),
         primary_gap=None,
         reject_code=None,
         denied_from_packs=is_denied,
+        needs_double_check=needs_double_check,
+        source_note=source_note,
     )
     ready = _ReadyRecord(
         fact_id=fact_id,
         file=file_key,
         source_key=source_key,
         classification=classification,
+        confidence_tier=confidence_tier,
         record=record_data,
         evidence=evidence_data,
         source_ref=source_ref,
@@ -655,16 +910,21 @@ def write_package(
     package_root.mkdir(parents=True, exist_ok=True)
 
     record_rows = [dict(item.record) for item in ready]
-    evidence_rows = [dict(item.evidence) for item in ready]
+    evidence_rows = [dict(item.evidence) for item in ready if item.evidence is not None]
     source_hashes: dict[str, dict[str, str]] = {}
     for item in ready:
         source_hashes[item.source_ref] = item.source_fingerprint
 
     files: dict[str, bytes] = {
         "records.jsonl": b"".join(canonical_json(row) + b"\n" for row in record_rows),
-        "evidence.jsonl": b"".join(canonical_json(row) + b"\n" for row in evidence_rows),
         "source_hashes.json": canonical_json(source_hashes),
     }
+    # evidence.jsonl is an OPTIONAL package member: a package of only ``soft``
+    # records (no formal span/locator) carries no evidence file at all.
+    if evidence_rows:
+        files["evidence.jsonl"] = b"".join(
+            canonical_json(row) + b"\n" for row in evidence_rows
+        )
     for name, content in files.items():
         _write_bytes(package_root / name, content)
 
@@ -746,33 +1006,63 @@ def emit_packages(result: ConversionResult, out_root: Path) -> dict[str, str]:
 # --------------------------------------------------------------------------- #
 
 
+_TIER_ORDER = (TIER_STRICT, TIER_SOFT, TIER_CURATE, TIER_CLAIM)
+
+
+def _ordered_tier_counts(counter: Counter[str]) -> dict[str, int]:
+    """Tier counts in the fixed strict->soft->curate->claim order (zeros dropped)."""
+    return {tier: counter[tier] for tier in _TIER_ORDER if counter[tier]}
+
+
 def summarize(result: ConversionResult) -> dict[str, Any]:
     by_file: dict[str, Counter[str]] = {}
+    by_file_tier: dict[str, Counter[str]] = {}
     gap_hist: Counter[str] = Counter()
     tier_hist: Counter[str] = Counter()
+    confidence_tier_hist: Counter[str] = Counter()
     prov_hist: Counter[str] = Counter()
     status_hist: Counter[str] = Counter()
+    # curate-only gap histogram (the finite worklist) + soft/strict id lists.
+    curate_gap_hist: Counter[str] = Counter()
     for outcome in result.outcomes:
         by_file.setdefault(outcome.file, Counter())[outcome.status] += 1
+        by_file_tier.setdefault(outcome.file, Counter())[outcome.confidence_tier] += 1
         status_hist[outcome.status] += 1
         tier_hist[outcome.tier] += 1
+        confidence_tier_hist[outcome.confidence_tier] += 1
         prov_hist[outcome.kernel_provenance] += 1
         if outcome.primary_gap:
             gap_hist[outcome.primary_gap] += 1
+        if outcome.confidence_tier == TIER_CURATE and outcome.primary_gap:
+            curate_gap_hist[outcome.primary_gap] += 1
     matched = sum(1 for hit in result.source_hash_coverage.values() if hit)
     return {
         "total_facts": len(result.outcomes),
         "status_totals": dict(sorted(status_hist.items())),
+        "confidence_tier_totals": _ordered_tier_counts(confidence_tier_hist),
         "by_file": {
             file_key: dict(sorted(counter.items()))
             for file_key, counter in sorted(by_file.items())
         },
+        "by_file_tier": {
+            file_key: _ordered_tier_counts(counter)
+            for file_key, counter in sorted(by_file_tier.items())
+        },
         "classification_split": dict(sorted(tier_hist.items())),
         "kernel_provenance_split": dict(sorted(prov_hist.items())),
         "gap_histogram": dict(sorted(gap_hist.items(), key=lambda kv: (-kv[1], kv[0]))),
+        "curate_gap_histogram": dict(
+            sorted(curate_gap_hist.items(), key=lambda kv: (-kv[1], kv[0])),
+        ),
         "source_hash_coverage": {
             "distinct_ready_sources": len(result.source_hash_coverage),
             "matched_kernel_hash": matched,
         },
         "ready_fact_ids": sorted(item.fact_id for item in result.ready),
+        "strict_ready_fact_ids": sorted(
+            item.fact_id for item in result.ready if item.confidence_tier == TIER_STRICT
+        ),
+        "soft_ready_fact_ids": sorted(
+            item.fact_id for item in result.ready if item.confidence_tier == TIER_SOFT
+        ),
     }
