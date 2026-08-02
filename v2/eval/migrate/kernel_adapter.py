@@ -286,6 +286,10 @@ class ConversionResult:
 def load_registry(root: Path) -> dict[str, Any]:
     """Load the read-only kernel snapshot.  Never writes; never mutates inputs."""
     data: dict[str, Any] = {}
+    # Accept either the registry dir (contains specs.yaml directly) or its parent
+    # (contains registry/specs.yaml) — friendlier for the local-demo runner.
+    if not (root / "specs.yaml").exists() and (root / "registry" / "specs.yaml").exists():
+        root = root / "registry"
     for name in (
         "specs",
         "capabilities",
