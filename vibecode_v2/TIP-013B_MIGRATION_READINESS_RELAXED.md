@@ -1,5 +1,12 @@
 # TIP-013B Phase B — Relaxed-Policy Migration Readiness (DRY-RUN re-run, 02/08/2026)
 
+> **Superseded for the ready count by the curated re-run.** After the Homeowner
+> approved the 4 curation decisions (02/08/2026), `run_migration.py --curated`
+> takes ready **38 → 131** (8 strict + 117 soft + 6 strategic), curate 41 → 26,
+> claim 180 → 101, 1 excluded — all 6 packages still pass the gate. See
+> `TIP-013B_MIGRATION_READINESS_CURATED.md`. The **38-ready** number below is the
+> pre-decision relaxed baseline, kept for the record.
+
 **Status:** DRY-RUN ONLY — nothing was activated. No `--apply`, no production DB
 write, no real-data activation, no write-back to the read-only kernel snapshot.
 This is the re-run of the dress rehearsal under the Homeowner's **relaxed
