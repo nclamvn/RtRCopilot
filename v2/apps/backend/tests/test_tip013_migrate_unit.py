@@ -28,11 +28,20 @@ if str(EVAL) not in sys.path:
 
 from migrate.curation_overlay import (  # noqa: E402
     EXCLUDE,
+    HELD_CLAIM,
+    HELD_DERIVED,
+    IRREDUCIBLE,
+    IRREDUCIBLE_GAP,
+    PROMOTE_INTERIM_SPEC_DUP,
     PROMOTE_VERIFIED_PRIMARY,
+    READY_SOFT,
+    READY_STRATEGIC,
+    READY_STRICT,
     STRATEGIC_DOC,
     UNIT_FIX,
     CurationOverlay,
     OverlayDecision,
+    final_disposition,
 )
 from migrate.kernel_adapter import (  # noqa: E402
     build_source_note,
@@ -694,3 +703,300 @@ def test_overlay_decision_apply_to_fact_returns_a_copy() -> None:
     assert fact["unit"] == "lb" and fact["provenance_level"] == "claim"  # original intact
     # a no-op decision returns the same object untouched
     assert OverlayDecision().apply_to_fact(fact) is fact
+
+
+# --------------------------------------------------------------------------- #
+# TIP-013B FINAL completion (wave 2): 67-cap promote, 20 cascade, MTOW.HC001 dup,
+# explicit holds/derived/irreducible dispositions.  All hermetic (synthetic reg).
+# --------------------------------------------------------------------------- #
+
+
+def _final_registry() -> dict[str, Any]:
+    """A deep copy of the synthetic registry with a ``capabilities`` file and the
+    kernel_refs / interim spec the wave-2 decisions target."""
+    reg = copy.deepcopy(_registry())
+    reg["capabilities"] = {
+        "capabilities": [
+            {
+                # claim + a real evidence reference -> Decision 1B promotes to soft.
+                "id": "HC-TEST",
+                "name": "Promotable capability",
+                "description": "A capability claim carrying a documentary evidence ref.",
+                "evidence": "brochure XPO26, KB v1.0 sheet 02, DCMA submission",
+                "source": {"file": "source_canonical/Matrix.xlsx", "sheet": "01", "row": 2},
+                "provenance_level": "claim",
+            },
+            {
+                # claim WITHOUT an evidence reference -> stays claim (not promoted).
+                "id": "HC-NOEV",
+                "name": "Un-sourced capability",
+                "description": "A capability claim with no evidence reference.",
+                "evidence": "",
+                "source": {"file": "source_canonical/Matrix.xlsx", "sheet": "01", "row": 3},
+                "provenance_level": "claim",
+            },
+            {
+                # already verified -> soft via the native path (also a promoted cap).
+                "id": "HC-VERIFIED",
+                "name": "Verified capability",
+                "description": "An already-verified capability.",
+                "source": {"file": "source_canonical/Matrix.xlsx", "sheet": "01", "row": 4},
+                "provenance_level": "verified_primary",
+            },
+        ],
+    }
+    reg["l3_facts"]["kernel_refs"].extend([
+        {
+            # curate kernel_ref whose kernel_ref names the promoted HC-TEST -> cascade.
+            "id": "L3R.CASCADE",
+            "content": "L3 wording that duplicates the HC-TEST capability.",
+            "domain": "product",
+            "tier": "L3",
+            "kernel_ref": "HC-TEST + RENAME-01",
+            "source_path": "/Users/os/RtR/x.xlsx",
+        },
+        {
+            # curate kernel_ref naming a NON-promoted cap (HC-NOEV) -> stays curate.
+            "id": "L3R.NOCASCADE",
+            "content": "L3 wording pointing at an un-promoted capability.",
+            "domain": "product",
+            "tier": "L3",
+            "kernel_ref": "HC-NOEV",
+            "source_path": "/Users/os/RtR/x.xlsx",
+        },
+    ])
+    reg["specs"]["facts"].append({
+        # interim spec (status INT, no raw_text) that duplicates the verified SPEC.OK.
+        "id": "SPEC.DUP",
+        "key": "Flight time per Matrix HC-TEST",
+        "claim": 56,
+        "unit": "minutes",
+        "status": "INT",
+        "source": {
+            "file": "source_canonical/Matrix.xlsx", "sheet": "01", "row": 2, "ref_id": "HC-TEST",
+        },
+        "provenance_level": "claim",
+    })
+    return reg
+
+
+def _final_overlay() -> CurationOverlay:
+    """The default rules (D1B cap-rule + D2B cascade are built-in, keyless) plus the
+    synthetic interim-spec-dup mapping so ``SPEC.DUP`` exercises Decision 3B."""
+    return CurationOverlay(promote_interim_spec_dup={"SPEC.DUP": "SPEC.OK"})
+
+
+def _final_outcomes() -> dict[str, Any]:
+    result = convert_registry(_final_registry(), overlay=_final_overlay())
+    return {o.fact_id: o for o in result.outcomes}
+
+
+def test_promoted_capability_ids_selects_claim_with_evidence_and_verified() -> None:
+    """The promoted-capability set (which drives the cascade) is exactly the caps a
+    decision promotes: claim-with-evidence (D1B) + already-verified — never a claim
+    that lacks an evidence reference."""
+    overlay = _final_overlay()
+    caps = _final_registry()["capabilities"]["capabilities"]
+    assert overlay.promoted_capability_ids(caps) == frozenset({"HC-TEST", "HC-VERIFIED"})
+
+
+def test_decision1B_capability_claim_with_evidence_is_soft() -> None:
+    """Decision 1B (RULE): a capabilities claim with a non-empty evidence reference
+    is promoted to soft-ready (approved_internal, never masquerading verified) with
+    the double-check caveat and a source note built from the REAL evidence ref."""
+    reg = _final_registry()
+    base = {o.fact_id: o for o in convert_registry(reg).outcomes}["HC-TEST"]
+    assert base.confidence_tier == "claim"  # untouched without the overlay
+    ov = _final_outcomes()["HC-TEST"]
+    assert ov.status == "ready"
+    assert ov.confidence_tier == "soft"
+    assert ov.v2_provenance == "approved_internal"
+    assert ov.needs_double_check is True
+    assert ov.source_note is not None
+    assert "evidence: brochure XPO26" in ov.source_note  # grounded on the real ref
+    ready = convert_registry(reg, overlay=_final_overlay()).ready
+    rec = next(r for r in ready if r.fact_id == "HC-TEST")
+    assert rec.record["value"]["confidence_signal"]["curation"] == {
+        "decision": "D1B-capability-claim-promoted",
+        "origin_provenance": "claim",
+    }
+
+
+def test_decision1B_capability_without_evidence_stays_claim() -> None:
+    """A capabilities claim with NO evidence reference is NOT promoted — it stays a
+    claim (never fabricated into soft)."""
+    outcomes = _final_outcomes()
+    assert outcomes["HC-NOEV"].confidence_tier == "claim"
+    assert outcomes["HC-NOEV"].status == "needs_curation"
+    # a verified capability is soft via the native path (unchanged).
+    assert outcomes["HC-VERIFIED"].confidence_tier == "soft"
+
+
+def test_decision2B_cascade_promotes_kernel_ref_pointing_to_promoted_cap() -> None:
+    """Decision 2B: a curate kernel_ref (provenance_missing) whose kernel_ref names a
+    now-promoted capability inherits soft + caveat, its note citing the cap."""
+    reg = _final_registry()
+    base = {o.fact_id: o for o in convert_registry(reg).outcomes}["L3R.CASCADE"]
+    assert base.status == "needs_curation" and base.confidence_tier == "curate"
+    ov = _final_outcomes()["L3R.CASCADE"]
+    assert ov.status == "ready"
+    assert ov.confidence_tier == "soft"
+    assert ov.v2_provenance == "approved_internal"
+    assert ov.needs_double_check is True
+    assert ov.source_note is not None
+    assert "cascade-from promoted capability: HC-TEST + RENAME-01" in ov.source_note
+
+
+def test_decision2B_cascade_does_not_fire_for_unpromoted_cap() -> None:
+    """The cascade is a genuine dependency: a kernel_ref naming a cap that is NOT
+    promoted (claim without evidence) stays curate — nothing is fabricated."""
+    ov = _final_outcomes()["L3R.NOCASCADE"]
+    assert ov.status == "needs_curation"
+    assert ov.confidence_tier == "curate"
+    assert ov.primary_gap == "provenance_missing"
+
+
+def test_decision3B_interim_spec_duplicate_of_verified_is_promoted() -> None:
+    """Decision 3B: an interim spec (INT, no raw_text) that duplicates an already
+    VERIFIED spec is promoted to soft + caveat, its note naming the verified spec;
+    the 7 other interim specs are unaffected (they stay claim)."""
+    # Audit the shipped exception set: exactly the MTOW HC-001 matrix figure, mapped
+    # to the verified spec it duplicates -- no drift.
+    assert PROMOTE_INTERIM_SPEC_DUP == {"SPEC.HERA.MTOW.HC001": "SPEC.HERA.MTOW"}
+    reg = _final_registry()
+    base = {o.fact_id: o for o in convert_registry(reg).outcomes}["SPEC.DUP"]
+    assert base.confidence_tier == "claim"  # untouched without the overlay
+    ov = _final_outcomes()["SPEC.DUP"]
+    assert ov.status == "ready"
+    assert ov.confidence_tier == "soft"
+    assert ov.v2_provenance == "approved_internal"
+    assert ov.needs_double_check is True
+    assert ov.source_note is not None
+    assert "duplicates verified spec: SPEC.OK" in ov.source_note
+    # a non-duplicate interim spec (not in the mapping) stays claim.
+    assert _final_outcomes()["SPEC.CLAIM_NOSPAN"].confidence_tier == "claim"
+
+
+def test_final_wave_emitted_packages_pass_the_real_gate(tmp_path: Path) -> None:
+    """Every wave-2 promoted package (cap softs, cascade softs, interim-dup soft)
+    still PASSES the real publish gate — approved_internal without evidence is valid
+    and none masquerades as verified."""
+    result = convert_registry(_final_registry(), overlay=_final_overlay())
+    staged = emit_packages(result, tmp_path)
+    assert "rtr.capabilities" in staged
+    parser = PackageParser(tmp_path)
+    for source_key, staging_name in staged.items():
+        parsed = parser.parse(staging_name)
+        report = validate_package(parsed, now=NOW, allow_claim_as_approved=False)
+        assert report.valid, (source_key, [f.code for f in report.findings])
+
+
+def test_final_wave_is_byte_deterministic(tmp_path: Path) -> None:
+    """The full wave-2 conversion + emission is byte-for-byte reproducible."""
+    reg = _final_registry()
+    staged_a = emit_packages(convert_registry(reg, overlay=_final_overlay()), tmp_path / "a")
+    staged_b = emit_packages(convert_registry(reg, overlay=_final_overlay()), tmp_path / "b")
+    assert staged_a == staged_b
+    for name in staged_a.values():
+        for member in ("manifest.json", "records.jsonl", "source_hashes.json",
+                       "publish_attestation.json"):
+            a = (tmp_path / "a" / name / member).read_bytes()
+            b = (tmp_path / "b" / name / member).read_bytes()
+            assert a == b
+
+
+def test_final_wave_does_not_mutate_the_kernel_snapshot() -> None:
+    """DRY-RUN discipline: the wave-2 rules never modify the input registry — the
+    capability claim, the kernel_ref and the interim spec are untouched on the
+    source dicts (transforms live only on the emitted copies)."""
+    reg = _final_registry()
+    before = copy.deepcopy(reg)
+    convert_registry(reg, overlay=_final_overlay())
+    assert reg == before
+    cap = next(c for c in reg["capabilities"]["capabilities"] if c["id"] == "HC-TEST")
+    assert cap["provenance_level"] == "claim"  # untouched on the snapshot
+
+
+def test_final_disposition_is_total_and_reasoned() -> None:
+    """The classifier that proves nothing is in limbo is TOTAL: every confidence
+    tier maps to a terminal bucket with a decision + one-line reason, and the
+    held/derived/irreducible buckets carry the right decision for the right file."""
+    strict = final_disposition(
+        file_key="specs", fact_id="SPEC.HERA.MTOW", confidence_tier="strict",
+        kernel_provenance="verified_primary", primary_gap=None,
+    )
+    assert strict[0] == READY_STRICT
+    strategic = final_disposition(
+        file_key="l3_facts", fact_id="L3R.2.023", confidence_tier="strategic",
+        kernel_provenance="approved_internal", primary_gap=None,
+    )
+    assert strategic[0] == READY_STRATEGIC
+    cap_soft = final_disposition(
+        file_key="capabilities", fact_id="HC-001", confidence_tier="soft",
+        kernel_provenance="approved_internal", primary_gap=None,
+    )
+    assert cap_soft[0] == READY_SOFT and cap_soft[1] == "D1B-capability-claim-promoted"
+    dup_soft = final_disposition(
+        file_key="specs", fact_id="SPEC.HERA.MTOW.HC001", confidence_tier="soft",
+        kernel_provenance="approved_internal", primary_gap=None,
+    )
+    assert dup_soft[0] == READY_SOFT and "duplicate" in dup_soft[1]
+    # holds: boms/prices claim -> cost/price hold; specs claim -> interim-spec hold
+    assert final_disposition(
+        file_key="boms", fact_id="BOM.X", confidence_tier="claim",
+        kernel_provenance="claim", primary_gap=None,
+    )[0] == HELD_CLAIM
+    assert final_disposition(
+        file_key="specs", fact_id="SPEC.HERA.EDGE_AI.TOPS", confidence_tier="claim",
+        kernel_provenance="claim", primary_gap=None,
+    )[1] == "D3-hold-interim-spec"
+    # derived: claim derived AND curate derived -> derived-held
+    assert final_disposition(
+        file_key="derived_costs", fact_id="DERIVED.ALMO.MARGIN.HERA_VN",
+        confidence_tier="claim", kernel_provenance="claim", primary_gap=None,
+    )[0] == HELD_DERIVED
+    dv_curate = final_disposition(
+        file_key="derived_costs", fact_id="DERIVED.HERA.BUNDLE_GAP_US",
+        confidence_tier="curate", kernel_provenance="flagged", primary_gap="missing_source",
+    )
+    assert dv_curate[0] == HELD_DERIVED and "source" in dv_curate[2]
+    # irreducible: a non-derived curate names its missing field
+    irr = final_disposition(
+        file_key="prices", fact_id="PRICE.VEGA.MSRP.VN", confidence_tier="curate",
+        kernel_provenance="placeholder", primary_gap="provenance_unmappable",
+    )
+    assert irr[0] == IRREDUCIBLE
+    assert IRREDUCIBLE_GAP["PRICE.VEGA.MSRP.VN"] in irr[2]
+
+
+def test_final_disposition_reconciles_the_real_run_to_259() -> None:
+    """Against the REAL curated conversion, every one of the 259 outcomes lands in a
+    terminal bucket and the totals reconcile to 259 (219 ready / 30 claim-held /
+    6 derived-held / excluded 1 / irreducible 3) — nothing is in limbo.  Skips
+    cleanly when the read-only kernel snapshot is absent, so CI stays hermetic."""
+    import pytest
+    from migrate.kernel_adapter import load_registry
+
+    kernel_root = Path("/home/claude/kernel-real/registry")
+    if not kernel_root.exists():
+        pytest.skip("real kernel snapshot not present (hermetic CI)")
+
+    result = convert_registry(load_registry(kernel_root), overlay=CurationOverlay())
+    buckets: dict[str, int] = {}
+    for o in result.outcomes:
+        bucket, _ref, _reason = final_disposition(
+            file_key=o.file, fact_id=o.fact_id, confidence_tier=o.confidence_tier,
+            kernel_provenance=o.kernel_provenance, primary_gap=o.primary_gap,
+        )
+        buckets[bucket] = buckets.get(bucket, 0) + 1
+    assert sum(buckets.values()) == 259
+    ready = (
+        buckets.get(READY_STRICT, 0)
+        + buckets.get(READY_SOFT, 0)
+        + buckets.get(READY_STRATEGIC, 0)
+    )
+    assert ready == 219
+    assert buckets.get(HELD_CLAIM, 0) == 30
+    assert buckets.get(HELD_DERIVED, 0) == 6
+    assert buckets.get(IRREDUCIBLE, 0) == 3
+    assert buckets.get("excluded", 0) == 1
