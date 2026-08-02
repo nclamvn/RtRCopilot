@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** Blueprint APPROVED · TIP-012 VERIFIED · TIP-013 ISSUED — Phase A auto / Phase B Homeowner-gated (01/08/2026)
+**Trạng thái:** Blueprint APPROVED · TIP-013 Phase A VERIFIED · Phase B AWAITING HOMEOWNER (go/no-go) (01/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -46,7 +46,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-010 ✅ | Curator/admin flows, gaps/freshness, Refinery research adapter | 006,007 | VERIFIED: 16/16 AC; full 278/3; masquerade 0 hit; Trivy clean; restore drill PASS |
 | TIP-011 ✅ | Unified Design DNA UI, Evidence Rail, responsive/WCAG/i18n | 007,008,009 | VERIFIED: 14/14 AC; axe 0 violations; keyboard E2E; full 292/3; Playwright 73/73 |
 | TIP-012 ✅ | HTTPS, quotas, observability, CI/CD, security/load, backup/DR | 010,011 | VERIFIED: 16/16 AC; SLO 10/10; ingress 15/15; full 377/18/0; drills timed |
-| TIP-013 | Data migration, regression parity, staged pilot, final VERIFY | 012 | 34 REQ coverage; zero P0/P1 open; go/no-go report |
+| TIP-013 ~ | Data migration, regression parity, staged pilot, final VERIFY | 012 | Phase A VERIFIED (34/34 matrix, parity+eval harness, onboarding, go/no-go doc); Phase B real-data cutover AWAITING HOMEOWNER |
 
 ## Audit trail rule
 

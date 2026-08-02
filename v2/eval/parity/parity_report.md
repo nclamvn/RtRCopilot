@@ -1,6 +1,6 @@
 # TIP-013 Phase A · V1 Parity Report (synthetic)
 
-- Generated: 2026-08-01T23:47:07.785142+00:00
+- Generated: 2026-08-01T23:54:34.766895+00:00
 - Questions: 7
 - Answer agreement: 6/7 (85.7%)
 - Divergences: 1

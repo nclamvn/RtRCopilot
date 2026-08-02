@@ -1,6 +1,6 @@
 # TIP-013 Phase A · Answer-Quality Baseline (synthetic)
 
-- Generated: 2026-08-01T23:47:05.478710+00:00
+- Generated: 2026-08-01T23:54:55.386858+00:00
 - Grounded rate: 100.0% (3 grounded-expected cases)
 - Honest-null quality: 100.0% (4 null-expected cases)
 - **Leak count: 0** (MUST be 0; any leak is a P0)
