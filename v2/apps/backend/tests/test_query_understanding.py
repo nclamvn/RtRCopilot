@@ -5,12 +5,39 @@ right canonical; the fuzzy net catches unlisted typos but stays strict; NO false
 entity is ever emitted (the resolver's range is exactly the curated set); and
 augmentation is additive + deterministic + grounding-neutral.
 """
+import asyncio
+
 from rtr_copilot.rag.product_aliases import PRODUCT_ALIASES
 from rtr_copilot.rag.query_understanding import (
     FUZZY_THRESHOLD,
+    OfflineRewriter,
+    RewriteResult,
     augment_query,
     resolve_entities,
+    understand,
+    validate_entities,
 )
+
+
+class _StubRewriter:
+    """Test double returning a fixed proposal."""
+
+    def __init__(self, result: RewriteResult) -> None:
+        self._result = result
+
+    async def rewrite(self, question: str) -> RewriteResult:
+        return self._result
+
+
+class _FailingRewriter:
+    async def rewrite(self, question: str) -> RewriteResult:
+        raise RuntimeError("provider exploded")
+
+
+class _SlowRewriter:
+    async def rewrite(self, question: str) -> RewriteResult:
+        await asyncio.sleep(10)
+        return RewriteResult()
 
 
 class TestExactResolution:
@@ -121,3 +148,62 @@ class TestInvariants:
         assert resolve_entities("") == []
         assert augment_query("") == ""
         assert resolve_entities("???") == []
+
+
+class TestEntityGuard:
+    def test_keeps_registered_drops_unknown(self) -> None:
+        # An LLM hallucinating "human resources" from "hr" must be stripped.
+        assert validate_entities(["HERA", "human resources", "VEGA"]) == [
+            "HERA", "VEGA",
+        ]
+
+    def test_all_unknown_yields_empty(self) -> None:
+        assert validate_entities(["Acme", "Skynet", "human resources"]) == []
+
+    def test_dedups(self) -> None:
+        assert validate_entities(["HERA", "HERA"]) == ["HERA"]
+
+
+class TestUnderstand:
+    def test_offline_rewriter_matches_augment_query(self) -> None:
+        # With the shipped offline rewriter the pipeline == Phase 1 exactly.
+        for question in ("hr payload", "HERA payload", "weather", "hira vs vga"):
+            out = asyncio.run(understand(question, OfflineRewriter()))
+            assert out == augment_query(question)
+
+    def test_valid_rewrite_entities_are_applied(self) -> None:
+        stub = _StubRewriter(RewriteResult(entities=["HERA"]))
+        out = asyncio.run(understand("hr thing", stub))
+        assert "HERA" in out and out.startswith("hr thing")
+
+    def test_hallucinated_entity_is_dropped(self) -> None:
+        stub = _StubRewriter(RewriteResult(entities=["human resources"]))
+        out = asyncio.run(understand("hr thing", stub))
+        assert "human resources" not in out
+        assert out == "hr thing"  # nothing valid to add
+
+    def test_failure_falls_back_to_deterministic(self) -> None:
+        out = asyncio.run(understand("hira mtow", _FailingRewriter()))
+        assert out == augment_query("hira mtow")
+        assert "HERA" in out
+
+    def test_timeout_falls_back_to_deterministic(self) -> None:
+        out = asyncio.run(understand("vga price", _SlowRewriter(), timeout=0.05))
+        assert out == augment_query("vga price")
+        assert "VEGA" in out
+
+    def test_expansions_bounded_and_additive(self) -> None:
+        stub = _StubRewriter(RewriteResult(
+            entities=["HERA"],
+            expansions=["payload", "  ", "x" * 999, "endurance"],
+        ))
+        out = asyncio.run(understand("hr", stub))
+        assert "HERA" in out and "payload" in out and "endurance" in out
+        assert "x" * 999 not in out  # over-length expansion dropped
+        assert out.startswith("hr")
+
+    def test_deterministic(self) -> None:
+        stub = _StubRewriter(RewriteResult(entities=["HERA", "VEGA"]))
+        first = asyncio.run(understand("compare them", stub))
+        second = asyncio.run(understand("compare them", stub))
+        assert first == second

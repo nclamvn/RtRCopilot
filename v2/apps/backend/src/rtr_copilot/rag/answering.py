@@ -39,7 +39,11 @@ from rtr_copilot.rag.models import (
     RetrievalHit,
     SearchFilters,
 )
-from rtr_copilot.rag.query_understanding import augment_query
+from rtr_copilot.rag.query_understanding import (
+    OfflineRewriter,
+    QueryRewriter,
+    understand,
+)
 from rtr_copilot.rag.retrieval import RetrievalService, scope_fingerprint
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.governance import GovernanceRepository
@@ -144,6 +148,7 @@ class AnswerService:
         factory: async_sessionmaker[AsyncSession] | None = None,
         retrieval: RetrievalService | None = None,
         provider: AnswerAdapter | None = None,
+        rewriter: QueryRewriter | None = None,
     ) -> None:
         self.settings = settings or get_settings()
         self.uow = UnitOfWork(factory)
@@ -152,6 +157,9 @@ class AnswerService:
             factory=factory,
         )
         self.provider = provider or OfflineExtractiveAnswer()
+        # TIP-014: offline+deterministic by default (== Phase 1). A real LLM
+        # rewriter is injected here when the Homeowner enables a provider.
+        self._rewriter = rewriter or OfflineRewriter()
 
     async def _conversation(
         self,
@@ -769,14 +777,20 @@ class AnswerService:
             request_id=request_id,
             question=question,
         )
+        # TIP-014: query understanding shapes ONLY the retrieval query — the
+        # stored ``question`` stays original; honest-null, ranking and grounding
+        # are unchanged. The default rewriter is offline+deterministic (Phase 1);
+        # a real LLM rewriter validates every entity against the registry and
+        # falls back deterministically on any failure.
+        retrieval_query = (
+            await understand(question, self._rewriter)
+            if question_dlp.allow
+            else question
+        )
         hits = (
             await self.retrieval.search(
                 subject,
-                # TIP-014 Phase 1: deterministic entity augmentation shapes ONLY
-                # the retrieval query (typos/abbreviations gain the canonical
-                # product name). The stored ``question`` stays original; honest-
-                # null, ranking and grounding are unchanged.
-                augment_query(question),
+                retrieval_query,
                 filters=filters,
                 request_id=request_id,
             )
