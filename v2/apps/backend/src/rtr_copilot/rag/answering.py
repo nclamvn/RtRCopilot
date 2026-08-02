@@ -39,6 +39,7 @@ from rtr_copilot.rag.models import (
     RetrievalHit,
     SearchFilters,
 )
+from rtr_copilot.rag.query_understanding import augment_query
 from rtr_copilot.rag.retrieval import RetrievalService, scope_fingerprint
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.governance import GovernanceRepository
@@ -771,7 +772,11 @@ class AnswerService:
         hits = (
             await self.retrieval.search(
                 subject,
-                question,
+                # TIP-014 Phase 1: deterministic entity augmentation shapes ONLY
+                # the retrieval query (typos/abbreviations gain the canonical
+                # product name). The stored ``question`` stays original; honest-
+                # null, ranking and grounding are unchanged.
+                augment_query(question),
                 filters=filters,
                 request_id=request_id,
             )
