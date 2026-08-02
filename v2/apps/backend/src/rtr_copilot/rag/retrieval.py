@@ -13,7 +13,11 @@ from rtr_copilot.auth.models import PolicyContext, ResourceAttributes, Subject
 from rtr_copilot.auth.policy import PolicyEngine
 from rtr_copilot.config import Settings, get_settings
 from rtr_copilot.db.uow import UnitOfWork
-from rtr_copilot.rag.adapters import OfflineHashEmbedding, normalize_query
+from rtr_copilot.rag.adapters import (
+    OfflineHashEmbedding,
+    lexical_query,
+    normalize_query,
+)
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.rag.models import Citation, RetrievalHit, SearchFilters
 from rtr_copilot.repositories.resources import CLASSIFICATION_TO_POLICY
@@ -251,7 +255,7 @@ class RetrievalService:
                   c.evidence_key,c.record_checksum,c.evidence_checksum,c.source_key,
                   c.source_revision,c.provenance_level,c.verification_state,
                   c.freshness_state,c.source_label,c.locator,
-                  ts_rank_cd(c.lexical,plainto_tsquery('simple',:query)) lexical_score,
+                  ts_rank_cd(c.lexical,to_tsquery('simple',:lexquery)) lexical_score,
                   greatest(0,1-(c.embedding <=> CAST(:embedding AS vector))) vector_score
                 FROM chunks c
                 JOIN active_search_generations ag
@@ -261,7 +265,7 @@ class RetrievalService:
                 WHERE c.chunk_id=ANY(:allowed_ids) AND c.lifecycle='active'
                 ORDER BY c.chunk_key
             """), {
-                "query": normalized,
+                "lexquery": lexical_query(normalized),
                 "embedding": json.dumps(query_vector),
                 "allowed_ids": allowed_ids,
             })).mappings().all()
