@@ -96,7 +96,7 @@ fi
 
 # ---- 1) infra: postgres + redis + minio (+ bucket) --------------------------
 echo "==> [1/6] Building images and starting infra (postgres, redis, minio)…"
-compose build api web
+if [[ "${RTR_REBUILD:-}" == "1" ]]; then compose build --no-cache api web; else compose build api web; fi
 compose up -d postgres redis minio minio-init
 echo "    waiting for infra health…"
 compose up -d --wait postgres redis minio || true
@@ -133,7 +133,7 @@ compose run --rm \
 
 # ---- 6) app: api + worker + web --------------------------------------------
 echo "==> [6/6] Starting api + worker + web…"
-compose up -d --wait api worker web || compose up -d api worker web
+compose up -d --wait --build --force-recreate api worker web || compose up -d --build --force-recreate api worker web
 
 WEB_PORT="$(grep -E '^WEB_PORT=' .env.demo | tail -1 | cut -d= -f2 || echo 3000)"
 WEB_PORT="${WEB_PORT:-3000}"
