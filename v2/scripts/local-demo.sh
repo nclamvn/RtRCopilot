@@ -57,7 +57,7 @@ if [[ -z "$KERNEL_ROOT" ]]; then
     [[ -d "$cand/registry" ]] && KERNEL_ROOT="$cand" && break
   done
 fi
-if [[ -z "$KERNEL_ROOT" || ! -d "$KERNEL_ROOT/registry" ]]; then
+if [[ -z "$KERNEL_ROOT" || ( ! -d "$KERNEL_ROOT/registry" && ! -f "$KERNEL_ROOT/specs.yaml" ) ]]; then
   echo "ERROR: kernel snapshot not found. Pass --kernel-root /path/to/kernel-real" >&2
   echo "       (the directory that contains registry/specs.yaml etc.)" >&2
   exit 1
