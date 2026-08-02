@@ -31,6 +31,25 @@ def normalize_query(value: str) -> str:
     return " ".join(ALIASES.get(token, token) for token in tokens)
 
 
+_LEX_TOKEN = re.compile(r"[a-z0-9]+")
+
+
+def lexical_query(normalized: str) -> str:
+    """Build an OR ``tsquery`` string ("a | b | c") from a normalized query.
+
+    ``plainto_tsquery`` ANDs every term, so a terse fact chunk that contains
+    "hera" but not the function words in "hera là gì" scores 0 and is dropped —
+    the honest-null bug on natural-language questions. OR-of-terms lets ANY
+    matching term contribute, while ``ts_rank_cd`` still ranks chunks that match
+    more terms higher. Deterministic; tokens are already safe lexemes.
+    """
+    seen: list[str] = []
+    for token in _LEX_TOKEN.findall(normalized):
+        if token not in seen:
+            seen.append(token)
+    return " | ".join(seen)
+
+
 class EmbeddingAdapter(Protocol):
     model: str
     version: str
