@@ -21,6 +21,13 @@ export type AskAnswer = {
   conversationId: string;
   answerRunId: string;
   gapId: string | null;
+  /**
+   * TIP-013B AC-4: true only when the backend grounded this answer on at
+   * least one softly-verified fact (server `confidence_caveat`). The Ask
+   * surface then shows the double-check caveat line. Absent on older payloads
+   * and never set on non-grounded answers.
+   */
+  confidenceCaveat: boolean;
   requestId: string;
 };
 
@@ -89,6 +96,8 @@ export function parseAskAnswer(value: unknown): AskAnswer {
       || value.citations.length > 20 || !uuid(value.conversation_id)
       || !uuid(value.answer_run_id)
       || !(value.gap_id === null || value.gap_id === undefined || uuid(value.gap_id))
+      || !(value.confidence_caveat === undefined
+        || typeof value.confidence_caveat === "boolean")
       || !text(value.request_id, 128)) {
     throw new Error("invalid_ask_response");
   }
@@ -106,6 +115,8 @@ export function parseAskAnswer(value: unknown): AskAnswer {
     conversationId: value.conversation_id as string,
     answerRunId: value.answer_run_id as string,
     gapId: uuid(value.gap_id) ? value.gap_id : null,
+    // Only a grounded answer can carry the caveat — never inferred client-side.
+    confidenceCaveat: state === "grounded" && value.confidence_caveat === true,
     requestId: value.request_id as string,
   };
 }

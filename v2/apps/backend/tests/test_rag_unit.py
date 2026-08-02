@@ -3,7 +3,11 @@ import math
 import pytest
 
 from rtr_copilot.rag.adapters import OfflineHashEmbedding, normalize_query
-from rtr_copilot.rag.answering import GroundingError, verify_grounding
+from rtr_copilot.rag.answering import (
+    GroundingError,
+    needs_double_check,
+    verify_grounding,
+)
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.rag.models import ProviderAnswer, ProviderEvidence
 from rtr_copilot.rag.reindex import stable_split
@@ -120,6 +124,34 @@ def test_grounding_accepts_supported_and_rejects_unknown_or_missing_markers() ->
             [evidence()],
             max_chars=1000,
         )
+
+
+def test_needs_double_check_fires_only_for_the_soft_marker() -> None:
+    # TIP-013B AC-3: the soft-tier marker Part A rides in ``record.value``.
+    soft = {
+        "capability": "Synthetic soft-tier fact.",
+        "confidence_signal": {
+            "tier": "soft",
+            "needs_double_check": True,
+            "source_note": 'specs/company.yaml · row 2 · "Synthetic…"',
+        },
+    }
+    assert needs_double_check(soft) is True
+    # Strict record: no confidence_signal key at all.
+    assert needs_double_check({"capability": "Strict fact."}) is False
+    # Signal present but explicitly not requiring a re-check.
+    assert needs_double_check({
+        "confidence_signal": {"tier": "strict", "needs_double_check": False},
+    }) is False
+    # Malformed / hostile shapes are total → False, never raise or coerce.
+    assert needs_double_check({"confidence_signal": "soft"}) is False
+    assert needs_double_check(
+        {"confidence_signal": {"needs_double_check": "true"}},
+    ) is False
+    assert needs_double_check({"confidence_signal": {"needs_double_check": 1}}) is False
+    assert needs_double_check(None) is False
+    assert needs_double_check("soft") is False
+    assert needs_double_check([{"needs_double_check": True}]) is False
 
 
 def test_claim_or_stale_cannot_be_presented_as_verified() -> None:

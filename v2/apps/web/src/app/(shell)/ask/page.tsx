@@ -472,6 +472,11 @@ export default function AskPage() {
             <p className="grounding-note">{t("ask.answer.grounded")}</p>
           </header>
           <AnswerText text={current.answer} onCitation={openCitation}/>
+          {/* TIP-013B AC-4: shown ONLY when the answer is grounded on a softly
+              verified fact — a small, legible double-check caveat, reachable
+              as a note by keyboard/screenreader. */}
+          {current.confidenceCaveat && <p className="confidence-caveat" role="note">
+            {t("ask.confidenceCaveat")}</p>}
         </section>}
 
         {current && current.state === "honest_null" && <section className="honest-null"

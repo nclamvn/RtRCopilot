@@ -114,6 +114,10 @@ async def publish_and_index(
     supersedes: bool = False,
     classification: str = "internal",
     additional_records: list[tuple[str, str]] | None = None,
+    provenance_level: str = "approved_internal",
+    verification_state: str = "approved",
+    fact_state: str = "approved",
+    confidence_signal: dict[str, Any] | None = None,
 ) -> tuple[uuid.UUID, uuid.UUID]:
     package_root = build_package(
         root,
@@ -127,6 +131,10 @@ async def publish_and_index(
         classification=classification,
         text=text_value,
         additional_records=additional_records,
+        provenance_level=provenance_level,
+        verification_state=verification_state,
+        fact_state=fact_state,
+        confidence_signal=confidence_signal,
     )
     sot = SOTPublishService(
         settings(root),
@@ -218,6 +226,92 @@ async def test_active_reindex_search_grounded_answer_and_citation(
         """), {"source_key": source_key})
     assert persisted == len(response.citations)
     assert pointer == generation_id
+
+
+@pytest.mark.asyncio
+async def test_confidence_caveat_set_only_when_a_soft_fact_is_cited(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    """TIP-013B AC-3: the caveat flag rides the existing grounding.
+
+    True iff a soft-tier record (``value["confidence_signal"].needs_double_check``)
+    is cited; False for strict-only citations and for honest-null.
+    """
+    owner = await actor(factory)
+    soft_source = f"soft.{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=soft_source,
+        record_key=f"SOFT.{uuid.uuid4().hex}",
+        text_value="Softground autonomous drone endurance covers ninety minutes.",
+        provenance_level="verified_primary",
+        verification_state="verified",
+        fact_state="verified",
+        confidence_signal={
+            "tier": "soft",
+            "needs_double_check": True,
+            "source_note": 'prices/company.xlsx · Sheet1!B2 · "ninety minutes"',
+        },
+    )
+    strict_source = f"strict.{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=strict_source,
+        record_key=f"STRICT.{uuid.uuid4().hex}",
+        text_value="Strictground autonomous drone payload carries five kilograms.",
+        provenance_level="verified_primary",
+        verification_state="verified",
+        fact_state="verified",
+    )
+    service = AnswerService(
+        settings(tmp_path),
+        factory=factory,
+        retrieval=RetrievalService(settings(tmp_path), factory=factory),
+        provider=OfflineExtractiveAnswer(),
+    )
+
+    soft = await service.ask(
+        subject(owner),
+        "What Softground drone endurance is documented?",
+        filters=SearchFilters(source_key=soft_source),
+        require_verified=True,
+        conversation_id=None,
+        request_id="ask-soft",
+    )
+    assert soft.state == "grounded"
+    assert soft.confidence_caveat is True
+    assert soft.citations
+    assert all(item.needs_double_check for item in soft.citations)
+
+    strict = await service.ask(
+        subject(owner),
+        "What Strictground drone payload is documented?",
+        filters=SearchFilters(source_key=strict_source),
+        require_verified=True,
+        conversation_id=None,
+        request_id="ask-strict",
+    )
+    assert strict.state == "grounded"
+    assert strict.confidence_caveat is False
+    assert strict.citations
+    assert all(not item.needs_double_check for item in strict.citations)
+
+    null = await service.ask(
+        subject(owner),
+        "What Softground drone endurance is documented?",
+        filters=SearchFilters(source_key=f"absent.{uuid.uuid4().hex}"),
+        require_verified=True,
+        conversation_id=None,
+        request_id="ask-null",
+    )
+    assert null.state == "honest_null"
+    assert null.confidence_caveat is False
+    assert null.citations == []
 
 
 @pytest.mark.asyncio

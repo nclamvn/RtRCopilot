@@ -82,6 +82,8 @@ const vi = {
   "ask.surfaceAria": "Bàn hỏi đáp",
   "ask.answer.title": "Câu trả lời",
   "ask.answer.grounded": "Có căn cứ — mọi mệnh đề đều mang trích dẫn SOT",
+  "ask.confidenceCaveat":
+    "Một số căn cứ chưa có trích dẫn nguyên văn — vui lòng kiểm chứng lại.",
   "ask.answer.failed": "Trả lời thất bại",
   "ask.citation.aria": "Trích dẫn — mở bằng chứng trong Evidence Rail",
   "ask.null.title": "Chưa có bằng chứng",
@@ -519,6 +521,8 @@ const en: Record<MessageKey, string> = {
   "ask.surfaceAria": "Ask desk",
   "ask.answer.title": "Answer",
   "ask.answer.grounded": "Grounded — every statement carries an SOT citation",
+  "ask.confidenceCaveat":
+    "Some sources lack a verbatim citation — please double-check.",
   "ask.answer.failed": "Answer failed",
   "ask.citation.aria": "Citation — open evidence in the Evidence Rail",
   "ask.null.title": "No evidence yet",

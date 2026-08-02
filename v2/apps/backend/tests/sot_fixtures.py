@@ -43,6 +43,7 @@ def build_package(
     verification_state: str = "approved",
     fact_state: str = "approved",
     source_classification: str | None = None,
+    confidence_signal: dict[str, Any] | None = None,
 ) -> Path:
     curator_id = curator_id or uuid.uuid4()
     owner_id = owner_id or curator_id
@@ -67,6 +68,12 @@ def build_package(
     }
     evidence = PackageEvidence.model_validate(evidence_data)
     evidence_data["evidence_sha256"] = evidence_content_sha(evidence)
+    # TIP-013B Part A rides the soft-tier marker inside ``record.value`` (a
+    # single namespaced key in the ``Any`` value field — no schema change);
+    # it flows verbatim into ``record_versions.value_payload`` at publish.
+    record_value: dict[str, Any] = {"capability": text}
+    if confidence_signal is not None:
+        record_value["confidence_signal"] = confidence_signal
     record_data: dict[str, Any] = {
         "record_key": record_key,
         "version_ordinal": ordinal,
@@ -74,7 +81,7 @@ def build_package(
         "classification": classification,
         "department_id": None,
         "project_id": None,
-        "value": {"capability": text},
+        "value": record_value,
         "searchable_text": text,
         "provenance_level": provenance_level,
         "confidence": 0.95,

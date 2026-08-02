@@ -1,5 +1,12 @@
 # TIP-013 Phase B — Real-Data Migration Readiness (DRY-RUN dress rehearsal)
 
+> **⤷ SUPERSEDED FOR THE READY-POLICY (kept as the strict baseline of record).**
+> On 02/08/2026 the Homeowner **relaxed** the "evidence-span-required" policy: a
+> re-run under confidence tiers (`strict`/`soft`/`curate`/`claim`) takes ready from
+> **5 → 38** (5 strict + 33 soft). See `TIP-013B_MIGRATION_READINESS_RELAXED.md`
+> and the finite `TIP-013B_CURATION_WORKLIST.md`. The strict numbers below are
+> intentionally preserved unchanged for the record. Still DRY-RUN ONLY.
+
 **Status:** DRY-RUN ONLY — nothing was activated. No `--apply`, no production DB
 write, no real-data activation. This report measures how many of the real RtR
 kernel facts convert cleanly into the V2 SOT package format and would pass the

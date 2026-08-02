@@ -112,6 +112,8 @@ test("grounded ask renders citation markers wired to the shared rail; research d
   fireEvent.change(input, {target: {value: "Chính sách bảo hành robot?"}});
   fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
   expect(await screen.findByText(/Robot RtR được bảo hành 24 tháng/)).toBeInTheDocument();
+  // TIP-013B AC-4: an unflagged (strict-grounded) answer shows NO caveat.
+  expect(screen.queryByText(/vui lòng kiểm chứng lại/)).toBeNull();
   // Citation marker focuses the rail entry.
   const marker = screen.getByRole("button", {
     name: "Trích dẫn — mở bằng chứng trong Evidence Rail C1",
@@ -127,6 +129,35 @@ test("grounded ask renders citation markers wired to the shared rail; research d
   // URL-restorable conversation id, without any browser storage.
   expect(location.search).toBe(`?conversation=${conversationId}`);
   expect(localStorage.length + sessionStorage.length).toBe(0);
+});
+
+test("TIP-013B: a soft-grounded answer renders the double-check caveat as a note", async () => {
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-caveat",
+    }}),
+    "/api/ask/ask": () => ({json: {
+      state: "grounded",
+      answer: "Robot RtR được bảo hành 24 tháng. [C1]",
+      citations: [{...citation, needs_double_check: true}],
+      conversation_id: conversationId,
+      answer_run_id: runId,
+      confidence_caveat: true,
+      request_id: "req-caveat",
+    }}),
+  });
+  render(<AskPage/>);
+  const input = await screen.findByLabelText("Câu hỏi");
+  fireEvent.change(input, {target: {value: "Chính sách bảo hành robot?"}});
+  fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
+  expect(await screen.findByText(/Robot RtR được bảo hành 24 tháng/)).toBeInTheDocument();
+  // The caveat is real, legible text in the answer region, reachable as a note.
+  const caveat = screen.getByText(/Một số căn cứ chưa có trích dẫn nguyên văn/);
+  expect(caveat).toBeInTheDocument();
+  expect(caveat).toHaveAttribute("role", "note");
+  expect(caveat).toHaveTextContent("vui lòng kiểm chứng lại");
 });
 
 test("honest-null is a first-class state showing the recorded gap id and state", async () => {

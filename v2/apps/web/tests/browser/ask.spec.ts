@@ -32,6 +32,15 @@ const groundedAnswer = {
   answer_run_id: runId, request_id: "req-ask-1",
 };
 
+// TIP-013B AC-4: same grounded answer, but the server flagged it as grounded on
+// a softly-verified fact (and marks the soft citation).
+const groundedCaveat = {
+  ...groundedAnswer,
+  confidence_caveat: true,
+  citations: [{...citation, needs_double_check: true}],
+  request_id: "req-ask-caveat",
+};
+
 const honestNull = {
   state: "honest_null",
   answer: "Không tìm thấy bằng chứng được phép và đủ tin cậy để trả lời.",
@@ -92,7 +101,7 @@ const viewerManifest = {
 
 type AskMockOptions = {
   research?: "empty" | "denied" | "results";
-  ask?: typeof groundedAnswer | typeof honestNull;
+  ask?: Record<string, unknown>;
   catalog?: "ok" | "denied";
 };
 
@@ -206,6 +215,8 @@ test("grounded answer: citation focuses the rail entry and the locator opens the
   await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
   await expect(page.getByText("Có căn cứ — mọi mệnh đề đều mang trích dẫn SOT"))
     .toBeVisible();
+  // TIP-013B AC-4: an unflagged (strict-grounded) answer shows NO caveat.
+  await expect(page.getByText(/vui lòng kiểm chứng lại/)).toHaveCount(0);
   // URL-restorable conversation id, no browser storage.
   await expect(page).toHaveURL(new RegExp(`conversation=${conversationId}`));
   expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
@@ -228,6 +239,18 @@ test("grounded answer: citation focuses the rail entry and the locator opens the
   await expect(page).toHaveURL(/page=4/);
   await expect(page.getByTitle("Bản xem PDF an toàn")).toBeVisible();
   await expect(page.locator(".locator-spine")).toContainText("P4");
+});
+
+test("TIP-013B: a soft-grounded answer surfaces the double-check caveat as a note", async ({page}) => {
+  await mockAsk(page, {ask: groundedCaveat});
+  await page.goto("/ask");
+  await submitQuestion(page, "Chính sách bảo hành robot?");
+  await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
+  // The caveat is present, legible text, reachable as a note (a11y).
+  const caveat = page.getByRole("note")
+    .filter({hasText: /Một số căn cứ chưa có trích dẫn nguyên văn/});
+  await expect(caveat).toBeVisible();
+  await expect(caveat).toContainText("vui lòng kiểm chứng lại");
 });
 
 test("honest-null renders the recorded gap id and state with a Knowledge Ops link", async ({page}) => {

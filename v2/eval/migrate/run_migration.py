@@ -135,6 +135,22 @@ def _final_status_totals(reconciled: list[dict[str, Any]]) -> dict[str, int]:
     return dict(sorted(totals.items()))
 
 
+_TIER_ORDER = ("strict", "soft", "curate", "claim")
+
+
+def _final_tier_totals(reconciled: list[dict[str, Any]]) -> dict[str, int]:
+    """Confidence-tier split (strict/soft/curate/claim), gate-reconciled: a ready
+    fact the gate rejected is counted under ``rejected`` instead of its tier."""
+    totals: dict[str, int] = {}
+    for item in reconciled:
+        key = "rejected" if item["status"] == "rejected" else item["confidence_tier"]
+        totals[key] = totals.get(key, 0) + 1
+    ordered = {tier: totals[tier] for tier in _TIER_ORDER if tier in totals}
+    if "rejected" in totals:
+        ordered["rejected"] = totals["rejected"]
+    return ordered
+
+
 def build_report(kernel_root: Path, out_root: Path) -> dict[str, Any]:
     registry = load_registry(kernel_root)
     result = convert_registry(registry)
@@ -154,6 +170,7 @@ def build_report(kernel_root: Path, out_root: Path) -> dict[str, Any]:
             "per_package_gate": dry_run["per_package_gate"],
         },
         "final_status_totals": _final_status_totals(dry_run["reconciled_outcomes"]),
+        "final_tier_totals": _final_tier_totals(dry_run["reconciled_outcomes"]),
         "outcomes": dry_run["reconciled_outcomes"],
     }
 
@@ -167,12 +184,13 @@ def _print_summary(report: dict[str, Any]) -> None:
     print(f"staging_root: {report['staging_root']}")
     print(f"total facts : {summary['total_facts']}")
     print(f"final status: {report['final_status_totals']}")
-    print("by file     :")
-    for file_key, counts in summary["by_file"].items():
+    print(f"final tiers : {report['final_tier_totals']}  (strict+soft = ready)")
+    print("by file (confidence tier):")
+    for file_key, counts in summary["by_file_tier"].items():
         print(f"  {file_key:<14} {counts}")
     print(f"classification split (tier): {summary['classification_split']}")
     print(f"kernel provenance split    : {summary['kernel_provenance_split']}")
-    print(f"gap histogram (primary)    : {summary['gap_histogram']}")
+    print(f"curate gap histogram       : {summary['curate_gap_histogram']}")
     print(f"source-hash coverage       : {summary['source_hash_coverage']}")
     print("dry-run per-package gate:")
     for pkg in report["dry_run"]["per_package_gate"]:
