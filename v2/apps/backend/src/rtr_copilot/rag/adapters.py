@@ -97,6 +97,11 @@ class OfflineHashEmbedding:
         return [value / norm for value in vector] if norm else vector
 
 
+# Sentence split matching verify_grounding's factual-unit boundary, so every
+# emitted sentence can carry its own citation marker.
+_SENTENCE_RE = re.compile(r"(?<=[.!?])\s+")
+
+
 class OfflineExtractiveAnswer:
     name = "local"
     model = "rtr-extractive-v1"
@@ -115,12 +120,24 @@ class OfflineExtractiveAnswer:
         if not evidence or "evidence only" not in system_policy.casefold():
             raise ValueError("evidence_required")
         selected = evidence[:3]
-        statements = [
-            f"{item.text.strip()} [{item.marker}]"
-            for item in selected
-        ]
+        # Cite EVERY sentence, not once per block. verify_grounding splits the
+        # answer into factual units and requires a marker on each; multi-sentence
+        # facts (l3_facts) left the non-final sentences ungrounded -> honest-null.
+        statements: list[str] = []
+        used: list[str] = []
+        for item in selected:
+            text = item.text.strip()
+            if not text:
+                continue
+            sentences = [
+                sentence.strip()
+                for sentence in _SENTENCE_RE.split(text)
+                if sentence.strip()
+            ] or [text]
+            statements.extend(f"{sentence} [{item.marker}]" for sentence in sentences)
+            used.append(item.marker)
         return ProviderAnswer(
             answer=" ".join(statements),
-            used_markers=[item.marker for item in selected],
+            used_markers=used,
             follow_ups=[],
         )
