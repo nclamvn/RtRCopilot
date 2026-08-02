@@ -200,17 +200,19 @@ async def understand(
 ) -> str:
     """Return the retrieval query for *question*.
 
-    Calls the rewriter, validates every proposed entity against the registry
-    (dropping any unregistered one), and augments the query with the kept
-    entities + bounded expansions. ANY rewriter failure/timeout falls back to
-    the deterministic ``augment_query`` — the query is never lost and no
-    unregistered entity can ever reach retrieval. The original question is
+    Always applies the deterministic Phase 1 resolution, then ADDS the rewriter's
+    proposals on top: every proposed entity is validated against the registry
+    (any unregistered one dropped), and bounded expansions are appended. So a
+    weak or empty LLM response can never lose the reliable alias resolution, and
+    no unregistered entity can ever reach retrieval. ANY rewriter failure/timeout
+    falls back to the deterministic path alone. The original question is
     preserved; grounding is untouched.
     """
+    deterministic = resolve_entities(question)
     try:
         result = await asyncio.wait_for(rewriter.rewrite(question), timeout)
     except Exception:  # noqa: BLE001 — any rewriter failure must fall back safely
-        return augment_query(question)
-    entities = validate_entities(result.entities)
+        return _augment_with(question, deterministic, [])
+    entities = validate_entities([*deterministic, *result.entities])
     expansions = _clean_expansions(result.expansions)
     return _augment_with(question, entities, expansions)

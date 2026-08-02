@@ -98,6 +98,15 @@ class Settings(BaseSettings):
     rag_external_endpoint_policy: str | None = None
     rag_external_credential_source: str | None = None
     rag_gap_routing_key: str = "curator:sot"
+    # TIP-014 Phase 2b — LLM query rewrite (Anthropic primary, OpenAI fallback).
+    # Disabled by default; keys come from the environment and are never
+    # committed. Enable with RAG_REWRITE_ENABLED=true and set the key(s).
+    rag_rewrite_enabled: bool = False
+    anthropic_api_key: SecretStr | None = None
+    openai_api_key: SecretStr | None = None
+    rag_rewrite_anthropic_model: str = "claude-3-5-haiku-latest"
+    rag_rewrite_openai_model: str = "gpt-4o-mini"
+    rag_rewrite_timeout_seconds: float = Field(default=4.0, ge=0.05, le=30.0)
     maintenance_mode: bool = False
     retention_policy_json: str | None = None
     backup_destination: str | None = None

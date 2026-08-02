@@ -177,10 +177,19 @@ class TestUnderstand:
         assert "HERA" in out and out.startswith("hr thing")
 
     def test_hallucinated_entity_is_dropped(self) -> None:
+        # non-resolving question isolates the guard: only the LLM proposes, and
+        # its unregistered entity must be dropped.
         stub = _StubRewriter(RewriteResult(entities=["human resources"]))
-        out = asyncio.run(understand("hr thing", stub))
+        out = asyncio.run(understand("tell me about it", stub))
         assert "human resources" not in out
-        assert out == "hr thing"  # nothing valid to add
+        assert out == "tell me about it"  # nothing valid to add
+
+    def test_deterministic_resolution_never_lost(self) -> None:
+        # even when the LLM returns nothing, Phase 1 alias resolution still applies
+        stub = _StubRewriter(RewriteResult(entities=[], expansions=[]))
+        out = asyncio.run(understand("hira mtow", stub))
+        assert out == augment_query("hira mtow")
+        assert "HERA" in out
 
     def test_failure_falls_back_to_deterministic(self) -> None:
         out = asyncio.run(understand("hira mtow", _FailingRewriter()))

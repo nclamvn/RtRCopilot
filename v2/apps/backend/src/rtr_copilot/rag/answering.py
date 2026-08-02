@@ -39,12 +39,9 @@ from rtr_copilot.rag.models import (
     RetrievalHit,
     SearchFilters,
 )
-from rtr_copilot.rag.query_understanding import (
-    OfflineRewriter,
-    QueryRewriter,
-    understand,
-)
+from rtr_copilot.rag.query_understanding import QueryRewriter, understand
 from rtr_copilot.rag.retrieval import RetrievalService, scope_fingerprint
+from rtr_copilot.rag.rewrite_llm import build_rewriter
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.governance import GovernanceRepository
 
@@ -157,9 +154,10 @@ class AnswerService:
             factory=factory,
         )
         self.provider = provider or OfflineExtractiveAnswer()
-        # TIP-014: offline+deterministic by default (== Phase 1). A real LLM
-        # rewriter is injected here when the Homeowner enables a provider.
-        self._rewriter = rewriter or OfflineRewriter()
+        # TIP-014: build_rewriter returns the offline deterministic rewriter
+        # unless RAG_REWRITE_ENABLED + a key is set, in which case it returns the
+        # Anthropic->OpenAI LLM rewriter. Behavior is unchanged by default.
+        self._rewriter = rewriter or build_rewriter(self.settings)
 
     async def _conversation(
         self,
