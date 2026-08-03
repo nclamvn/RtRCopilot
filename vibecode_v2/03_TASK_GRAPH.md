@@ -47,6 +47,8 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-011 ✅ | Unified Design DNA UI, Evidence Rail, responsive/WCAG/i18n | 007,008,009 | VERIFIED: 14/14 AC; axe 0 violations; keyboard E2E; full 292/3; Playwright 73/73 |
 | TIP-012 ✅ | HTTPS, quotas, observability, CI/CD, security/load, backup/DR | 010,011 | VERIFIED: 16/16 AC; SLO 10/10; ingress 15/15; full 377/18/0; drills timed |
 | TIP-013 ~ | Data migration, regression parity, staged pilot, final VERIFY | 012 | Phase A VERIFIED (34/34 matrix, parity+eval harness, onboarding, go/no-go doc); Phase B real-data cutover AWAITING HOMEOWNER |
+| TIP-014 ✅ | Query understanding: deterministic product-alias resolution + env-gated LLM rewrite (Anthropic→OpenAI fallback) | 007 | Builder reports Phase 1/2/2B; offline-safe, env-gated, circuit-broken |
+| TIP-015 ✅ | Premium UI rebuild (PRD UI/UX v1.0): design tokens light+dark, shell/sidebar/ask/rail reskin, ⌘K palette, composer textarea, citation keyboard nav | 011 | VERIFIED: 12/12 AC; axe 0 crit/serious (5×4×2 + 10 stateful); Playwright 75/75; vitest 148; next build EXIT 0; no backend/migration change |
 
 ## Audit trail rule
 

@@ -115,7 +115,7 @@ for (const locale of LOCALES) {
     await setLocale(page, baseURL, locale);
     await mockAsk(page);
     await page.goto("/ask");
-    await expect(page.locator(".ask-question input")).toBeVisible();
+    await expect(page.locator(".ask-question textarea")).toBeVisible();
     await expectLocaleChrome(page, locale, "ask");
     await sweep(page, `/ask ${locale}`);
   });
@@ -164,7 +164,7 @@ test("axe stateful: grounded answer with rail entries (vi desktop + en desktop)"
     await mockAsk(page);
     await page.setViewportSize({width: 1440, height: 900});
     await page.goto("/ask");
-    await page.locator(".ask-question input").fill("Chính sách bảo hành robot?");
+    await page.locator(".ask-question textarea").fill("Chính sách bảo hành robot?");
     await page.locator(".ask-form button[type=submit]").click();
     await expect(page.locator(".answer-text")).toBeVisible();
     await expect(page.locator(".rail-entries article").first()).toBeVisible();
@@ -178,7 +178,7 @@ test("axe stateful: honest-null with recorded gap (vi desktop)", async ({page, b
   await mockAsk(page, honestNullAnswer);
   await page.setViewportSize({width: 1440, height: 900});
   await page.goto("/ask");
-  await page.locator(".ask-question input").fill("Điều chưa ai ghi lại?");
+  await page.locator(".ask-question textarea").fill("Điều chưa ai ghi lại?");
   await page.locator(".ask-form button[type=submit]").click();
   await expect(page.locator(".honest-null")).toBeVisible();
   await expect(page.getByText(ids.gapId, {exact: true})).toBeVisible();
@@ -200,7 +200,7 @@ test("axe stateful: ask rail bottom sheet open at mobile (vi 360×800)", async (
   await mockAsk(page, groundedAnswer);
   await page.setViewportSize({width: 360, height: 800});
   await page.goto("/ask");
-  await page.locator(".ask-question input").fill("Chính sách bảo hành robot?");
+  await page.locator(".ask-question textarea").fill("Chính sách bảo hành robot?");
   await page.locator(".ask-form button[type=submit]").click();
   await expect(page.locator(".answer-text")).toBeVisible();
   await page.locator(".answer-text .citation-marker").first().click();

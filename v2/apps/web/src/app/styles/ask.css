@@ -65,18 +65,25 @@
   font-weight: 500;
   gap: var(--pc-space-2);
 }
-.ask-workspace .ask-question input {
+.ask-workspace .ask-question textarea {
+  width: 100%;
+  min-height: 64px;
+  max-height: 180px;
+  resize: none;
+  overflow-y: auto;
   color: var(--pc-text-primary);
   background: var(--pc-surface-subtle);
   border: 1px solid var(--pc-border);
   border-radius: var(--pc-radius-md);
   padding: 14px var(--pc-space-4);
+  font-family: var(--pc-font-ui);
   font-size: var(--pc-body-lg-size);
+  line-height: 1.5;
   transition: border-color var(--pc-dur-hover) var(--pc-ease),
     background var(--pc-dur-hover) var(--pc-ease);
 }
-.ask-workspace .ask-question input::placeholder { color: var(--pc-text-muted); }
-.ask-workspace .ask-question input:focus {
+.ask-workspace .ask-question textarea::placeholder { color: var(--pc-text-muted); }
+.ask-workspace .ask-question textarea:focus {
   border-color: var(--pc-accent);
   background: var(--pc-surface);
   outline: 3px solid var(--pc-focus);

@@ -447,3 +447,31 @@ test("a conversation reopens from the URL with citations wired to the rail", asy
   await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"})
     .getByRole("link", {name: "Mở đúng vị trí — Trang 4"})).toBeVisible();
 });
+
+test("keyboard: [ and ] step the active citation across rail entries (PRD §14)", async ({page}) => {
+  const citation2 = {
+    ...citation, marker: "C2",
+    chunk_id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+    record_version_id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+    evidence_key: "company.warranty.e2",
+  };
+  await mockAsk(page, {ask: {
+    state: "grounded",
+    answer: "Bảo hành 24 tháng. [C1] Có thể gia hạn thêm. [C2]",
+    citations: [citation, citation2],
+    conversation_id: conversationId, answer_run_id: runId, request_id: "req-ask-2c",
+  }});
+  await page.goto("/ask");
+  await submitQuestion(page, "Chính sách bảo hành robot?");
+  await expect(page.locator(".rail-entries article")).toHaveCount(2);
+  // Open C1 from its marker; focus lands in the rail on entry C1.
+  await page.locator(".answer-text .citation-marker").first().click();
+  await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe("rail-entry-C1");
+  await expect(page.locator("#rail-entry-C1")).toHaveAttribute("aria-current", "true");
+  // ] steps to the next entry; [ steps back (focus moves with the active citation).
+  await page.keyboard.press("]");
+  await expect(page.locator("#rail-entry-C2")).toHaveAttribute("aria-current", "true");
+  await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe("rail-entry-C2");
+  await page.keyboard.press("[");
+  await expect(page.locator("#rail-entry-C1")).toHaveAttribute("aria-current", "true");
+});
