@@ -21,7 +21,9 @@
 
   --pc-text-primary: #111318;
   --pc-text-secondary: #525966;
-  --pc-text-muted: #7b8493;
+  /* PRD muted is #7b8493 (≈3.6:1 on white) — nudged darker for WCAG AA on
+     small text against the light surfaces it sits on (≥5:1). */
+  --pc-text-muted: #616b7a;
 
   --pc-border: #e1e5eb;
   --pc-border-strong: #ccd2dc;
@@ -31,7 +33,7 @@
   --pc-accent-hover: #244ee5;
   --pc-accent-contrast: #ffffff;
 
-  --pc-success: #168a50;
+  --pc-success: #0f7a45;
   --pc-warning: #a56613;
   --pc-danger: #c83d45;
   --pc-danger-soft: #fdecec;

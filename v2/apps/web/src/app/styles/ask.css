@@ -352,9 +352,12 @@
   gap: var(--pc-space-2);
   transition: background var(--pc-dur-highlight) var(--pc-ease);
 }
+/* PRD active citation = blue border. A neutral surface + 2px accent ring keeps
+   every 9px label at full contrast (an accent-soft fill drops muted dt to
+   ~4.2:1). The ring + left bar carry the "active" signal. */
 .ask-workspace .rail-entries article[aria-current="true"] {
-  background: var(--pc-accent-soft);
-  box-shadow: inset 0 0 0 1px var(--pc-accent);
+  background: var(--pc-surface-subtle);
+  box-shadow: inset 0 0 0 2px var(--pc-accent);
   padding-left: var(--pc-space-3);
 }
 .ask-workspace .rail-entries .row-head strong { color: var(--pc-text-primary); font-size: var(--pc-small-size); }

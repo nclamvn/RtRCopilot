@@ -285,8 +285,7 @@ test("axe stateful: shell mobile navigation drawer open (vi 360×800)", async ({
   await page.setViewportSize({width: 360, height: 800});
   await page.goto("/ask");
   await page.getByRole("button", {name: "Điều hướng", exact: true}).click();
-  await expect(page.getByRole("navigation", {name: "Điều hướng chính"}))
-    .toHaveClass(/open/);
+  await expect(page.locator("#pc-sidebar")).toHaveClass(/open/);
   await noOverflow(page, "shell nav drawer vi @360×800");
   await scan(page, "shell nav drawer vi @360×800");
 });

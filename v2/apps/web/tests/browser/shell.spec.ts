@@ -14,6 +14,9 @@ async function mockShell(page: Page, authenticated = true) {
   await page.route("**/api/status", route => route.fulfill({json: {
     ok: true, status: "ready",
   }}));
+  await page.route("**/api/ask/conversations**", route => route.fulfill({json: {
+    items: [], next_cursor: null,
+  }}));
 }
 
 test("shell shows one topbar, six nav areas, and active state follows navigation", async ({page}) => {
@@ -69,18 +72,20 @@ test("mobile drawer opens, closes on Escape, and closes after navigating", async
   await page.setViewportSize({width: 360, height: 800});
   await page.goto("/ask");
   const nav = page.getByRole("navigation", {name: "Điều hướng chính"});
+  // The premium sidebar is the drawer; the `open` class lives on its container.
+  const sidebar = page.locator("#pc-sidebar");
   const toggle = page.getByRole("button", {name: "Điều hướng", exact: true});
   await expect(toggle).toBeVisible();
   await toggle.click();
-  await expect(nav).toHaveClass(/open/);
+  await expect(sidebar).toHaveClass(/open/);
   await expect(toggle).toHaveAttribute("aria-expanded", "true");
   await page.keyboard.press("Escape");
-  await expect(nav).not.toHaveClass(/open/);
+  await expect(sidebar).not.toHaveClass(/open/);
   await toggle.click();
   await nav.getByRole("link", {name: "Quản trị"}).click();
   await expect(page).toHaveURL(/\/admin$/);
   await expect(page.getByRole("heading", {level: 1, name: "Quản trị"})).toBeVisible();
-  await expect(nav).not.toHaveClass(/open/);
+  await expect(sidebar).not.toHaveClass(/open/);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
