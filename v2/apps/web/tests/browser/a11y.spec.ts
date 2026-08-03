@@ -164,18 +164,18 @@ for (const locale of LOCALES) {
   });
 }
 
-// TIP-016 WP-B: the theme toggle must be coherent app-wide — prove the four
-// migrated pages (+ /ask) pass axe in LIGHT theme too (dark is the default the
-// matrix above already covers). One locale (vi) suffices for a colour gate.
-for (const pg of [
+// TIP-016 WP-B / TIP-017 WP-B: the theme toggle must be coherent app-wide —
+// prove the five pages pass axe in LIGHT theme too, now across BOTH locales
+// (dark matrix already covers both locales; this closes the colour gate).
+for (const locale of LOCALES) for (const pg of [
   {key: "ask", path: "/ask", ready: ".ask-question textarea"},
   {key: "files", path: `/files?version=${ids.versionId}&page=4`, ready: ".pdf-stage iframe"},
   {key: "documents", path: "/documents", ready: ".template-ledger li button"},
   {key: "ops", path: "/knowledge-ops", ready: ".tile-grid .tile"},
   {key: "admin", path: "/admin", ready: ".placeholder-card li"},
 ] as const) {
-  test(`axe light-theme: ${pg.key} (vi) at all four viewports`, async ({page, baseURL}) => {
-    await setLocale(page, baseURL, "vi");
+  test(`axe light-theme: ${pg.key} (${locale}) at all four viewports`, async ({page, baseURL}) => {
+    await setLocale(page, baseURL, locale);
     await setTheme(page, baseURL, "light");
     if (pg.key === "ask") await mockAsk(page);
     else if (pg.key === "files") { await mockAuth(page); await mockFiles(page); }
@@ -185,7 +185,7 @@ for (const pg of [
     await page.goto(pg.path);
     await expect(page.locator(pg.ready).first()).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await sweep(page, `${pg.key} light vi`);
+    await sweep(page, `${pg.key} light ${locale}`);
   });
 }
 
@@ -319,6 +319,16 @@ test("axe stateful: shell mobile navigation drawer open (vi 360×800)", async ({
   await expect(page.locator("#pc-sidebar")).toHaveClass(/open/);
   await noOverflow(page, "shell nav drawer vi @360×800");
   await scan(page, "shell nav drawer vi @360×800");
+});
+
+test("axe stateful: keyboard help dialog open (vi desktop)", async ({page, baseURL}) => {
+  await setLocale(page, baseURL, "vi");
+  await mockAsk(page);
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/ask");
+  await page.getByRole("button", {name: "Phím tắt"}).click();
+  await expect(page.getByRole("dialog", {name: "Phím tắt bàn phím"})).toBeVisible();
+  await scan(page, "help dialog open vi @1440×900");
 });
 
 test("reduced motion: drawers, sheets and the gated crossing animate nothing (AC-12)", async ({page, baseURL}) => {

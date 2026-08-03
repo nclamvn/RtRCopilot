@@ -131,3 +131,23 @@ test("anonymous shell keeps placeholders public and offers company sign-in", asy
   await expect(page.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
   await expect(page.getByRole("link", {name: "Đăng nhập công ty"})).toBeVisible();
 });
+
+test("? opens the keyboard help dialog; Esc closes; inert inside text fields", async ({page}) => {
+  await mockShell(page);
+  await page.goto("/ask");
+  await expect(page.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
+  await page.keyboard.press("?");
+  const dialog = page.getByRole("dialog", {name: "Phím tắt bàn phím"});
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText("Tìm kiếm · bảng lệnh")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  // The topbar affordance opens it too.
+  await page.getByRole("button", {name: "Phím tắt"}).click();
+  await expect(page.getByRole("dialog", {name: "Phím tắt bàn phím"})).toBeVisible();
+  await page.keyboard.press("Escape");
+  // Typing ? inside the composer must NOT open the dialog.
+  await page.locator(".ask-question textarea").click();
+  await page.keyboard.type("?");
+  await expect(page.getByRole("dialog", {name: "Phím tắt bàn phím"})).toBeHidden();
+});

@@ -143,6 +143,45 @@ function CommandPalette({commands, onClose, placeholder, emptyText}: {
   </div>;
 }
 
+/** True when a keystroke target is a text field — the `?` hotkey stays inert there. */
+function isTextInput(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  return el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable;
+}
+
+const HELP_ROWS: ReadonlyArray<[string, MessageKey]> = [
+  ["⌘K", "shell.help.search"],
+  ["⌘N", "shell.help.newq"],
+  ["⌘1 / ⌘2 / ⌘3", "shell.help.nav"],
+  ["F6 / ⇧F6", "shell.help.regions"],
+  ["[ / ]", "shell.help.cite"],
+  ["Esc", "shell.help.close"],
+];
+
+function HelpDialog({t, onClose}: {t: (key: MessageKey) => string; onClose: () => void}) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { closeRef.current?.focus(); }, []);
+  return <div className="pc-palette-scrim" role="presentation"
+    onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="pc-help" role="dialog" aria-modal="true" aria-label={t("shell.help.title")}>
+      <div className="pc-help-head">
+        <h2>{t("shell.help.title")}</h2>
+        <button ref={closeRef} type="button" className="pc-iconbtn"
+          aria-label={t("shell.help.close")} onClick={onClose}>✕</button>
+      </div>
+      <ul className="pc-help-list">
+        {HELP_ROWS.map(([keys, key]) => <li key={keys}>
+          <span className="pc-help-keys">
+            {keys.split(" / ").map(part => <kbd key={part} className="pc-kbd">{part}</kbd>)}
+          </span>
+          <span>{t(key)}</span>
+        </li>)}
+      </ul>
+    </div>
+  </div>;
+}
+
 export function AppShell({children, initialTheme = "dark", initialCollapsed = false}: {
   children: React.ReactNode; initialTheme?: Theme; initialCollapsed?: boolean;
 }) {
@@ -158,6 +197,8 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const helpBtnRef = useRef<HTMLButtonElement>(null);
   const [recent, setRecent] = useState<ConversationListPage["items"]>([]);
   const [health, setHealth] = useState<{ok: boolean; status: string} | null>(null);
   const [lastPathname, setLastPathname] = useState(pathname);
@@ -251,7 +292,12 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;
-      if (event.key === "Escape") { setPaletteOpen(false); setNavOpen(false); return; }
+      if (event.key === "Escape") {
+        setPaletteOpen(false); setNavOpen(false); setHelpOpen(false); return;
+      }
+      if (event.key === "?" && !isTextInput(event.target)) {
+        event.preventDefault(); setHelpOpen(true); return;
+      }
       if (!mod) return;
       const key = event.key.toLowerCase();
       if (key === "k") { event.preventDefault(); setPaletteOpen(open => !open); }
@@ -267,6 +313,11 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
   const closePalette = useCallback(() => {
     setPaletteOpen(false);
     searchRef.current?.focus();
+  }, []);
+
+  const closeHelp = useCallback(() => {
+    setHelpOpen(false);
+    helpBtnRef.current?.focus();
   }, []);
 
   const commands = useMemo<Command[]>(() => {
@@ -435,6 +486,9 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
             aria-label={t(theme === "dark" ? "shell.theme.toLight" : "shell.theme.toDark")}>
             <Icon name={theme === "dark" ? "sun" : "moon"} size={18}/>
           </button>
+          <button className="pc-iconbtn pc-help-btn" type="button" ref={helpBtnRef}
+            aria-haspopup="dialog" aria-label={t("shell.help.open")}
+            onClick={() => setHelpOpen(true)}>?</button>
         </div>
       </header>
       <main id="main" className="pc-main" tabIndex={-1} data-shell-region>
@@ -457,5 +511,6 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
       aria-label={t("shell.closeNav")} onClick={() => setNavOpen(false)}/>}
     {paletteOpen && <CommandPalette commands={commands} onClose={closePalette}
       placeholder={t("shell.search")} emptyText={t("shell.palette.empty")}/>}
+    {helpOpen && <HelpDialog t={t} onClose={closeHelp}/>}
   </div>;
 }
