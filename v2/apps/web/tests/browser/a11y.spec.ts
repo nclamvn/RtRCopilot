@@ -37,6 +37,12 @@ async function setLocale(page: Page, baseURL: string | undefined, locale: string
   }]);
 }
 
+async function setTheme(page: Page, baseURL: string | undefined, theme: string) {
+  await page.context().addCookies([{
+    name: "rtr_theme", value: theme, url: baseURL ?? "http://127.0.0.1:3000",
+  }]);
+}
+
 /** Zero critical/serious axe violations; moderate/minor become annotations. */
 async function scan(page: Page, context: string) {
   const results = await new AxeBuilder({page}).analyze();
@@ -155,6 +161,31 @@ for (const locale of LOCALES) {
     await expect(page.locator(".placeholder-card li").first()).toBeVisible();
     await expectLocaleChrome(page, locale, "admin");
     await sweep(page, `/admin ${locale}`);
+  });
+}
+
+// TIP-016 WP-B: the theme toggle must be coherent app-wide — prove the four
+// migrated pages (+ /ask) pass axe in LIGHT theme too (dark is the default the
+// matrix above already covers). One locale (vi) suffices for a colour gate.
+for (const pg of [
+  {key: "ask", path: "/ask", ready: ".ask-question textarea"},
+  {key: "files", path: `/files?version=${ids.versionId}&page=4`, ready: ".pdf-stage iframe"},
+  {key: "documents", path: "/documents", ready: ".template-ledger li button"},
+  {key: "ops", path: "/knowledge-ops", ready: ".tile-grid .tile"},
+  {key: "admin", path: "/admin", ready: ".placeholder-card li"},
+] as const) {
+  test(`axe light-theme: ${pg.key} (vi) at all four viewports`, async ({page, baseURL}) => {
+    await setLocale(page, baseURL, "vi");
+    await setTheme(page, baseURL, "light");
+    if (pg.key === "ask") await mockAsk(page);
+    else if (pg.key === "files") { await mockAuth(page); await mockFiles(page); }
+    else if (pg.key === "documents") await mockDocuments(page);
+    else if (pg.key === "ops") await mockKnowledgeOps(page);
+    else await mockAuth(page);
+    await page.goto(pg.path);
+    await expect(page.locator(pg.ready).first()).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await sweep(page, `${pg.key} light vi`);
   });
 }
 

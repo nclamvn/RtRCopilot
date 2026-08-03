@@ -1,0 +1,43 @@
+/**
+ * TIP-016 WP-B — full light-mode for the frozen pages (theming only; layout,
+ * logic, copy and API of Files/Documents/Knowledge-Ops/Admin stay frozen).
+ *
+ * Imported AFTER styles.css so these `:root` aliases override the frozen dark
+ * literal tokens. Because every `--pc-*` value already switches per
+ * `data-theme`, one alias set here makes the whole legacy surface theme-aware.
+ * `--signal` (overloaded brand+danger in TIP-011) aliases to the brand accent;
+ * the genuine danger/warning selectors are pinned below so red stays red and
+ * research stays amber in both themes.
+ */
+
+:root {
+  --ink: var(--pc-text-primary);
+  --muted: var(--pc-text-secondary);
+  --line: var(--pc-border);
+  --panel: var(--pc-surface);
+  --bg: var(--pc-bg-app);
+  --focus: var(--pc-focus);
+  --signal: var(--pc-accent);
+  --locator: var(--pc-accent);
+}
+
+/* Danger / warning semantics preserved (borders + accents that `--signal`
+   used to carry as red/amber). Text colours are migrated at the literals. */
+.surface-error { border-color: var(--pc-danger); }
+.surface-denied { border-color: var(--pc-warning); }
+.action-row .danger, .row-head .danger { border-color: var(--pc-danger); }
+.state-chip.revoked, .state-chip.rejected { border-color: var(--pc-danger); }
+.sla-badge.overdue { border-color: var(--pc-danger); }
+.zone-chip.zone-research { border-color: var(--pc-warning); }
+.crossing-zone.research { border-color: var(--pc-warning); }
+.crossing-marker.rejected { border-color: var(--pc-danger); }
+.tile.research { border-color: var(--pc-warning); }
+
+/* A few legacy surfaces used translucent-dark chip backgrounds that read as
+   holes on a light canvas; give them a token surface so they adapt. */
+.work-surface { background: var(--pc-surface-subtle); }
+
+/* 9px accent labels on the active row (surface-hover) fall to ~4.4:1 in light;
+   the darker accent-hover keeps them ≥4.5:1 on both active and idle rows. */
+.file-kind,
+.template-ledger li span { color: var(--pc-accent-hover); }

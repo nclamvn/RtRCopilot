@@ -89,6 +89,29 @@
   outline: 3px solid var(--pc-focus);
   outline-offset: 1px;
 }
+/* Composer scope chips (PRD §11) — read-only reflection of the active scope. */
+.ask-workspace .ask-chips { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); }
+.ask-workspace .ask-chip {
+  display: inline-flex; align-items: center; gap: var(--pc-space-2);
+  padding: 5px var(--pc-space-3);
+  border: 1px solid var(--pc-border);
+  background: var(--pc-surface-subtle);
+  border-radius: var(--pc-radius-pill);
+  font-size: var(--pc-small-size);
+  color: var(--pc-text-primary);
+}
+.ask-workspace .ask-chip-key {
+  font-size: var(--pc-eyebrow-size); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--pc-text-muted); font-weight: 600;
+}
+.ask-workspace .ask-chip code {
+  color: var(--pc-accent); font-family: var(--pc-font-mono); font-size: var(--pc-caption-size);
+}
+.ask-workspace .ask-chip-file button {
+  border: 0; background: transparent; color: var(--pc-text-muted); cursor: pointer;
+  font-size: 15px; line-height: 1; padding: 0 2px;
+}
+.ask-workspace .ask-chip-file button:hover { color: var(--pc-danger); }
 .ask-workspace .ask-scope,
 .ask-workspace .ask-file-scope {
   border: 1px solid var(--pc-border);

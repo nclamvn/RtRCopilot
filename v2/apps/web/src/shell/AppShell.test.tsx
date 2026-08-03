@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import "@testing-library/jest-dom/vitest";
-import {cleanup, fireEvent, render, screen} from "@testing-library/react";
+import {cleanup, fireEvent, render, screen, within} from "@testing-library/react";
 import React from "react";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {I18nProvider} from "../i18n/provider";
@@ -59,13 +59,15 @@ test("shell renders topbar, six nav areas and marks the active area", async () =
     ["Tri thức", "/knowledge-ops?view=research"],
     ["Vận hành", "/knowledge-ops"], ["Quản trị", "/admin"],
   ] as const;
+  // Scope to the primary nav: the mobile dock repeats the six names (a second
+  // nav) and jsdom ignores its display:none, so unscoped queries would clash.
   for (const [name, href] of links) {
-    expect(screen.getByRole("link", {name})).toHaveAttribute("href", href);
+    expect(within(navigation).getByRole("link", {name})).toHaveAttribute("href", href);
   }
   expect(navigation.querySelectorAll("ol a").length).toBe(6);
-  expect(screen.getByRole("link", {name: "Hỏi"}))
+  expect(within(navigation).getByRole("link", {name: "Hỏi"}))
     .toHaveAttribute("aria-current", "page");
-  expect(screen.getByRole("link", {name: "Quản trị"}))
+  expect(within(navigation).getByRole("link", {name: "Quản trị"}))
     .not.toHaveAttribute("aria-current");
   expect(await screen.findByText("RtR Curator")).toBeInTheDocument();
 });
@@ -111,14 +113,16 @@ test("language switch flips strings, lang attribute and persists via cookie only
   expect(en).toHaveAttribute("aria-pressed", "false");
   fireEvent.click(en);
   expect(en).toHaveAttribute("aria-pressed", "true");
-  expect(screen.getByRole("link", {name: "Ask"})).toBeInTheDocument();
-  expect(screen.getByRole("link", {name: "Admin"})).toBeInTheDocument();
+  const navEn = screen.getByRole("navigation", {name: "Primary navigation"});
+  expect(within(navEn).getByRole("link", {name: "Ask"})).toBeInTheDocument();
+  expect(within(navEn).getByRole("link", {name: "Admin"})).toBeInTheDocument();
   expect(document.documentElement.lang).toBe("en");
   expect(document.cookie).toContain("rtr_locale=en");
   expect(localStorage.length).toBe(0);
   expect(sessionStorage.length).toBe(0);
   fireEvent.click(screen.getByRole("button", {name: "VI"}));
-  expect(screen.getByRole("link", {name: "Hỏi"})).toBeInTheDocument();
+  const navVi = screen.getByRole("navigation", {name: "Điều hướng chính"});
+  expect(within(navVi).getByRole("link", {name: "Hỏi"})).toBeInTheDocument();
   expect(document.documentElement.lang).toBe("vi");
   expect(document.cookie).toContain("rtr_locale=vi");
 });

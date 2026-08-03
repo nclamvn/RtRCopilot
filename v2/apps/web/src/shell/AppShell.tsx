@@ -442,6 +442,17 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
       </main>
     </div>
 
+    {/* PRD §13: mobile bottom dock — a second, distinctly-labelled nav shown
+        only <760px (CSS). Icon links carry the six area names. */}
+    <nav className="pc-dock" aria-label={t("shell.dockLabel")}>
+      {NAV_AREAS.map(item => <Link key={item.area} className="pc-dock-item"
+        href={item.href} aria-label={t(item.labelKey)}
+        aria-current={active === item.area ? "page" : undefined}
+        onClick={() => setNavOpen(false)}>
+        <Icon name={item.icon} size={20}/>
+      </Link>)}
+    </nav>
+
     {navOpen && <button className="pc-scrim" type="button"
       aria-label={t("shell.closeNav")} onClick={() => setNavOpen(false)}/>}
     {paletteOpen && <CommandPalette commands={commands} onClose={closePalette}

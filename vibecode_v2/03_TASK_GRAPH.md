@@ -49,6 +49,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-013 ~ | Data migration, regression parity, staged pilot, final VERIFY | 012 | Phase A VERIFIED (34/34 matrix, parity+eval harness, onboarding, go/no-go doc); Phase B real-data cutover AWAITING HOMEOWNER |
 | TIP-014 ✅ | Query understanding: deterministic product-alias resolution + env-gated LLM rewrite (Anthropic→OpenAI fallback) | 007 | Builder reports Phase 1/2/2B; offline-safe, env-gated, circuit-broken |
 | TIP-015 ✅ | Premium UI rebuild (PRD UI/UX v1.0): design tokens light+dark, shell/sidebar/ask/rail reskin, ⌘K palette, composer textarea, citation keyboard nav | 011 | VERIFIED: 12/12 AC; axe 0 crit/serious (5×4×2 + 10 stateful); Playwright 75/75; vitest 148; next build EXIT 0; no backend/migration change |
+| TIP-016 ✅ | UI completion: mobile bottom-dock nav (§13), full light-mode for frozen pages (theming only), composer scope chips (§11) | 015 | VERIFIED: 7/7 AC; axe 0 crit/serious **both themes** (dark 5×4×2 + light 5×4 + 10 stateful); Playwright 80/80; vitest 148; next build EXIT 0; no backend/migration change |
 
 ## Audit trail rule
 

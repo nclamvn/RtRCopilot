@@ -311,7 +311,8 @@ test("a picked file scopes the ask request to that file's source key", async ({p
   await page.goto("/ask");
   await page.getByRole("button", {name: "Chọn tệp được cấp quyền"}).click();
   await page.getByRole("button", {name: /company-spec\.pdf/}).click();
-  await expect(page.getByText("company-spec.pdf")).toBeVisible();
+  // The picked file is now echoed both in the fieldset and the composer chip.
+  await expect(page.getByText("company-spec.pdf").first()).toBeVisible();
   await submitQuestion(page, "Tệp này nói gì về bảo hành?");
   await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
   expect(askBodies).toHaveLength(1);

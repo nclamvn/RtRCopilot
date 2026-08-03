@@ -427,6 +427,18 @@ export default function AskPage() {
                 }
               }}/>
           </label>
+          <div className="ask-chips">
+            <span className="ask-chip">
+              <span className="ask-chip-key">{t("ask.chip.scope")}</span>
+              {includeResearch ? t("ask.chip.research") : t("ask.chip.sot")}
+            </span>
+            {fileScope && <span className="ask-chip ask-chip-file">
+              <span className="ask-chip-key">{t("ask.chip.file")}</span>
+              <code>{fileScope.displayFilename}</code>
+              <button type="button" aria-label={t("ask.chip.remove")}
+                onClick={() => setFileScope(null)}>×</button>
+            </span>}
+          </div>
           <fieldset className="ask-scope">
             <legend>{t("ask.scope.legend")}</legend>
             <label>

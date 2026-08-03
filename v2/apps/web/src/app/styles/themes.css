@@ -34,7 +34,9 @@
   --pc-accent-contrast: #ffffff;
 
   --pc-success: #0f7a45;
-  --pc-warning: #a56613;
+  /* darkened from PRD #a56613 so 9px amber labels clear AA on light tints
+     (research zone chip sits on an orange-tinted background). */
+  --pc-warning: #8a5410;
   --pc-danger: #c83d45;
   --pc-danger-soft: #fdecec;
 

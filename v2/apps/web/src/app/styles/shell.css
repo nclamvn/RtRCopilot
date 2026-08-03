@@ -474,6 +474,9 @@
 .pc-shell[data-collapsed="true"] .pc-workspace { margin: var(--pc-space-2) auto 0; width: 48px; height: 48px; padding: 0; }
 .pc-shell[data-collapsed="true"] .pc-collapse { margin: var(--pc-space-2) auto 0; }
 
+/* ---- Mobile bottom dock (PRD §13) ------------------------------------ */
+.pc-dock { display: none; }
+
 /* ---- Mobile drawer / scrim ------------------------------------------- */
 .pc-scrim { display: none; }
 
@@ -501,5 +504,25 @@
   .pc-search .pc-search-label, .pc-search .pc-kbd { display: none; }
   .pc-search { flex: 0 0 40px; max-width: 40px; justify-content: center; padding: 0; }
   .pc-brand-name { display: none; }
-  .pc-main { padding: var(--pc-space-5) var(--pc-space-4); }
+  .pc-main { padding: var(--pc-space-5) var(--pc-space-4) 76px; }
+  .pc-dock {
+    display: flex;
+    position: fixed; left: 0; right: 0; bottom: 0;
+    z-index: var(--pc-z-topbar);
+    height: 60px;
+    padding: 6px max(6px, env(safe-area-inset-left)) env(safe-area-inset-bottom);
+    background: var(--pc-bg-sidebar);
+    border-top: 1px solid var(--pc-border);
+  }
+  .pc-dock-item {
+    flex: 1;
+    display: grid; place-items: center;
+    color: var(--pc-text-muted);
+    text-decoration: none;
+    border-radius: var(--pc-radius-sm);
+    transition: color var(--pc-dur-hover) var(--pc-ease),
+      background var(--pc-dur-hover) var(--pc-ease);
+  }
+  .pc-dock-item:hover { color: var(--pc-text-primary); background: var(--pc-surface-hover); }
+  .pc-dock-item[aria-current="page"] { color: var(--pc-accent); background: var(--pc-accent-soft); }
 }
