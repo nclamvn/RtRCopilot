@@ -51,6 +51,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-015 ✅ | Premium UI rebuild (PRD UI/UX v1.0): design tokens light+dark, shell/sidebar/ask/rail reskin, ⌘K palette, composer textarea, citation keyboard nav | 011 | VERIFIED: 12/12 AC; axe 0 crit/serious (5×4×2 + 10 stateful); Playwright 75/75; vitest 148; next build EXIT 0; no backend/migration change |
 | TIP-016 ✅ | UI completion: mobile bottom-dock nav (§13), full light-mode for frozen pages (theming only), composer scope chips (§11) | 015 | VERIFIED: 7/7 AC; axe 0 crit/serious **both themes** (dark 5×4×2 + light 5×4 + 10 stateful); Playwright 80/80; vitest 148; next build EXIT 0; no backend/migration change |
 | TIP-017 ✅ | Keyboard & theming completeness: shortcuts help dialog (`?`), light-axe extended to EN | 015,016 | VERIFIED: 6/6 AC; axe 0 crit/serious **both themes × both locales** (+ help dialog); Playwright 87/87; vitest 148; next build EXIT 0; no backend/migration change |
+| TIP-018 ⛔ | Real per-file retrieval (replace safe-form source_key with version_id scope) — closes TIP-007/011 deferral | 007,008,011 | DESIGN COMPLETE · BUILD BLOCKED: leak/ACL/grounding gates need live Postgres+pgvector+MinIO; Docker daemon un-startable in sandbox. Refused to ship unverified leak-path change (Vibecode). Unblock = compose stack up (Homeowner/infra) |
 
 ## Audit trail rule
 
