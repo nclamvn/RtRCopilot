@@ -14,6 +14,9 @@ async function mockShell(page: Page, authenticated = true) {
   await page.route("**/api/status", route => route.fulfill({json: {
     ok: true, status: "ready",
   }}));
+  await page.route("**/api/ask/conversations**", route => route.fulfill({json: {
+    items: [], next_cursor: null,
+  }}));
 }
 
 test("shell shows one topbar, six nav areas, and active state follows navigation", async ({page}) => {
@@ -69,18 +72,20 @@ test("mobile drawer opens, closes on Escape, and closes after navigating", async
   await page.setViewportSize({width: 360, height: 800});
   await page.goto("/ask");
   const nav = page.getByRole("navigation", {name: "Điều hướng chính"});
+  // The premium sidebar is the drawer; the `open` class lives on its container.
+  const sidebar = page.locator("#pc-sidebar");
   const toggle = page.getByRole("button", {name: "Điều hướng", exact: true});
   await expect(toggle).toBeVisible();
   await toggle.click();
-  await expect(nav).toHaveClass(/open/);
+  await expect(sidebar).toHaveClass(/open/);
   await expect(toggle).toHaveAttribute("aria-expanded", "true");
   await page.keyboard.press("Escape");
-  await expect(nav).not.toHaveClass(/open/);
+  await expect(sidebar).not.toHaveClass(/open/);
   await toggle.click();
   await nav.getByRole("link", {name: "Quản trị"}).click();
   await expect(page).toHaveURL(/\/admin$/);
   await expect(page.getByRole("heading", {level: 1, name: "Quản trị"})).toBeVisible();
-  await expect(nav).not.toHaveClass(/open/);
+  await expect(sidebar).not.toHaveClass(/open/);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
@@ -125,4 +130,50 @@ test("anonymous shell keeps placeholders public and offers company sign-in", asy
   await page.goto("/ask");
   await expect(page.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
   await expect(page.getByRole("link", {name: "Đăng nhập công ty"})).toBeVisible();
+});
+
+test("? opens the keyboard help dialog; Esc closes; inert inside text fields", async ({page}) => {
+  await mockShell(page);
+  await page.goto("/ask");
+  await expect(page.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
+  await page.keyboard.press("?");
+  const dialog = page.getByRole("dialog", {name: "Phím tắt bàn phím"});
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText("Tìm kiếm · bảng lệnh")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  // The topbar affordance opens it too.
+  await page.getByRole("button", {name: "Phím tắt"}).click();
+  await expect(page.getByRole("dialog", {name: "Phím tắt bàn phím"})).toBeVisible();
+  await page.keyboard.press("Escape");
+  // Typing ? inside the composer must NOT open the dialog.
+  await page.locator(".ask-question textarea").click();
+  await page.keyboard.type("?");
+  await expect(page.getByRole("dialog", {name: "Phím tắt bàn phím"})).toBeHidden();
+});
+
+test("no-cookie visitor follows OS prefers-color-scheme; choosing a theme sets a cookie", async ({browser}) => {
+  const dark = await browser.newContext({colorScheme: "dark"});
+  const pd = await dark.newPage();
+  await mockShell(pd);
+  await pd.goto("/ask");
+  await expect(pd.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
+  const bgDark = await pd.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await dark.close();
+
+  const light = await browser.newContext({colorScheme: "light"});
+  const pl = await light.newPage();
+  await mockShell(pl);
+  await pl.goto("/ask");
+  await expect(pl.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
+  // No explicit cookie yet → no data-theme attribute; CSS resolves the OS scheme.
+  expect(await pl.evaluate(() => document.documentElement.hasAttribute("data-theme"))).toBe(false);
+  const bgLight = await pl.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(bgDark).not.toBe(bgLight);
+  // Choosing a theme writes the cookie + explicit attribute (overrides the OS).
+  await pl.getByRole("button", {name: /Chuyển sang giao diện/}).click();
+  await expect(pl.locator("html")).toHaveAttribute("data-theme", "dark");
+  const cookie = (await light.cookies()).find(item => item.name === "rtr_theme");
+  expect(cookie?.value).toBe("dark");
+  await light.close();
 });

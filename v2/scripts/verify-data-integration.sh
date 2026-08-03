@@ -21,28 +21,39 @@ owner_dsn="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$verify_
 runtime_dsn="postgresql://$POSTGRES_RUNTIME_USER:$POSTGRES_RUNTIME_PASSWORD@postgres:5432/$verify_database"
 
 cleanup() {
+  # Tolerant: the EXIT trap is armed before `compose up`, so if startup fails
+  # (services never became healthy) these teardown calls must not error out
+  # under `set -e` and mask the real failure. Best-effort, then restore -e.
+  set +e
   docker compose exec -T postgres psql -X -U "$POSTGRES_USER" -d postgres \
     -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity
-        WHERE datname='$verify_database' AND pid <> pg_backend_pid()" >/dev/null
+        WHERE datname='$verify_database' AND pid <> pg_backend_pid()" >/dev/null 2>&1
   docker compose exec -T postgres psql -X -U "$POSTGRES_USER" -d postgres \
     -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity
-        WHERE datname='$ac18_database' AND pid <> pg_backend_pid()" >/dev/null
+        WHERE datname='$ac18_database' AND pid <> pg_backend_pid()" >/dev/null 2>&1
   docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
-    --if-exists "$verify_database" >/dev/null
+    --if-exists "$verify_database" >/dev/null 2>&1
   docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
-    --if-exists "$restore_database" >/dev/null
+    --if-exists "$restore_database" >/dev/null 2>&1
   docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
-    --if-exists "$ac18_database" >/dev/null
-  minio_id="$(docker compose ps -q minio)"
-  docker run --rm --network "container:$minio_id" \
-    --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
-    -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
-         mc rb --force 'local/$verify_bucket' >/dev/null 2>&1 || true
-         mc rb --force 'local/$restore_bucket' >/dev/null 2>&1 || true"
+    --if-exists "$ac18_database" >/dev/null 2>&1
+  minio_id="$(docker compose ps -q minio 2>/dev/null)"
+  if [ -n "$minio_id" ]; then
+    docker run --rm --network "container:$minio_id" \
+      --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
+      -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
+           mc rb --force 'local/$verify_bucket' >/dev/null 2>&1 || true
+           mc rb --force 'local/$restore_bucket' >/dev/null 2>&1 || true"
+  fi
+  set -e
 }
 trap cleanup EXIT
 
-docker compose up -d postgres minio redis
+# --wait blocks until postgres/minio/redis report *healthy* via the healthchecks
+# already declared in compose.yaml (postgres: pg_isready, retries 20×3s). Without
+# it, the next `compose exec … psql` races the postmaster and fails with
+# "connection to server on socket … .s.PGSQL.5432: No such file or directory".
+docker compose up -d --wait postgres minio redis
 docker compose exec -T postgres psql -X -U "$POSTGRES_USER" -d postgres \
   -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity
       WHERE datname='$verify_database' AND pid <> pg_backend_pid()" >/dev/null

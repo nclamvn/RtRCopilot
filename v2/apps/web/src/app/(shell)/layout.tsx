@@ -1,12 +1,21 @@
 import {Suspense} from "react";
+import {cookies} from "next/headers";
 import {AppShell} from "../../shell/AppShell";
+import {readThemeCookie, resolveCollapsed, SIDEBAR_COOKIE, THEME_COOKIE} from "../../shell/theme";
 
 /**
- * TIP-011 shell route group: every page placed under `(shell)/` renders
- * inside the unified AppShell. Builder C migrates files/documents/
- * knowledge-ops here; until then those routes keep their own topbars and the
- * shell wraps only /ask and /admin (no double-H1/landmark anywhere).
+ * TIP-011 shell route group: every page placed under `(shell)/` renders inside
+ * the unified AppShell. Theme + sidebar density are read from cookies here (a
+ * server component) and handed to the client shell so the first paint already
+ * matches the persisted preference — no flash, no hydration mismatch.
  */
-export default function ShellLayout({children}: Readonly<{children: React.ReactNode}>) {
-  return <Suspense><AppShell>{children}</AppShell></Suspense>;
+export default async function ShellLayout({children}: Readonly<{children: React.ReactNode}>) {
+  const store = await cookies();
+  const initialTheme = readThemeCookie(store.get(THEME_COOKIE)?.value);
+  const initialCollapsed = resolveCollapsed(store.get(SIDEBAR_COOKIE)?.value);
+  return <Suspense>
+    <AppShell initialTheme={initialTheme ?? undefined} initialCollapsed={initialCollapsed}>
+      {children}
+    </AppShell>
+  </Suspense>;
 }

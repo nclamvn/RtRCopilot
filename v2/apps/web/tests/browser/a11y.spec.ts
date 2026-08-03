@@ -37,6 +37,12 @@ async function setLocale(page: Page, baseURL: string | undefined, locale: string
   }]);
 }
 
+async function setTheme(page: Page, baseURL: string | undefined, theme: string) {
+  await page.context().addCookies([{
+    name: "rtr_theme", value: theme, url: baseURL ?? "http://127.0.0.1:3000",
+  }]);
+}
+
 /** Zero critical/serious axe violations; moderate/minor become annotations. */
 async function scan(page: Page, context: string) {
   const results = await new AxeBuilder({page}).analyze();
@@ -115,7 +121,7 @@ for (const locale of LOCALES) {
     await setLocale(page, baseURL, locale);
     await mockAsk(page);
     await page.goto("/ask");
-    await expect(page.locator(".ask-question input")).toBeVisible();
+    await expect(page.locator(".ask-question textarea")).toBeVisible();
     await expectLocaleChrome(page, locale, "ask");
     await sweep(page, `/ask ${locale}`);
   });
@@ -158,13 +164,38 @@ for (const locale of LOCALES) {
   });
 }
 
+// TIP-016 WP-B / TIP-017 WP-B: the theme toggle must be coherent app-wide —
+// prove the five pages pass axe in LIGHT theme too, now across BOTH locales
+// (dark matrix already covers both locales; this closes the colour gate).
+for (const locale of LOCALES) for (const pg of [
+  {key: "ask", path: "/ask", ready: ".ask-question textarea"},
+  {key: "files", path: `/files?version=${ids.versionId}&page=4`, ready: ".pdf-stage iframe"},
+  {key: "documents", path: "/documents", ready: ".template-ledger li button"},
+  {key: "ops", path: "/knowledge-ops", ready: ".tile-grid .tile"},
+  {key: "admin", path: "/admin", ready: ".placeholder-card li"},
+] as const) {
+  test(`axe light-theme: ${pg.key} (${locale}) at all four viewports`, async ({page, baseURL}) => {
+    await setLocale(page, baseURL, locale);
+    await setTheme(page, baseURL, "light");
+    if (pg.key === "ask") await mockAsk(page);
+    else if (pg.key === "files") { await mockAuth(page); await mockFiles(page); }
+    else if (pg.key === "documents") await mockDocuments(page);
+    else if (pg.key === "ops") await mockKnowledgeOps(page);
+    else await mockAuth(page);
+    await page.goto(pg.path);
+    await expect(page.locator(pg.ready).first()).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await sweep(page, `${pg.key} light ${locale}`);
+  });
+}
+
 test("axe stateful: grounded answer with rail entries (vi desktop + en desktop)", async ({page, baseURL}) => {
   for (const locale of LOCALES) {
     await setLocale(page, baseURL, locale);
     await mockAsk(page);
     await page.setViewportSize({width: 1440, height: 900});
     await page.goto("/ask");
-    await page.locator(".ask-question input").fill("Chính sách bảo hành robot?");
+    await page.locator(".ask-question textarea").fill("Chính sách bảo hành robot?");
     await page.locator(".ask-form button[type=submit]").click();
     await expect(page.locator(".answer-text")).toBeVisible();
     await expect(page.locator(".rail-entries article").first()).toBeVisible();
@@ -178,7 +209,7 @@ test("axe stateful: honest-null with recorded gap (vi desktop)", async ({page, b
   await mockAsk(page, honestNullAnswer);
   await page.setViewportSize({width: 1440, height: 900});
   await page.goto("/ask");
-  await page.locator(".ask-question input").fill("Điều chưa ai ghi lại?");
+  await page.locator(".ask-question textarea").fill("Điều chưa ai ghi lại?");
   await page.locator(".ask-form button[type=submit]").click();
   await expect(page.locator(".honest-null")).toBeVisible();
   await expect(page.getByText(ids.gapId, {exact: true})).toBeVisible();
@@ -200,7 +231,7 @@ test("axe stateful: ask rail bottom sheet open at mobile (vi 360×800)", async (
   await mockAsk(page, groundedAnswer);
   await page.setViewportSize({width: 360, height: 800});
   await page.goto("/ask");
-  await page.locator(".ask-question input").fill("Chính sách bảo hành robot?");
+  await page.locator(".ask-question textarea").fill("Chính sách bảo hành robot?");
   await page.locator(".ask-form button[type=submit]").click();
   await expect(page.locator(".answer-text")).toBeVisible();
   await page.locator(".answer-text .citation-marker").first().click();
@@ -285,10 +316,19 @@ test("axe stateful: shell mobile navigation drawer open (vi 360×800)", async ({
   await page.setViewportSize({width: 360, height: 800});
   await page.goto("/ask");
   await page.getByRole("button", {name: "Điều hướng", exact: true}).click();
-  await expect(page.getByRole("navigation", {name: "Điều hướng chính"}))
-    .toHaveClass(/open/);
+  await expect(page.locator("#pc-sidebar")).toHaveClass(/open/);
   await noOverflow(page, "shell nav drawer vi @360×800");
   await scan(page, "shell nav drawer vi @360×800");
+});
+
+test("axe stateful: keyboard help dialog open (vi desktop)", async ({page, baseURL}) => {
+  await setLocale(page, baseURL, "vi");
+  await mockAsk(page);
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto("/ask");
+  await page.getByRole("button", {name: "Phím tắt"}).click();
+  await expect(page.getByRole("dialog", {name: "Phím tắt bàn phím"})).toBeVisible();
+  await scan(page, "help dialog open vi @1440×900");
 });
 
 test("reduced motion: drawers, sheets and the gated crossing animate nothing (AC-12)", async ({page, baseURL}) => {
