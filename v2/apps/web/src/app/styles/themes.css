@@ -1,0 +1,131 @@
+/**
+ * PRD UI/UX v1.0 — colour themes. Light is the authored default (`:root`);
+ * dark is `[data-theme="dark"]`. The document element carries data-theme,
+ * resolved SSR from the rtr_theme cookie (default dark — the app's shipped
+ * identity — while both themes are first-class for the in-scope surfaces).
+ *
+ * Contrast: text-primary on surface ≈ 16:1 (light) / 15:1 (dark); every text
+ * token pairs to AA (≥4.5:1) on its intended surface. Accent carries a
+ * dedicated contrast token so button text never drops below AA on either
+ * theme (white on light-accent, near-black on dark-accent).
+ */
+
+:root {
+  color-scheme: light;
+
+  --pc-bg-app: #f6f7f9;
+  --pc-bg-sidebar: #f8f9fb;
+  --pc-surface: #ffffff;
+  --pc-surface-subtle: #f2f4f7;
+  --pc-surface-hover: #eef1f5;
+
+  --pc-text-primary: #111318;
+  --pc-text-secondary: #525966;
+  /* PRD muted is #7b8493 (≈3.6:1 on white) — nudged darker for WCAG AA on
+     small text against the light surfaces it sits on (≥5:1). */
+  --pc-text-muted: #616b7a;
+
+  --pc-border: #e1e5eb;
+  --pc-border-strong: #ccd2dc;
+
+  --pc-accent: #315efb;
+  --pc-accent-soft: #edf1ff;
+  --pc-accent-hover: #244ee5;
+  --pc-accent-contrast: #ffffff;
+
+  --pc-success: #0f7a45;
+  /* darkened from PRD #a56613 so 9px amber labels clear AA on light tints
+     (research zone chip sits on an orange-tinted background). */
+  --pc-warning: #8a5410;
+  --pc-danger: #c83d45;
+  --pc-danger-soft: #fdecec;
+
+  --pc-focus: #315efb;
+
+  --pc-shadow-sm: 0 1px 2px rgba(17, 19, 24, 0.06),
+    0 1px 3px rgba(17, 19, 24, 0.05);
+  --pc-shadow-md: 0 2px 6px rgba(17, 19, 24, 0.06),
+    0 12px 28px rgba(17, 19, 24, 0.06);
+  --pc-shadow-active: inset 0 0 0 1px var(--pc-border),
+    0 1px 2px rgba(17, 19, 24, 0.05);
+  --pc-scrim: rgba(17, 19, 24, 0.42);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --pc-bg-app: #0b0d10;
+  --pc-bg-sidebar: #101216;
+  --pc-surface: #15181d;
+  --pc-surface-subtle: #1a1e24;
+  --pc-surface-hover: #20252c;
+
+  --pc-text-primary: #f1f3f5;
+  --pc-text-secondary: #b3bac5;
+  --pc-text-muted: #858e9c;
+
+  --pc-border: #292e36;
+  --pc-border-strong: #3a414c;
+
+  --pc-accent: #6f8cff;
+  --pc-accent-soft: #202a50;
+  --pc-accent-hover: #86a0ff;
+  --pc-accent-contrast: #0b0d10;
+
+  --pc-success: #3fb27f;
+  --pc-warning: #d9a441;
+  --pc-danger: #ef6b73;
+  --pc-danger-soft: #2a1618;
+
+  --pc-focus: #86a0ff;
+
+  --pc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --pc-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 16px 34px rgba(0, 0, 0, 0.4);
+  --pc-shadow-active: inset 0 0 0 1px var(--pc-border-strong),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  --pc-scrim: rgba(0, 0, 0, 0.6);
+}
+
+/* color-scheme overrides that must beat legacy styles.css `:root{color-scheme:dark}`
+   regardless of import order (attribute selector outranks the bare :root). */
+html[data-theme="light"] { color-scheme: light; }
+html[data-theme="dark"] { color-scheme: dark; }
+
+/* No explicit cookie → honour the visitor's OS preference (no flash, no
+   script). KEEP THESE VALUES IN SYNC with [data-theme="dark"] above. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+
+    --pc-bg-app: #0b0d10;
+    --pc-bg-sidebar: #101216;
+    --pc-surface: #15181d;
+    --pc-surface-subtle: #1a1e24;
+    --pc-surface-hover: #20252c;
+
+    --pc-text-primary: #f1f3f5;
+    --pc-text-secondary: #b3bac5;
+    --pc-text-muted: #858e9c;
+
+    --pc-border: #292e36;
+    --pc-border-strong: #3a414c;
+
+    --pc-accent: #6f8cff;
+    --pc-accent-soft: #202a50;
+    --pc-accent-hover: #86a0ff;
+    --pc-accent-contrast: #0b0d10;
+
+    --pc-success: #3fb27f;
+    --pc-warning: #d9a441;
+    --pc-danger: #ef6b73;
+    --pc-danger-soft: #2a1618;
+
+    --pc-focus: #86a0ff;
+
+    --pc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --pc-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 16px 34px rgba(0, 0, 0, 0.4);
+    --pc-shadow-active: inset 0 0 0 1px var(--pc-border-strong),
+      0 1px 2px rgba(0, 0, 0, 0.5);
+    --pc-scrim: rgba(0, 0, 0, 0.6);
+  }
+}

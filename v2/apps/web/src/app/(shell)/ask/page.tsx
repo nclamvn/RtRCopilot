@@ -23,7 +23,7 @@
  *   is URL-restorable and nothing touches localStorage/sessionStorage.
  */
 
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import Link from "next/link";
 import {
   AskAnswer,
@@ -101,6 +101,17 @@ export default function AskPage() {
   const [activeCitation, setActiveCitation] = useState<string | null>(null);
   const [railOpen, setRailOpen] = useState(false);
   const [asking, setAsking] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const questionRef = useRef<HTMLTextAreaElement>(null);
+
+  // PRD §11 composer: auto-expand the question textarea between 64 and 180px
+  // (DOM-only; never a layout-animating transition, reduced-motion safe).
+  const autoGrow = useCallback(() => {
+    const el = questionRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 64), 180)}px`;
+  }, []);
 
   const loseAccess = useCallback(() => {
     setIdentity(null);
@@ -362,6 +373,26 @@ export default function AskPage() {
     return [...base, ...researchEntries];
   }, [answer, conversation, research]);
 
+  // PRD §14: with focus inside the Evidence Rail, `[` / `]` step the active
+  // citation to the previous / next entry (wraps) and move focus with it.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "[" && event.key !== "]") return;
+      const rail = document.getElementById("evidence-rail");
+      if (!rail || !rail.contains(document.activeElement) || railEntries.length === 0) return;
+      event.preventDefault();
+      const keys = railEntries.map(entry => entry.key);
+      const step = event.key === "]" ? 1 : -1;
+      const current = activeCitation ? keys.indexOf(activeCitation) : -1;
+      const base = current === -1 ? (step === 1 ? -1 : 0) : current;
+      const nextKey = keys[(base + step + keys.length) % keys.length];
+      setActiveCitation(nextKey);
+      requestAnimationFrame(() => focusRailEntry(nextKey));
+    };
+    addEventListener("keydown", onKey);
+    return () => removeEventListener("keydown", onKey);
+  }, [railEntries, activeCitation]);
+
   if (!authReady || !identity) {
     return <>
       <PageHeader eyebrow={t("ask.eyebrow")} title={t("ask.title")}/>
@@ -383,11 +414,31 @@ export default function AskPage() {
           "Câu trả lời"; duplicate names were an axe landmark-unique finding
           (TIP-011 Builder D, AC-10). */}
       <section className="ask-surface" aria-label={t("ask.surfaceAria")}>
-        <form className="ask-form" onSubmit={event => void submit(event)}>
+        <form className="ask-form" ref={formRef} onSubmit={event => void submit(event)}>
           <label className="ask-question">{t("ask.question.label")}
-            <input value={question} placeholder={t("ask.question.placeholder")}
-              onChange={event => setQuestion(event.target.value)}/>
+            <textarea ref={questionRef} value={question} rows={1}
+              placeholder={t("ask.question.placeholder")}
+              onChange={event => { setQuestion(event.target.value); autoGrow(); }}
+              onKeyDown={event => {
+                // Enter submits; Shift+Enter inserts a newline (PRD §11).
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  formRef.current?.requestSubmit();
+                }
+              }}/>
           </label>
+          <div className="ask-chips">
+            <span className="ask-chip">
+              <span className="ask-chip-key">{t("ask.chip.scope")}</span>
+              {includeResearch ? t("ask.chip.research") : t("ask.chip.sot")}
+            </span>
+            {fileScope && <span className="ask-chip ask-chip-file">
+              <span className="ask-chip-key">{t("ask.chip.file")}</span>
+              <code>{fileScope.displayFilename}</code>
+              <button type="button" aria-label={t("ask.chip.remove")}
+                onClick={() => setFileScope(null)}>×</button>
+            </span>}
+          </div>
           <fieldset className="ask-scope">
             <legend>{t("ask.scope.legend")}</legend>
             <label>

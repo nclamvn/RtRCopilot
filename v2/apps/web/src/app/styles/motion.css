@@ -1,0 +1,16 @@
+/**
+ * PRD UI/UX v1.0 — motion policy. Transitions are opt-in per component using
+ * the token durations/easing; here we enforce the reduced-motion contract for
+ * the new surfaces. Durations collapse to exactly 0s (matching the house
+ * kill-rule in styles.css) so the a11y gate reads a frozen chrome.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-shell *,
+  .ask-workspace * {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
