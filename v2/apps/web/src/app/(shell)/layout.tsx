@@ -1,7 +1,7 @@
 import {Suspense} from "react";
 import {cookies} from "next/headers";
 import {AppShell} from "../../shell/AppShell";
-import {resolveCollapsed, resolveTheme, SIDEBAR_COOKIE, THEME_COOKIE} from "../../shell/theme";
+import {readThemeCookie, resolveCollapsed, SIDEBAR_COOKIE, THEME_COOKIE} from "../../shell/theme";
 
 /**
  * TIP-011 shell route group: every page placed under `(shell)/` renders inside
@@ -11,10 +11,10 @@ import {resolveCollapsed, resolveTheme, SIDEBAR_COOKIE, THEME_COOKIE} from "../.
  */
 export default async function ShellLayout({children}: Readonly<{children: React.ReactNode}>) {
   const store = await cookies();
-  const initialTheme = resolveTheme(store.get(THEME_COOKIE)?.value);
+  const initialTheme = readThemeCookie(store.get(THEME_COOKIE)?.value);
   const initialCollapsed = resolveCollapsed(store.get(SIDEBAR_COOKIE)?.value);
   return <Suspense>
-    <AppShell initialTheme={initialTheme} initialCollapsed={initialCollapsed}>
+    <AppShell initialTheme={initialTheme ?? undefined} initialCollapsed={initialCollapsed}>
       {children}
     </AppShell>
   </Suspense>;

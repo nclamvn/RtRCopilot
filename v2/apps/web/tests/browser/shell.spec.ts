@@ -151,3 +151,29 @@ test("? opens the keyboard help dialog; Esc closes; inert inside text fields", a
   await page.keyboard.type("?");
   await expect(page.getByRole("dialog", {name: "Phím tắt bàn phím"})).toBeHidden();
 });
+
+test("no-cookie visitor follows OS prefers-color-scheme; choosing a theme sets a cookie", async ({browser}) => {
+  const dark = await browser.newContext({colorScheme: "dark"});
+  const pd = await dark.newPage();
+  await mockShell(pd);
+  await pd.goto("/ask");
+  await expect(pd.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
+  const bgDark = await pd.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await dark.close();
+
+  const light = await browser.newContext({colorScheme: "light"});
+  const pl = await light.newPage();
+  await mockShell(pl);
+  await pl.goto("/ask");
+  await expect(pl.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
+  // No explicit cookie yet → no data-theme attribute; CSS resolves the OS scheme.
+  expect(await pl.evaluate(() => document.documentElement.hasAttribute("data-theme"))).toBe(false);
+  const bgLight = await pl.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(bgDark).not.toBe(bgLight);
+  // Choosing a theme writes the cookie + explicit attribute (overrides the OS).
+  await pl.getByRole("button", {name: /Chuyển sang giao diện/}).click();
+  await expect(pl.locator("html")).toHaveAttribute("data-theme", "dark");
+  const cookie = (await light.cookies()).find(item => item.name === "rtr_theme");
+  expect(cookie?.value).toBe("dark");
+  await light.close();
+});

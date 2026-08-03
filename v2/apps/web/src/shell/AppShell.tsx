@@ -266,6 +266,22 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
     router.push("/ask");
   }, [router]);
 
+  // Reflect the actually-applied theme (explicit cookie attribute, else the OS
+  // prefers-color-scheme) so the toggle icon is right with no cookie, and track
+  // OS changes live until the visitor picks an explicit theme.
+  useEffect(() => {
+    const read = (): Theme => {
+      const attr = document.documentElement.dataset.theme;
+      if (attr === "light" || attr === "dark") return attr;
+      return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ? "dark" : "light";
+    };
+    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const update = () => setTheme(read());
+    update();
+    mq?.addEventListener?.("change", update);
+    return () => mq?.removeEventListener?.("change", update);
+  }, []);
+
   const toggleTheme = useCallback(() => {
     setTheme(current => {
       const next: Theme = current === "dark" ? "light" : "dark";

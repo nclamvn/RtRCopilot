@@ -16,6 +16,14 @@ export function resolveTheme(value: string | null | undefined): Theme {
   return value === "light" ? "light" : DEFAULT_THEME;
 }
 
+/**
+ * Explicit cookie choice, or null when unset/invalid — null means "let the
+ * visitor's OS `prefers-color-scheme` decide" (resolved by CSS, no flash).
+ */
+export function readThemeCookie(value: string | null | undefined): Theme | null {
+  return value === "light" || value === "dark" ? value : null;
+}
+
 export function resolveCollapsed(value: string | null | undefined): boolean {
   return value === "collapsed";
 }
