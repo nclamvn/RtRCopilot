@@ -1,0 +1,16 @@
+/**
+ * PRD UI/UX v1.0 — motion policy. Transitions are opt-in per component using
+ * the token durations/easing; here we only enforce the reduced-motion
+ * contract for the new surfaces (locale change never animates layout; all
+ * non-essential transitions collapse under prefers-reduced-motion).
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-shell *,
+  .ask-workspace * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

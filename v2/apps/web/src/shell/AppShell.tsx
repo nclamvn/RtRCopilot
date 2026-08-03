@@ -1,26 +1,36 @@
 "use client";
 
 /**
- * TIP-011 Task 1 — unified application shell.
+ * Unified application shell — PRD UI/UX v1.0 premium rebuild.
  *
- * Adoption contract (Builders B/C):
- * - Wrap a route by placing its page under `src/app/(shell)/…` — the group
- *   layout renders `<AppShell>` around the page. The shell owns the skip
- *   link, the single topbar, the left nav and the `<main id="main">`
- *   landmark; pages render ONE `<PageHeader title=…/>` (the only H1) plus
- *   content. Pages must NOT render their own `<main>`, topbar or H1.
- * - Focus shortcut: F6 / Shift+F6 cycles every `[data-shell-region]`
- *   element (nav ⇄ work surface today). Builder B's Evidence Rail joins the
- *   cycle by adding `data-shell-region` + `tabIndex={-1}` to the rail.
- * - Active-area rules live in `activeArea()`; since Builder C's migration the
- *   Files workspace renders at `/files` and "/" is a server redirect there.
+ * Preserved TIP-011 contracts (unchanged behaviour, new chrome):
+ * - Skip link is the first focusable element and moves focus to `#main`.
+ * - ONE primary `<nav aria-label>` holding the six areas as `<ol>` links with
+ *   `aria-current="page"` on the active area; `activeArea()` rules unchanged.
+ * - F6 / Shift+F6 cycles every `[data-shell-region]` (nav ⇄ main ⇄ rail).
+ * - Locale switch flips strings, `<html lang>` and the `rtr_locale` cookie
+ *   only (never browser storage). Anonymous sessions get the sign-in link.
+ * - Pages still render ONE `<PageHeader>` (the only H1); the shell owns the
+ *   single topbar, nav and `<main>` landmark.
+ *
+ * New (PRD): light/dark theme switch (cookie), collapsible sidebar (cookie),
+ * workspace switcher, new-question button, grouped icon navigation, recent
+ * conversations, system-integrity card, pinned user profile, and a ⌘K command
+ * palette. Theme + density arrive pre-resolved from the server layout.
  */
 
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import Link from "next/link";
-import {usePathname, useSearchParams} from "next/navigation";
-import {LOCALES, MessageKey} from "../i18n/messages";
+import {usePathname, useRouter, useSearchParams} from "next/navigation";
+import {LOCALES, Locale, MessageKey} from "../i18n/messages";
 import {useI18n} from "../i18n/provider";
+import {
+  askQuery,
+  ConversationListPage,
+  parseConversationList,
+} from "../ask/contracts";
+import {Icon, IconName} from "./Icon";
+import {SIDEBAR_COOKIE, Theme, THEME_COOKIE} from "./theme";
 
 type Identity = {user_id: string; email: string; display_name: string; roles: string[]};
 
@@ -28,29 +38,29 @@ export type ShellArea =
   | "ask" | "files" | "documents" | "knowledge" | "operations" | "admin";
 
 export const NAV_AREAS: ReadonlyArray<{
-  area: ShellArea; href: string; labelKey: MessageKey;
+  area: ShellArea; href: string; labelKey: MessageKey; icon: IconName;
 }> = [
-  {area: "ask", href: "/ask", labelKey: "shell.nav.ask"},
-  {area: "files", href: "/files", labelKey: "shell.nav.files"},
-  {area: "documents", href: "/documents", labelKey: "shell.nav.documents"},
-  {area: "knowledge", href: "/knowledge-ops?view=research", labelKey: "shell.nav.knowledge"},
-  {area: "operations", href: "/knowledge-ops", labelKey: "shell.nav.operations"},
-  {area: "admin", href: "/admin", labelKey: "shell.nav.admin"},
+  {area: "ask", href: "/ask", labelKey: "shell.nav.ask", icon: "ask"},
+  {area: "files", href: "/files", labelKey: "shell.nav.files", icon: "files"},
+  {area: "documents", href: "/documents", labelKey: "shell.nav.documents", icon: "documents"},
+  {area: "knowledge", href: "/knowledge-ops?view=research", labelKey: "shell.nav.knowledge", icon: "knowledge"},
+  {area: "operations", href: "/knowledge-ops", labelKey: "shell.nav.operations", icon: "operations"},
+  {area: "admin", href: "/admin", labelKey: "shell.nav.admin", icon: "admin"},
+];
+
+const GROUPS: ReadonlyArray<{titleKey: MessageKey; areas: ShellArea[]}> = [
+  {titleKey: "shell.group.workspace", areas: ["ask", "files", "documents"]},
+  {titleKey: "shell.group.governance", areas: ["knowledge", "operations", "admin"]},
 ];
 
 /**
  * D-011-01 nav split for Knowledge Ops: "Tri thức" targets the research
- * views (`?view=research|graduation`, already URL-restorable in that page);
- * every other knowledge-ops view belongs to "Vận hành".
+ * views (`?view=research|graduation`); every other view belongs to "Vận hành".
  */
 export function activeArea(pathname: string, view: string | null): ShellArea | null {
   if (pathname === "/ask" || pathname.startsWith("/ask/")) return "ask";
-  if (pathname === "/files" || pathname.startsWith("/files/")) {
-    return "files";
-  }
-  if (pathname === "/documents" || pathname.startsWith("/documents/")) {
-    return "documents";
-  }
+  if (pathname === "/files" || pathname.startsWith("/files/")) return "files";
+  if (pathname === "/documents" || pathname.startsWith("/documents/")) return "documents";
   if (pathname === "/knowledge-ops" || pathname.startsWith("/knowledge-ops/")) {
     return view === "research" || view === "graduation" ? "knowledge" : "operations";
   }
@@ -68,57 +78,138 @@ export function PageHeader({eyebrow, title, actions}: {
   </header>;
 }
 
-export function AppShell({children}: {children: React.ReactNode}) {
+function initials(source: string): string {
+  const clean = source.trim();
+  if (!clean) return "?";
+  const parts = clean.split(/[\s._-]+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return clean.slice(0, 2).toUpperCase();
+}
+
+type Command = {id: string; label: string; icon: IconName; hint?: string; run: () => void};
+
+function CommandPalette({commands, onClose, placeholder, emptyText}: {
+  commands: Command[]; onClose: () => void; placeholder: string; emptyText: string;
+}) {
+  const [query, setQuery] = useState("");
+  const [active, setActive] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return q ? commands.filter(c => c.label.toLowerCase().includes(q)) : commands;
+  }, [commands, query]);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActive(index => (index + 1) % Math.max(filtered.length, 1));
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActive(index => (index - 1 + filtered.length) % Math.max(filtered.length, 1));
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      filtered[active]?.run();
+    }
+  };
+
+  return <div className="pc-palette-scrim" role="presentation"
+    onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="pc-palette" role="dialog" aria-modal="true" aria-label={placeholder}
+      onKeyDown={onKeyDown}>
+      <div className="pc-palette-input-row">
+        <Icon name="search"/>
+        <input ref={inputRef} type="text" value={query} placeholder={placeholder}
+          aria-label={placeholder}
+          onChange={event => { setQuery(event.target.value); setActive(0); }}/>
+        <kbd className="pc-kbd">Esc</kbd>
+      </div>
+      {filtered.length === 0
+        ? <p className="pc-palette-empty">{emptyText}</p>
+        : <ul className="pc-palette-list">
+            {filtered.map((command, index) => <li key={command.id}>
+              <button type="button" className="pc-palette-item"
+                data-active={index === active}
+                onMouseEnter={() => setActive(index)}
+                onClick={command.run}>
+                <span className="pc-nav-ico"><Icon name={command.icon}/></span>
+                <span>{command.label}</span>
+                {command.hint && <kbd className="pc-kbd pc-palette-hint">{command.hint}</kbd>}
+              </button>
+            </li>)}
+          </ul>}
+    </div>
+  </div>;
+}
+
+export function AppShell({children, initialTheme = "dark", initialCollapsed = false}: {
+  children: React.ReactNode; initialTheme?: Theme; initialCollapsed?: boolean;
+}) {
   const {locale, t, setLocale} = useI18n();
+  const router = useRouter();
   const pathname = usePathname();
   const view = useSearchParams().get("view");
   const active = activeArea(pathname, view);
+
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
+  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [recent, setRecent] = useState<ConversationListPage["items"]>([]);
+  const [health, setHealth] = useState<{ok: boolean; status: string} | null>(null);
   const [lastPathname, setLastPathname] = useState(pathname);
+  const searchRef = useRef<HTMLButtonElement>(null);
+
   if (lastPathname !== pathname) {
-    // Close the drawer on route change (render-time adjustment, no effect).
     setLastPathname(pathname);
     setNavOpen(false);
+    setPaletteOpen(false);
   }
 
+  // Identity, recent conversations and system integrity (all best-effort).
   useEffect(() => {
     fetch("/api/auth/me", {cache: "no-store"})
-      .then(async response => setIdentity(
-        response.ok ? await response.json() as Identity : null,
-      ))
+      .then(async response => setIdentity(response.ok ? await response.json() as Identity : null))
       .catch(() => setIdentity(null)).finally(() => setAuthReady(true));
+    fetch("/api/status", {cache: "no-store"})
+      .then(async response => {
+        const body = await response.json().catch(() => null) as {ok?: boolean; status?: string} | null;
+        setHealth(body ? {ok: body.ok === true, status: body.status ?? "unavailable"} : null);
+      }).catch(() => setHealth({ok: false, status: "unavailable"}));
   }, []);
-  // TIP-011 Builder D (AC-11): after a route change, focus lands on the work
-  // surface (`main`, which holds the page's single H1) so keyboard and
-  // screen-reader users start at the new content instead of a stale control.
-  // Only pathname changes count — query-only updates (locator params,
-  // knowledge-ops views) must not steal focus. Initial load keeps the
-  // document focus untouched (the skip link stays the first tab stop).
+
+  useEffect(() => {
+    if (!identity) return;
+    let active2 = true;
+    fetch("/api/ask/conversations?limit=5", {cache: "no-store"})
+      .then(async response => {
+        if (!active2 || !response.ok) return;
+        const body: unknown = await response.json().catch(() => null);
+        try { setRecent(parseConversationList(body).items.slice(0, 5)); } catch { /* ignore */ }
+      }).catch(() => undefined);
+    return () => { active2 = false; };
+  }, [identity, pathname]);
+
+  // Focus the new content after a real route change (query-only stays put).
   const focusPathname = useRef(pathname);
   useEffect(() => {
     if (focusPathname.current === pathname) return;
     focusPathname.current = pathname;
     document.getElementById("main")?.focus();
   }, [pathname]);
+
+  // F6 / Shift+F6 region cycle (nav ⇄ main ⇄ rail).
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setNavOpen(false);
       if (event.key !== "F6") return;
       event.preventDefault();
-      const regions = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-shell-region]"),
-      );
+      const regions = Array.from(document.querySelectorAll<HTMLElement>("[data-shell-region]"));
       if (regions.length === 0) return;
-      // Innermost (last in DOM order) region containing focus wins, so a
-      // region nested inside `main` — Builder B's Evidence Rail — cycles
-      // correctly instead of trapping F6 (nav → work surface → rail → nav).
       const current = regions.reduce(
-        (found, region, index) =>
-          region.contains(document.activeElement) ? index : found,
-        -1,
-      );
+        (found, region, index) => region.contains(document.activeElement) ? index : found, -1);
       const step = event.shiftKey ? -1 : 1;
       const base = current === -1 ? (step === 1 ? -1 : 0) : current;
       const next = regions[(base + step + regions.length) % regions.length];
@@ -129,9 +220,73 @@ export function AppShell({children}: {children: React.ReactNode}) {
     return () => removeEventListener("keydown", onKey);
   }, []);
 
+  const goNewQuestion = useCallback(() => {
+    setPaletteOpen(false);
+    router.push("/ask");
+  }, [router]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(current => {
+      const next: Theme = current === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      document.cookie = `${THEME_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
+      return next;
+    });
+  }, []);
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed(current => {
+      const next = !current;
+      document.cookie =
+        `${SIDEBAR_COOKIE}=${next ? "collapsed" : "expanded"}; path=/; max-age=31536000; samesite=lax`;
+      return next;
+    });
+  }, []);
+
+  const cycleLocale = useCallback(() => {
+    setLocale(locale === "vi" ? "en" : "vi");
+  }, [locale, setLocale]);
+
+  // Global keyboard: ⌘K palette, ⌘N new question, ⌘1/2/3 nav, Escape closes.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const mod = event.metaKey || event.ctrlKey;
+      if (event.key === "Escape") { setPaletteOpen(false); setNavOpen(false); return; }
+      if (!mod) return;
+      const key = event.key.toLowerCase();
+      if (key === "k") { event.preventDefault(); setPaletteOpen(open => !open); }
+      else if (key === "n") { event.preventDefault(); goNewQuestion(); }
+      else if (key === "1") { event.preventDefault(); router.push("/ask"); }
+      else if (key === "2") { event.preventDefault(); router.push("/files"); }
+      else if (key === "3") { event.preventDefault(); router.push("/documents"); }
+    };
+    addEventListener("keydown", onKey);
+    return () => removeEventListener("keydown", onKey);
+  }, [router, goNewQuestion]);
+
+  const closePalette = useCallback(() => {
+    setPaletteOpen(false);
+    searchRef.current?.focus();
+  }, []);
+
+  const commands = useMemo<Command[]>(() => {
+    const nav: Command[] = NAV_AREAS.map((item, index) => ({
+      id: `nav-${item.area}`, label: t(item.labelKey), icon: item.icon,
+      hint: index < 3 ? `⌘${index + 1}` : undefined,
+      run: () => { setPaletteOpen(false); router.push(item.href); },
+    }));
+    return [
+      {id: "new", label: t("shell.newQuestion"), icon: "plus", hint: "⌘N", run: goNewQuestion},
+      ...nav,
+      {id: "theme", label: t(theme === "dark" ? "shell.theme.toLight" : "shell.theme.toDark"),
+        icon: theme === "dark" ? "sun" : "moon", run: () => { toggleTheme(); setPaletteOpen(false); }},
+      {id: "locale", label: t("shell.language"), icon: "languages",
+        run: () => { cycleLocale(); setPaletteOpen(false); }},
+    ];
+  }, [t, theme, router, goNewQuestion, toggleTheme, cycleLocale]);
+
   const skipToMain = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    // focus() scrolls the landmark into view; no separate scroll call needed.
     document.getElementById("main")?.focus();
   }, []);
 
@@ -140,62 +295,156 @@ export function AppShell({children}: {children: React.ReactNode}) {
     setIdentity(null);
   }
 
-  return <div className="shell">
-    <a className="skip-link" href="#main" onClick={skipToMain}>
-      {t("shell.skipToContent")}
-    </a>
-    <header className="shell-topbar">
-      <button className="shell-menu" type="button" aria-expanded={navOpen}
-        aria-controls="shell-nav" onClick={() => setNavOpen(open => !open)}>
-        {t("shell.menu")}
-      </button>
-      <Link className="brand nav-brand shell-brand" href="/">
-        <span className="mark">RT</span><span>{t("shell.brand")}</span>
+  const integrity = health === null
+    ? {state: "idle" as const, value: "—", width: "40%", sub: t("shell.integrity.checking")}
+    : health.ok
+      ? {state: "ok" as const, value: "100%", width: "100%", sub: t("shell.integrity.ready")}
+      : {state: "down" as const, value: "—", width: "28%", sub: t("shell.integrity.down")};
+
+  const displayName = identity?.display_name || identity?.email || "";
+  const role = identity?.roles?.[0] ?? "";
+
+  return <div className="pc-shell" data-collapsed={collapsed}>
+    <a className="pc-skip-link" href="#main" onClick={skipToMain}>{t("shell.skipToContent")}</a>
+
+    <div className={`pc-sidebar ${navOpen ? "open" : ""}`} id="pc-sidebar">
+      <div style={{display: "flex", alignItems: "flex-start"}}>
+        <button className="pc-workspace" type="button" aria-haspopup="dialog"
+          aria-label={t("shell.workspace.aria")} onClick={() => setPaletteOpen(true)}>
+          <span className="pc-mark">RtR</span>
+          <span className="pc-workspace-meta">
+            <span className="pc-workspace-name">{t("shell.workspace.name")}</span>
+            <span className="pc-workspace-sub">{t("shell.workspace.sub")}</span>
+          </span>
+          <Icon name="chevrons" size={16} className="pc-chevrons"/>
+        </button>
+        <button className="pc-collapse" type="button" aria-pressed={collapsed}
+          aria-label={t(collapsed ? "shell.expandNav" : "shell.collapseNav")}
+          onClick={toggleCollapsed}>
+          <Icon name="panelLeft" size={17}/>
+        </button>
+      </div>
+
+      <Link className="pc-new" href="/ask" title={t("shell.newQuestion")}>
+        <span className="pc-new-ico"><Icon name="plus" size={16}/></span>
+        <span className="pc-new-label">{t("shell.newQuestion")}</span>
+        <kbd className="pc-kbd" aria-hidden>⌘N</kbd>
       </Link>
-      {/* Global search affordance — placeholder routing to Ask (TIP OUT OF SCOPE). */}
-      <Link className="shell-search" href="/ask">
-        <span>{t("shell.search")}</span><code aria-hidden>/ask</code>
-      </Link>
-      <div className="lang-switch" role="group" aria-label={t("shell.language")}>
-        {LOCALES.map(item => <button key={item} type="button" lang={item}
-          aria-pressed={locale === item} onClick={() => setLocale(item)}>
-          {item.toUpperCase()}
-        </button>)}
+
+      <div className="pc-sidebar-scroll">
+        <nav id="shell-nav" className="pc-nav" aria-label={t("shell.navLabel")}
+          tabIndex={-1} data-shell-region>
+          {GROUPS.map(group => <div className="pc-navgroup" key={group.titleKey}>
+            <p className="pc-navgroup-title">{t(group.titleKey)}</p>
+            <ol>
+              {group.areas.map(area => {
+                const item = NAV_AREAS.find(entry => entry.area === area)!;
+                return <li key={area}>
+                  <Link className="pc-nav-item" href={item.href}
+                    aria-current={active === area ? "page" : undefined}
+                    title={collapsed ? t(item.labelKey) : undefined}
+                    onClick={() => setNavOpen(false)}>
+                    <span className="pc-nav-ico"><Icon name={item.icon}/></span>
+                    <span className="pc-nav-label">{t(item.labelKey)}</span>
+                  </Link>
+                </li>;
+              })}
+            </ol>
+          </div>)}
+        </nav>
+
+        {identity && recent.length > 0 && <section className="pc-recent" aria-label={t("shell.recent.title")}>
+          <p className="pc-navgroup-title">{t("shell.recent.title")}</p>
+          <ul>
+            {recent.map(item => <li key={item.conversationId}>
+              <Link className="pc-recent-item" href={`/ask?${askQuery(item.conversationId)}`}
+                onClick={() => setNavOpen(false)}>
+                <span className="pc-dot-tiny" aria-hidden/>
+                <span>{item.firstQuestionDigest
+                  ? `${item.firstQuestionDigest.slice(0, 22)}${item.firstQuestionDigest.length > 22 ? "…" : ""}`
+                  : item.conversationId.slice(0, 8)}</span>
+              </Link>
+            </li>)}
+          </ul>
+        </section>}
+
+        <div className="pc-integrity" role="status" aria-label={t("shell.integrity.title")}>
+          <div className="pc-integrity-head">
+            <span className="pc-status-dot" data-state={integrity.state}/>
+            <span className="pc-integrity-title">{t("shell.integrity.title")}</span>
+            <span className="pc-integrity-value">{integrity.value}</span>
+          </div>
+          <div className="pc-progress" data-state={integrity.state}>
+            <span style={{width: integrity.width}}/>
+          </div>
+          <p className="pc-integrity-sub">{integrity.sub}</p>
+        </div>
       </div>
-      <div className="identity">
-        {identity && <>
-          <strong>{identity.display_name || identity.email}</strong>
-          <button type="button" onClick={() => void logout()}>{t("shell.logout")}</button>
-        </>}
-        {!identity && authReady && <>
-          {/* OIDC requires a full navigation through the same-origin callback. */}
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a href="/api/auth/login">{t("shell.login")}</a>
-        </>}
-        {!identity && !authReady
-          && <span role="status">{t("shell.sessionChecking")}</span>}
+
+      <div className="pc-sidebar-footer">
+        <div className="pc-profile">
+          {identity && <>
+            <span className="pc-avatar" aria-hidden>{initials(displayName)}</span>
+            <span className="pc-profile-meta">
+              <span className="pc-profile-name">{displayName}</span>
+              {role && <span className="pc-profile-role">{role}</span>}
+            </span>
+            <button className="pc-profile-action" type="button"
+              aria-label={t("shell.logout")} onClick={() => void logout()}>
+              <Icon name="logout" size={16}/>
+            </button>
+          </>}
+          {!identity && authReady
+            // OIDC requires a full navigation through the same-origin callback.
+            // eslint-disable-next-line @next/next/no-html-link-for-pages
+            && <a className="pc-signin" href="/api/auth/login">
+              <Icon name="arrowRight" size={16}/>{t("shell.login")}
+            </a>}
+          {!identity && !authReady
+            && <span className="pc-profile-role" role="status">{t("shell.sessionChecking")}</span>}
+        </div>
       </div>
-    </header>
-    <nav id="shell-nav" className={`shell-nav ${navOpen ? "open" : ""}`}
-      aria-label={t("shell.navLabel")} tabIndex={-1} data-shell-region>
-      <div className="shell-nav-head">
-        <p className="eyebrow">{t("shell.navLabel")}</p>
-        <button className="shell-nav-close" type="button"
-          aria-label={t("shell.closeNav")} onClick={() => setNavOpen(false)}>×</button>
-      </div>
-      <ol>
-        {NAV_AREAS.map(item => <li key={item.area}>
-          <Link href={item.href}
-            aria-current={active === item.area ? "page" : undefined}
-            onClick={() => setNavOpen(false)}>{t(item.labelKey)}</Link>
-        </li>)}
-      </ol>
-      <p className="shell-nav-hint">{t("shell.keyboardHint")}</p>
-    </nav>
-    <main id="main" className="shell-main" tabIndex={-1} data-shell-region>
-      {children}
-    </main>
-    {navOpen && <button className="shell-scrim" type="button"
+    </div>
+
+    <div className="pc-main-col">
+      <header className="pc-topbar">
+        <button className="pc-iconbtn pc-menu-btn" type="button" aria-expanded={navOpen}
+          aria-controls="pc-sidebar" aria-label={t("shell.menu")}
+          onClick={() => setNavOpen(open => !open)}>
+          <Icon name="panelLeft" size={18}/>
+        </button>
+        <Link className="pc-brand" href="/">
+          <span className="pc-brand-mark">RtR</span>
+          <span className="pc-brand-name">{t("shell.brand")}</span>
+        </Link>
+        <button className="pc-search" type="button" ref={searchRef}
+          aria-haspopup="dialog" aria-label={t("shell.search")}
+          onClick={() => setPaletteOpen(true)}>
+          <Icon name="search" size={16}/>
+          <span className="pc-search-label">{t("shell.search")}</span>
+          <kbd className="pc-kbd" aria-hidden>⌘K</kbd>
+        </button>
+        <div className="pc-topbar-right">
+          <div className="pc-locale" role="group" aria-label={t("shell.language")}>
+            {LOCALES.map((item: Locale) => <button key={item} type="button" lang={item}
+              aria-pressed={locale === item} onClick={() => setLocale(item)}>
+              {item.toUpperCase()}
+            </button>)}
+          </div>
+          <button className="pc-iconbtn" type="button" onClick={toggleTheme}
+            aria-label={t(theme === "dark" ? "shell.theme.toLight" : "shell.theme.toDark")}>
+            <Icon name={theme === "dark" ? "sun" : "moon"} size={18}/>
+          </button>
+        </div>
+      </header>
+      <main id="main" className="pc-main" tabIndex={-1} data-shell-region>
+        {children}
+      </main>
+    </div>
+
+    {navOpen && <button className="pc-scrim" type="button"
       aria-label={t("shell.closeNav")} onClick={() => setNavOpen(false)}/>}
+    {paletteOpen && <CommandPalette commands={commands} onClose={closePalette}
+      placeholder={t("shell.search")} emptyText={t("shell.palette.empty")}/>}
   </div>;
 }

@@ -1,0 +1,70 @@
+/**
+ * PRD UI/UX v1.0 — RtR Copilot V2 Premium Interface.
+ * Theme-independent primitives (radius, spacing, geometry, motion, fonts,
+ * type scale). Colour tokens live in themes.css; both are imported before the
+ * legacy styles.css so out-of-scope pages keep their frozen dark identity
+ * while the in-scope surfaces (shell · ask · rail) consume the new system.
+ *
+ * Naming: every new token is prefixed to avoid any collision with the frozen
+ * TIP-011 tokens (--bg/--panel/--ink/--signal/…). New surfaces use --pc-*.
+ */
+
+:root {
+  /* Fonts — Inter first, system fallback (no network @font-face fetch so the
+     Docker build stays deterministic; PRD specifies exactly this family). */
+  --pc-font-ui: "Inter", "SF Pro Text", "Segoe UI", system-ui, -apple-system,
+    "Helvetica Neue", Arial, sans-serif;
+  --pc-font-mono: "SF Mono", "SFMono-Regular", ui-monospace, "Cascadia Code",
+    Consolas, monospace;
+
+  /* Radius — PRD 8 / 11 / 14 / 16 / 999. */
+  --pc-radius-sm: 8px;
+  --pc-radius-md: 11px;
+  --pc-radius-lg: 14px;
+  --pc-radius-xl: 16px;
+  --pc-radius-pill: 999px;
+
+  /* Spacing — strict 4px system. */
+  --pc-space-1: 4px;
+  --pc-space-2: 8px;
+  --pc-space-3: 12px;
+  --pc-space-4: 16px;
+  --pc-space-5: 20px;
+  --pc-space-6: 24px;
+  --pc-space-8: 32px;
+  --pc-space-10: 40px;
+
+  /* Chrome geometry. */
+  --pc-topbar-h: 64px;
+  --pc-sidebar-w: 264px;
+  --pc-sidebar-w-collapsed: 72px;
+  --pc-rail-w: 392px;
+  --pc-nav-item-h: 44px;
+  --pc-content-max: 760px;
+
+  /* Motion — PRD durations + single premium easing. */
+  --pc-ease: cubic-bezier(0.2, 0, 0, 1);
+  --pc-dur-hover: 120ms;
+  --pc-dur-active: 140ms;
+  --pc-dur-popover: 160ms;
+  --pc-dur-highlight: 180ms;
+  --pc-dur-drawer: 220ms;
+
+  /* Elevation z-index scale. */
+  --pc-z-nav: 20;
+  --pc-z-topbar: 30;
+  --pc-z-drawer: 60;
+  --pc-z-scrim: 55;
+  --pc-z-palette: 80;
+
+  /* Type scale (size / line-height / weight). */
+  --pc-display-size: 38px;   --pc-display-lh: 44px;   --pc-display-w: 650;
+  --pc-h2-size: 26px;        --pc-h2-lh: 34px;        --pc-h2-w: 650;
+  --pc-h3-size: 20px;        --pc-h3-lh: 28px;        --pc-h3-w: 600;
+  --pc-body-lg-size: 16px;   --pc-body-lg-lh: 27px;   --pc-body-lg-w: 400;
+  --pc-body-size: 15px;      --pc-body-lh: 23px;      --pc-body-w: 400;
+  --pc-nav-size: 15px;       --pc-nav-lh: 20px;       --pc-nav-w: 500;
+  --pc-small-size: 13px;     --pc-small-lh: 19px;     --pc-small-w: 400;
+  --pc-caption-size: 12px;   --pc-caption-lh: 17px;   --pc-caption-w: 400;
+  --pc-eyebrow-size: 11px;   --pc-eyebrow-lh: 16px;   --pc-eyebrow-w: 600;
+}

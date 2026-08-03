@@ -1,0 +1,66 @@
+/**
+ * PRD UI/UX v1.0 — typography. Inter is applied to the in-scope surfaces via
+ * the shell root (.pc-shell) and the ask workspace; frozen out-of-scope pages
+ * keep their own explicit font declarations. Utility classes express the PRD
+ * scale so components stay declarative. No body copy below 12px.
+ */
+
+.pc-shell,
+.ask-workspace {
+  font-family: var(--pc-font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv05" 1, "ss01" 1;
+}
+
+.pc-display {
+  font-size: var(--pc-display-size);
+  line-height: var(--pc-display-lh);
+  font-weight: var(--pc-display-w);
+  letter-spacing: -0.02em;
+}
+.pc-h2 {
+  font-size: var(--pc-h2-size);
+  line-height: var(--pc-h2-lh);
+  font-weight: var(--pc-h2-w);
+  letter-spacing: -0.015em;
+}
+.pc-h3 {
+  font-size: var(--pc-h3-size);
+  line-height: var(--pc-h3-lh);
+  font-weight: var(--pc-h3-w);
+  letter-spacing: -0.01em;
+}
+.pc-body-lg {
+  font-size: var(--pc-body-lg-size);
+  line-height: var(--pc-body-lg-lh);
+  font-weight: var(--pc-body-lg-w);
+}
+.pc-body {
+  font-size: var(--pc-body-size);
+  line-height: var(--pc-body-lh);
+  font-weight: var(--pc-body-w);
+}
+.pc-nav {
+  font-size: var(--pc-nav-size);
+  line-height: var(--pc-nav-lh);
+  font-weight: var(--pc-nav-w);
+}
+.pc-small {
+  font-size: var(--pc-small-size);
+  line-height: var(--pc-small-lh);
+  font-weight: var(--pc-small-w);
+}
+.pc-caption {
+  font-size: var(--pc-caption-size);
+  line-height: var(--pc-caption-lh);
+  font-weight: var(--pc-caption-w);
+}
+.pc-eyebrow {
+  font-size: var(--pc-eyebrow-size);
+  line-height: var(--pc-eyebrow-lh);
+  font-weight: var(--pc-eyebrow-w);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+}

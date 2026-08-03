@@ -8,10 +8,16 @@ import {I18nProvider} from "../i18n/provider";
 import {AppShell, activeArea} from "./AppShell";
 
 const nav = vi.hoisted(() => ({pathname: "/ask", view: null as string | null}));
-vi.mock("next/navigation", () => ({
-  usePathname: () => nav.pathname,
-  useSearchParams: () => new URLSearchParams(nav.view ? `view=${nav.view}` : ""),
-}));
+vi.mock("next/navigation", () => {
+  const router = {
+    push() {}, replace() {}, prefetch() {}, back() {}, forward() {}, refresh() {},
+  };
+  return {
+    usePathname: () => nav.pathname,
+    useSearchParams: () => new URLSearchParams(nav.view ? `view=${nav.view}` : ""),
+    useRouter: () => router,
+  };
+});
 
 const identity = {
   user_id: "77777777-7777-4777-8777-777777777777",
@@ -45,7 +51,8 @@ function renderShell(initialLocale: "vi" | "en" = "vi") {
 
 test("shell renders topbar, six nav areas and marks the active area", async () => {
   renderShell();
-  expect(screen.getByText("RT ROBOTICS / COPILOT")).toBeInTheDocument();
+  expect(screen.getByText("Copilot")).toBeInTheDocument();
+  expect(screen.getByText("Real-time Robotics")).toBeInTheDocument();
   const navigation = screen.getByRole("navigation", {name: "Điều hướng chính"});
   const links = [
     ["Hỏi", "/ask"], ["Tệp", "/files"], ["Tài liệu", "/documents"],
@@ -89,10 +96,13 @@ test("skip link is the first focusable element and moves focus to main", () => {
   expect(document.activeElement).toBe(main);
 });
 
-test("global search affordance routes to /ask", () => {
+test("global search opens the command palette", () => {
   renderShell();
-  expect(screen.getByRole("link", {name: /Tìm kiếm — hỏi Copilot/}))
-    .toHaveAttribute("href", "/ask");
+  const search = screen.getByRole("button", {name: "Tìm kiếm trong tri thức công ty"});
+  expect(search).toHaveAttribute("aria-haspopup", "dialog");
+  fireEvent.click(search);
+  expect(screen.getByRole("dialog", {name: "Tìm kiếm trong tri thức công ty"}))
+    .toBeInTheDocument();
 });
 
 test("language switch flips strings, lang attribute and persists via cookie only", () => {
