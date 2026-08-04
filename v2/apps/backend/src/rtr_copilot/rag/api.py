@@ -51,6 +51,11 @@ async def rag_subject(request: Request) -> Subject | None:
     )
 
 
+def answer_service() -> AnswerService:
+    """Runtime answer service seam; tests inject only explicit test adapters."""
+    return AnswerService()
+
+
 def _error(request: Request, status: int, code: str) -> JSONResponse:
     return JSONResponse(
         status_code=status,
@@ -111,12 +116,13 @@ async def ask(
     body: AskRequest,
     request: Request,
     subject: Annotated[Subject | None, Depends(rag_subject)],
+    service: Annotated[AnswerService, Depends(answer_service)],
 ) -> AskResponse | JSONResponse:
     if subject is None:
         return _error(request, 401, "authentication_required")
     request_id = str(request.state.request_id)
     try:
-        return await AnswerService().ask(
+        return await service.ask(
             subject,
             body.question,
             filters=body.filters,

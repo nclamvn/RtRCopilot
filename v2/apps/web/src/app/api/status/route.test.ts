@@ -17,6 +17,7 @@ describe("status endpoint keeps internal topology behind the ingress", () => {
       dependencies: {
         postgres: "ready", redis: "ready", object_storage: "ready", worker: "ready",
       },
+      capabilities: {grounded_answering: "ready"},
     }))));
     const response = await GET();
     expect(response.status).toBe(200);
@@ -24,6 +25,7 @@ describe("status endpoint keeps internal topology behind the ingress", () => {
     expect(serialized).toContain("\"ok\":true");
     expect(serialized).toContain("\"status\":\"operational\"");
     expect(serialized).toContain("\"build_sha\":\"0123456789ab\"");
+    expect(serialized).toContain("\"answer_quality\":\"ready\"");
     for (const internal of ["dependencies", "postgres", "redis", "minio", "object_storage", "worker"]) {
       expect(serialized).not.toContain(internal);
     }
@@ -39,11 +41,13 @@ describe("status endpoint keeps internal topology behind the ingress", () => {
       dependencies: {
         postgres: "unavailable", redis: "ready", object_storage: "ready", worker: "ready",
       },
+      capabilities: {grounded_answering: "configuration_required"},
     }), {status: 503})));
     const response = await GET();
     expect(response.status).toBe(503);
     const serialized = JSON.stringify(await response.json());
     expect(serialized).toContain("\"ok\":false");
+    expect(serialized).toContain("\"answer_quality\":\"configuration_required\"");
     expect(serialized).not.toContain("postgres");
   });
 

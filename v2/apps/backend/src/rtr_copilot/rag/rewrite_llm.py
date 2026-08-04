@@ -1,20 +1,15 @@
-"""External LLM query rewriter — TIP-014 Phase 2b.
+"""External enterprise query planner — TIP-024.7.
 
-A real LLM proposes entities + expansion terms for a search query. Default
-provider is **Anthropic**, with **automatic fallback to OpenAI** on any failure.
-Every call is bounded by a timeout and a per-provider circuit breaker (mirroring
-``AnswerService._guarded_generate``), and the whole thing sits behind the two
-hard guards already in ``query_understanding.understand``:
+The quality-primary OpenAI route runs first, with an optional configured
+Anthropic fallback.  Every call is timeout- and breaker-bounded.  The model may
+interpret wording and propose search expansions, but entity choices are limited
+to a small ontology-derived candidate catalog and validated again by the caller.
+If all providers fail, the immutable query plan falls back deterministically.
 
-  * proposed entities are validated against the curated registry (an LLM can
-    never inject an entity that isn't a real RtR product);
-  * if BOTH providers fail, ``ExternalLLMRewriter.rewrite`` raises, and
-    ``understand`` falls back to the deterministic Phase 1 path.
-
-Keys are read from the environment (``ANTHROPIC_API_KEY`` / ``OPENAI_API_KEY``)
-via ``Settings`` — never hard-coded, never committed. The rewriter shapes ONLY
-the retrieval query; honest-null, citations, ranking, DLP and grounding are
-untouched.
+This is domain-agnostic: the same planner can normalize products, policies,
+projects, customers and future entity types without code changes.  It never
+answers the question and never bypasses DLP, authorization, evidence selection,
+honest-null, citations or final grounding verification.
 """
 from __future__ import annotations
 
@@ -30,8 +25,8 @@ from redis.exceptions import RedisError
 from rtr_copilot.config import Settings
 from rtr_copilot.limits.breaker import CircuitBreaker, ProviderUnavailable
 from rtr_copilot.limits.redis_support import open_redis
+from rtr_copilot.rag.ontology import EnterpriseOntology, load_ontology
 from rtr_copilot.rag.query_understanding import (
-    CANONICALS,
     OfflineRewriter,
     QueryRewriter,
     RewriteResult,
@@ -39,19 +34,28 @@ from rtr_copilot.rag.query_understanding import (
 
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
 ANTHROPIC_VERSION = "2023-06-01"
-OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+OPENAI_URL = "https://api.openai.com/v1/responses"
 REWRITE_MAX_TOKENS = 256
+REWRITE_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "entities": {"type": "array", "items": {"type": "string"}, "maxItems": 5},
+        "expansions": {"type": "array", "items": {"type": "string"}, "maxItems": 5},
+    },
+    "required": ["entities", "expansions"],
+    "additionalProperties": False,
+}
 
 
 def _system_prompt(catalog: list[str]) -> str:
     names = ", ".join(catalog)
     return (
         "You normalize a user's SEARCH QUERY for a retrieval system over "
-        "Real-time Robotics (RtR) product facts. Do NOT answer the question. "
+        "authorized enterprise knowledge. Do NOT answer the question. "
         "Return ONLY a JSON object with two keys: \"entities\" — a list whose "
-        "items are product names chosen ONLY from this exact catalog, never "
+        "items are entity names chosen ONLY from this exact candidate catalog, never "
         f"invented: [{names}] — and \"expansions\" — up to 5 short alternative "
-        "search terms or synonyms. If no catalog product is referenced, return "
+        "search terms or synonyms. If no catalog entity is referenced, return "
         "an empty entities list. Output JSON only, no prose."
     )
 
@@ -155,23 +159,45 @@ class OpenAIRewriteClient:
                 },
                 json={
                     "model": self._model,
-                    "max_tokens": REWRITE_MAX_TOKENS,
-                    "temperature": 0,
-                    "messages": [
-                        {"role": "system", "content": _system_prompt(catalog)},
-                        {"role": "user", "content": question},
-                    ],
+                    "store": False,
+                    "reasoning": {"effort": "medium"},
+                    "max_output_tokens": REWRITE_MAX_TOKENS,
+                    "instructions": _system_prompt(catalog),
+                    "input": question,
+                    "text": {"format": {
+                        "type": "json_schema",
+                        "name": "rtr_query_plan",
+                        "strict": True,
+                        "schema": REWRITE_SCHEMA,
+                    }},
                 },
             )
             response.raise_for_status()
-            text = response.json()["choices"][0]["message"]["content"]
+            body = response.json()
+        if body.get("status") != "completed":
+            raise ValueError("openai_rewrite_incomplete")
+        text = ""
+        for item in body.get("output", []):
+            if not isinstance(item, dict) or item.get("type") != "message":
+                continue
+            for block in item.get("content", []):
+                if isinstance(block, dict) and block.get("type") == "output_text":
+                    text = str(block.get("text", ""))
+                    break
+        if not text:
+            raise ValueError("openai_rewrite_text_missing")
         return _parse_rewrite(text)
 
 
 class ExternalLLMRewriter:
-    """Try each client in order (Anthropic then OpenAI) behind a per-provider
-    breaker; the first success wins, and if all fail we raise so ``understand``
-    falls back to the deterministic path."""
+    """Try configured clients in order behind one breaker per provider.
+
+    The builder places OpenAI first and Anthropic second.  The first valid
+    result wins; if every provider fails, the query planner performs its
+    deterministic fallback.
+    """
+
+    external = True
 
     def __init__(
         self,
@@ -179,6 +205,8 @@ class ExternalLLMRewriter:
         *,
         timeout: float,
         breaker_factory: Callable[[str], CircuitBreaker] | None = None,
+        registry: EnterpriseOntology | None = None,
+        candidate_limit: int = 16,
     ) -> None:
         self.clients = clients
         self.calls = 0
@@ -187,9 +215,14 @@ class ExternalLLMRewriter:
         # configured provider to receive its own bounded attempt.
         self.total_timeout = timeout * max(1, len(clients)) + 0.1
         self._breaker_factory = breaker_factory
+        self._registry = registry or load_ontology()
+        self._candidate_limit = candidate_limit
 
     async def rewrite(self, question: str) -> RewriteResult:
-        catalog = sorted(CANONICALS)
+        catalog = self._registry.candidate_catalog(
+            question,
+            limit=self._candidate_limit,
+        )
         for client in self.clients:
             breaker = (
                 self._breaker_factory(client.name)
@@ -219,12 +252,16 @@ class ExternalLLMRewriter:
         raise ProviderUnavailable("llm_rewrite", retry_after=0)
 
 
-def build_rewriter(settings: Settings) -> QueryRewriter:
+def build_rewriter(
+    settings: Settings,
+    registry: EnterpriseOntology | None = None,
+) -> QueryRewriter:
     """Choose the rewriter from settings.
 
-    Returns an ``ExternalLLMRewriter`` (Anthropic primary, OpenAI fallback) when
-    query rewrite is enabled and at least one API key is present; otherwise the
-    deterministic ``OfflineRewriter`` (so behavior is unchanged by default).
+    Returns an ``ExternalLLMRewriter`` (OpenAI quality-primary, Anthropic
+    fallback) when query planning is enabled, export policy permits internal
+    content and at least one API key is present. Otherwise it returns the
+    deterministic ``OfflineRewriter``.
     """
     if not settings.rag_rewrite_enabled:
         return OfflineRewriter()
@@ -239,16 +276,16 @@ def build_rewriter(settings: Settings) -> QueryRewriter:
     if "internal" not in external_allowlist:
         return OfflineRewriter()
     clients: list[RewriteClient] = []
-    if settings.anthropic_api_key is not None:
-        clients.append(AnthropicRewriteClient(
-            settings.anthropic_api_key.get_secret_value(),
-            settings.rag_rewrite_anthropic_model,
-            timeout=settings.rag_rewrite_timeout_seconds,
-        ))
     if settings.openai_api_key is not None:
         clients.append(OpenAIRewriteClient(
             settings.openai_api_key.get_secret_value(),
             settings.rag_rewrite_openai_model,
+            timeout=settings.rag_rewrite_timeout_seconds,
+        ))
+    if settings.anthropic_api_key is not None:
+        clients.append(AnthropicRewriteClient(
+            settings.anthropic_api_key.get_secret_value(),
+            settings.rag_rewrite_anthropic_model,
             timeout=settings.rag_rewrite_timeout_seconds,
         ))
     if not clients:
@@ -266,4 +303,6 @@ def build_rewriter(settings: Settings) -> QueryRewriter:
         clients,
         timeout=settings.rag_rewrite_timeout_seconds,
         breaker_factory=breaker_factory,
+        registry=registry,
+        candidate_limit=settings.rag_query_candidate_limit,
     )

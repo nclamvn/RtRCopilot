@@ -56,6 +56,7 @@ const vi = {
   "shell.integrity.title": "Tình trạng hệ thống",
   "shell.integrity.checking": "Đang kiểm tra…",
   "shell.integrity.ready": "Tất cả dịch vụ sẵn sàng",
+  "shell.integrity.answerSetup": "Cần cấu hình API chất lượng trả lời",
   "shell.integrity.down": "Một số dịch vụ chưa sẵn sàng",
   "shell.palette.empty": "Không có lệnh phù hợp",
   "shell.dockLabel": "Điều hướng nhanh",
@@ -112,7 +113,7 @@ const vi = {
   "ask.advanced": "Phạm vi & tùy chọn",
   "ask.surfaceAria": "Bàn hỏi đáp",
   "ask.answer.title": "Câu trả lời",
-  "ask.answer.grounded": "Có căn cứ — mọi mệnh đề đều mang trích dẫn SOT",
+  "ask.answer.grounded": "Được đối chiếu với SOT · Mỗi nhận định liên kết tới bằng chứng",
   "ask.confidenceCaveat":
     "Một số căn cứ chưa có trích dẫn nguyên văn — vui lòng kiểm chứng lại.",
   "ask.answer.failed": "Trả lời thất bại",
@@ -584,6 +585,7 @@ const en: Record<MessageKey, string> = {
   "shell.integrity.title": "System integrity",
   "shell.integrity.checking": "Checking…",
   "shell.integrity.ready": "All services ready",
+  "shell.integrity.answerSetup": "Answer-quality API configuration required",
   "shell.integrity.down": "Some services unavailable",
   "shell.palette.empty": "No matching command",
   "shell.dockLabel": "Quick navigation",
@@ -640,7 +642,7 @@ const en: Record<MessageKey, string> = {
   "ask.advanced": "Scope & options",
   "ask.surfaceAria": "Ask desk",
   "ask.answer.title": "Answer",
-  "ask.answer.grounded": "Grounded — every statement carries an SOT citation",
+  "ask.answer.grounded": "Grounded in SOT · Every claim links to evidence",
   "ask.confidenceCaveat":
     "Some sources lack a verbatim citation — please double-check.",
   "ask.answer.failed": "Answer failed",

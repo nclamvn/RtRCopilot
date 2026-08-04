@@ -33,6 +33,17 @@ def normalize_query(value: str) -> str:
 
 _LEX_TOKEN = re.compile(r"[a-z0-9]+")
 
+# Function words must never manufacture retrieval relevance.  This list is
+# intentionally small and language-specific rather than an aggressive stemmer:
+# identifiers, product names, measurements and domain verbs remain searchable.
+QUERY_STOPWORDS = frozenset({
+    "a", "an", "and", "are", "as", "at", "be", "by", "can", "cho", "co",
+    "cua", "da", "de", "do", "duoc", "gi", "how", "in", "is", "it", "la",
+    "dau", "mot", "nao", "nhung", "o", "of", "on", "or", "tai", "the", "thi", "to",
+    "trong", "va", "ve", "what", "when", "where", "which", "who", "why",
+    "with",
+})
+
 
 def lexical_query(normalized: str) -> str:
     """Build an OR ``tsquery`` string ("a | b | c") from a normalized query.
@@ -45,7 +56,7 @@ def lexical_query(normalized: str) -> str:
     """
     seen: list[str] = []
     for token in _LEX_TOKEN.findall(normalized):
-        if token not in seen:
+        if token not in QUERY_STOPWORDS and token not in seen:
             seen.append(token)
     return " | ".join(seen)
 

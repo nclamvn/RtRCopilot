@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import time
 import uuid
@@ -17,13 +18,14 @@ from rtr_copilot.auth.models import Role, Subject
 from rtr_copilot.config import get_settings
 from rtr_copilot.rag.adapters import OfflineExtractiveAnswer
 from rtr_copilot.rag.answering import AnswerService
-from rtr_copilot.rag.api import rag_subject
+from rtr_copilot.rag.api import answer_service, rag_subject
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.rag.models import (
     ProviderAnswer,
     ProviderEvidence,
     SearchFilters,
 )
+from rtr_copilot.rag.query_understanding import RewriteResult
 from rtr_copilot.rag.reindex import ReindexError, ReindexService
 from rtr_copilot.rag.retrieval import RetrievalService
 from rtr_copilot.sot.service import SOTPublishService
@@ -53,6 +55,16 @@ class HangingAnswer:
         self.calls += 1
         await asyncio.sleep(60)
         raise AssertionError("timeout failed")
+
+
+class ConfirmingPlanner:
+    external = True
+    calls = 0
+
+    async def rewrite(self, question: str) -> RewriteResult:
+        return RewriteResult(entities=["OmniSight"])
+
+
 pytestmark = pytest.mark.skipif(
     not DATABASE_DSN,
     reason="integration database not configured",
@@ -292,6 +304,164 @@ async def test_tip014_alias_variants_ground_to_the_scoped_source(
     )
     assert unavailable.state == "honest_null"
     assert unavailable.citations == []
+
+
+@pytest.mark.asyncio
+async def test_tip0246_vega_definition_beats_live_like_distractors_and_fails_closed(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    source_key = f"tip0246.mixed.{uuid.uuid4().hex}"
+    vega_record = f"HC-002-{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key=vega_record,
+        text_value=(
+            "VEGA · Tactical heavy lifter: Multirotor tactical UAV · MTOW "
+            "37.4 kg · payload 20 kg · 60 minutes · 10 km."
+        ),
+        additional_records=[
+            (
+                f"L3R.K.007-{uuid.uuid4().hex}",
+                "Tầm điều khiển HERA là 15 km. Lưu ý VEGA có tầm 10 km.",
+            ),
+            (
+                f"L3R.2.005-{uuid.uuid4().hex}",
+                "Danh mục sản phẩm gồm HERA, VEGA, HeraHub, VegaHub và VegaSight.",
+            ),
+            (
+                f"L3F.RES.004-{uuid.uuid4().hex}",
+                "Người đứng đầu Real-time Robotics là nhà sáng lập kiêm CEO.",
+            ),
+        ],
+    )
+    tuned = settings(tmp_path)
+    retrieval = RetrievalService(tuned, factory=factory)
+    hits = await retrieval.search(
+        subject(owner),
+        "Vega là gì?",
+        filters=SearchFilters(source_key=source_key),
+        request_id="tip0246-retrieval",
+        top_k=12,
+    )
+    assert hits
+    assert hits[0].citation.record_key == vega_record
+    assert {item.citation.record_key for item in hits} == {vega_record}
+
+    grounded = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=retrieval,
+        provider=OfflineExtractiveAnswer(),
+    ).ask(
+        subject(owner),
+        "Vega là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0246-explicit-test-provider",
+    )
+    assert grounded.state == "grounded"
+    assert {item.record_key for item in grounded.citations} == {vega_record}
+    assert "CEO" not in grounded.answer and "HERA là 15 km" not in grounded.answer
+
+    required_mode = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+    ).ask(
+        subject(owner),
+        "Vega là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0246-required-no-key",
+    )
+    assert required_mode.state == "honest_null"
+    assert required_mode.citations == []
+    async with factory() as session:
+        provider_decision = await session.scalar(text("""
+            SELECT provider_decision FROM answer_runs
+            WHERE answer_run_id=:run_id
+        """), {"run_id": required_mode.answer_run_id})
+    assert provider_decision == "not_called_provider_unavailable"
+
+
+@pytest.mark.asyncio
+async def test_tip0247_ambiguous_partial_name_fails_closed_then_plan_constrains_all_gates(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    source_key = f"tip0247.mixed.{uuid.uuid4().hex}"
+    direct_record = f"HC-013-{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key=direct_record,
+        text_value=(
+            "OmniSight 360° · Dual-pod gimbal: AI on-board with independent "
+            "pan and tilt for each sensor pod."
+        ),
+        additional_records=[(
+            f"HC-053-{uuid.uuid4().hex}",
+            "Tactical overwatch ISR uses HERA + OmniSight + LS1 + S1.",
+        )],
+    )
+    tuned = settings(tmp_path)
+    blocked_provider = OfflineExtractiveAnswer()
+    blocked = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+        provider=blocked_provider,
+    ).ask(
+        subject(owner),
+        "Omni là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0247-ambiguous",
+    )
+    assert blocked.state == "honest_null"
+    assert blocked_provider.calls == 0
+    assert "chưa đủ rõ" in blocked.answer
+    async with factory() as session:
+        blocked_run = (await session.execute(text("""
+            SELECT provider_decision,retrieval_config,selected_chunk_ids
+            FROM answer_runs WHERE answer_run_id=:run_id
+        """), {"run_id": blocked.answer_run_id})).mappings().one()
+    assert blocked_run["provider_decision"] == "not_called_query_ambiguous"
+    assert blocked_run["selected_chunk_ids"] == []
+    intelligence = blocked_run["retrieval_config"]["query_intelligence"]
+    assert intelligence["resolution_state"] == "clarification_required"
+    assert "Omni" not in json.dumps(intelligence)
+
+    grounded_provider = OfflineExtractiveAnswer()
+    grounded = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+        provider=grounded_provider,
+        rewriter=ConfirmingPlanner(),
+    ).ask(
+        subject(owner),
+        "Omni là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0247-confirmed",
+    )
+    assert grounded.state == "grounded"
+    assert grounded_provider.calls == 1
+    assert {item.record_key for item in grounded.citations} == {direct_record}
+    assert "Tactical overwatch" not in grounded.answer
 
 
 @pytest.mark.asyncio
@@ -817,6 +987,11 @@ async def test_typed_http_api_and_conversation_rechecks_revoked_citations(
         return subject(owner)
 
     app.dependency_overrides[rag_subject] = authenticated
+    app.dependency_overrides[answer_service] = lambda: AnswerService(
+        settings(tmp_path),
+        factory=factory,
+        provider=OfflineExtractiveAnswer(),
+    )
     transport = httpx.ASGITransport(app=app)
     try:
         async with httpx.AsyncClient(
@@ -861,6 +1036,7 @@ async def test_typed_http_api_and_conversation_rechecks_revoked_citations(
             assert assistant["content"] == "Evidence is no longer available."
     finally:
         app.dependency_overrides.pop(rag_subject, None)
+        app.dependency_overrides.pop(answer_service, None)
 
     async def anonymous() -> None:
         return None

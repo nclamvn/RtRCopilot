@@ -20,6 +20,8 @@ from rtr_copilot.rag.adapters import (
 )
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.rag.models import Citation, RetrievalHit, SearchFilters
+from rtr_copilot.rag.query_understanding import QueryIntent
+from rtr_copilot.rag.relevance import candidate_relevance_score, profile_query
 from rtr_copilot.repositories.resources import (
     CLASSIFICATION_TO_POLICY,
     ResourceRepository,
@@ -133,8 +135,18 @@ class RetrievalService:
         filters: SearchFilters,
         request_id: str,
         top_k: int | None,
+        query_entities: tuple[str, ...] | None,
+        query_intent: QueryIntent | None,
     ) -> list[RetrievalHit]:
         assert filters.version_id is not None
+        lexquery = lexical_query(normalized)
+        if not lexquery:
+            return []
+        query_profile = profile_query(
+            query,
+            entities=query_entities,
+            intent=query_intent,
+        )
         async with self.uow.factory() as session:
             authorized = await self._file_authorized(
                 session, subject, filters.version_id, request_id,
@@ -172,7 +184,7 @@ class RetrievalService:
         self.trace.policy_allowed = self.trace.metadata_rows
         if not metadata_count:
             return []
-        query_vector = self.embedding.embed(normalized)
+        query_vector = self.embedding.embed(" ".join(query_profile.terms))
         self.trace.content_queries = 1
         async with self.uow.factory() as session:
             rows = (await session.execute(text("""
@@ -190,7 +202,7 @@ class RetrievalService:
                 ORDER BY lexical_score DESC,vector_score DESC,fc.chunk_key
                 LIMIT :candidate_limit
             """), {
-                "lexquery": lexical_query(normalized),
+                "lexquery": lexquery,
                 "embedding": json.dumps(query_vector),
                 "version_id": filters.version_id,
                 "candidate_limit": self.settings.rag_candidate_limit,
@@ -218,14 +230,26 @@ class RetrievalService:
                 self.trace.dlp_rule_ids.extend(dlp.rule_ids)
                 continue
             row["display_text"] = dlp.text
-            fusion = (
+            base_fusion = (
                 1.0 / (60 + lex_order[row["file_chunk_id"]])
                 + 1.0 / (60 + vector_order[row["file_chunk_id"]])
                 + min(float(row["lexical_score"]), 1.0) * 0.1
             )
-            ranked.append((fusion, row))
+            fusion = candidate_relevance_score(
+                query_profile,
+                text=str(row["display_text"]),
+                record_key=str(version["logical_name"]),
+                base_score=base_fusion,
+                vector_score=float(row["vector_score"]),
+                min_vector_score=self.settings.rag_min_vector_score,
+            )
+            if fusion is not None:
+                ranked.append((fusion, row))
         ranked.sort(key=lambda item: (-item[0], item[1]["chunk_key"]))
-        limit = min(top_k or self.settings.rag_top_k, self.settings.rag_top_k)
+        limit = min(
+            top_k or self.settings.rag_top_k,
+            self.settings.rag_answer_candidate_k,
+        )
         output: list[RetrievalHit] = []
         used_bytes = 0
         for fusion, row in ranked:
@@ -410,6 +434,8 @@ class RetrievalService:
         filters: SearchFilters,
         request_id: str,
         top_k: int | None = None,
+        query_entities: tuple[str, ...] | None = None,
+        query_intent: QueryIntent | None = None,
     ) -> list[RetrievalHit]:
         self.trace = RetrievalTrace()
         if len(query.encode()) > self.settings.rag_query_max_bytes:
@@ -417,6 +443,9 @@ class RetrievalService:
         normalized = normalize_query(query)
         if not normalized:
             raise RetrievalError("query_empty_after_normalization")
+        lexquery = lexical_query(normalized)
+        if not lexquery:
+            return []
         if filters.version_id is not None:
             return await self._search_file(
                 subject,
@@ -425,6 +454,8 @@ class RetrievalService:
                 filters=filters,
                 request_id=request_id,
                 top_k=top_k,
+                query_entities=query_entities,
+                query_intent=query_intent,
             )
         metadata: list[dict[str, Any]] = []
         allowed_ids: list[uuid.UUID] = []
@@ -466,7 +497,12 @@ class RetrievalService:
         self.trace.policy_allowed = len(allowed_ids)
         if not allowed_ids:
             return []
-        query_vector = self.embedding.embed(normalized)
+        query_profile = profile_query(
+            query,
+            entities=query_entities,
+            intent=query_intent,
+        )
+        query_vector = self.embedding.embed(" ".join(query_profile.terms))
         self.trace.content_queries += 1
         async with self.uow.factory() as session:
             rows = (await session.execute(text("""
@@ -485,7 +521,7 @@ class RetrievalService:
                 WHERE c.chunk_id=ANY(:allowed_ids) AND c.lifecycle='active'
                 ORDER BY c.chunk_key
             """), {
-                "lexquery": lexical_query(normalized),
+                "lexquery": lexquery,
                 "embedding": json.dumps(query_vector),
                 "allowed_ids": allowed_ids,
             })).mappings().all()
@@ -541,14 +577,26 @@ class RetrievalService:
                 self.trace.dlp_rule_ids.extend(dlp.rule_ids)
                 continue
             row["display_text"] = dlp.text
-            fusion = (
+            base_fusion = (
                 1.0 / (60 + lex_order[row["chunk_id"]])
                 + 1.0 / (60 + vector_order[row["chunk_id"]])
                 + min(float(row["lexical_score"]), 1.0) * 0.1
             )
-            ranked.append((fusion, row))
+            fusion = candidate_relevance_score(
+                query_profile,
+                text=str(row["display_text"]),
+                record_key=str(row["record_key"]),
+                base_score=base_fusion,
+                vector_score=float(row["vector_score"]),
+                min_vector_score=self.settings.rag_min_vector_score,
+            )
+            if fusion is not None:
+                ranked.append((fusion, row))
         ranked.sort(key=lambda item: (-item[0], str(item[1]["chunk_key"])))
-        limit = min(top_k or self.settings.rag_top_k, self.settings.rag_top_k)
+        limit = min(
+            top_k or self.settings.rag_top_k,
+            self.settings.rag_answer_candidate_k,
+        )
         output: list[RetrievalHit] = []
         used_bytes = 0
         for fusion, row in ranked:

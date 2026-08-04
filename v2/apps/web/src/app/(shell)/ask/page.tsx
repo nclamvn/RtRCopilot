@@ -60,25 +60,65 @@ import {PageHeader} from "../../../shell/AppShell";
 
 type Identity = {user_id: string; email: string; display_name: string; roles: string[]};
 
-const MARKER_SPLIT = /(\[C\d{1,3}\])/g;
-const MARKER_EXACT = /^\[(C\d{1,3})\]$/;
+export type AnswerClaim = {text: string; citations: string[]};
 
-/** Answer text with activatable citation markers wired to the rail. */
+function normalizeClaimCopy(value: string): string {
+  return value
+    .replace(/[\t\f\v ]+/g, " ")
+    .replace(/ *\n */g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * The answer contract is plain text with postfixed `[C…]` markers. Treat a
+ * marker as a real claim boundary instead of painting one unbroken paragraph.
+ * Consecutive markers remain attached to the same claim and are de-duplicated.
+ */
+export function parseAnswerClaims(text: string): AnswerClaim[] {
+  const claims: AnswerClaim[] = [];
+  const marker = /\[(C\d{1,3})\]/g;
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = marker.exec(text)) !== null) {
+    const copy = normalizeClaimCopy(text.slice(cursor, match.index));
+    const citation = match[1];
+    if (copy) {
+      claims.push({text: copy, citations: [citation]});
+    } else if (claims.length > 0) {
+      const previous = claims[claims.length - 1];
+      if (!previous.citations.includes(citation)) previous.citations.push(citation);
+    }
+    cursor = marker.lastIndex;
+  }
+
+  const tail = normalizeClaimCopy(text.slice(cursor));
+  if (tail) claims.push({text: tail, citations: []});
+  if (claims.length > 0) return claims;
+  const fallback = normalizeClaimCopy(text);
+  return fallback ? [{text: fallback, citations: []}] : [];
+}
+
+/** A claim ledger with activatable citation markers wired to the rail. */
 function AnswerText({text, onCitation}: {
   text: string; onCitation: (marker: string) => void;
 }) {
   const {t} = useI18n();
-  const parts = text.split(MARKER_SPLIT);
-  return <p className="answer-text">
-    {parts.map((part, index) => {
-      const match = MARKER_EXACT.exec(part);
-      if (!match) return <React.Fragment key={index}>{part}</React.Fragment>;
-      const marker = match[1];
-      return <button key={index} type="button" className="citation-marker"
-        aria-label={`${t("ask.citation.aria")} ${marker}`}
-        onClick={() => onCitation(marker)}>[{marker}]</button>;
-    })}
-  </p>;
+  const claims = useMemo(() => parseAnswerClaims(text), [text]);
+  return <div className="answer-content">
+    {claims.map((claim, index) => <div className="answer-claim"
+      data-lead={index === 0 ? "true" : undefined} key={`${index}-${claim.text.slice(0, 24)}`}>
+      <p className="answer-text">{claim.text}
+        {claim.citations.length > 0 && <span className="answer-citations">
+          {claim.citations.map(citation => <button key={citation} type="button"
+            className="citation-marker"
+            aria-label={`${t("ask.citation.aria")} ${citation}`}
+            onClick={() => onCitation(citation)}>[{citation}]</button>)}
+        </span>}
+      </p>
+    </div>)}
+  </div>;
 }
 
 export default function AskPage() {
@@ -539,7 +579,7 @@ export default function AskPage() {
 
         {current && current.state === "grounded" && <section className="ask-answer"
           aria-label={t("ask.answer.title")}>
-          <header>
+          <header className="answer-header">
             <h2>{t("ask.answer.title")}</h2>
             <p className="grounding-note">{t("ask.answer.grounded")}</p>
           </header>

@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "registry_id": "rtr.enterprise-ontology",
+  "owner": "curator:sot",
+  "entities": [
+    {
+      "entity_id": "rtr.product.hera",
+      "canonical_name": "HERA",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["hira", "heara", "hr"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.vega",
+      "canonical_name": "VEGA",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["vga", "vaga"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.herasight",
+      "canonical_name": "HeraSight",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["herasight", "hera sight", "hera-sight"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.herasight-lr",
+      "canonical_name": "HeraSight LR",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["herasight lr", "hera sight lr", "61t"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.dualsight",
+      "canonical_name": "DualSight",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["dualsight", "dual sight"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.omnisight",
+      "canonical_name": "OmniSight",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["omnisight", "omni sight"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.skywatch-360",
+      "canonical_name": "SkyWatch 360",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["skywatch", "sky watch", "skywatch 360"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.herahub",
+      "canonical_name": "HeraHub",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["herahub", "hera hub", "heralink"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.vegahub",
+      "canonical_name": "VegaHub",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["vegahub", "vega hub"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.vegasight",
+      "canonical_name": "VegaSight",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["vegasight", "vega sight"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.aerotunnel",
+      "canonical_name": "AeroTunnel",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["aerotunnel", "aero tunnel"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.ls1",
+      "canonical_name": "LS1",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["ls1", "ls-1"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.s1",
+      "canonical_name": "S1",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["s1"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    }
+  ]
+}

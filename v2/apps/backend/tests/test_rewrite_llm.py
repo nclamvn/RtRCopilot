@@ -2,7 +2,7 @@
 
 No real network and no real keys. The two provider clients are exercised with
 ``httpx.MockTransport``; the fallback chain and factory use fakes. Proves:
-Anthropic-primary/OpenAI-fallback ordering, breaker-open skip, both-fail raises
+provider fallback ordering, breaker-open skip, both-fail raises
 (so understand() falls back), tolerant JSON parsing, and the enable/keys gating.
 """
 import asyncio
@@ -69,6 +69,17 @@ class _HangingClient(_FakeClient):
         self.calls += 1
         await asyncio.sleep(10)
         raise AssertionError("orchestration timeout failed")
+
+
+class _CatalogClient(_FakeClient):
+    def __init__(self) -> None:
+        super().__init__("catalog")
+        self.catalogs: list[list[str]] = []
+
+    async def propose(self, question: str, catalog: list[str]) -> RewriteResult:
+        self.calls += 1
+        self.catalogs.append(catalog)
+        return RewriteResult()
 
 
 class _FakeBreaker:
@@ -170,6 +181,15 @@ class TestFallbackChain:
         assert breakers["anthropic"].failures == 1
         assert breakers["openai"].successes == 1
 
+    def test_planner_receives_only_bounded_registry_candidates(self) -> None:
+        client = _CatalogClient()
+        rewriter = ExternalLLMRewriter([client], timeout=1, candidate_limit=3)
+        asyncio.run(rewriter.rewrite("Omni là gì?"))
+        assert client.catalogs == [["OmniSight"]]
+
+        asyncio.run(rewriter.rewrite("unrelated enterprise question"))
+        assert client.catalogs[-1] == []
+
 
 class TestRealClients:
     def test_anthropic_parses_messages_response(self) -> None:
@@ -183,10 +203,14 @@ class TestRealClients:
         out = asyncio.run(client.propose("hr payload", ["HERA", "VEGA"]))
         assert out.entities == ["HERA"] and out.expansions == ["payload"]
 
-    def test_openai_parses_chat_response(self) -> None:
-        payload = {"choices": [
-            {"message": {"content": '{"entities": ["VEGA"], "expansions": []}'}},
-        ]}
+    def test_openai_parses_responses_structured_output(self) -> None:
+        payload = {
+            "status": "completed",
+            "output": [{"type": "message", "content": [{
+                "type": "output_text",
+                "text": '{"entities": ["VEGA"], "expansions": []}',
+            }]}],
+        }
         client = OpenAIRewriteClient(
             "key", "model", timeout=2, transport=_transport(payload),
         )
@@ -219,7 +243,7 @@ class TestBuildRewriter:
         assert isinstance(rewriter, ExternalLLMRewriter)
         assert [client.name for client in rewriter.clients] == ["anthropic"]
 
-    def test_both_keys_anthropic_first(self) -> None:
+    def test_both_keys_openai_quality_primary(self) -> None:
         settings = _settings(
             rag_rewrite_enabled=True,
             rag_external_classification_allowlist="internal",
@@ -228,7 +252,7 @@ class TestBuildRewriter:
         )
         rewriter = build_rewriter(settings)
         assert isinstance(rewriter, ExternalLLMRewriter)
-        assert [client.name for client in rewriter.clients] == ["anthropic", "openai"]
+        assert [client.name for client in rewriter.clients] == ["openai", "anthropic"]
 
     def test_key_without_external_allowlist_fails_closed(self) -> None:
         settings = _settings(

@@ -27,11 +27,8 @@ from rtr_copilot.observability.metrics import (
     PROVIDER_CALL_DURATION,
     PROVIDER_CALL_FAILURES,
 )
-from rtr_copilot.rag.adapters import (
-    AnswerAdapter,
-    OfflineExtractiveAnswer,
-    normalize_query,
-)
+from rtr_copilot.rag.adapters import AnswerAdapter, normalize_query
+from rtr_copilot.rag.answer_llm import build_answer_provider
 from rtr_copilot.rag.models import (
     AskResponse,
     ProviderAnswer,
@@ -39,11 +36,19 @@ from rtr_copilot.rag.models import (
     RetrievalHit,
     SearchFilters,
 )
+from rtr_copilot.rag.ontology import (
+    EnterpriseOntology,
+    load_ontology,
+    load_runtime_ontology,
+)
 from rtr_copilot.rag.query_understanding import (
     DEFAULT_REWRITE_TIMEOUT,
+    OfflineRewriter,
+    QueryPlan,
     QueryRewriter,
-    understand,
+    plan_query,
 )
+from rtr_copilot.rag.relevance import answer_relevant, evidence_relevant
 from rtr_copilot.rag.retrieval import RetrievalService, scope_fingerprint
 from rtr_copilot.rag.rewrite_llm import build_rewriter
 from rtr_copilot.repositories.audit import AuditRepository
@@ -150,18 +155,23 @@ class AnswerService:
         retrieval: RetrievalService | None = None,
         provider: AnswerAdapter | None = None,
         rewriter: QueryRewriter | None = None,
+        ontology: EnterpriseOntology | None = None,
     ) -> None:
         self.settings = settings or get_settings()
+        self._ontology_override = ontology is not None
+        self._rewriter_override = rewriter is not None
+        self._factory = factory
+        self.ontology = ontology or load_ontology(self.settings.rag_ontology_path)
         self.uow = UnitOfWork(factory)
         self.retrieval = retrieval or RetrievalService(
             self.settings,
             factory=factory,
         )
-        self.provider = provider or OfflineExtractiveAnswer()
-        # TIP-014: build_rewriter returns the offline deterministic rewriter
-        # unless RAG_REWRITE_ENABLED + a key is set, in which case it returns the
-        # Anthropic->OpenAI LLM rewriter. Behavior is unchanged by default.
-        self._rewriter = rewriter or build_rewriter(self.settings)
+        self.provider = provider or build_answer_provider(self.settings)
+        # TIP-024.7: use the quality planner for every eligible Ask only when
+        # feature flag, external-processing policy and a credential are all
+        # present; otherwise preserve the deterministic trust path.
+        self._rewriter = rewriter or build_rewriter(self.settings, self.ontology)
 
     async def _conversation(
         self,
@@ -175,35 +185,49 @@ class AnswerService:
         conversation_id = conversation_id or uuid.uuid4()
         message_id = uuid.uuid4()
         async with self.uow.transaction() as session:
-            existing = (await session.execute(text("""
+            existing = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT owner_subject_id,lifecycle FROM conversations
                 WHERE conversation_id=:conversation_id FOR UPDATE
-            """), {"conversation_id": conversation_id})).mappings().one_or_none()
+            """),
+                        {"conversation_id": conversation_id},
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
             if existing and (
-                existing["owner_subject_id"] != owner
-                or existing["lifecycle"] != "active"
+                existing["owner_subject_id"] != owner or existing["lifecycle"] != "active"
             ):
                 raise GroundingError("conversation_not_found")
             if existing is None:
-                await session.execute(text("""
+                await session.execute(
+                    text("""
                     INSERT INTO conversations(
                       conversation_id,owner_subject_id,classification,lifecycle
                     ) VALUES (:conversation_id,:owner,'internal','active')
-                """), {"conversation_id": conversation_id, "owner": owner})
-            await session.execute(text("""
+                """),
+                    {"conversation_id": conversation_id, "owner": owner},
+                )
+            await session.execute(
+                text("""
                 INSERT INTO messages(
                   message_id,conversation_id,role,sanitized_content,
                   content_sha256,request_id
                 ) VALUES (
                   :message_id,:conversation_id,'user',:content,:checksum,:request_id
                 )
-            """), {
-                "message_id": message_id,
-                "conversation_id": conversation_id,
-                "content": question,
-                "checksum": hashlib.sha256(question.encode()).hexdigest(),
-                "request_id": request_id,
-            })
+            """),
+                {
+                    "message_id": message_id,
+                    "conversation_id": conversation_id,
+                    "content": question,
+                    "checksum": hashlib.sha256(question.encode()).hexdigest(),
+                    "request_id": request_id,
+                },
+            )
         return conversation_id, message_id
 
     async def _start_run(
@@ -216,17 +240,26 @@ class AnswerService:
         question: str,
         hits: list[RetrievalHit],
         filters: SearchFilters,
+        query_plan: QueryPlan,
     ) -> uuid.UUID:
         run_id = uuid.uuid4()
         generation_ids: list[uuid.UUID] = []
         if hits:
             async with self.uow.factory() as session:
-                generation_ids = list((await session.execute(text("""
+                generation_ids = list(
+                    (
+                        await session.execute(
+                            text("""
                     SELECT DISTINCT generation_id FROM chunks
                     WHERE chunk_id=ANY(CAST(:chunk_ids AS uuid[]))
-                """), {"chunk_ids": [item.chunk_id for item in hits]})).scalars())
+                """),
+                            {"chunk_ids": [item.chunk_id for item in hits]},
+                        )
+                    ).scalars()
+                )
         async with self.uow.transaction() as session:
-            await session.execute(text("""
+            await session.execute(
+                text("""
                 INSERT INTO answer_runs(
                   answer_run_id,conversation_id,question_message_id,requester_id,
                   request_id,query_fingerprint,authorized_scope_fingerprint,
@@ -237,33 +270,40 @@ class AnswerService:
                   :query_fingerprint,:scope_fingerprint,CAST(:config AS jsonb),
                   :chunk_ids,:scores,:provider_decision,'running',:generation_ids
                 )
-            """), {
-                "run_id": run_id,
-                "conversation_id": conversation_id,
-                "message_id": question_message_id,
-                "requester": uuid.UUID(subject.user_id),
-                "request_id": request_id,
-                "query_fingerprint": hashlib.sha256(
-                    normalize_query(question).encode(),
-                ).hexdigest(),
-                "scope_fingerprint": scope_fingerprint(
-                    subject,
-                    [item.chunk_id for item in hits],
-                ),
-                "config": json.dumps(filters.model_dump(mode="json")),
-                "chunk_ids": [item.chunk_id for item in hits],
-                "scores": json.dumps([
-                    {
-                        "chunk_id": str(item.chunk_id),
-                        "fusion": item.fusion_score,
-                    }
-                    for item in hits
-                ]),
-                "provider_decision": (
-                    "eligible" if hits else "not_called_no_evidence"
-                ),
-                "generation_ids": generation_ids,
-            })
+            """),
+                {
+                    "run_id": run_id,
+                    "conversation_id": conversation_id,
+                    "message_id": question_message_id,
+                    "requester": uuid.UUID(subject.user_id),
+                    "request_id": request_id,
+                    "query_fingerprint": hashlib.sha256(
+                        normalize_query(question).encode(),
+                    ).hexdigest(),
+                    "scope_fingerprint": scope_fingerprint(
+                        subject,
+                        [item.chunk_id for item in hits],
+                    ),
+                    "config": json.dumps(
+                        {
+                            **filters.model_dump(mode="json"),
+                            "query_intelligence": query_plan.audit_metadata(),
+                        }
+                    ),
+                    "chunk_ids": [item.chunk_id for item in hits],
+                    "scores": json.dumps(
+                        [
+                            {
+                                "chunk_id": str(item.chunk_id),
+                                "fusion": item.fusion_score,
+                            }
+                            for item in hits
+                        ]
+                    ),
+                    "provider_decision": ("eligible" if hits else "not_called_no_evidence"),
+                    "generation_ids": generation_ids,
+                },
+            )
         return run_id
 
     async def _gap(
@@ -302,8 +342,12 @@ class AnswerService:
         reason: GapReasonCategory,
         started: float,
         provider_calls: int = 0,
+        provider_decision: str | None = None,
+        answer_override: str | None = None,
     ) -> AskResponse:
-        answer = "Không tìm thấy bằng chứng được phép và đủ tin cậy để trả lời."
+        answer = answer_override or (
+            "Không tìm thấy bằng chứng được phép và đủ tin cậy để trả lời."
+        )
         answer_message_id = uuid.uuid4()
         async with self.uow.transaction() as session:
             gap_id = await self._gap(
@@ -313,7 +357,8 @@ class AnswerService:
                 question=question,
                 reason=reason,
             )
-            await session.execute(text("""
+            await session.execute(
+                text("""
                 INSERT INTO messages(
                   message_id,conversation_id,role,sanitized_content,content_sha256,
                   answer_state,provider,model,request_id
@@ -321,30 +366,36 @@ class AnswerService:
                   :message_id,:conversation_id,'assistant',:content,:checksum,
                   'honest_null','none','none',:request_id
                 )
-            """), {
-                "message_id": answer_message_id,
-                "conversation_id": conversation_id,
-                "content": answer,
-                "checksum": hashlib.sha256(answer.encode()).hexdigest(),
-                "request_id": request_id,
-            })
-            await session.execute(text("""
+            """),
+                {
+                    "message_id": answer_message_id,
+                    "conversation_id": conversation_id,
+                    "content": answer,
+                    "checksum": hashlib.sha256(answer.encode()).hexdigest(),
+                    "request_id": request_id,
+                },
+            )
+            await session.execute(
+                text("""
                 UPDATE answer_runs SET answer_message_id=:message_id,
                   state='honest_null',reason_code=:reason,
                   provider_decision=:provider_decision,
                   latency_ms=:latency,finished_at=now()
                 WHERE answer_run_id=:run_id
-            """), {
-                "message_id": answer_message_id,
-                "reason": reason,
-                "provider_decision": (
-                    "not_called_no_evidence"
-                    if provider_calls == 0
-                    else "called_grounding_failed"
-                ),
-                "latency": int((time.monotonic() - started) * 1000),
-                "run_id": run_id,
-            })
+            """),
+                {
+                    "message_id": answer_message_id,
+                    "reason": reason,
+                    "provider_decision": provider_decision
+                    or (
+                        "not_called_no_evidence"
+                        if provider_calls == 0
+                        else "called_grounding_failed"
+                    ),
+                    "latency": int((time.monotonic() - started) * 1000),
+                    "run_id": run_id,
+                },
+            )
             await AuditRepository().append(
                 session,
                 actor_kind="user",
@@ -359,6 +410,12 @@ class AnswerService:
                     "gap_id": str(gap_id),
                     "reason_category": reason,
                     "provider_calls": provider_calls,
+                    "provider_decision": provider_decision
+                    or (
+                        "not_called_no_evidence"
+                        if provider_calls == 0
+                        else "called_grounding_failed"
+                    ),
                 },
             )
         return AskResponse(
@@ -376,29 +433,30 @@ class AnswerService:
             return False
         async with self.uow.factory() as session:
             sot_ids = [item.chunk_id for item in hits if item.citation.zone_label == "sot"]
-            file_ids = [
-                item.chunk_id for item in hits if item.citation.zone_label == "private"
-            ]
-            sot_count = await session.scalar(text("""
+            file_ids = [item.chunk_id for item in hits if item.citation.zone_label == "private"]
+            sot_count = await session.scalar(
+                text("""
                 SELECT count(*) FROM chunks c
                 JOIN active_search_generations ag ON ag.generation_id=c.generation_id
                 JOIN records r ON r.record_id=c.record_id
                 WHERE c.chunk_id=ANY(CAST(:chunk_ids AS uuid[]))
                   AND c.lifecycle='active'
                   AND r.current_version_id=c.record_version_id
-            """), {"chunk_ids": sot_ids})
-            file_count = await session.scalar(text("""
+            """),
+                {"chunk_ids": sot_ids},
+            )
+            file_count = await session.scalar(
+                text("""
                 SELECT count(*) FROM file_chunks fc
                 JOIN renditions rd ON rd.rendition_id=fc.rendition_id
                 JOIN resources rr ON rr.resource_id=rd.rendition_id
                 WHERE fc.file_chunk_id=ANY(CAST(:chunk_ids AS uuid[]))
                   AND fc.lifecycle='active' AND rd.status='ready'
                   AND rr.lifecycle_state='active'
-            """), {"chunk_ids": file_ids})
-        return (
-            int(sot_count or 0) == len(sot_ids)
-            and int(file_count or 0) == len(file_ids)
-        )
+            """),
+                {"chunk_ids": file_ids},
+            )
+        return int(sot_count or 0) == len(sot_ids) and int(file_count or 0) == len(file_ids)
 
     async def _soft_cited_version_ids(
         self,
@@ -412,22 +470,30 @@ class AnswerService:
         never alters what is retrieved, ranked, filtered or grounded. Returns
         the empty set for strict-only citations (no ``confidence_signal``).
         """
-        version_ids = sorted({
-            item.citation.record_version_id for item in selected
-            if item.citation.record_version_id is not None
-        })
+        version_ids = sorted(
+            {
+                item.citation.record_version_id
+                for item in selected
+                if item.citation.record_version_id is not None
+            }
+        )
         if not version_ids:
             return set()
         async with self.uow.factory() as session:
-            rows = (await session.execute(text("""
+            rows = (
+                (
+                    await session.execute(
+                        text("""
                 SELECT version_id,value_payload FROM record_versions
                 WHERE version_id=ANY(CAST(:version_ids AS uuid[]))
-            """), {"version_ids": version_ids})).mappings().all()
-        return {
-            row["version_id"]
-            for row in rows
-            if needs_double_check(row["value_payload"])
-        }
+            """),
+                        {"version_ids": version_ids},
+                    )
+                )
+                .mappings()
+                .all()
+            )
+        return {row["version_id"] for row in rows if needs_double_check(row["value_payload"])}
 
     async def _persist_grounded(
         self,
@@ -444,9 +510,7 @@ class AnswerService:
     ) -> bool:
         message_id = uuid.uuid4()
         async with self.uow.transaction() as session:
-            for source_key in sorted({
-                item.citation.source_key for item in selected
-            }):
+            for source_key in sorted({item.citation.source_key for item in selected}):
                 await session.execute(
                     text("SELECT pg_advisory_xact_lock(hashtext(:source_key))"),
                     {"source_key": source_key},
@@ -458,7 +522,8 @@ class AnswerService:
                 request_id,
             ):
                 return False
-            await session.execute(text("""
+            await session.execute(
+                text("""
                 INSERT INTO messages(
                   message_id,conversation_id,role,sanitized_content,content_sha256,
                   answer_state,provider,model,request_id
@@ -466,18 +531,21 @@ class AnswerService:
                   :message_id,:conversation_id,'assistant',:content,:checksum,
                   'grounded',:provider,:model,:request_id
                 )
-            """), {
-                "message_id": message_id,
-                "conversation_id": conversation_id,
-                "content": output.answer,
-                "checksum": hashlib.sha256(output.answer.encode()).hexdigest(),
-                "provider": self.provider.name,
-                "model": self.provider.model,
-                "request_id": request_id,
-            })
+            """),
+                {
+                    "message_id": message_id,
+                    "conversation_id": conversation_id,
+                    "content": output.answer,
+                    "checksum": hashlib.sha256(output.answer.encode()).hexdigest(),
+                    "provider": self.provider.name,
+                    "model": self.provider.model,
+                    "request_id": request_id,
+                },
+            )
             for hit in selected:
                 citation = hit.citation
-                await session.execute(text("""
+                await session.execute(
+                    text("""
                     INSERT INTO answer_citations(
                       citation_id,answer_run_id,marker,chunk_id,file_chunk_id,
                       record_key,record_version_id,document_version_id,
@@ -491,45 +559,48 @@ class AnswerService:
                       :revision,:provenance,:verification,:freshness,:source_label,
                       CAST(:locator AS jsonb),:redacted,:zone_label
                     )
-                """), {
-                    "citation_id": uuid.uuid5(run_id, citation.marker),
-                    "run_id": run_id,
-                    "marker": citation.marker,
-                    "chunk_id": (
-                        citation.chunk_id if citation.zone_label == "sot" else None
-                    ),
-                    "file_chunk_id": (
-                        citation.chunk_id if citation.zone_label == "private" else None
-                    ),
-                    "record_key": citation.record_key,
-                    "version_id": citation.record_version_id,
-                    "document_version_id": citation.document_version_id,
-                    "evidence_key": citation.evidence_key,
-                    "record_checksum": citation.record_checksum,
-                    "evidence_checksum": citation.evidence_checksum,
-                    "source_key": citation.source_key,
-                    "revision": citation.source_revision,
-                    "provenance": citation.provenance_level,
-                    "verification": citation.verification_state,
-                    "freshness": citation.freshness_state,
-                    "source_label": citation.source_label,
-                    "locator": json.dumps(citation.locator),
-                    "redacted": citation.redacted,
-                    "zone_label": citation.zone_label,
-                })
+                """),
+                    {
+                        "citation_id": uuid.uuid5(run_id, citation.marker),
+                        "run_id": run_id,
+                        "marker": citation.marker,
+                        "chunk_id": (citation.chunk_id if citation.zone_label == "sot" else None),
+                        "file_chunk_id": (
+                            citation.chunk_id if citation.zone_label == "private" else None
+                        ),
+                        "record_key": citation.record_key,
+                        "version_id": citation.record_version_id,
+                        "document_version_id": citation.document_version_id,
+                        "evidence_key": citation.evidence_key,
+                        "record_checksum": citation.record_checksum,
+                        "evidence_checksum": citation.evidence_checksum,
+                        "source_key": citation.source_key,
+                        "revision": citation.source_revision,
+                        "provenance": citation.provenance_level,
+                        "verification": citation.verification_state,
+                        "freshness": citation.freshness_state,
+                        "source_label": citation.source_label,
+                        "locator": json.dumps(citation.locator),
+                        "redacted": citation.redacted,
+                        "zone_label": citation.zone_label,
+                    },
+                )
             latency = int((time.monotonic() - started) * 1000)
-            await session.execute(text("""
+            await session.execute(
+                text("""
                 UPDATE answer_runs SET answer_message_id=:message_id,state='grounded',
                   provider_decision='called_local',input_tokens=:input_tokens,
                   output_tokens=:output_tokens,latency_ms=:latency,finished_at=now()
                 WHERE answer_run_id=:run_id
-            """), {
-                "message_id": message_id,
-                "input_tokens": len(serialized) // 4,
-                "output_tokens": len(output.answer) // 4,
-                "latency": latency,
-                "run_id": run_id,
-            })
+            """),
+                {
+                    "message_id": message_id,
+                    "input_tokens": len(serialized) // 4,
+                    "output_tokens": len(output.answer) // 4,
+                    "latency": latency,
+                    "run_id": run_id,
+                },
+            )
             await AuditRepository().append(
                 session,
                 actor_kind="user",
@@ -589,10 +660,12 @@ class AnswerService:
         """
         async with self.uow.factory() as session:
             subject_daily = await effective_int_setting(
-                session, "limits.budget.subject_daily_units",
+                session,
+                "limits.budget.subject_daily_units",
             )
             global_daily = await effective_int_setting(
-                session, "limits.budget.global_daily_units",
+                session,
+                "limits.budget.global_daily_units",
             )
         redis = open_redis(self.settings)
         try:
@@ -618,10 +691,14 @@ class AnswerService:
             )
             raise
         except RedisError:
-            logger.warning(json.dumps({
-                "event": "budget_check_degraded",
-                "request_id": request_id,
-            }))
+            logger.warning(
+                json.dumps(
+                    {
+                        "event": "budget_check_degraded",
+                        "request_id": request_id,
+                    }
+                )
+            )
         finally:
             await redis.aclose()
         return subject_daily, global_daily
@@ -631,6 +708,7 @@ class AnswerService:
         subject: Subject,
         *,
         question: str,
+        query_plan: QueryPlan,
         evidence: list[ProviderEvidence],
         request_id: str,
         run_id: uuid.UUID,
@@ -646,10 +724,17 @@ class AnswerService:
         blocks answering.
         """
         redis = open_redis(self.settings)
+        breaker_name = str(
+            getattr(
+                self.provider,
+                "breaker_name",
+                self.provider.name,
+            )
+        )
         try:
             breaker = CircuitBreaker(
                 redis,
-                self.provider.name,
+                breaker_name,
                 threshold=self.settings.limits_breaker_failure_threshold,
                 cooldown_seconds=self.settings.limits_breaker_cooldown_seconds,
             )
@@ -659,8 +744,8 @@ class AnswerService:
                 admitted, cooldown_left = True, 0
             if not admitted:
                 # AC-08: breaker refused the call (open) — reflect state locally.
-                PROVIDER_BREAKER_OPEN.labels(self.provider.name).set(1)
-                PROVIDER_BREAKER_REFUSALS.labels(self.provider.name).inc()
+                PROVIDER_BREAKER_OPEN.labels(breaker_name).set(1)
+                PROVIDER_BREAKER_REFUSALS.labels(breaker_name).inc()
                 await self._audit_budget_event(
                     subject,
                     request_id=request_id,
@@ -669,12 +754,12 @@ class AnswerService:
                     reason="provider_unavailable",
                     details={
                         "answer_run_id": str(run_id),
-                        "provider": self.provider.name,
+                        "provider": breaker_name,
                         "retry_after_seconds": cooldown_left,
                     },
                 )
                 raise ProviderUnavailable(
-                    self.provider.name,
+                    breaker_name,
                     retry_after=cooldown_left,
                 )
             output: ProviderAnswer | None = None
@@ -697,17 +782,19 @@ class AnswerService:
                 except Exception:
                     # Timeout or provider error: record latency + failure (AC-08).
                     PROVIDER_CALL_DURATION.labels(
-                        self.provider.name, "error",
+                        breaker_name,
+                        "error",
                     ).observe(time.monotonic() - call_started)
-                    PROVIDER_CALL_FAILURES.labels(self.provider.name).inc()
+                    PROVIDER_CALL_FAILURES.labels(breaker_name).inc()
                     grounding_error = "provider_error"
                     with contextlib.suppress(RedisError):
                         await breaker.record_failure()
                     continue
                 PROVIDER_CALL_DURATION.labels(
-                    self.provider.name, "success",
+                    breaker_name,
+                    "success",
                 ).observe(time.monotonic() - call_started)
-                PROVIDER_BREAKER_OPEN.labels(self.provider.name).set(0)
+                PROVIDER_BREAKER_OPEN.labels(breaker_name).set(0)
                 with contextlib.suppress(RedisError):
                     await breaker.record_success()
                 try:
@@ -716,6 +803,14 @@ class AnswerService:
                         evidence,
                         max_chars=self.settings.rag_answer_max_chars,
                     )
+                    if not answer_relevant(
+                        question,
+                        candidate.answer,
+                        entities=query_plan.entities,
+                        intent=query_plan.intent,
+                        support_terms=query_plan.expansions,
+                    ):
+                        raise GroundingError("answer_irrelevant")
                 except GroundingError as error:
                     grounding_error = error.code
                     continue
@@ -755,10 +850,14 @@ class AnswerService:
             )
             subject_used, global_used = await budget.debit(subject.user_id, units)
         except RedisError:
-            logger.warning(json.dumps({
-                "event": "budget_debit_degraded",
-                "request_id": request_id,
-            }))
+            logger.warning(
+                json.dumps(
+                    {
+                        "event": "budget_debit_degraded",
+                        "request_id": request_id,
+                    }
+                )
+            )
             return
         PROVIDER_BUDGET_DEBIT_UNITS.inc(units)
         await self._audit_budget_event(
@@ -814,6 +913,19 @@ class AnswerService:
     ) -> AskResponse:
         started = time.monotonic()
         calls_before = self.provider.calls
+        # TIP-025: consume the active governed registry without an image
+        # rebuild. Explicit injection remains available for candidate-suite
+        # evaluation and hermetic tests. A governance DB failure does not
+        # silently fall back to possibly superseded packaged data.
+        if not self._ontology_override:
+            active_ontology = await load_runtime_ontology(
+                self._factory,
+                fallback_path=self.settings.rag_ontology_path,
+            )
+            if active_ontology.digest != self.ontology.digest:
+                self.ontology = active_ontology
+                if not self._rewriter_override:
+                    self._rewriter = build_rewriter(self.settings, self.ontology)
         # Gate the whole ask on the daily cost budget before any DB writes so a
         # breach never leaves an orphaned answer_run (raises BudgetExhausted).
         budget_limits = await self._enforce_budget(subject, request_id=request_id)
@@ -831,39 +943,45 @@ class AnswerService:
             request_id=request_id,
             question=question,
         )
-        # TIP-014: query understanding shapes ONLY the retrieval query — the
-        # stored ``question`` stays original; honest-null, ranking and grounding
-        # are unchanged. The default rewriter is offline+deterministic (Phase 1);
-        # a real LLM rewriter validates every entity against the registry and
-        # falls back deterministically on any failure.
+        # TIP-024.7: create one semantic plan and pass its confirmed entity and
+        # intent contract through retrieval, evidence relevance and final answer
+        # verification. The stored question stays unchanged. An eligible LLM
+        # planner may interpret wording, but registry validation and grounding
+        # remain deterministic and any planner failure falls back safely.
         rewrite_calls_before = self._rewriter.calls
-        retrieval_query = (
-            await understand(
-                question,
-                self._rewriter,
-                timeout=getattr(
+        query_plan = await plan_query(
+            question,
+            self._rewriter if question_dlp.allow else OfflineRewriter(),
+            registry=self.ontology,
+            timeout=(
+                getattr(
                     self._rewriter,
                     "total_timeout",
                     DEFAULT_REWRITE_TIMEOUT,
-                ),
-            )
-            if question_dlp.allow
-            else question
+                )
+                if question_dlp.allow
+                else DEFAULT_REWRITE_TIMEOUT
+            ),
+            candidate_limit=self.settings.rag_query_candidate_limit,
         )
         rewrite_calls = max(0, self._rewriter.calls - rewrite_calls_before)
         hits = (
             await self.retrieval.search(
                 subject,
-                retrieval_query,
+                query_plan.retrieval_query,
                 filters=filters,
                 request_id=request_id,
+                top_k=self.settings.rag_answer_candidate_k,
+                query_entities=query_plan.entities,
+                query_intent=query_plan.intent,
             )
-            if question_dlp.allow
+            if question_dlp.allow and query_plan.resolution_state != "clarification_required"
             else []
         )
         if require_verified:
             hits = [
-                item for item in hits
+                item
+                for item in hits
                 if item.citation.provenance_level != "claim"
                 and item.citation.verification_state in {"verified", "approved"}
                 and item.citation.freshness_state == "current"
@@ -876,6 +994,7 @@ class AnswerService:
             question=question,
             hits=hits,
             filters=filters,
+            query_plan=query_plan,
         )
         if rewrite_calls:
             await self._debit_rewrite_budget(
@@ -884,6 +1003,22 @@ class AnswerService:
                 request_id=request_id,
                 run_id=run_id,
                 budget_limits=budget_limits,
+            )
+        if query_plan.resolution_state == "clarification_required":
+            return await self._honest_null(
+                subject,
+                conversation_id=conversation_id,
+                run_id=run_id,
+                question=question,
+                request_id=request_id,
+                reason="insufficient_confidence",
+                started=started,
+                provider_calls=0,
+                provider_decision="not_called_query_ambiguous",
+                answer_override=(
+                    "Câu hỏi chưa đủ rõ để xác định đúng thực thể. "
+                    "Vui lòng dùng tên đầy đủ hoặc bổ sung ngữ cảnh."
+                ),
             )
         if not hits:
             return await self._honest_null(
@@ -906,6 +1041,24 @@ class AnswerService:
             )
             for item in hits
         ]
+        if not evidence_relevant(
+            question,
+            evidence,
+            entities=query_plan.entities,
+            intent=query_plan.intent,
+            support_terms=query_plan.expansions,
+        ):
+            return await self._honest_null(
+                subject,
+                conversation_id=conversation_id,
+                run_id=run_id,
+                question=question,
+                request_id=request_id,
+                reason="insufficient_confidence",
+                started=started,
+                provider_calls=0,
+                provider_decision="not_called_irrelevant_evidence",
+            )
         serialized = json.dumps(
             [item.model_dump(mode="json") for item in evidence],
             ensure_ascii=True,
@@ -925,10 +1078,12 @@ class AnswerService:
                 reason="denied_or_unavailable",
                 started=started,
                 provider_calls=0,
+                provider_decision="not_called_policy_or_lineage_rejected",
             )
         output, grounding_error = await self._guarded_generate(
             subject,
             question=question,
+            query_plan=query_plan,
             evidence=evidence,
             request_id=request_id,
             run_id=run_id,
@@ -945,6 +1100,11 @@ class AnswerService:
                 reason="grounding_failed",
                 started=started,
                 provider_calls=self.provider.calls - calls_before,
+                provider_decision=(
+                    "not_called_provider_unavailable"
+                    if self.provider.name == "unavailable"
+                    else None
+                ),
             )
         used = set(output.used_markers)
         selected = [item for item in hits if item.citation.marker in used]

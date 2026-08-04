@@ -360,7 +360,7 @@
 }
 .pc-topbar {
   display: flex; align-items: center; gap: var(--pc-space-4);
-  padding: 0 var(--pc-space-6);
+  padding: 0 var(--pc-workspace-gutter);
   border-bottom: 1px solid var(--pc-border);
   background: var(--pc-bg-app);
   z-index: var(--pc-z-topbar);
@@ -390,14 +390,15 @@
 }
 .pc-locale button {
   background: transparent; border: 0; cursor: pointer;
-  padding: 7px 10px; border-radius: 8px; font-family: var(--pc-font-mono);
+  padding: 7px 10px; border-radius: 0; font-family: var(--pc-font-mono);
   font-size: 12px; font-weight: 600; color: var(--pc-text-muted);
   transition: background var(--pc-dur-hover) var(--pc-ease),
     color var(--pc-dur-hover) var(--pc-ease);
 }
 .pc-locale button:hover { color: var(--pc-text-primary); }
 .pc-locale button[aria-pressed="true"] {
-  background: var(--pc-surface-hover); color: var(--pc-text-primary);
+  background: transparent; color: var(--pc-text-primary);
+  box-shadow: inset 0 -2px var(--pc-text-primary);
 }
 
 /* Icon controls retain a 44px hit area but carry no visible container. */
@@ -418,7 +419,7 @@
 .pc-main {
   grid-row: 2 / 3;
   min-width: 0; min-height: 0; overflow: auto;
-  padding: var(--pc-space-8) clamp(var(--pc-space-6), 4vw, 48px);
+  padding: var(--pc-space-8) var(--pc-workspace-gutter);
 }
 
 /* ---- Command palette ------------------------------------------------- */
@@ -557,10 +558,11 @@
 }
 
 @media (max-width: 760px) {
-  .pc-topbar { padding: 0 var(--pc-space-4); gap: var(--pc-space-3); }
+  .pc-shell { --pc-workspace-gutter: var(--pc-space-4); }
+  .pc-topbar { padding: 0 var(--pc-workspace-gutter); gap: var(--pc-space-3); }
   .pc-search .pc-search-label, .pc-search .pc-kbd { display: none; }
   .pc-search { flex: 0 0 40px; max-width: 40px; justify-content: center; padding: 0; }
-  .pc-main { padding: var(--pc-space-5) var(--pc-space-4) 76px; }
+  .pc-main { padding: var(--pc-space-5) var(--pc-workspace-gutter) 76px; }
   .pc-dock {
     display: flex;
     position: fixed; left: 0; right: 0; bottom: 0;

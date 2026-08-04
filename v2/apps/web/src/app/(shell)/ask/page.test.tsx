@@ -5,7 +5,7 @@ import {cleanup, fireEvent, render, screen, waitFor} from "@testing-library/reac
 import React from "react";
 import {afterEach, expect, test, vi} from "vitest";
 import {I18nProvider} from "../../../i18n/provider";
-import AskPage from "./page";
+import AskPage, {parseAnswerClaims} from "./page";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
@@ -45,6 +45,17 @@ const citation = {
   locator: {page: 4},
   redacted: false,
 };
+
+test("answer claim parser uses citation boundaries without inventing structure", () => {
+  expect(parseAnswerClaims(
+    "Nền tảng HERA dùng chung phần cứng lõi. [C1] "
+    + "Biến thể Energy dự kiến Q4/2026. [C2][C3] Phần cuối chưa có căn cứ.",
+  )).toEqual([
+    {text: "Nền tảng HERA dùng chung phần cứng lõi.", citations: ["C1"]},
+    {text: "Biến thể Energy dự kiến Q4/2026.", citations: ["C2", "C3"]},
+    {text: "Phần cuối chưa có căn cứ.", citations: []},
+  ]);
+});
 
 type Handler = (init?: RequestInit) => {status?: number; json: unknown};
 

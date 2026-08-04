@@ -156,15 +156,23 @@ owner_sql "SELECT to_regclass('public.research_sources') IS NOT NULL
 run_migration downgrade 0008_document_operating_system
 owner_sql "SELECT to_regclass('public.research_records') IS NULL" | grep -q "t"
 run_migration upgrade 0009_governance_research
-run_migration upgrade 0011_ingestion_pub_deferred
+run_migration upgrade 0012_enterprise_governance
 owner_sql "SELECT to_regclass('public.file_chunks') IS NOT NULL
   AND EXISTS (
     SELECT 1 FROM information_schema.columns
     WHERE table_name='answer_citations' AND column_name='file_chunk_id'
   )" | grep -q "t"
+owner_sql "SELECT to_regclass('public.enterprise_domains') IS NOT NULL
+  AND to_regclass('public.enterprise_corpus_manifests') IS NOT NULL
+  AND to_regclass('public.enterprise_ontology_revisions') IS NOT NULL
+  AND to_regclass('public.enterprise_evaluation_suites') IS NOT NULL
+  AND to_regclass('public.enterprise_evaluation_runs') IS NOT NULL
+  AND to_regclass('public.enterprise_release_attestations') IS NOT NULL" | grep -q "t"
+run_migration downgrade 0011_ingestion_pub_deferred
+owner_sql "SELECT to_regclass('public.enterprise_domains') IS NULL" | grep -q "t"
 run_migration downgrade 0009_governance_research
 owner_sql "SELECT to_regclass('public.file_chunks') IS NULL" | grep -q "t"
-run_migration upgrade 0011_ingestion_pub_deferred
+run_migration upgrade 0012_enterprise_governance
 run_migration downgrade 0004_append_only_audit
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NULL" | grep -q "t"
 run_migration upgrade 0005_ingestion_renditions
@@ -201,7 +209,8 @@ docker compose --profile tools run --rm --no-deps \
       tests/test_sot_integration.py tests/test_rag_integration.py \
       tests/test_tip018_integration.py \
       tests/test_limits_integration.py \
-      tests/test_governance_integration.py
+      tests/test_governance_integration.py \
+      tests/test_enterprise_governance_integration.py
   '
 
 # AC18: prove a non-empty Document OS database/object backup can be restored
@@ -391,11 +400,18 @@ for statement in \
   "DELETE FROM answer_citations" \
   "UPDATE answer_citations SET marker='C999'" \
   "DELETE FROM messages" \
-  "UPDATE messages SET sanitized_content='tamper'"
+  "UPDATE messages SET sanitized_content='tamper'" \
+  "DELETE FROM enterprise_domains" \
+  "DELETE FROM enterprise_corpus_manifests" \
+  "DELETE FROM enterprise_ontology_revisions" \
+  "DELETE FROM enterprise_evaluation_suites" \
+  "DELETE FROM enterprise_evaluation_runs" \
+  "UPDATE enterprise_evaluation_runs SET passed_count=0" \
+  "DELETE FROM enterprise_release_attestations"
 do
   if ! runtime_sql "$statement"; then
     denied=$((denied + 1))
   fi
 done
-[[ "$denied" -eq 20 ]]
-echo "DATA INTEGRATION PASS · migrations=11 · revision_fixtures=11 · failing_ddl_rollback=1 · tests=58 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=20"
+[[ "$denied" -eq 27 ]]
+echo "DATA INTEGRATION PASS · migrations=12 · revision_fixtures=12 · failing_ddl_rollback=1 · tests=61 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=27"

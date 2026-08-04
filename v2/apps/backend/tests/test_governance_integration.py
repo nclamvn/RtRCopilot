@@ -27,6 +27,12 @@ GOVERNANCE_TABLES = (
     "review_tasks",
     "graduation_proposals",
     "governance_settings",
+    "enterprise_domains",
+    "enterprise_corpus_manifests",
+    "enterprise_ontology_revisions",
+    "enterprise_evaluation_suites",
+    "enterprise_evaluation_runs",
+    "enterprise_release_attestations",
 )
 
 
@@ -260,7 +266,7 @@ async def test_migration_head_provisions_governance_tables(
                 WHERE tablename IN ('records','record_versions')
               )
         """))).scalars().all()
-    assert revision == "0011_ingestion_pub_deferred"
+    assert revision == "0012_enterprise_governance"
     assert missing == []
     assert list(shared_indexes) == []
 

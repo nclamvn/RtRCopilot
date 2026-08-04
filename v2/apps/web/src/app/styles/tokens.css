@@ -41,6 +41,8 @@
   --pc-rail-w: 392px;
   --pc-nav-item-h: 44px;
   --pc-content-max: 760px;
+  /* One vertical spine for topbar controls and every workspace surface. */
+  --pc-workspace-gutter: clamp(var(--pc-space-6), 4vw, 48px);
 
   /* Motion — PRD durations + single premium easing. */
   --pc-ease: cubic-bezier(0.2, 0, 0, 1);

@@ -63,6 +63,19 @@ describe("Knowledge Ops same-origin proxy boundary", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
   });
 
+  test("forwards the bounded TIP-025 enterprise governance family", async () => {
+    vi.stubEnv("API_INTERNAL_URL", "http://api:8000");
+    vi.stubGlobal("fetch", vi.fn(async (request: URL | RequestInfo) => {
+      expect(new URL(String(request)).pathname).toBe("/api/v1/enterprise/readiness");
+      return Response.json({ready: false, code: "release_missing"});
+    }));
+    const response = await GET(
+      new NextRequest("http://localhost/api/governance/enterprise/readiness"),
+      {params: Promise.resolve({path: ["enterprise", "readiness"]})},
+    );
+    expect(response.status).toBe(200);
+  });
+
   test("forwards session cookie and request id, passes typed errors through", async () => {
     vi.stubEnv("API_INTERNAL_URL", "http://api:8000");
     vi.stubGlobal("fetch", vi.fn(async (request: URL | RequestInfo, init?: RequestInit) => {

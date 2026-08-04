@@ -226,7 +226,7 @@ test("grounded answer: citation focuses the rail entry and the locator opens the
   await page.goto("/ask");
   await submitQuestion(page, "Chính sách bảo hành robot?");
   await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
-  await expect(page.getByText("Có căn cứ — mọi mệnh đề đều mang trích dẫn SOT"))
+  await expect(page.getByText("Được đối chiếu với SOT · Mỗi nhận định liên kết tới bằng chứng"))
     .toBeVisible();
   // TIP-013B AC-4: an unflagged (strict-grounded) answer shows NO caveat.
   await expect(page.getByText(/vui lòng kiểm chứng lại/)).toHaveCount(0);
@@ -427,7 +427,7 @@ test("the primary flow is fully translated under the en locale", async ({page}) 
   await page.getByLabel("Question").fill("What is the robot warranty?");
   await page.getByRole("button", {name: "Submit question"}).click();
   await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
-  await expect(page.getByText("Grounded — every statement carries an SOT citation"))
+  await expect(page.getByText("Grounded in SOT · Every claim links to evidence"))
     .toBeVisible();
   const rail = page.getByRole("complementary", {name: "Evidence & provenance"});
   await expect(rail.getByText("SOT fact (grounded)")).toBeVisible();

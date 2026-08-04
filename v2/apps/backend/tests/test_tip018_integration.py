@@ -13,7 +13,11 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from rtr_copilot.api.main import app
 from rtr_copilot.auth.models import Role, Subject
 from rtr_copilot.config import get_settings
-from rtr_copilot.rag.adapters import OfflineHashEmbedding, normalize_query
+from rtr_copilot.rag.adapters import (
+    OfflineExtractiveAnswer,
+    OfflineHashEmbedding,
+    normalize_query,
+)
 from rtr_copilot.rag.answering import AnswerService
 from rtr_copilot.rag.api import rag_subject
 from rtr_copilot.rag.models import SearchFilters
@@ -203,6 +207,7 @@ async def test_per_file_isolation_acl_and_grounded_persistence(
     answer = await AnswerService(
         get_settings(), factory=factory,
         retrieval=RetrievalService(get_settings(), factory=factory),
+        provider=OfflineExtractiveAnswer(),
     ).ask(
         caller(owner), token_a, filters=SearchFilters(version_id=version_a),
         require_verified=True, conversation_id=None, request_id="tip018-answer",

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import "@testing-library/jest-dom/vitest";
-import {cleanup, fireEvent, render, screen, within} from "@testing-library/react";
+import {cleanup, fireEvent, render, screen, waitFor, within} from "@testing-library/react";
 import React from "react";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {I18nProvider} from "../i18n/provider";
@@ -170,4 +170,22 @@ test("anonymous session renders the company sign-in affordance", async () => {
   renderShell();
   expect(await screen.findByRole("link", {name: "Đăng nhập công ty"}))
     .toHaveAttribute("href", "/api/auth/login");
+});
+
+test("answer-quality setup debt is visible while core services remain healthy", async () => {
+  vi.stubGlobal("fetch", vi.fn(async input => {
+    const url = String(input);
+    if (url === "/api/status") return json({
+      ok: true,
+      status: "operational",
+      answer_quality: "configuration_required",
+    });
+    if (url === "/api/auth/me") return json(identity);
+    return json({items: []});
+  }));
+  renderShell();
+  await waitFor(() => expect(
+    screen.getByText("Cần cấu hình API chất lượng trả lời"),
+  ).toBeInTheDocument());
+  expect(screen.getByText("LLM")).toBeInTheDocument();
 });

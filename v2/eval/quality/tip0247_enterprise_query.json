@@ -1,0 +1,19 @@
+{
+  "description": "TIP-024.7 enterprise query-intelligence gate: registry-wide alias invariance plus ambiguity and unknown-entity safety.",
+  "known_definitions": [
+    {"question": "HERA là gì?", "entity": "HERA", "expected_top": ["HC-001"]},
+    {"question": "VEGA là gì?", "entity": "VEGA", "expected_top": ["HC-002"]},
+    {"question": "OmniSight là gì?", "entity": "OmniSight", "expected_top": ["HC-013"]},
+    {"question": "Omni Sight là gì?", "entity": "OmniSight", "expected_top": ["HC-013"]}
+  ],
+  "ambiguous": [
+    {"question": "Omni là gì?", "expected_candidates": ["OmniSight"]},
+    {
+      "question": "Sight là gì?",
+      "expected_candidates": ["DualSight", "HeraSight", "HeraSight LR", "OmniSight", "VegaSight"]
+    }
+  ],
+  "unknown": [
+    {"question": "ORION là gì?"}
+  ]
+}

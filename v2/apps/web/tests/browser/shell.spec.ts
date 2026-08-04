@@ -231,9 +231,10 @@ test("collapsed sidebar has collision-free identity and mobile restores full lab
   await expect(workspace).toContainText("Copilot");
   await expect(workspace).not.toContainText("Real-time Robotics");
   await expect(workspace).not.toContainText("Không gian nội bộ");
-  const topbarBox = await page.locator(".pc-topbar").boundingBox();
   const searchBox = await page.locator(".pc-search").boundingBox();
-  expect((searchBox?.x ?? 0) - (topbarBox?.x ?? 0)).toBe(24);
+  const pageHeaderBox = await page.locator(".page-head").boundingBox();
+  expect(Math.abs((searchBox?.x ?? 0) - (pageHeaderBox?.x ?? 0)))
+    .toBeLessThanOrEqual(1);
   const activeNav = sidebar.getByRole("link", {name: "Hỏi", exact: true});
   await expect(activeNav).toHaveCSS("border-top-width", "0px");
   await expect(activeNav).toHaveCSS("box-shadow", "none");

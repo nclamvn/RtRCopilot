@@ -18,7 +18,12 @@ export async function GET() {
       signal: AbortSignal.timeout(3000),
       headers: {"X-Request-ID": requestId},
     });
-    const body = await response.json() as {ok?: unknown; status?: unknown; build_sha?: unknown};
+    const body = await response.json() as {
+      ok?: unknown;
+      status?: unknown;
+      build_sha?: unknown;
+      capabilities?: {grounded_answering?: unknown};
+    };
     const apiBuildSha = typeof body.build_sha === "string" ? body.build_sha : "unavailable";
     const sameBuild = apiBuildSha === webBuildSha;
     const ok = response.ok && body.ok === true && sameBuild;
@@ -28,6 +33,8 @@ export async function GET() {
         status: !sameBuild
           ? "version_mismatch"
           : typeof body.status === "string" ? body.status : "unavailable",
+        answer_quality: body.capabilities?.grounded_answering === "ready"
+          ? "ready" : "configuration_required",
         build_sha: webBuildSha,
         request_id: requestId,
       },
@@ -35,7 +42,13 @@ export async function GET() {
     );
   } catch {
     return NextResponse.json(
-      {ok: false, status: "unavailable", build_sha: webBuildSha, request_id: requestId},
+      {
+        ok: false,
+        status: "unavailable",
+        answer_quality: "configuration_required",
+        build_sha: webBuildSha,
+        request_id: requestId,
+      },
       {status: 503, headers: {"X-Request-ID": requestId}},
     );
   }

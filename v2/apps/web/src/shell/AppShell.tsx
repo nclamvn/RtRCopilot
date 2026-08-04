@@ -234,7 +234,11 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
   const [helpOpen, setHelpOpen] = useState(false);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
   const [recent, setRecent] = useState<ConversationListPage["items"]>([]);
-  const [health, setHealth] = useState<{ok: boolean; status: string} | null>(null);
+  const [health, setHealth] = useState<{
+    ok: boolean;
+    status: string;
+    answerQuality: "ready" | "configuration_required";
+  } | null>(null);
   const [lastPathname, setLastPathname] = useState(pathname);
   const searchRef = useRef<HTMLButtonElement>(null);
 
@@ -251,9 +255,19 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
       .catch(() => setIdentity(null)).finally(() => setAuthReady(true));
     fetch("/api/status", {cache: "no-store"})
       .then(async response => {
-        const body = await response.json().catch(() => null) as {ok?: boolean; status?: string} | null;
-        setHealth(body ? {ok: body.ok === true, status: body.status ?? "unavailable"} : null);
-      }).catch(() => setHealth({ok: false, status: "unavailable"}));
+        const body = await response.json().catch(() => null) as {
+          ok?: boolean;
+          status?: string;
+          answer_quality?: string;
+        } | null;
+        setHealth(body ? {
+          ok: body.ok === true,
+          status: body.status ?? "unavailable",
+          answerQuality: body.answer_quality === "ready" ? "ready" : "configuration_required",
+        } : null);
+      }).catch(() => setHealth({
+        ok: false, status: "unavailable", answerQuality: "configuration_required",
+      }));
   }, []);
 
   useEffect(() => {
@@ -403,9 +417,11 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
 
   const integrity = health === null
     ? {state: "idle" as const, value: "—", width: "40%", sub: t("shell.integrity.checking")}
-    : health.ok
+    : health.ok && health.answerQuality === "ready"
       ? {state: "ok" as const, value: "100%", width: "100%", sub: t("shell.integrity.ready")}
-      : {state: "down" as const, value: "—", width: "28%", sub: t("shell.integrity.down")};
+      : health.ok
+        ? {state: "warn" as const, value: "LLM", width: "72%", sub: t("shell.integrity.answerSetup")}
+        : {state: "down" as const, value: "—", width: "28%", sub: t("shell.integrity.down")};
 
   const displayName = identity?.display_name || identity?.email || "";
   const role = identity?.roles?.[0] ?? "";
