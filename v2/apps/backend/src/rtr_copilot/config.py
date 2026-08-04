@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     s3_secret_key: str = Field(min_length=8)
     s3_bucket: str = Field(pattern=r"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$")
     log_level: str = "INFO"
+    rtr_build_sha: str = Field(default="development", min_length=7, max_length=64)
     app_env: Literal["development", "test", "production"] = "development"
     public_base_url: HttpUrl = HttpUrl("http://127.0.0.1:3000")
     oidc_issuer: HttpUrl | None = None

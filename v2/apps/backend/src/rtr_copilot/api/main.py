@@ -151,6 +151,7 @@ class ServiceInfo(BaseModel):
     service: str = "rtr-copilot-api"
     version: str = "0.1.0"
     state: str = "foundation-no-data"
+    build_sha: str
 
 
 class PingResponse(BaseModel):
@@ -161,7 +162,7 @@ class PingResponse(BaseModel):
 
 @app.get("/", response_model=ServiceInfo, tags=["system"])
 async def info() -> ServiceInfo:
-    return ServiceInfo()
+    return ServiceInfo(build_sha=get_settings().rtr_build_sha)
 
 
 @app.get("/metrics", include_in_schema=False)

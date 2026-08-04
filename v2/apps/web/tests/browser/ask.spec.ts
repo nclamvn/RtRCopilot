@@ -436,7 +436,7 @@ test("the history panel lists the caller's server conversations and reopens one"
 test("a conversation reopens from the URL with citations wired to the rail", async ({page}) => {
   await mockAsk(page);
   await page.goto(`/ask?conversation=${conversationId}`);
-  await expect(page.getByRole("heading", {name: "Hội thoại"})).toBeVisible();
+  await expect(page.getByRole("heading", {name: "Hội thoại", exact: true})).toBeVisible();
   await expect(page.getByText("Chính sách bảo hành robot?")).toBeVisible();
   await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
   await expect(page.getByText("grounded", {exact: true})).toBeVisible();

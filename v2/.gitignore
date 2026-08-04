@@ -1,4 +1,5 @@
 .env
+.env.demo
 .next/
 node_modules/
 .pnpm-store/

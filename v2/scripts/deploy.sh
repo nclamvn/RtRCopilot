@@ -44,6 +44,7 @@ fi
 [[ "$version" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]*$ ]] || rtr_die 10 "invalid version tag: '$version'"
 
 git_sha="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
+export RTR_BUILD_SHA="${RTR_BUILD_SHA:-$git_sha}"
 started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 rtr_stage "DEPLOY $version" "git=$git_sha host=$INGRESS_HOST base=$PUBLIC_BASE_URL"
 
