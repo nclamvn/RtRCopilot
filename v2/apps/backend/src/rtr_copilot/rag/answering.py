@@ -39,7 +39,11 @@ from rtr_copilot.rag.models import (
     RetrievalHit,
     SearchFilters,
 )
-from rtr_copilot.rag.query_understanding import QueryRewriter, understand
+from rtr_copilot.rag.query_understanding import (
+    DEFAULT_REWRITE_TIMEOUT,
+    QueryRewriter,
+    understand,
+)
 from rtr_copilot.rag.retrieval import RetrievalService, scope_fingerprint
 from rtr_copilot.rag.rewrite_llm import build_rewriter
 from rtr_copilot.repositories.audit import AuditRepository
@@ -740,6 +744,7 @@ class AnswerService:
         request_id: str,
         run_id: uuid.UUID,
         budget_limits: tuple[int, int],
+        usage_kind: str = "answer_generation",
     ) -> None:
         subject_daily, global_daily = budget_limits
         try:
@@ -764,6 +769,7 @@ class AnswerService:
             reason="usage_debited",
             details={
                 "answer_run_id": str(run_id),
+                "usage_kind": usage_kind,
                 "units": units,
                 "subject_used": subject_used,
                 "subject_limit": subject_daily,
@@ -771,6 +777,30 @@ class AnswerService:
                 "global_limit": global_daily,
             },
         )
+
+    async def _debit_rewrite_budget(
+        self,
+        subject: Subject,
+        *,
+        units: int,
+        request_id: str,
+        run_id: uuid.UUID,
+        budget_limits: tuple[int, int],
+    ) -> None:
+        """Count external query-rewrite calls against the shared AI budget."""
+        redis = open_redis(self.settings)
+        try:
+            await self._debit_budget(
+                redis,
+                subject,
+                units=units,
+                request_id=request_id,
+                run_id=run_id,
+                budget_limits=budget_limits,
+                usage_kind="query_rewrite",
+            )
+        finally:
+            await redis.aclose()
 
     async def ask(
         self,
@@ -806,11 +836,21 @@ class AnswerService:
         # are unchanged. The default rewriter is offline+deterministic (Phase 1);
         # a real LLM rewriter validates every entity against the registry and
         # falls back deterministically on any failure.
+        rewrite_calls_before = self._rewriter.calls
         retrieval_query = (
-            await understand(question, self._rewriter)
+            await understand(
+                question,
+                self._rewriter,
+                timeout=getattr(
+                    self._rewriter,
+                    "total_timeout",
+                    DEFAULT_REWRITE_TIMEOUT,
+                ),
+            )
             if question_dlp.allow
             else question
         )
+        rewrite_calls = max(0, self._rewriter.calls - rewrite_calls_before)
         hits = (
             await self.retrieval.search(
                 subject,
@@ -837,6 +877,14 @@ class AnswerService:
             hits=hits,
             filters=filters,
         )
+        if rewrite_calls:
+            await self._debit_rewrite_budget(
+                subject,
+                units=rewrite_calls,
+                request_id=request_id,
+                run_id=run_id,
+                budget_limits=budget_limits,
+            )
         if not hits:
             return await self._honest_null(
                 subject,

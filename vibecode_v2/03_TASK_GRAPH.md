@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** Blueprint APPROVED · TIP-022 + TIP-018 VERIFIED · TIP-014 RE-VERIFY NEXT (04/08/2026)
+**Trạng thái:** Blueprint APPROVED · TIP-022 + TIP-018 VERIFIED · TIP-014 SAFE CORE VERIFIED / REAL EMBEDDING PENDING (04/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -47,7 +47,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-011 ✅ | Unified Design DNA UI, Evidence Rail, responsive/WCAG/i18n | 007,008,009 | VERIFIED: 14/14 AC; axe 0 violations; keyboard E2E; full 292/3; Playwright 73/73 |
 | TIP-012 ✅ | HTTPS, quotas, observability, CI/CD, security/load, backup/DR | 010,011 | VERIFIED: 16/16 AC; SLO 10/10; ingress 15/15; full 377/18/0; drills timed |
 | TIP-013B ✅ | Local curated-kernel activation and pilot corpus | 013 | VERIFIED: 219 records activated in local/dev; 8 strict, 205 soft, 6 strategic; production cutover remains separate |
-| TIP-014 ◐ | Query understanding: deterministic product-alias resolution + env-gated LLM rewrite (Anthropic→OpenAI fallback) | 007 | BUILT, NOT VERIFIED: Builder reports Phase 1/2/2B exist; real embedding adapter and Contractor Verify remain open |
+| TIP-014 ◐ | Query understanding: deterministic product-alias resolution + env-gated LLM rewrite (Anthropic→OpenAI fallback) | 007 | CONTRACTOR VERIFIED PARTIAL: alias + guarded rewrite + timeout/fallback + external allowlist + cost debit PASS; 413 backend/114 skipped, 57 live data tests, wrong-entity 0. Phase 0 real embedding/live benchmark remains open pending provider contract + credential |
 | TIP-015 ✅ | Premium UI rebuild (PRD UI/UX v1.0): design tokens light+dark, shell/sidebar/ask/rail reskin, ⌘K palette, composer textarea, citation keyboard nav | 011 | VERIFIED: 12/12 AC; axe 0 crit/serious (5×4×2 + 10 stateful); Playwright 75/75; vitest 148; next build EXIT 0; no backend/migration change |
 | TIP-016 ✅ | UI completion: mobile bottom-dock nav (§13), full light-mode for frozen pages (theming only), composer scope chips (§11) | 015 | VERIFIED: 7/7 AC; axe 0 crit/serious **both themes** (dark 5×4×2 + light 5×4 + 10 stateful); Playwright 80/80; vitest 148; next build EXIT 0; no backend/migration change |
 | TIP-017 ✅ | Keyboard & theming completeness: shortcuts help dialog (`?`), light-axe extended to EN | 015,016 | VERIFIED: 6/6 AC; axe 0 crit/serious **both themes × both locales** (+ help dialog); Playwright 87/87; vitest 148; next build EXIT 0; no backend/migration change |

@@ -62,6 +62,9 @@ Rồi hỏi "Hera là gì?" — LLM chuẩn hóa → retrieval ra HC-001, có ci
 
 - **Verify sống end-to-end với key thật**: chạy trên máy anh (sandbox không giữ key, không gọi provider). Test hermetic đã phủ logic; live confirm là của anh.
 - **Reverify full 394-suite + integration honest-null trên Postgres**: rerun Thầu.
-- Cost-budget debit cho lượt rewrite (hiện: max_tokens nhỏ + timeout + breaker bao chi phí) — tinh chỉnh sau nếu cần.
+- ~~Cost-budget debit cho lượt rewrite~~ — **RESOLVED bởi Contractor
+  04/08/2026**: mọi provider attempt thực gọi được đếm và debit vào budget chung;
+  breaker-open skip không bị tính. External rewrite đồng thời fail-closed nếu
+  operator chưa allowlist classification `internal`.
 
 *Seam + guard + fallback đã sẵn và test kỹ. Việc còn lại là anh cấp key qua env và xác nhận sống.*

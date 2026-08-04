@@ -140,12 +140,19 @@ Implemented:
 - circuit breaker/timeout/fallback;
 - guard against entities outside the curated registry.
 
-Not closed:
+Verified on 04/08/2026:
 
-- no independent Verify Report;
+- independent Contractor Verify issued;
+- external rewrite now requires explicit `internal` classification allowlist;
+- orchestration timeout preserves Anthropic → OpenAI fallback;
+- actual rewrite attempts debit the shared provider budget;
+- alias variants ground to their exact scoped SOT citations; unavailable scope
+  remains honest-null.
+
+Still open:
+
 - retrieval/reindex still use `OfflineHashEmbedding`;
 - no representative real-provider benchmark;
-- provider rewrite cost is not separately debited;
 - optional answer composition remains deferred.
 
 ### Required closure
@@ -155,8 +162,8 @@ Not closed:
 - keep offline hash only as test/demo mode;
 - benchmark natural Vietnamese/English, typo, acronym, price/spec/compare intents;
 - measure Recall@5, MRR, honest-null precision, leakage and latency;
-- verify provider timeout/breaker/budget behavior;
-- issue Completion + independent Verify Report.
+- rerun the existing provider timeout/breaker/budget evidence with the selected
+  live provider without committing credentials.
 
 ### Exit targets
 

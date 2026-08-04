@@ -200,6 +200,7 @@ docker compose --profile tools run --rm --no-deps \
       tests/test_documents_integration.py \
       tests/test_sot_integration.py tests/test_rag_integration.py \
       tests/test_tip018_integration.py \
+      tests/test_limits_integration.py \
       tests/test_governance_integration.py
   '
 
@@ -397,4 +398,4 @@ do
   fi
 done
 [[ "$denied" -eq 20 ]]
-echo "DATA INTEGRATION PASS · migrations=10 · revision_fixtures=10 · failing_ddl_rollback=1 · tests=48 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=20"
+echo "DATA INTEGRATION PASS · migrations=10 · revision_fixtures=10 · failing_ddl_rollback=1 · tests=57 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=20"

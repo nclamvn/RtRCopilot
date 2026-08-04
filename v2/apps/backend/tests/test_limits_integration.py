@@ -39,6 +39,7 @@ from rtr_copilot.limits.budget import utc_day
 from rtr_copilot.rag.answering import AnswerService
 from rtr_copilot.rag.api import rag_subject
 from rtr_copilot.rag.models import ProviderAnswer, ProviderEvidence, SearchFilters
+from rtr_copilot.rag.query_understanding import RewriteResult
 from rtr_copilot.rag.retrieval import RetrievalService
 from rtr_copilot.repositories.governance import GovernanceRepository
 
@@ -149,6 +150,16 @@ class HangingProvider:
         raise AssertionError("timeout failed")
 
 
+class CountingRewriter:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def rewrite(self, question: str) -> RewriteResult:
+        del question
+        self.calls += 1
+        return RewriteResult(expansions=["bounded search expansion"])
+
+
 # --------------------------------------------------------------------------- #
 # Rate limiting through the ASGI stack
 # --------------------------------------------------------------------------- #
@@ -249,6 +260,57 @@ async def test_body_too_large_413_through_asgi(
 # --------------------------------------------------------------------------- #
 # Cost budget breach on /ask
 # --------------------------------------------------------------------------- #
+@pytest.mark.asyncio
+async def test_external_rewrite_call_debits_shared_cost_budget(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    await _set_int_setting(factory, owner, "limits.budget.subject_daily_units", 100_000)
+    await _set_int_setting(
+        factory, owner, "limits.budget.global_daily_units", 100_000_000,
+    )
+    redis = _redis()
+    subject_key = f"rtr:budget:subject:{utc_day()}:{owner}"
+    try:
+        await redis.delete(subject_key)
+    finally:
+        await redis.aclose()
+
+    tuned = rag_settings(tmp_path)
+    rewriter = CountingRewriter()
+    service = AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+        rewriter=rewriter,
+    )
+    response = await service.ask(
+        subject(owner),
+        "A question with no indexed evidence.",
+        filters=SearchFilters(source_key=f"absent.{uuid.uuid4().hex}"),
+        require_verified=True,
+        conversation_id=None,
+        request_id="rewrite-budget-1",
+    )
+    assert response.state == "honest_null"
+    assert rewriter.calls == 1
+
+    redis = _redis()
+    try:
+        assert int(await redis.get(subject_key) or 0) == 1
+    finally:
+        await redis.aclose()
+    async with factory() as session:
+        usage_kind = await session.scalar(text("""
+            SELECT details->>'usage_kind' FROM audit_events
+            WHERE action='limits.budget.debit' AND actor_user_id=:actor
+            ORDER BY sequence DESC LIMIT 1
+        """), {"actor": owner})
+    assert usage_kind == "query_rewrite"
+    await _restore_defaults(factory, owner)
+
+
 @pytest.mark.asyncio
 async def test_budget_breach_429_on_ask_with_subject_isolation(
     factory: async_sessionmaker[Any],
