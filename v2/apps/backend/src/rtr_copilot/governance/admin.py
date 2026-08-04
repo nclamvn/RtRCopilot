@@ -37,6 +37,7 @@ from rtr_copilot.governance.service import (
     GovernanceService,
     policy,
 )
+from rtr_copilot.pilot.questions import load_pilot_questions
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.governance import GovernanceError, GovernanceRepository
 
@@ -45,6 +46,7 @@ logger = logging.getLogger("rtr_copilot.governance.admin")
 BindingKind = Literal["role", "group"]
 BindingOperation = Literal["assign", "unassign"]
 JobFamily = Literal["ingestion", "render", "reindex"]
+PilotGateState = Literal["met", "partial", "blocked"]
 
 SUBJECT_LIST_LIMIT = 200
 RECENT_FAILURE_LIMIT = 10
@@ -112,6 +114,66 @@ class JobFamilyHealth(StrictModel):
 class JobHealthReport(StrictModel):
     computed_at: datetime
     families: list[JobFamilyHealth]
+
+
+class PilotSotSummary(StrictModel):
+    active_records: int
+    strict_records: int
+    caveated_records: int
+    current_records: int
+    stale_records: int
+    named_owner_records: int
+    placeholder_owner_records: int
+    caveated_named_owner_records: int
+    caveated_placeholder_owner_records: int
+    high_risk_records: int
+    high_risk_caveated_records: int
+    zone_masquerade_findings: int
+
+
+class PilotFileSummary(StrictModel):
+    documents: int
+    versions: int
+    representative_versions: int
+    ready_versions: int
+    indexed_versions: int
+    viewer_families: dict[str, int]
+    original_checksum_mismatches: int
+    rendition_lineage_mismatches: int
+
+
+class PilotTemplateSummary(StrictModel):
+    templates: int
+    approved_templates: int
+    locked_bindings: int
+    official_or_legal_approved: int
+
+
+class PilotResearchSummary(StrictModel):
+    active_sources: int
+    imported_packages: int
+    records: int
+    tiers: dict[str, int]
+    corroboration: dict[str, int]
+
+
+class PilotGate(StrictModel):
+    gate_key: str
+    target: int
+    actual: int
+    state: PilotGateState
+    detail: str
+
+
+class PilotReadinessReport(StrictModel):
+    computed_at: datetime
+    sot: PilotSotSummary
+    files: PilotFileSummary
+    templates: PilotTemplateSummary
+    research: PilotResearchSummary
+    question_count: int
+    gates: list[PilotGate]
+    production_boundary: str = "local_dev_only"
 
 
 class AdminGovernanceService:
@@ -638,4 +700,252 @@ class AdminGovernanceService:
                     ],
                 ),
             ],
+        )
+
+    @staticmethod
+    def _pilot_gate(
+        gate_key: str,
+        *,
+        target: int,
+        actual: int,
+        detail: str,
+        blocked: bool = False,
+    ) -> PilotGate:
+        state: PilotGateState = (
+            "blocked" if blocked else "met" if actual >= target else "partial"
+        )
+        return PilotGate(
+            gate_key=gate_key,
+            target=target,
+            actual=actual,
+            state=state,
+            detail=detail,
+        )
+
+    async def pilot_readiness(
+        self,
+        subject: Subject,
+        *,
+        request_id: str,
+    ) -> PilotReadinessReport:
+        """Live, read-only reconciliation for the TIP-024 pilot campaign."""
+        self._admin_gate(subject, request_id, "manage_policies")
+        async with self.uow.factory() as session:
+            sot_row = dict((await session.execute(text("""
+                SELECT
+                  count(*)::int AS active_records,
+                  count(*) FILTER (
+                    WHERE rv.provenance_level='verified_primary'
+                      AND rv.verification_state='verified'
+                      AND COALESCE(
+                        rv.value_payload #>> '{confidence_signal,needs_double_check}',
+                        'false'
+                      ) <> 'true'
+                  )::int AS strict_records,
+                  count(*) FILTER (
+                    WHERE rv.value_payload #>>
+                      '{confidence_signal,needs_double_check}'='true'
+                  )::int AS caveated_records,
+                  count(*) FILTER (WHERE rv.freshness_state='current')::int
+                    AS current_records,
+                  count(*) FILTER (WHERE rv.freshness_state<>'current')::int
+                    AS stale_records,
+                  count(*) FILTER (
+                    WHERE s.issuer <> 'tip013b-onboard'
+                      AND COALESCE(s.email,'') NOT LIKE '%migration-owner%'
+                  )::int AS named_owner_records,
+                  count(*) FILTER (
+                    WHERE s.issuer = 'tip013b-onboard'
+                       OR COALESCE(s.email,'') LIKE '%migration-owner%'
+                  )::int AS placeholder_owner_records,
+                  count(*) FILTER (
+                    WHERE rv.value_payload #>>
+                      '{confidence_signal,needs_double_check}'='true'
+                      AND s.issuer <> 'tip013b-onboard'
+                      AND COALESCE(s.email,'') NOT LIKE '%migration-owner%'
+                  )::int AS caveated_named_owner_records,
+                  count(*) FILTER (
+                    WHERE rv.value_payload #>>
+                      '{confidence_signal,needs_double_check}'='true'
+                      AND (
+                        s.issuer = 'tip013b-onboard'
+                        OR COALESCE(s.email,'') LIKE '%migration-owner%'
+                      )
+                  )::int AS caveated_placeholder_owner_records,
+                  count(*) FILTER (
+                    WHERE r.record_key LIKE 'SPEC.%'
+                       OR r.record_key LIKE 'PRICE.%'
+                       OR r.record_key LIKE 'REG.%'
+                       OR r.record_key LIKE 'L3F.ENT.%'
+                  )::int AS high_risk_records,
+                  count(*) FILTER (
+                    WHERE (
+                      r.record_key LIKE 'SPEC.%'
+                      OR r.record_key LIKE 'PRICE.%'
+                      OR r.record_key LIKE 'REG.%'
+                      OR r.record_key LIKE 'L3F.ENT.%'
+                    ) AND rv.value_payload #>>
+                      '{confidence_signal,needs_double_check}'='true'
+                  )::int AS high_risk_caveated_records,
+                  count(*) FILTER (WHERE rs.source_zone <> 'sot')::int
+                    AS zone_masquerade_findings
+                FROM records r
+                JOIN record_versions rv ON rv.version_id=r.current_version_id
+                JOIN resources rs ON rs.resource_id=r.record_id
+                JOIN subjects s ON s.user_id=r.owner_subject_id
+                WHERE r.lifecycle='active' AND rv.lifecycle='active'
+            """))).mappings().one())
+            file_row = dict((await session.execute(text("""
+                SELECT
+                  count(DISTINCT d.document_id)::int AS documents,
+                  count(DISTINCT dv.version_id)::int AS versions,
+                  count(DISTINCT dv.version_id) FILTER (
+                    WHERE dv.byte_size >= 1024
+                  )::int AS representative_versions,
+                  count(DISTINCT dv.version_id) FILTER (
+                    WHERE dv.viewer_state='ready'
+                  )::int AS ready_versions,
+                  count(DISTINCT fc.document_version_id)::int AS indexed_versions,
+                  count(DISTINCT dv.version_id) FILTER (
+                    WHERE ob.sha256 <> dv.sha256
+                  )::int AS original_checksum_mismatches,
+                  count(DISTINCT rd.version_id) FILTER (
+                    WHERE rd.source_sha256 IS DISTINCT FROM dv.sha256
+                  )::int AS rendition_lineage_mismatches
+                FROM documents d
+                JOIN document_versions dv ON dv.document_id=d.document_id
+                JOIN object_blobs ob ON ob.object_id=dv.object_id
+                LEFT JOIN file_chunks fc ON fc.document_version_id=dv.version_id
+                LEFT JOIN renditions rd ON rd.version_id=dv.version_id
+                  AND rd.status='ready'
+            """))).mappings().one())
+            family_rows = (await session.execute(text("""
+                SELECT CASE
+                  WHEN mime_type='application/pdf' THEN 'pdf'
+                  WHEN mime_type LIKE 'image/%' THEN 'image'
+                  WHEN mime_type LIKE 'video/%' THEN 'video'
+                  WHEN mime_type LIKE 'audio/%' THEN 'audio'
+                  WHEN mime_type LIKE '%wordprocessingml%' THEN 'docx'
+                  WHEN mime_type LIKE '%spreadsheetml%' THEN 'xlsx'
+                  WHEN mime_type LIKE '%presentationml%' THEN 'pptx'
+                  ELSE 'other' END AS family,
+                  count(*)::int AS total
+                FROM document_versions
+                WHERE byte_size >= 1024
+                GROUP BY family ORDER BY family
+            """))).mappings().all()
+            template_row = dict((await session.execute(text("""
+                SELECT
+                  count(DISTINCT t.template_id)::int AS templates,
+                  count(DISTINCT t.template_id) FILTER (
+                    WHERE t.lifecycle='approved'
+                  )::int AS approved_templates,
+                  count(DISTINCT tb.binding_id) FILTER (
+                    WHERE tb.source='locked_fact'
+                  )::int AS locked_bindings,
+                  count(DISTINCT t.template_id) FILTER (
+                    WHERE t.lifecycle='approved'
+                      AND t.document_class IN ('official','legal')
+                  )::int AS official_or_legal_approved
+                FROM templates t
+                LEFT JOIN template_versions tv
+                  ON tv.template_id=t.template_id
+                LEFT JOIN template_bindings tb
+                  ON tb.template_version_id=tv.version_id
+            """))).mappings().one())
+            research_row = dict((await session.execute(text("""
+                SELECT
+                  (SELECT count(*) FROM research_sources
+                    WHERE lifecycle='active')::int AS active_sources,
+                  (SELECT count(*) FROM research_packages
+                    WHERE import_state='imported')::int AS imported_packages,
+                  (SELECT count(*) FROM research_records)::int AS records
+            """))).mappings().one())
+            tier_rows = (await session.execute(text("""
+                SELECT tier AS key,count(*)::int AS total
+                FROM research_records GROUP BY tier ORDER BY tier
+            """))).mappings().all()
+            corroboration_rows = (await session.execute(text("""
+                SELECT corroboration_state AS key,count(*)::int AS total
+                FROM research_records
+                GROUP BY corroboration_state ORDER BY corroboration_state
+            """))).mappings().all()
+        sot = PilotSotSummary.model_validate(sot_row)
+        files = PilotFileSummary(
+            **file_row,
+            viewer_families={
+                str(row["family"]): int(row["total"]) for row in family_rows
+            },
+        )
+        templates = PilotTemplateSummary.model_validate(template_row)
+        research = PilotResearchSummary(
+            **research_row,
+            tiers={str(row["key"]): int(row["total"]) for row in tier_rows},
+            corroboration={
+                str(row["key"]): int(row["total"])
+                for row in corroboration_rows
+            },
+        )
+        question_count = len(load_pilot_questions())
+        gates = [
+            self._pilot_gate(
+                "sot_gold_baseline", target=8, actual=sot.strict_records,
+                detail="Strict records retained without provenance promotion",
+            ),
+            self._pilot_gate(
+                "caveated_named_owners", target=sot.caveated_records,
+                actual=sot.caveated_named_owner_records,
+                detail="Caveated records assigned to named human owners",
+                blocked=sot.caveated_placeholder_owner_records > 0,
+            ),
+            self._pilot_gate(
+                "representative_files", target=30,
+                actual=files.representative_versions,
+                detail="Ready real file versions of at least 1 KiB",
+            ),
+            self._pilot_gate(
+                "viewer_families", target=4,
+                actual=len(files.viewer_families),
+                detail="Distinct representative viewer families",
+            ),
+            self._pilot_gate(
+                "approved_templates", target=4,
+                actual=templates.approved_templates,
+                detail="Approved internal pilot templates",
+            ),
+            self._pilot_gate(
+                "research_records", target=50, actual=research.records,
+                detail="Imported Research-zone records",
+            ),
+            self._pilot_gate(
+                "pilot_questions", target=25, actual=question_count,
+                detail="Source-controlled role-labelled pilot questions",
+            ),
+            self._pilot_gate(
+                "zone_integrity", target=0,
+                actual=sot.zone_masquerade_findings,
+                detail="SOT records outside the SOT source zone",
+                blocked=sot.zone_masquerade_findings > 0,
+            ),
+            self._pilot_gate(
+                "checksum_integrity", target=0,
+                actual=(
+                    files.original_checksum_mismatches
+                    + files.rendition_lineage_mismatches
+                ),
+                detail="Unexplained original/rendition checksum findings",
+                blocked=(
+                    files.original_checksum_mismatches
+                    + files.rendition_lineage_mismatches
+                ) > 0,
+            ),
+        ]
+        return PilotReadinessReport(
+            computed_at=datetime.now(UTC),
+            sot=sot,
+            files=files,
+            templates=templates,
+            research=research,
+            question_count=question_count,
+            gates=gates,
         )

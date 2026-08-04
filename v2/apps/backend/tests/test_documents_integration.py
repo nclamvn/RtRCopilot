@@ -5,13 +5,16 @@ import os
 import uuid
 from collections.abc import Awaitable, Callable
 from contextlib import asynccontextmanager
-from typing import Any, cast
+from pathlib import Path
+from typing import Any, Literal, cast
 
 import pytest
 from docx import Document
 from fastapi import Request
 from httpx import ASGITransport, AsyncClient
+from pydantic import SecretStr
 from redis.asyncio import Redis
+from sot_fixtures import NOW, SECRET, build_package
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -22,17 +25,20 @@ from rtr_copilot.config import get_settings
 from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.documents.models import (
     BindingDefinition,
+    BindRequest,
     DecisionRequest,
     FieldRules,
     RenderRequest,
     TemplateImport,
     TemplateSchema,
 )
+from rtr_copilot.documents.renderers import render_docx
 from rtr_copilot.documents.service import DocumentOSService
 from rtr_copilot.ingestion.api import file_subject
 from rtr_copilot.ingestion.malware import DeterministicTestScanner
 from rtr_copilot.ingestion.service import IngestionService
 from rtr_copilot.repositories.identity_postgres import PostgresSubjectRepository
+from rtr_copilot.sot.service import SOTPublishService
 from rtr_copilot.storage.s3 import S3ObjectStorage
 from rtr_copilot.worker.main import execute
 
@@ -87,6 +93,56 @@ def docx_template() -> bytes:
     output = io.BytesIO()
     document.save(output)
     return output.getvalue()
+
+
+def locked_docx_template() -> bytes:
+    document = Document()
+    document.add_paragraph("Range: {{range}}")
+    output = io.BytesIO()
+    document.save(output)
+    return output.getvalue()
+
+
+async def approved_locked_template(
+    service: DocumentOSService,
+    owner: Subject,
+    *,
+    document_class: Literal["internal", "official", "legal"],
+    record_key: str,
+) -> uuid.UUID:
+    detail = await service.import_template(
+        owner,
+        TemplateImport(
+            stable_key=f"integration.caveat.{document_class}.{uuid.uuid4().hex}",
+            display_name=f"Caveat gate {document_class}",
+            category="verification",
+            classification="internal",
+            document_class=document_class,
+            format="docx",
+            field_schema=TemplateSchema(bindings=[
+                BindingDefinition(
+                    field_path="range",
+                    field_type="string",
+                    source="locked_fact",
+                    required=True,
+                    rules=FieldRules(max_length=500),
+                    record_key=record_key,
+                    accepted_provenance=["approved_internal"],
+                    require_fresh=True,
+                    value_literal="15 km",
+                ),
+            ]),
+            source_base64=base64.b64encode(locked_docx_template()).decode(),
+        ),
+        request_id=f"import-{uuid.uuid4()}",
+    )
+    await service.lifecycle(
+        owner, detail.version_id, "submit", request_id=f"submit-{uuid.uuid4()}",
+    )
+    await service.lifecycle(
+        owner, detail.version_id, "approve", request_id=f"approve-{uuid.uuid4()}",
+    )
+    return detail.version_id
 
 
 async def approved_template(
@@ -186,6 +242,82 @@ async def run_render(
     return await service.status(
         owner, status.render_job_id, request_id=f"status-{uuid.uuid4()}",
     )
+
+
+@pytest.mark.asyncio
+async def test_caveated_fact_is_visible_internal_and_blocked_official(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await principal(factory, "named-caveat-owner", {Role.CURATOR, Role.STAFF})
+    owner_id = uuid.UUID(owner.user_id)
+    record_key = f"CAVEAT.{uuid.uuid4().hex.upper()}"
+    package_root = build_package(
+        tmp_path,
+        curator_id=owner_id,
+        owner_id=owner_id,
+        source_key=f"caveat.{uuid.uuid4().hex}",
+        record_key=record_key,
+        text="15 km",
+        confidence_signal={"tier": "soft", "needs_double_check": True},
+    )
+    sot_settings = get_settings().model_copy(update={
+        "sot_staging_root": tmp_path,
+        "sot_signing_secret": SecretStr(SECRET),
+    })
+    sot = SOTPublishService(sot_settings, factory=factory, clock=lambda: NOW)
+    staged = await sot.stage(
+        package_root.name, actor_id=owner_id, request_id=f"stage-{uuid.uuid4()}",
+    )
+    assert (await sot.validate(
+        staged.package_id, actor_id=owner_id,
+        request_id=f"validate-{uuid.uuid4()}",
+    )).valid
+    await sot.publish(
+        staged.package_id, actor_id=owner_id,
+        request_id=f"publish-{uuid.uuid4()}",
+    )
+
+    service = DocumentOSService(UnitOfWork(factory))
+    internal_version = await approved_locked_template(
+        service, owner, document_class="internal", record_key=record_key,
+    )
+    official_version = await approved_locked_template(
+        service, owner, document_class="official", record_key=record_key,
+    )
+
+    internal = await service.bind(
+        owner, internal_version, BindRequest(parameters={}),
+        request_id=f"bind-{uuid.uuid4()}",
+    )
+    assert internal.valid
+    assert internal.blocked == []
+    value = str(internal.fields[0].value)
+    assert value.startswith("15 km [CAVEAT: needs_double_check")
+    assert "owner: named-caveat-owner" in value
+    rendered = render_docx(locked_docx_template(), {"range": value})
+    rendered_document = Document(io.BytesIO(rendered))
+    assert "CAVEAT: needs_double_check" in "\n".join(
+        paragraph.text for paragraph in rendered_document.paragraphs
+    )
+
+    official = await service.bind(
+        owner, official_version, BindRequest(parameters={}),
+        request_id=f"bind-{uuid.uuid4()}",
+    )
+    assert not official.valid
+    assert official.fields == []
+    assert official.blocked == [{"field": "range", "code": "fact_caveated"}]
+    with pytest.raises(ValueError, match="fact_caveated"):
+        await service.create_render(
+            owner,
+            official_version,
+            RenderRequest(
+                idempotency_key=f"blocked-{uuid.uuid4()}",
+                parameters={},
+            ),
+            request_id=f"render-{uuid.uuid4()}",
+        )
 
 
 @asynccontextmanager

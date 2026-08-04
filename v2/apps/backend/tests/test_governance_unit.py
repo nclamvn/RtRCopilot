@@ -54,7 +54,7 @@ def record(**overrides: object) -> ResearchRecord:
 def test_alembic_has_single_governance_head() -> None:
     config = Config(str(BACKEND_ROOT / "alembic.ini"))
     script = ScriptDirectory.from_config(config)
-    assert script.get_heads() == ["0010_file_retrieval"]
+    assert script.get_heads() == ["0011_ingestion_pub_deferred"]
 
 
 def test_research_models_round_trip() -> None:

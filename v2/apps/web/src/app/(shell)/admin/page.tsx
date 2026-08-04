@@ -3,8 +3,8 @@
 import React, {FormEvent, useCallback, useEffect, useState} from "react";
 import {
   JobHealth, parseJobHealth, parseResearchSource, parseResearchSources, parseSettingVersions,
-  parseSettings, parseSubject, parseSubjects, ResearchSource, SettingValue, SettingView,
-  SettingVersion, SubjectAccount,
+  parsePilotReadiness, parseSettings, parseSubject, parseSubjects, PilotReadiness,
+  ResearchSource, SettingValue, SettingView, SettingVersion, SubjectAccount,
 } from "../../../admin/contracts";
 import {formatDateTime} from "../../../i18n/format";
 import {MessageKey} from "../../../i18n/messages";
@@ -13,11 +13,12 @@ import {IDLE, Load, Surface, TypedError, errorText, parseTypedError} from "../..
 import {PageHeader} from "../../../shell/AppShell";
 
 type Identity = {user_id: string; email: string; display_name: string; roles: string[]};
-type View = "health" | "subjects" | "sources" | "settings" | "gaps";
+type View = "health" | "corpus" | "subjects" | "sources" | "settings" | "gaps";
 type Notice = {kind: "success" | "error"; text: string};
 
 const VIEWS: ReadonlyArray<{id: View; label: MessageKey}> = [
-  {id: "health", label: "admin.nav.health"}, {id: "subjects", label: "admin.nav.subjects"},
+  {id: "health", label: "admin.nav.health"}, {id: "corpus", label: "admin.nav.corpus"},
+  {id: "subjects", label: "admin.nav.subjects"},
   {id: "sources", label: "admin.nav.sources"}, {id: "settings", label: "admin.nav.settings"},
   {id: "gaps", label: "admin.nav.gaps"},
 ];
@@ -31,6 +32,7 @@ export default function AdminPage() {
   const [authReady, setAuthReady] = useState(false);
   const [view, setView] = useState<View>("health");
   const [health, setHealth] = useState<Load<JobHealth>>(IDLE);
+  const [pilot, setPilot] = useState<Load<PilotReadiness>>(IDLE);
   const [subjects, setSubjects] = useState<Load<SubjectAccount[]>>(IDLE);
   const [sources, setSources] = useState<Load<ResearchSource[]>>(IDLE);
   const [settings, setSettings] = useState<Load<SettingView[]>>(IDLE);
@@ -42,7 +44,7 @@ export default function AdminPage() {
   const [busy, setBusy] = useState(false);
 
   const loseAccess = useCallback(() => {
-    setIdentity(null); setHealth(IDLE); setSubjects(IDLE); setSources(IDLE); setSettings(IDLE);
+    setIdentity(null); setHealth(IDLE); setPilot(IDLE); setSubjects(IDLE); setSources(IDLE); setSettings(IDLE);
     setVersions(IDLE); setNotice(null);
   }, []);
   const load = useCallback(async <T,>(path: string, parser: (value: unknown) => T, setter: (value: Load<T>) => void) => {
@@ -77,6 +79,7 @@ export default function AdminPage() {
   }, []);
   const refreshAll = useCallback(() => {
     void load("jobs/health", parseJobHealth, setHealth);
+    void load("pilot-readiness", parsePilotReadiness, setPilot);
     void load("subjects?limit=200", parseSubjects, setSubjects);
     void load("research-sources", parseResearchSources, setSources);
     void load("settings", parseSettings, setSettings);
@@ -118,6 +121,7 @@ export default function AdminPage() {
       <main className="admin-surface">
         {notice && <div role={notice.kind === "error" ? "alert" : "status"} className={`admin-notice ${notice.kind}`}>{notice.text}</div>}
         {view === "health" && <HealthPanel load={health} locale={locale} refresh={() => void load("jobs/health", parseJobHealth, setHealth)} t={t}/>}
+        {view === "corpus" && <PilotPanel load={pilot} refresh={() => void load("pilot-readiness", parsePilotReadiness, setPilot)} t={t}/>}
         {view === "subjects" && <SubjectsPanel load={subjects} selected={selectedSubjectData} setSelected={setSelectedSubject}
           busy={busy} t={t} onSubmit={async payload => {
             if (!selectedSubjectData) return; const updated = await mutate(`subjects/${selectedSubjectData.user_id}/bindings`, "POST", payload, parseSubject);
@@ -148,8 +152,29 @@ function HealthPanel({load, locale, refresh, t}: {load: Load<JobHealth>; locale:
       {failures > 0 && <ul>{family.recent_failures.map(item => <li key={item.job_id}><code>{item.error_code ?? item.status}</code><span>{item.kind}</span></li>)}</ul>}
     </article>;})}</div></>}</Surface></section>;
 }
+function PilotPanel({load, refresh, t}: {load: Load<PilotReadiness>; refresh: () => void; t: T}) {
+  return <section><PanelTitle index="02" title={t("admin.corpus.title")} body={t("admin.corpus.body")}/><Surface load={load} retry={refresh}>{data => <>
+    <div className="admin-health-meta"><span>{t("admin.health.computed")}</span><strong>{data.computed_at}</strong><button type="button" onClick={refresh}>{t("surface.retry")}</button></div>
+    <div className="admin-ledger pilot-summary">
+      <PilotCard label="SOT" value={`${data.sot.strict_records} / ${data.sot.active_records}`} detail={`${data.sot.caveated_records} ${t("admin.corpus.caveated")} · ${data.sot.placeholder_owner_records} ${t("admin.corpus.placeholderOwners")}`}/>
+      <PilotCard label="FILES" value={String(data.files.representative_versions)} detail={Object.entries(data.files.viewer_families).map(([key, value]) => `${key} ${value}`).join(" · ") || "—"}/>
+      <PilotCard label="TEMPLATES" value={`${data.templates.approved_templates} / ${data.templates.templates}`} detail={`${data.templates.locked_bindings} ${t("admin.corpus.locked")}`}/>
+      <PilotCard label="RESEARCH" value={String(data.research.records)} detail={Object.entries(data.research.corroboration).map(([key, value]) => `${key} ${value}`).join(" · ") || "—"}/>
+    </div>
+    <div className="pilot-gates" aria-label={t("admin.corpus.gates")}>
+      {data.gates.map(gate => <article key={gate.gate_key} className={gate.state}>
+        <header><code>{gate.gate_key}</code><b>{gate.state.toUpperCase()}</b></header>
+        <p>{gate.detail}</p><strong>{gate.actual} / {gate.target}</strong>
+      </article>)}
+    </div>
+    <p className="admin-warning">{t("admin.corpus.boundary")}</p>
+  </>}</Surface></section>;
+}
+function PilotCard({label, value, detail}: {label: string; value: string; detail: string}) {
+  return <article><header><div><span>{label}</span><h3>{label}</h3></div></header><p className="tile-figure">{value}</p><small>{detail}</small></article>;
+}
 function SubjectsPanel({load, selected, setSelected, busy, onSubmit, t}: {load: Load<SubjectAccount[]>; selected: SubjectAccount | null; setSelected: (id: string) => void; busy: boolean; onSubmit: (payload: unknown) => Promise<void>; t: T}) {
-  return <section><PanelTitle index="02" title={t("admin.subjects.title")} body={t("admin.subjects.body")}/><div className="admin-split"><Surface load={load} empty={t("admin.empty")}>
+  return <section><PanelTitle index="03" title={t("admin.subjects.title")} body={t("admin.subjects.body")}/><div className="admin-split"><Surface load={load} empty={t("admin.empty")}>
     {data => <div className="admin-list">{data.map(item => <button type="button" key={item.user_id} className={selected?.user_id === item.user_id ? "selected" : ""} onClick={() => setSelected(item.user_id)}><strong>{item.display_name}</strong><span>{item.email ?? item.user_id}</span><small>{[...item.roles, ...item.groups].join(" · ") || t("admin.subjects.unbound")}</small></button>)}</div>}
   </Surface><div className="admin-editor">{selected ? <BindingForm subject={selected} busy={busy} onSubmit={onSubmit} t={t}/> : <p className="surface-empty">{t("admin.select.subject")}</p>}</div></div></section>;
 }
@@ -158,14 +183,14 @@ function BindingForm({subject, busy, onSubmit, t}: {subject: SubjectAccount; bus
   return <form onSubmit={submit}><h3>{subject.display_name}</h3><p className="admin-version">security v{subject.security_version}</p><label>{t("admin.binding.kind")}<select name="binding"><option value="role">role</option><option value="group">group</option></select></label><label>{t("admin.binding.operation")}<select name="operation"><option value="assign">{t("admin.binding.assign")}</option><option value="unassign">{t("admin.binding.unassign")}</option></select></label><label>{t("admin.binding.key")}<input name="key" required maxLength={128}/></label><Reason t={t}/><button disabled={busy}>{t("admin.action.apply")}</button><p className="admin-warning">{t("admin.binding.warning")}</p></form>;
 }
 function SourcesPanel({load, selected, setSelected, busy, onCreate, onUpdate, t}: {load: Load<ResearchSource[]>; selected: ResearchSource | null; setSelected: (id: string) => void; busy: boolean; onCreate: (payload: unknown) => Promise<void>; onUpdate: (payload: unknown) => Promise<void>; t: T}) {
-  return <section><PanelTitle index="03" title={t("admin.sources.title")} body={t("admin.sources.body")}/><div className="admin-split"><Surface load={load} empty={t("admin.empty")}>{data => <div className="admin-list">{data.map(item => <button type="button" key={item.source_id} className={selected?.source_id === item.source_id ? "selected" : ""} onClick={() => setSelected(item.source_id)}><strong>{item.display_name}</strong><span>{item.stable_key}</span><small>{item.lifecycle} · {item.classification}</small></button>)}</div>}</Surface><div className="admin-editor"><SourceForm source={selected} busy={busy} onSubmit={selected ? onUpdate : onCreate} t={t}/></div></div></section>;
+  return <section><PanelTitle index="04" title={t("admin.sources.title")} body={t("admin.sources.body")}/><div className="admin-split"><Surface load={load} empty={t("admin.empty")}>{data => <div className="admin-list">{data.map(item => <button type="button" key={item.source_id} className={selected?.source_id === item.source_id ? "selected" : ""} onClick={() => setSelected(item.source_id)}><strong>{item.display_name}</strong><span>{item.stable_key}</span><small>{item.lifecycle} · {item.classification}</small></button>)}</div>}</Surface><div className="admin-editor"><SourceForm source={selected} busy={busy} onSubmit={selected ? onUpdate : onCreate} t={t}/></div></div></section>;
 }
 function SourceForm({source, busy, onSubmit, t}: {source: ResearchSource | null; busy: boolean; onSubmit: (payload: unknown) => Promise<void>; t: T}) {
   const submit = (event: FormEvent<HTMLFormElement>) => {event.preventDefault(); const d = new FormData(event.currentTarget); const common = {display_name: d.get("display_name"), description: d.get("description"), owner_subject_id: d.get("owner_subject_id"), classification: d.get("classification"), lifecycle: d.get("lifecycle")}; void onSubmit(source ? {...common, reason: d.get("reason")} : {...common, stable_key: d.get("stable_key"), origin: d.get("origin")});};
   return <form key={source?.source_id ?? "new"} onSubmit={submit}><h3>{source ? t("admin.sources.edit") : t("admin.sources.create")}</h3>{!source && <><label>{t("admin.sources.key")}<input name="stable_key" required pattern="[a-z0-9][a-z0-9._-]+"/></label><label>{t("admin.sources.origin")}<select name="origin"><option>manual</option><option>refinery</option><option>partner</option></select></label></>}<label>{t("admin.sources.name")}<input name="display_name" required defaultValue={source?.display_name}/></label><label>{t("admin.sources.description")}<textarea name="description" defaultValue={source?.description}/></label><label>{t("admin.sources.owner")}<input name="owner_subject_id" required defaultValue={source?.owner_subject_id}/></label><label>{t("admin.sources.classification")}<select name="classification" defaultValue={source?.classification ?? "internal"}><option>public_internal</option><option>internal</option><option>restricted</option><option>highly_restricted</option></select></label><label>{t("admin.sources.lifecycle")}<select name="lifecycle" defaultValue={source?.lifecycle ?? "active"}><option>active</option><option>suspended</option><option>retired</option></select></label>{source && <Reason t={t}/>}<button disabled={busy}>{source ? t("admin.action.apply") : t("admin.action.register")}</button></form>;
 }
 function SettingsPanel({load, versions, selected, setSelected, busy, onSubmit, t}: {load: Load<SettingView[]>; versions: Load<SettingVersion[]>; selected: SettingView | null; setSelected: (key: string) => void; busy: boolean; onSubmit: (payload: unknown) => Promise<void>; t: T}) {
-  return <section><PanelTitle index="04" title={t("admin.settings.title")} body={t("admin.settings.body")}/><div className="admin-split"><Surface load={load} empty={t("admin.empty")}>{data => <div className="admin-list">{data.map(item => <button type="button" key={item.setting_key} className={selected?.setting_key === item.setting_key ? "selected" : ""} onClick={() => setSelected(item.setting_key)}><strong>{item.setting_key}</strong><span>{String(item.value)}</span><small>{item.value_type} · v{item.version}</small></button>)}</div>}</Surface><div className="admin-editor">{selected ? <SettingForm setting={selected} versions={versions} busy={busy} onSubmit={onSubmit} t={t}/> : <p className="surface-empty">{t("admin.select.setting")}</p>}</div></div></section>;
+  return <section><PanelTitle index="05" title={t("admin.settings.title")} body={t("admin.settings.body")}/><div className="admin-split"><Surface load={load} empty={t("admin.empty")}>{data => <div className="admin-list">{data.map(item => <button type="button" key={item.setting_key} className={selected?.setting_key === item.setting_key ? "selected" : ""} onClick={() => setSelected(item.setting_key)}><strong>{item.setting_key}</strong><span>{String(item.value)}</span><small>{item.value_type} · v{item.version}</small></button>)}</div>}</Surface><div className="admin-editor">{selected ? <SettingForm setting={selected} versions={versions} busy={busy} onSubmit={onSubmit} t={t}/> : <p className="surface-empty">{t("admin.select.setting")}</p>}</div></div></section>;
 }
 function SettingForm({setting, versions, busy, onSubmit, t}: {setting: SettingView; versions: Load<SettingVersion[]>; busy: boolean; onSubmit: (payload: unknown) => Promise<void>; t: T}) {
   const submit = (event: FormEvent<HTMLFormElement>) => {event.preventDefault(); const d = new FormData(event.currentTarget); const raw = String(d.get("value")); let next: SettingValue = raw; if (setting.value_type === "boolean") next = raw === "true"; else if (setting.value_type !== "string") next = Number(raw); void onSubmit({value: next, reason: d.get("reason")});};
@@ -173,6 +198,6 @@ function SettingForm({setting, versions, busy, onSubmit, t}: {setting: SettingVi
 }
 function GapPanel({busy, onSubmit, t}: {busy: boolean; onSubmit: (id: string, payload: unknown) => Promise<void>; t: T}) {
   const submit = (event: FormEvent<HTMLFormElement>) => {event.preventDefault(); const d = new FormData(event.currentTarget); void onSubmit(String(d.get("gap_id")), {priority: d.get("priority"), reason: d.get("reason")});};
-  return <section><PanelTitle index="05" title={t("admin.gaps.title")} body={t("admin.gaps.body")}/><div className="admin-editor standalone"><form onSubmit={submit}><label>{t("admin.gaps.id")}<input name="gap_id" required pattern="[0-9a-fA-F-]{36}"/></label><label>{t("admin.gaps.priority")}<select name="priority"><option>low</option><option>normal</option><option>high</option><option>urgent</option></select></label><Reason t={t}/><button disabled={busy}>{t("admin.action.apply")}</button><p className="admin-warning">{t("admin.gaps.warning")}</p></form></div></section>;
+  return <section><PanelTitle index="06" title={t("admin.gaps.title")} body={t("admin.gaps.body")}/><div className="admin-editor standalone"><form onSubmit={submit}><label>{t("admin.gaps.id")}<input name="gap_id" required pattern="[0-9a-fA-F-]{36}"/></label><label>{t("admin.gaps.priority")}<select name="priority"><option>low</option><option>normal</option><option>high</option><option>urgent</option></select></label><Reason t={t}/><button disabled={busy}>{t("admin.action.apply")}</button><p className="admin-warning">{t("admin.gaps.warning")}</p></form></div></section>;
 }
 function Reason({t}: {t: T}) { return <label>{t("admin.reason")}<textarea name="reason" required maxLength={2000}/><small>{t("admin.reason.help")}</small></label>; }

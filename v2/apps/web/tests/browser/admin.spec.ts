@@ -1,5 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
-import {ids} from "./support/mocks";
+import {ids, pilotReadiness} from "./support/mocks";
 
 const identity = {user_id: ids.requesterId, email: "admin@rtrobotics.com", display_name: "RtR Admin", roles: ["admin"]};
 const subject = {user_id: ids.peerId, issuer: "https://accounts.example", email: "staff@rtrobotics.com", display_name: "RtR Staff", status: "active", security_version: 2, roles: ["staff"], groups: [], last_seen_at: "2026-08-04T08:00:00Z"};
@@ -14,6 +14,7 @@ async function adminData(page: Page, bindingStatus = 200) {
   await page.route("**/api/governance/admin/**", async route => {
     const request = route.request(); const path = new URL(request.url()).pathname;
     if (path.endsWith("/jobs/health")) return route.fulfill({json: {computed_at: "2026-08-04T08:00:00Z", families: [{family: "ingestion", job_counts: {completed: 8}, outbox_counts: {published: 8}, recent_failures: []}]}});
+    if (path.endsWith("/pilot-readiness")) return route.fulfill({json: pilotReadiness});
     if (path.endsWith("/subjects") && request.method() === "GET") return route.fulfill({json: [subject]});
     if (path.endsWith("/bindings")) {
       if (bindingStatus === 401) return route.fulfill({status: 401, json: {error: {code: "authentication_required", message: ""}, request_id: "req-stale"}});
@@ -43,6 +44,14 @@ test("admin changes one binding and renders server-authoritative security versio
   await expect(page.getByText("Đã lưu · audit trail đã được tạo")).toBeVisible();
   await expect(page.getByText("security v3")).toBeVisible();
   await page.screenshot({path: "test-results/tip023-admin-desktop.png", fullPage: true});
+});
+
+test("admin sees reconciled pilot corpus gates", async ({page}) => {
+  await shell(page); await adminData(page); await page.goto("/admin");
+  await page.getByRole("button", {name: /Corpus pilot/}).click();
+  await expect(page.getByRole("heading", {name: "Corpus pilot và provenance"})).toBeVisible();
+  await expect(page.getByText(/211 fact có caveat/)).toBeVisible();
+  await expect(page.getByText("caveated_named_owners")).toBeVisible();
 });
 
 test("401 during an admin mutation revokes the visible workspace", async ({page}) => {

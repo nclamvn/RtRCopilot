@@ -1,8 +1,11 @@
 import hashlib
 import io
 import json
+import math
 import zipfile
 from dataclasses import dataclass
+from datetime import date, datetime, time, timedelta
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
@@ -10,6 +13,7 @@ import fitz  # type: ignore[import-untyped]
 from defusedxml import ElementTree  # type: ignore[import-untyped]
 from docx import Document
 from openpyxl import load_workbook  # type: ignore[import-untyped]
+from openpyxl.utils import get_column_letter  # type: ignore[import-untyped]
 from PIL import Image
 from pptx import Presentation
 from pypdf import PdfReader
@@ -62,6 +66,21 @@ def canonical_json(value: Any) -> bytes:
         separators=(",", ":"),
         sort_keys=True,
     ).encode("utf-8")
+
+
+def _xlsx_cell_value(value: Any) -> str | int | float | bool | None:
+    """Convert openpyxl values to deterministic, standards-compliant JSON."""
+    if value is None or isinstance(value, str | bool | int):
+        return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else str(value)
+    if isinstance(value, datetime | date | time):
+        return value.isoformat()
+    if isinstance(value, timedelta):
+        return str(value)
+    if isinstance(value, Decimal):
+        return format(value, "f")
+    return str(value)
 
 
 def _text_pdf(lines: list[str]) -> bytes:
@@ -309,14 +328,18 @@ def _xlsx_artifacts(path: Path, settings: Settings) -> list[Artifact]:
             rows = []
             for row_index, row in enumerate(sheet.iter_rows(), start=1):
                 values = []
-                for cell in row:
+                for column_index, cell in enumerate(row, start=1):
                     total_cells += 1
                     if total_cells > settings.ingestion_max_cells:
                         truncated = True
                         break
                     values.append({
-                        "cell": cell.coordinate,
-                        "value": cell.value,
+                        "cell": getattr(
+                            cell,
+                            "coordinate",
+                            f"{get_column_letter(column_index)}{row_index}",
+                        ),
+                        "value": _xlsx_cell_value(cell.value),
                         "formula": (
                             str(cell.value) if cell.data_type == "f" else None
                         ),

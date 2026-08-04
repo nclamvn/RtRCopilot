@@ -33,6 +33,7 @@ EXPECTED_ADMIN_SURFACE = {
     ("/api/v1/admin/subjects", "GET"),
     ("/api/v1/admin/subjects/{subject_id}/bindings", "POST"),
     ("/api/v1/admin/jobs/health", "GET"),
+    ("/api/v1/admin/pilot-readiness", "GET"),
 }
 BOUNDARY_PREFIXES = tuple(f"/api/v1/admin/{family}/" for family in TRUTH_FAMILIES)
 
@@ -132,6 +133,7 @@ def test_anonymous_probes_on_admin_and_dashboard_endpoints_are_rejected() -> Non
                     },
                 ),
                 client.get("/api/v1/admin/jobs/health"),
+                client.get("/api/v1/admin/pilot-readiness"),
             ] + [
                 client.post(f"{prefix}anything", json={})
                 for prefix in BOUNDARY_PREFIXES
@@ -201,6 +203,8 @@ async def test_non_admin_subjects_are_refused_before_any_data_access() -> None:
             )
         with pytest.raises(PermissionError, match="admin_required"):
             await service.job_health(caller, request_id="admin-unit-9")
+        with pytest.raises(PermissionError, match="admin_required"):
+            await service.pilot_readiness(caller, request_id="admin-unit-10")
 
 
 def test_bounded_admin_payloads_refuse_unknown_and_malformed_fields() -> None:

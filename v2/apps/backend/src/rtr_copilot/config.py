@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86400)
     session_cookie_name: str = "rtr_session"
     session_cookie_secure: bool | None = None
-    expected_schema_revision: str = "0010_file_retrieval"
+    expected_schema_revision: str = "0011_ingestion_pub_deferred"
     sot_staging_root: Path = Path("/tmp/rtr-sot-staging")
     research_staging_root: Path = Path("/tmp/rtr-research-staging")
     sot_signing_secret: SecretStr = SecretStr(

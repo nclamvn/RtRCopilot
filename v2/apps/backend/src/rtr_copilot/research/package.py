@@ -25,7 +25,11 @@ from typing import Any
 
 from pydantic import Field, ValidationError
 
-from rtr_copilot.governance.models import ResearchTier, StrictModel
+from rtr_copilot.governance.models import (
+    CorroborationState,
+    ResearchTier,
+    StrictModel,
+)
 from rtr_copilot.ingestion.errors import IngestionFailure
 from rtr_copilot.ingestion.validators import _validate_entry_name
 from rtr_copilot.sot.package import canonical_json, sha256_bytes
@@ -77,6 +81,7 @@ class RefineryRecord(StrictModel):
     content: dict[str, Any]
     searchable_text: str = Field(min_length=1, max_length=200_000)
     evidence: list[RefineryEvidence] = Field(min_length=1, max_length=1000)
+    corroboration_state: CorroborationState = "uncorroborated"
     content_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
@@ -92,6 +97,7 @@ def research_record_sha(record: RefineryRecord) -> str:
         "tier": record.tier,
         "content": record.content,
         "searchable_text": record.searchable_text,
+        "corroboration_state": record.corroboration_state,
         "evidence": [
             {
                 "source_url": span.source_url,

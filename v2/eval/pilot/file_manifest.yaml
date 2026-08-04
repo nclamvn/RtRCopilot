@@ -1,0 +1,218 @@
+schema_version: 1
+campaign: TIP-024
+root_label: KnowledgeBase
+entries:
+  - manifest_key: pdf.reviter-scenarios
+    path: PDF_Output/RtR_Reviter_5_Scenarios.pdf
+    sha256: 7d5bf8446fea33f9f8d5b8dbe153a4a28ceb10dc7c5baefdb8a3500824dcc9fa
+    mime_type: application/pdf
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: pdf.evnnpt-executive
+    path: PDF_Output/EVNNPT_Executive_Deck_v1_0.pdf
+    sha256: 1640315a437c2e0f79bea7cd5bdce5e08a113f8bd6d4e4cfb2f9ea3765aa8e67
+    mime_type: application/pdf
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: pdf.hbc-executive
+    path: PDF_Output/HBC_BKHCN_Executive_Deck_v1_0.pdf
+    sha256: f1e305ed3581029833c6c5d0ddf52f3a17c51c947645f59fd3ba71c67aa8b31a
+    mime_type: application/pdf
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: pdf.vinatea-field-script
+    path: HoSo_CNCL_2_Cay_Che_SauRieng/00_GUI_DI/A_Gui_Vinatea/Kich_Ban_Khao_Sat_Thuc_Dia_Phu_Tho.pdf
+    sha256: b3d894686a6bf42c8d55826ffe1334263616366c451a90e391e9822fd641cb9e
+    mime_type: application/pdf
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: pdf.cangio-email
+    path: "CanGio-FINAL-20260618/Cần Giờ x RtR/04_NoiBo_RtR_Quotation/CanGio-EmailMau-GuiBQL.pdf"
+    sha256: 9cec437a28ed21fdb50e16488c6c8b8f307cb5f302975918acbbbefdceeaa6db
+    mime_type: application/pdf
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: pdf.cncl-vinatea
+    path: HoSo_Vinatea_RtR_FPT_GuiBoKHCN/RtRxFPTxVinatea/00_A1_DXNV_CNCL_Vinatea.pdf
+    sha256: 224c9b9af766b3a064134ece2239fc99cd1c6897414dfb4b464e0102751eade9
+    mime_type: application/pdf
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+
+  - manifest_key: docx.rtr-factsheet
+    path: RtR_Factsheet_GuiAnhDong.docx
+    sha256: 9eb796dc354f710218add7471e19b254f1c8e59575138ee00f0d176fe0b86b56
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: docx.cncl-letter
+    path: HoSo_CNCL_2_Cay_Che_SauRieng/00_GUI_DI/A_Gui_Vinatea/00_CongVan_1906_2026_CV_RTR.docx
+    sha256: 6e153f7a105dafd709f082d1b5c47b89b0a0a96a73cecc32a0fc809073c98522
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: docx.cangio-direction
+    path: "CanGio-FINAL-20260618/Cần Giờ x RtR/07_FileNguon_BQLgui/Tong-hop-dinh-huong-trien-khai-Can-Gio.docx"
+    sha256: fc02a585e1ef0b311885a434e3e6472466162cc78bdb218f59be29fead1fea01
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: docx.cangio-survey-note
+    path: "CanGio-FINAL-20260618/Cần Giờ x RtR/07_FileNguon_BQLgui/Note khao sat Can Gio (VietInfo).docx"
+    sha256: 91d6631fbd4920998ab3bc5e242aa7be82b5521a08fbfbd21bfebcc9e1443504
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: docx.cangio-questionnaire
+    path: "CanGio-FINAL-20260618/Cần Giờ x RtR/07_FileNguon_BQLgui/Bo-cau-hoi-khao-sat-BQL-Can-Gio-1.docx"
+    sha256: 827a9f445be834e8479f481eaa5f6de356f2c1d44dc44756c63608ccd99079d8
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: docx.caoloc-prd
+    path: PRD_CaoLocMatch.docx
+    sha256: 172533deee4629fb8071f6b9b10cd5e27a11a0738a38820393dcea9432cafba2
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: docx.sales-brief-bilingual
+    path: "Sales_Brief_System/RtR_Sales_Brief_Template_v1.1_ENG VIE.docx"
+    sha256: 91fcf443f76de268fae062c0e616baff4a4e39649b65ed9774b61379e1024d6b
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+
+  - manifest_key: xlsx.maintenance-program
+    path: RtR_Maintenance_CRM/RtR_Maintenance_Program/00_RtR_Chuong_Trinh_Bao_Duong_Tong_The.xlsx
+    sha256: f60ab6ecb80d5ddb629dfc663c419a8b3ac2bded5afd6298c3a11ef1656662c2
+    mime_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: xlsx.maintenance-example
+    path: RtR_Maintenance_CRM/RtR_Maintenance_Program/09_Vi_Du_Bao_Duong_HERA_3_Thang_3_Khach_Hang.xlsx
+    sha256: 0484caa1ada0578a6b3563fb3417602045025a59d9a92b52724f3ee85aa4a9e8
+    mime_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: xlsx.evnnpt-cost
+    path: PDF_Output/EVNNPT_Phu_Luc_Chi_Phi.xlsx
+    sha256: 761c46549cb6ba6d884cbc795e6f43aef770b3f3c7692425725838ea29a4f37e
+    mime_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: xlsx.hbc-cost
+    path: PDF_Output/HBC_BKHCN_Phu_Luc_Chi_Phi.xlsx
+    sha256: a57f4a883f0e19c1e43baf7776fd2bd28908db67a88b7663d4fba1be49c9777a
+    mime_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: xlsx.cangio-budget
+    path: "CanGio-FINAL-20260618/Cần Giờ x RtR/03_Nhom_C_SoNNMT_trinhUBND/CanGio-DuTru-KinhPhi-5Pha.xlsx"
+    sha256: ecc19899051ea470959cb7806ead12b27bd0bcc5f0c7e13e2dec01f4905dc050
+    mime_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: xlsx.sales-brief
+    path: Sales_Brief_System/RtR_Sales_Brief_Template_VN.xlsx
+    sha256: e356d46b00c753a4bdfc44d1964276f2edfd6deb08f8f1329848aa1e73b8e49e
+    mime_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: xlsx.hardware-cost-sot
+    path: _governance/RtR_Hardware_AI_Cost_Source_of_Truth.xlsx
+    sha256: ad9c0de52cb722df27b4c90a9fc52ebeac1b00786aef4d258ba880c23f740b8d
+    mime_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+
+  - manifest_key: pptx.hera-evn-method
+    path: Hera_EVN_Deck_MethodInsight.pptx
+    sha256: 937dde59bb248bafc9785bbbe54231dd09fd5912d39394aabb90ce3f78f52da1
+    mime_type: application/vnd.openxmlformats-officedocument.presentationml.presentation
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: pptx.vega-tactical
+    path: RtR_BQP_VEGA_Tactical_Briefing.pptx
+    sha256: 42658bfa862896a1be48dc28d9d2a74229a753732f33af65d3b8742f08d6686c
+    mime_type: application/vnd.openxmlformats-officedocument.presentationml.presentation
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: pptx.danang-uav
+    path: RtR_DaNang_UAV_Briefing.pptx
+    sha256: d654f489a6055a3f2b5b36fbf2777780f1938c1f5b114940b0bf91aed5660955
+    mime_type: application/vnd.openxmlformats-officedocument.presentationml.presentation
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: pptx.uel-ai-talk
+    path: UEL_AI_Talk/UEL_AI_Talk_15Slides_TiengViet.pptx
+    sha256: cea4856bac677440ff90dfebd5b683f3bdfae3df66e8e6ea4488dbe591d51797
+    mime_type: application/vnd.openxmlformats-officedocument.presentationml.presentation
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+
+  - manifest_key: image.hera-studio
+    path: _assets_pptx/hera-studio.jpg
+    sha256: 97bdadceb1f8ea1422a2ecc8aded9b388897ce1a231fe83e2f33a3c8dbe15ea0
+    mime_type: image/jpeg
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: image.vega-studio
+    path: _assets_pptx/vega-studio-1.jpg
+    sha256: 10fcf3281816c15a3d2ec17313791c9e52d16fad8c3e41cf2f8fb3a8fe838751
+    mime_type: image/jpeg
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: image.skywatch-sensor
+    path: _assets_pptx/sensor-skywatch.jpg
+    sha256: 992a6d9f10f5dc2219d79392c38e9b8ef10c5b8c824e5243d8dd786789a7eda2
+    mime_type: image/jpeg
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: image.hera-demo
+    path: _assets/hera-demo.webp
+    sha256: b80dd269ef0ab7a23280360bc68e4bb2e33f5bbd60456e604d34e1bce2daddcf
+    mime_type: image/webp
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: image.dualsight-sensor
+    path: _assets/sensor-dualsight.webp
+    sha256: 9ef94c1697bf0bac0f2db20a0b051fcfff25e22ebae29ac111196eadb4445ab8
+    mime_type: image/webp
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: image.maintenance-readme
+    path: RtR_Maintenance_CRM/RtR_Maintenance_Program/_previews/CMS_DESIGN_MIGRATION/00_README.png
+    sha256: ca8ffb031b7fde53b711b0e7b20ddac76d3c727c2a0acc73d7f2486830834004
+    mime_type: image/png
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7

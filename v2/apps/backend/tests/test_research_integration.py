@@ -6,7 +6,11 @@ from typing import Any
 
 import pytest
 from pydantic import SecretStr
-from research_fixtures import build_research_package, research_record_row
+from research_fixtures import (
+    build_research_package,
+    research_record_row,
+    research_record_sha_raw,
+)
 from sot_fixtures import NOW, SECRET, build_package
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
@@ -171,6 +175,8 @@ async def test_import_is_atomic_idempotent_and_audited(
         research_record_row(tier="P", text="alpha claim"),
         research_record_row(tier="S", text="beta claim"),
     ]
+    rows[0]["corroboration_state"] = "corroborated"
+    rows[0]["content_sha256"] = research_record_sha_raw(rows[0])
     result = await service.import_package(
         subject(Role.CURATOR, curator_id),
         build_research_package(
@@ -189,11 +195,15 @@ async def test_import_is_atomic_idempotent_and_audited(
     assert package.tier_composition == {"P": 1, "S": 1}
     assert await record_rows(factory, package.package_id) == 2
     async with factory() as session:
-        zones = (await session.execute(text("""
-            SELECT DISTINCT zone_label FROM research_records
+        persisted = (await session.execute(text("""
+            SELECT zone_label,corroboration_state FROM research_records
             WHERE package_id=:package_id
-        """), {"package_id": package.package_id})).scalars().all()
-    assert list(zones) == ["research"]
+            ORDER BY searchable_text
+        """), {"package_id": package.package_id})).mappings().all()
+    assert {row["zone_label"] for row in persisted} == {"research"}
+    assert {row["corroboration_state"] for row in persisted} == {
+        "corroborated", "uncorroborated",
+    }
     audits = await audit_rows(factory, "package_id", str(package.package_id))
     assert ("research.package.import", "success", "package_imported") in audits
     # Same content in a differently named staging unit: identical fingerprint.

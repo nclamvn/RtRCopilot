@@ -12,6 +12,7 @@ from research_fixtures import (
     CAPTURED_AT,
     build_research_package,
     research_record_row,
+    research_record_sha_raw,
 )
 
 from rtr_copilot.api.main import app
@@ -72,6 +73,23 @@ def test_valid_package_parses_identically_from_directory_and_zip(
     assert staged_zip.load_records() == records
     assert staged_dir.manifest.scope == "industry-uav"
     assert staged_dir.manifest.record_count == 2
+
+
+def test_package_preserves_declared_corroboration_state(tmp_path: Path) -> None:
+    row = research_record_row(record_key="IND.CORROBORATED")
+    row["corroboration_state"] = "corroborated"
+    row["content_sha256"] = research_record_sha_raw(row)
+    name = build_research_package(tmp_path, records=[row])
+    parsed = stage(tmp_path, name).load_records()
+    assert parsed[0].corroboration_state == "corroborated"
+
+    forged = research_record_row(record_key="IND.FORGED")
+    forged["corroboration_state"] = "trusted"
+    expect(
+        tmp_path,
+        build_research_package(tmp_path, records=[forged]),
+        "record_schema_invalid",
+    )
 
 
 def test_manifest_level_violations_reject_before_identity_is_trusted(

@@ -33,6 +33,37 @@ export type JobFamily = {
   outbox_counts: Record<string, number>; recent_failures: JobFailure[];
 };
 export type JobHealth = {computed_at: string; families: JobFamily[]};
+export type PilotGateState = "met" | "partial" | "blocked";
+export type PilotReadiness = {
+  computed_at: string;
+  sot: {
+    active_records: number; strict_records: number; caveated_records: number;
+    current_records: number; stale_records: number; named_owner_records: number;
+    placeholder_owner_records: number; caveated_named_owner_records: number;
+    caveated_placeholder_owner_records: number; high_risk_records: number;
+    high_risk_caveated_records: number; zone_masquerade_findings: number;
+  };
+  files: {
+    documents: number; versions: number; representative_versions: number;
+    ready_versions: number; indexed_versions: number;
+    viewer_families: Record<string, number>;
+    original_checksum_mismatches: number; rendition_lineage_mismatches: number;
+  };
+  templates: {
+    templates: number; approved_templates: number; locked_bindings: number;
+    official_or_legal_approved: number;
+  };
+  research: {
+    active_sources: number; imported_packages: number; records: number;
+    tiers: Record<string, number>; corroboration: Record<string, number>;
+  };
+  question_count: number;
+  gates: Array<{
+    gate_key: string; target: number; actual: number;
+    state: PilotGateState; detail: string;
+  }>;
+  production_boundary: "local_dev_only";
+};
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CLASSIFICATIONS = new Set(["public_internal", "internal", "restricted", "highly_restricted"]);
@@ -40,6 +71,7 @@ const LIFECYCLES = new Set(["active", "suspended", "retired"]);
 const ORIGINS = new Set(["refinery", "manual", "partner"]);
 const VALUE_TYPES = new Set(["integer", "decimal", "boolean", "string", "duration_hours"]);
 const FAMILIES = new Set(["ingestion", "render", "reindex"]);
+const PILOT_GATE_STATES = new Set(["met", "partial", "blocked"]);
 
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("contract_violation");
@@ -138,4 +170,52 @@ export function parseJobHealth(value_: unknown): JobHealth {
           attempt: nullable(failure.attempt, integer), occurred_at: stamp(failure.occurred_at)};
       })};
   })};
+}
+
+export function parsePilotReadiness(value_: unknown): PilotReadiness {
+  const v = object(value_); const sot = object(v.sot); const files = object(v.files);
+  const templates = object(v.templates); const research = object(v.research);
+  if (!Array.isArray(v.gates) || v.gates.length > 50) throw new Error("contract_violation");
+  const boundary = string(v.production_boundary, 64);
+  if (boundary !== "local_dev_only") throw new Error("contract_violation");
+  return {
+    computed_at: stamp(v.computed_at),
+    sot: {
+      active_records: integer(sot.active_records), strict_records: integer(sot.strict_records),
+      caveated_records: integer(sot.caveated_records), current_records: integer(sot.current_records),
+      stale_records: integer(sot.stale_records), named_owner_records: integer(sot.named_owner_records),
+      placeholder_owner_records: integer(sot.placeholder_owner_records),
+      caveated_named_owner_records: integer(sot.caveated_named_owner_records),
+      caveated_placeholder_owner_records: integer(sot.caveated_placeholder_owner_records),
+      high_risk_records: integer(sot.high_risk_records),
+      high_risk_caveated_records: integer(sot.high_risk_caveated_records),
+      zone_masquerade_findings: integer(sot.zone_masquerade_findings),
+    },
+    files: {
+      documents: integer(files.documents), versions: integer(files.versions),
+      representative_versions: integer(files.representative_versions),
+      ready_versions: integer(files.ready_versions), indexed_versions: integer(files.indexed_versions),
+      viewer_families: countMap(files.viewer_families),
+      original_checksum_mismatches: integer(files.original_checksum_mismatches),
+      rendition_lineage_mismatches: integer(files.rendition_lineage_mismatches),
+    },
+    templates: {
+      templates: integer(templates.templates),
+      approved_templates: integer(templates.approved_templates),
+      locked_bindings: integer(templates.locked_bindings),
+      official_or_legal_approved: integer(templates.official_or_legal_approved),
+    },
+    research: {
+      active_sources: integer(research.active_sources),
+      imported_packages: integer(research.imported_packages),
+      records: integer(research.records), tiers: countMap(research.tiers),
+      corroboration: countMap(research.corroboration),
+    },
+    question_count: integer(v.question_count),
+    gates: v.gates.map(gate_ => { const gate = object(gate_); return {
+      gate_key: string(gate.gate_key, 128), target: integer(gate.target), actual: integer(gate.actual),
+      state: choice<PilotGateState>(gate.state, PILOT_GATE_STATES), detail: string(gate.detail, 1000),
+    };}),
+    production_boundary: boundary,
+  };
 }

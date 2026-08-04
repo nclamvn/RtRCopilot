@@ -33,6 +33,29 @@ export const ids = {
 
 export const sha = "a".repeat(64);
 
+export const pilotReadiness = {
+  computed_at: "2026-08-04T08:00:00Z",
+  sot: {active_records: 219, strict_records: 8, caveated_records: 211,
+    current_records: 219, stale_records: 0, named_owner_records: 0,
+    placeholder_owner_records: 219, caveated_named_owner_records: 0,
+    caveated_placeholder_owner_records: 211, high_risk_records: 20,
+    high_risk_caveated_records: 12, zone_masquerade_findings: 0},
+  files: {documents: 30, versions: 30, representative_versions: 30,
+    ready_versions: 30, indexed_versions: 30,
+    viewer_families: {pdf: 8, docx: 8, xlsx: 7, image: 7},
+    original_checksum_mismatches: 0, rendition_lineage_mismatches: 0},
+  templates: {templates: 4, approved_templates: 4, locked_bindings: 10,
+    official_or_legal_approved: 0},
+  research: {active_sources: 1, imported_packages: 1, records: 70,
+    tiers: {P: 70}, corroboration: {corroborated: 16, disputed: 24, uncorroborated: 30}},
+  question_count: 32,
+  gates: [
+    {gate_key: "sot_gold_baseline", target: 8, actual: 8, state: "met", detail: "Strict records retained"},
+    {gate_key: "caveated_named_owners", target: 211, actual: 0, state: "blocked", detail: "Human owners required"},
+  ],
+  production_boundary: "local_dev_only",
+};
+
 export async function mockAuth(page: Page) {
   await page.route("**/api/auth/me", route => route.fulfill({json: {
     user_id: ids.requesterId, email: "staff@rtrobotics.com",
@@ -56,6 +79,9 @@ export async function mockAdmin(page: Page) {
         {family: "reindex", job_counts: {completed: 3}, outbox_counts: {published: 3}, recent_failures: []},
       ],
     }});
+    if (path === "/api/governance/admin/pilot-readiness") {
+      return route.fulfill({json: pilotReadiness});
+    }
     if (["/api/governance/admin/subjects", "/api/governance/admin/research-sources", "/api/governance/admin/settings"].includes(path)) {
       return route.fulfill({json: []});
     }

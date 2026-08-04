@@ -459,6 +459,7 @@ class ResearchService:
                     )
                     for span in item.evidence
                 ],
+                corroboration_state=item.corroboration_state,
                 content_sha256=item.content_sha256,
             ))
         try:
