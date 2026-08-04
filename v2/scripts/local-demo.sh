@@ -68,6 +68,7 @@ echo "==> kernel snapshot: $KERNEL_ROOT (read-only)"
 # ---- preflight --------------------------------------------------------------
 command -v docker >/dev/null || { echo "ERROR: docker not found" >&2; exit 1; }
 docker compose version >/dev/null 2>&1 || { echo "ERROR: docker compose v2 required" >&2; exit 1; }
+export RTR_BUILD_SHA="${RTR_BUILD_SHA:-$(git rev-parse --short=12 HEAD 2>/dev/null || echo development)}"
 
 # ---- build the demo env (compose reads .env.demo) --------------------------
 # Reuse the base .env values (internal compose hostnames) and OVERLAY the LOCAL
@@ -133,6 +134,7 @@ compose run --rm \
 
 # ---- 6) app: api + worker + web --------------------------------------------
 echo "==> [6/6] Starting api + worker + web…"
+echo "    runtime build: $RTR_BUILD_SHA"
 compose up -d --wait --build --force-recreate api worker web || compose up -d --build --force-recreate api worker web
 
 WEB_PORT="$(grep -E '^WEB_PORT=' .env.demo | tail -1 | cut -d= -f2 || echo 3000)"

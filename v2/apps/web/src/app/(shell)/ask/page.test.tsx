@@ -106,9 +106,9 @@ test("grounded ask renders citation markers wired to the shared rail; research d
   render(<AskPage/>);
   const input = await screen.findByLabelText("Câu hỏi");
   // {allowed: false} → the research scope renders disabled with the denied state.
-  await waitFor(() => expect(screen.getByLabelText("Kèm vùng nghiên cứu")).toBeDisabled());
-  expect(screen.getByText(/Phạm vi nghiên cứu bị từ chối theo chính sách/))
+  expect(await screen.findByText(/Phạm vi nghiên cứu bị từ chối theo chính sách/))
     .toBeInTheDocument();
+  expect(screen.getByLabelText("Kèm vùng nghiên cứu")).toBeDisabled();
   fireEvent.change(input, {target: {value: "Chính sách bảo hành robot?"}});
   fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
   expect(await screen.findByText(/Robot RtR được bảo hành 24 tháng/)).toBeInTheDocument();

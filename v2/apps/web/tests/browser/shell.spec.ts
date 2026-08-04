@@ -17,6 +17,12 @@ async function mockShell(page: Page, authenticated = true) {
   await page.route("**/api/ask/conversations**", route => route.fulfill({json: {
     items: [], next_cursor: null,
   }}));
+  // The Ask page treats an authorization failure from this capability probe
+  // as session loss. Keep shell-only tests hermetic instead of allowing an
+  // unmocked request to whichever API happens to be running locally.
+  await page.route("**/api/governance/research/scope", route => route.fulfill({json: {
+    allowed: false,
+  }}));
 }
 
 test("shell shows one topbar, six nav areas, and active state follows navigation", async ({page}) => {

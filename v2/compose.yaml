@@ -107,6 +107,7 @@ services:
       S3_SECRET_KEY: ${S3_SECRET_KEY}
       S3_BUCKET: ${S3_BUCKET}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      RTR_BUILD_SHA: ${RTR_BUILD_SHA:-development}
       APP_ENV: ${APP_ENV}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
       OIDC_ISSUER: ${OIDC_ISSUER:-}
@@ -183,6 +184,7 @@ services:
       S3_SECRET_KEY: ${S3_SECRET_KEY}
       S3_BUCKET: ${S3_BUCKET}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      RTR_BUILD_SHA: ${RTR_BUILD_SHA:-development}
       APP_ENV: ${APP_ENV}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
       OIDC_ISSUER: ${OIDC_ISSUER:-}
@@ -280,6 +282,7 @@ services:
       dockerfile: infra/docker/web.Dockerfile
     environment:
       API_INTERNAL_URL: ${API_INTERNAL_URL}
+      RTR_BUILD_SHA: ${RTR_BUILD_SHA:-development}
     depends_on:
       api:
         condition: service_healthy

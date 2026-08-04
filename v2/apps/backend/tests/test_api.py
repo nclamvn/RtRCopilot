@@ -50,6 +50,52 @@ def test_ready_is_503_without_dependencies(monkeypatch: MonkeyPatch) -> None:
     assert response.json()["dependencies"]["postgres"] == "unavailable"
 
 
+def test_operational_requires_worker_and_reports_build(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    async def available(_: Settings) -> dict[str, str]:
+        return {"postgres": "ready", "redis": "ready", "object_storage": "ready"}
+
+    async def worker_available(_: Settings) -> str:
+        return "ready"
+
+    monkeypatch.setattr(health, "probe_dependencies", available)
+    monkeypatch.setattr(health, "probe_worker", worker_available)
+    app.dependency_overrides[get_settings] = settings
+    with TestClient(app) as test_client:
+        response = test_client.get("/health/operational")
+    app.dependency_overrides.clear()
+    assert response.status_code == 200
+    assert response.json() == {
+        "ok": True,
+        "status": "operational",
+        "build_sha": "development",
+        "dependencies": {
+            "postgres": "ready",
+            "redis": "ready",
+            "object_storage": "ready",
+            "worker": "ready",
+        },
+    }
+
+
+def test_operational_fails_closed_without_worker(monkeypatch: MonkeyPatch) -> None:
+    async def available(_: Settings) -> dict[str, str]:
+        return {"postgres": "ready", "redis": "ready", "object_storage": "ready"}
+
+    async def worker_unavailable(_: Settings) -> str:
+        return "unavailable"
+
+    monkeypatch.setattr(health, "probe_dependencies", available)
+    monkeypatch.setattr(health, "probe_worker", worker_unavailable)
+    app.dependency_overrides[get_settings] = settings
+    with TestClient(app) as test_client:
+        response = test_client.get("/health/operational")
+    app.dependency_overrides.clear()
+    assert response.status_code == 503
+    assert response.json()["dependencies"]["worker"] == "unavailable"
+
+
 class FakePingRedis:
     def __init__(self) -> None:
         self.job: dict[str, str] | None = None

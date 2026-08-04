@@ -1,4 +1,6 @@
 SHELL := /bin/bash
+RTR_BUILD_SHA ?= $(shell git rev-parse --short=12 HEAD 2>/dev/null || echo development)
+export RTR_BUILD_SHA
 
 .PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
 
