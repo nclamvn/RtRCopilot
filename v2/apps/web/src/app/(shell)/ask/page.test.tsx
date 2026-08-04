@@ -7,6 +7,10 @@ import {afterEach, expect, test, vi} from "vitest";
 import {I18nProvider} from "../../../i18n/provider";
 import AskPage from "./page";
 
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(window.location.search),
+}));
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();

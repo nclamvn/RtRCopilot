@@ -340,11 +340,17 @@ for (const viewport of [
     );
     expect(overflow).toBeLessThanOrEqual(0);
     await page.keyboard.press("Tab");
-    const focusedOutline = await page.evaluate(() => {
+    const focusedIndicator = await page.evaluate(() => {
       const style = getComputedStyle(document.activeElement as Element);
-      return Number.parseFloat(style.outlineWidth);
+      return {
+        outline: Number.parseFloat(style.outlineWidth),
+        shadow: style.boxShadow,
+        decoration: style.textDecorationLine,
+      };
     });
-    expect(focusedOutline).toBeGreaterThanOrEqual(3);
+    expect(focusedIndicator.outline).toBe(0);
+    expect(focusedIndicator.shadow !== "none"
+      || focusedIndicator.decoration.includes("underline")).toBe(true);
   });
 }
 

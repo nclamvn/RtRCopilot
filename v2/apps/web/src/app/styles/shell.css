@@ -61,17 +61,29 @@
   flex-direction: column;
   gap: var(--pc-space-5);
 }
-.pc-sidebar-footer { margin-top: auto; flex-shrink: 0; }
+.pc-sidebar-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+  background: var(--pc-bg-sidebar);
+}
 
-/* Workspace switcher (72px) */
+/* Compact product identity + independent density control. */
+.pc-sidebar-head {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: start;
+  gap: var(--pc-space-2);
+  padding: var(--pc-space-2) var(--pc-space-3) 0;
+}
 .pc-workspace {
   display: flex;
   align-items: center;
   gap: var(--pc-space-3);
-  width: calc(100% - 2 * var(--pc-space-3));
-  height: 72px;
-  margin: var(--pc-space-2) var(--pc-space-3) 0;
-  padding: var(--pc-space-2) var(--pc-space-3);
+  width: 100%;
+  height: 56px;
+  margin: 0;
+  padding: var(--pc-space-2);
   border: 1px solid transparent;
   border-radius: var(--pc-radius-md);
   background: transparent;
@@ -94,7 +106,7 @@
   font-size: 13px;
   letter-spacing: -0.02em;
 }
-.pc-workspace-meta { min-width: 0; display: grid; gap: 1px; flex: 1; }
+.pc-workspace-meta { min-width: 0; display: grid; flex: 1; }
 .pc-workspace-name {
   font-size: var(--pc-nav-size);
   font-weight: 600;
@@ -103,57 +115,65 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.pc-workspace-sub {
-  font-size: var(--pc-caption-size);
-  color: var(--pc-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.pc-workspace .pc-chevrons { flex-shrink: 0; color: var(--pc-text-muted); }
-
 .pc-collapse {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  margin: var(--pc-space-2) var(--pc-space-3) 0 auto;
-  border: 1px solid var(--pc-border);
-  border-radius: var(--pc-radius-sm);
+  width: 44px;
+  height: 44px;
+  margin: 6px 0 0;
+  border: 0;
+  border-radius: 0;
   background: transparent;
   color: var(--pc-text-secondary);
   cursor: pointer;
-  transition: background var(--pc-dur-hover) var(--pc-ease),
-    color var(--pc-dur-hover) var(--pc-ease);
+  transition: color var(--pc-dur-hover) var(--pc-ease),
+    opacity var(--pc-dur-hover) var(--pc-ease);
 }
-.pc-collapse:hover { background: var(--pc-surface-hover); color: var(--pc-text-primary); }
+.pc-collapse:hover { background: transparent; color: var(--pc-text-primary); opacity: 1; }
 
-/* New question button (52px) */
+/* New question is a flat command row; the interaction cursor is the line. */
 .pc-new {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--pc-space-3);
-  height: 52px;
+  height: 44px;
   margin: 0 var(--pc-space-3);
-  padding: 0 var(--pc-space-4);
-  border: 1px solid var(--pc-border-strong);
-  border-radius: var(--pc-radius-md);
-  background: var(--pc-surface);
+  padding: 0 var(--pc-space-3);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--pc-text-primary);
   font-size: var(--pc-nav-size);
   font-weight: 600;
   text-decoration: none;
-  box-shadow: var(--pc-shadow-sm);
-  transition: border-color var(--pc-dur-hover) var(--pc-ease),
-    background var(--pc-dur-hover) var(--pc-ease);
+  box-shadow: none;
+  transition: color var(--pc-dur-hover) var(--pc-ease);
 }
-.pc-new:hover { border-color: var(--pc-accent); background: var(--pc-accent-soft); }
+.pc-new::before,
+.pc-nav-item::before,
+.pc-recent-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: 20px;
+  transform: translateY(-50%);
+  background: var(--pc-text-primary);
+  transition: width var(--pc-dur-hover) var(--pc-ease),
+    height var(--pc-dur-hover) var(--pc-ease);
+}
+.pc-new:hover { background: transparent; color: var(--pc-text-primary); }
+.pc-new:hover::before,
+.pc-new:focus-visible::before { width: 3px; height: 24px; }
 .pc-new .pc-new-ico {
   display: grid; place-items: center;
-  width: 26px; height: 26px; flex-shrink: 0;
-  border-radius: var(--pc-radius-sm);
-  background: var(--pc-accent); color: var(--pc-accent-contrast);
+  width: 30px; height: 30px; flex-shrink: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent; color: var(--pc-text-primary);
 }
 .pc-new .pc-kbd { margin-left: auto; }
 
@@ -182,7 +202,7 @@
   text-transform: uppercase;
   color: var(--pc-text-muted);
 }
-.pc-nav { min-width: 0; }
+.pc-nav { width: 100%; min-width: 0; }
 .pc-nav ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .pc-nav-item {
   position: relative;
@@ -191,16 +211,17 @@
   gap: var(--pc-space-3);
   height: var(--pc-nav-item-h);
   padding: 0 var(--pc-space-3);
-  border: 1px solid transparent;
-  border-radius: var(--pc-radius-md);
+  border: 0;
+  border-radius: 0;
   color: var(--pc-text-secondary);
   text-decoration: none;
   font-size: var(--pc-nav-size);
   font-weight: var(--pc-nav-w);
-  transition: background var(--pc-dur-hover) var(--pc-ease),
-    color var(--pc-dur-hover) var(--pc-ease);
+  transition: color var(--pc-dur-hover) var(--pc-ease);
 }
-.pc-nav-item:hover { background: var(--pc-surface-hover); color: var(--pc-text-primary); }
+.pc-nav-item:hover { background: transparent; color: var(--pc-text-primary); }
+.pc-nav-item:hover::before,
+.pc-nav-item:focus-visible::before { width: 3px; height: 26px; }
 .pc-nav-ico {
   display: grid; place-items: center;
   width: 30px; height: 30px; flex-shrink: 0;
@@ -211,39 +232,38 @@
 }
 .pc-nav-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pc-nav-item[aria-current="page"] {
-  background: var(--pc-surface);
-  border-color: var(--pc-border);
+  background: transparent;
+  border-color: transparent;
   color: var(--pc-text-primary);
   font-weight: 600;
-  box-shadow: var(--pc-shadow-sm);
+  box-shadow: none;
 }
 .pc-nav-item[aria-current="page"] .pc-nav-ico {
-  background: var(--pc-accent-soft);
-  color: var(--pc-accent);
+  background: transparent;
+  color: var(--pc-text-primary);
 }
 .pc-nav-item[aria-current="page"]::before {
-  content: "";
-  position: absolute;
-  left: -1px; top: 50%; transform: translateY(-50%);
-  width: 3px; height: 22px;
-  border-radius: var(--pc-radius-pill);
-  background: var(--pc-accent);
+  width: 2px;
+  height: 24px;
 }
 
 /* Recent conversations */
 .pc-recent { display: grid; gap: var(--pc-space-1); }
 .pc-recent ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
 .pc-recent-item {
+  position: relative;
   display: flex; align-items: center; gap: var(--pc-space-2);
   height: 38px; padding: 0 var(--pc-space-3);
-  border-radius: var(--pc-radius-sm);
+  border-radius: 0;
   color: var(--pc-text-secondary);
   text-decoration: none;
   font-size: var(--pc-small-size);
   transition: background var(--pc-dur-hover) var(--pc-ease),
     color var(--pc-dur-hover) var(--pc-ease);
 }
-.pc-recent-item:hover { background: var(--pc-surface-hover); color: var(--pc-text-primary); }
+.pc-recent-item:hover { background: transparent; color: var(--pc-text-primary); }
+.pc-recent-item:hover::before,
+.pc-recent-item:focus-visible::before { width: 3px; height: 22px; }
 .pc-recent-item .pc-dot-tiny {
   width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
   background: var(--pc-text-muted);
@@ -254,7 +274,7 @@
 
 /* System integrity card */
 .pc-integrity {
-  margin-top: var(--pc-space-1);
+  margin: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3);
   padding: var(--pc-space-3);
   border: 1px solid var(--pc-border);
   border-radius: var(--pc-radius-md);
@@ -345,18 +365,6 @@
   background: var(--pc-bg-app);
   z-index: var(--pc-z-topbar);
 }
-.pc-brand { display: flex; align-items: center; gap: var(--pc-space-2); text-decoration: none; }
-.pc-brand-mark {
-  width: 28px; height: 28px; display: grid; place-items: center;
-  border-radius: var(--pc-radius-sm);
-  background: var(--pc-accent); color: var(--pc-accent-contrast);
-  font-weight: 700; font-size: 11px; letter-spacing: -0.02em;
-}
-.pc-brand-name {
-  font-size: var(--pc-body-size); font-weight: 650; letter-spacing: -0.01em;
-  color: var(--pc-text-primary);
-}
-
 .pc-search {
   flex: 1; max-width: 520px; height: 40px;
   display: flex; align-items: center; gap: var(--pc-space-2);
@@ -377,33 +385,32 @@
 
 /* Segmented locale switch */
 .pc-locale {
-  display: inline-flex; border: 1px solid var(--pc-border);
-  border-radius: var(--pc-radius-sm); overflow: hidden; background: var(--pc-surface);
+  display: inline-flex; gap: 2px; border: 0;
+  border-radius: 0; overflow: visible; background: transparent;
 }
 .pc-locale button {
   background: transparent; border: 0; cursor: pointer;
-  padding: 7px 10px; font-family: var(--pc-font-mono);
+  padding: 7px 10px; border-radius: 8px; font-family: var(--pc-font-mono);
   font-size: 12px; font-weight: 600; color: var(--pc-text-muted);
   transition: background var(--pc-dur-hover) var(--pc-ease),
     color var(--pc-dur-hover) var(--pc-ease);
 }
 .pc-locale button:hover { color: var(--pc-text-primary); }
 .pc-locale button[aria-pressed="true"] {
-  background: var(--pc-accent-soft); color: var(--pc-accent);
+  background: var(--pc-surface-hover); color: var(--pc-text-primary);
 }
 
-/* Icon buttons (theme switch, mobile menu) */
+/* Icon controls retain a 44px hit area but carry no visible container. */
 .pc-iconbtn {
   display: grid; place-items: center; width: 36px; height: 36px;
-  border: 1px solid var(--pc-border); border-radius: var(--pc-radius-sm);
-  background: var(--pc-surface); color: var(--pc-text-secondary); cursor: pointer;
+  border: 0; border-radius: 0;
+  background: transparent; color: var(--pc-text-secondary); cursor: pointer;
   transition: background var(--pc-dur-hover) var(--pc-ease),
     color var(--pc-dur-hover) var(--pc-ease),
-    border-color var(--pc-dur-hover) var(--pc-ease);
+    opacity var(--pc-dur-hover) var(--pc-ease);
 }
 .pc-iconbtn:hover {
-  background: var(--pc-surface-hover); color: var(--pc-text-primary);
-  border-color: var(--pc-border-strong);
+  background: transparent; color: var(--pc-text-primary); opacity: 1;
 }
 .pc-menu-btn { display: none; }
 
@@ -484,26 +491,45 @@
 }
 .pc-help-keys { display: inline-flex; gap: 4px; min-width: 132px; flex-shrink: 0; }
 
-/* ---- Collapsed sidebar ----------------------------------------------- */
-.pc-shell[data-collapsed="true"] .pc-workspace-meta,
-.pc-shell[data-collapsed="true"] .pc-workspace .pc-chevrons,
-.pc-shell[data-collapsed="true"] .pc-navgroup-title,
-.pc-shell[data-collapsed="true"] .pc-nav-label,
-.pc-shell[data-collapsed="true"] .pc-new-label,
-.pc-shell[data-collapsed="true"] .pc-new .pc-kbd,
-.pc-shell[data-collapsed="true"] .pc-recent,
-.pc-shell[data-collapsed="true"] .pc-integrity,
-.pc-shell[data-collapsed="true"] .pc-profile-meta,
-.pc-shell[data-collapsed="true"] .pc-profile-action { display: none; }
-.pc-shell[data-collapsed="true"] .pc-workspace,
-.pc-shell[data-collapsed="true"] .pc-new,
-.pc-shell[data-collapsed="true"] .pc-nav-item,
-.pc-shell[data-collapsed="true"] .pc-profile { justify-content: center; padding-left: 0; padding-right: 0; }
-.pc-shell[data-collapsed="true"] .pc-new { margin: 0 auto; width: 44px; }
-.pc-shell[data-collapsed="true"] .pc-sidebar-scroll { padding-left: var(--pc-space-2); padding-right: var(--pc-space-2); align-items: center; }
-.pc-shell[data-collapsed="true"] .pc-nav-item[aria-current="page"]::before { left: -8px; }
-.pc-shell[data-collapsed="true"] .pc-workspace { margin: var(--pc-space-2) auto 0; width: 48px; height: 48px; padding: 0; }
-.pc-shell[data-collapsed="true"] .pc-collapse { margin: var(--pc-space-2) auto 0; }
+/* ---- Collapsed sidebar -----------------------------------------------
+   Desktop only. The mobile drawer always expands its content even when a
+   collapsed preference was saved on a wider viewport. */
+@media (min-width: 1100px) {
+  .pc-shell[data-collapsed="true"] .pc-workspace-meta,
+  .pc-shell[data-collapsed="true"] .pc-navgroup-title,
+  .pc-shell[data-collapsed="true"] .pc-nav-label,
+  .pc-shell[data-collapsed="true"] .pc-new-label,
+  .pc-shell[data-collapsed="true"] .pc-new .pc-kbd,
+  .pc-shell[data-collapsed="true"] .pc-recent,
+  .pc-shell[data-collapsed="true"] .pc-integrity,
+  .pc-shell[data-collapsed="true"] .pc-profile-meta,
+  .pc-shell[data-collapsed="true"] .pc-profile-action,
+  .pc-shell[data-collapsed="true"] .pc-signin-label { display: none; }
+  .pc-shell[data-collapsed="true"] .pc-sidebar-head {
+    min-height: 108px;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: var(--pc-space-2);
+    padding: var(--pc-space-2) var(--pc-space-2) 0;
+  }
+  .pc-shell[data-collapsed="true"] .pc-workspace,
+  .pc-shell[data-collapsed="true"] .pc-new,
+  .pc-shell[data-collapsed="true"] .pc-nav-item,
+  .pc-shell[data-collapsed="true"] .pc-profile {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .pc-shell[data-collapsed="true"] .pc-new { margin: var(--pc-space-2) auto 0; width: 44px; }
+  .pc-shell[data-collapsed="true"] .pc-sidebar-scroll {
+    padding-left: var(--pc-space-2);
+    padding-right: var(--pc-space-2);
+    align-items: center;
+  }
+  .pc-shell[data-collapsed="true"] .pc-nav-item[aria-current="page"]::before { left: -8px; }
+  .pc-shell[data-collapsed="true"] .pc-workspace { width: 48px; height: 48px; padding: 0; }
+  .pc-shell[data-collapsed="true"] .pc-collapse { margin: 0; }
+}
 
 /* ---- Mobile bottom dock (PRD §13) ------------------------------------ */
 .pc-dock { display: none; }
@@ -534,7 +560,6 @@
   .pc-topbar { padding: 0 var(--pc-space-4); gap: var(--pc-space-3); }
   .pc-search .pc-search-label, .pc-search .pc-kbd { display: none; }
   .pc-search { flex: 0 0 40px; max-width: 40px; justify-content: center; padding: 0; }
-  .pc-brand-name { display: none; }
   .pc-main { padding: var(--pc-space-5) var(--pc-space-4) 76px; }
   .pc-dock {
     display: flex;

@@ -95,7 +95,7 @@ async function mockWorkspace(page: Page, kind: string) {
 for (const kind of ["image", "pdf", "docx", "xlsx", "pptx", "video", "audio"]) {
   test(`${kind} viewer uses an authorized safe rendition`, async ({page}) => {
     await mockWorkspace(page, kind);
-    await page.goto("/");
+    await page.goto("/files");
     await page.getByRole("button", {name: `fixture.${kind}`}).click();
     await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
       .toContainText(kind);
@@ -126,7 +126,7 @@ for (const viewport of [
   test(`${viewport.name} workspace is keyboard-safe and has no page overflow`, async ({page}) => {
     await mockWorkspace(page, "image");
     await page.setViewportSize(viewport);
-    await page.goto("/");
+    await page.goto("/files");
     if (viewport.width <= 720) {
       await page.getByRole("button", {name: "Danh mục", exact: true}).click();
     }
@@ -137,11 +137,17 @@ for (const viewport of [
     );
     expect(overflow).toBeLessThanOrEqual(0);
     await page.keyboard.press("Tab");
-    const focusedOutline = await page.evaluate(() => {
+    const focusedIndicator = await page.evaluate(() => {
       const style = getComputedStyle(document.activeElement as Element);
-      return Number.parseFloat(style.outlineWidth);
+      return {
+        outline: Number.parseFloat(style.outlineWidth),
+        shadow: style.boxShadow,
+        decoration: style.textDecorationLine,
+      };
     });
-    expect(focusedOutline).toBeGreaterThanOrEqual(3);
+    expect(focusedIndicator.outline).toBe(0);
+    expect(focusedIndicator.shadow !== "none"
+      || focusedIndicator.decoration.includes("underline")).toBe(true);
     if (viewport.name === "mobile" || viewport.name === "desktop") {
       await page.waitForTimeout(220);
       await page.screenshot({
@@ -159,7 +165,7 @@ test("anonymous user does not issue a file request", async ({page}) => {
   page.on("request", request => {
     if (new URL(request.url()).pathname.startsWith("/api/files")) fileRequests += 1;
   });
-  await page.goto("/");
+  await page.goto("/files");
   await expect(page.getByRole("link", {name: "Đăng nhập công ty"})).toBeVisible();
   expect(fileRequests).toBe(0);
 });
@@ -195,7 +201,7 @@ test("retryable upload exposes progress and opens the accepted version without r
       failed_stage: "extract",
     }});
   });
-  await page.goto("/");
+  await page.goto("/files");
   await page.locator('input[type="file"]').setInputFiles({
     name: "fixture.pdf", mimeType: "application/pdf",
     buffer: Buffer.from("%PDF-1.7 deterministic fixture"),
@@ -212,7 +218,7 @@ test("revoked JSON rendition clears selected content and evidence metadata", asy
     `**/api/files/renditions/${dataRenditionId}/content`,
     route => route.fulfill({status: 404, json: {error: {code: "not_found"}}}),
   );
-  await page.goto("/");
+  await page.goto("/files");
   await page.getByRole("button", {name: "fixture.xlsx"}).click();
   await expect(page.getByRole("heading", {name: "Chọn một tệp để bắt đầu"})).toBeVisible();
   await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"}))
@@ -227,7 +233,7 @@ test("focus revalidation clears an image after access is revoked", async ({page}
       ? route.fulfill({status: 404, json: {error: {code: "not_found"}}})
       : route.fulfill({json: manifestFor("image")})
   ));
-  await page.goto("/");
+  await page.goto("/files");
   await page.getByRole("button", {name: "fixture.image"}).click();
   await expect(page.getByAltText("Bản ảnh an toàn đã loại metadata")).toBeVisible();
   revoked = true;
@@ -250,7 +256,7 @@ test("catalog session revocation clears the entire workspace", async ({page}) =>
           can_download: false,
         }], next_cursor: null}})
   ));
-  await page.goto("/");
+  await page.goto("/files");
   await page.getByRole("button", {name: "fixture.pdf"}).click();
   await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"})).toContainText("pdf");
   revoked = true;

@@ -25,6 +25,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import Link from "next/link";
+import {useSearchParams} from "next/navigation";
 import {
   AskAnswer,
   askQuery,
@@ -82,9 +83,10 @@ function AnswerText({text, onCitation}: {
 
 export default function AskPage() {
   const {t, locale} = useI18n();
+  const searchParams = useSearchParams();
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState(() => searchParams.get("q")?.trim() ?? "");
   const [includeResearch, setIncludeResearch] = useState(false);
   const [researchAccess, setResearchAccess] = useState<Load<boolean>>(IDLE);
   const [fileScope, setFileScope] = useState<FileScopeItem | null>(null);
@@ -95,7 +97,6 @@ export default function AskPage() {
   const [research, setResearch] = useState<Load<ResearchSearchEvidence>>(IDLE);
   const [gap, setGap] = useState<Load<GapDetail>>(IDLE);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [urlConversation, setUrlConversation] = useState<string | null>(null);
   const [conversation, setConversation] = useState<Load<Conversation>>(IDLE);
   const [history, setHistory] = useState<Load<ConversationListPage>>(IDLE);
   const [activeCitation, setActiveCitation] = useState<string | null>(null);
@@ -103,6 +104,8 @@ export default function AskPage() {
   const [asking, setAsking] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const questionRef = useRef<HTMLTextAreaElement>(null);
+  const lastPrefill = useRef("");
+  const requestedConversation = parseAskState(searchParams).conversationId;
 
   // PRD §11 composer: auto-expand the question textarea between 64 and 180px
   // (DOM-only; never a layout-animating transition, reduced-motion safe).
@@ -127,13 +130,22 @@ export default function AskPage() {
         response.ok ? await response.json() as Identity : null,
       ))
       .catch(() => setIdentity(null)).finally(() => setAuthReady(true));
-    const restore = () => setUrlConversation(
-      parseAskState(new URLSearchParams(location.search)).conversationId,
-    );
-    restore();
-    addEventListener("popstate", restore);
-    return () => removeEventListener("popstate", restore);
   }, []);
+
+  // Next.js client navigation can change only the query string while keeping
+  // this page mounted. Deriving state from useSearchParams fixes recent-link
+  // navigation without a reload; `q` is a deliberate prefill, never an
+  // automatic submission.
+  useEffect(() => {
+    const prefill = searchParams.get("q")?.trim() ?? "";
+    if (!prefill || prefill === lastPrefill.current) return;
+    const timer = setTimeout(() => {
+      lastPrefill.current = prefill;
+      setQuestion(prefill);
+      requestAnimationFrame(() => { autoGrow(); questionRef.current?.focus(); });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [searchParams, autoGrow]);
 
   useEffect(() => {
     const close = (event: KeyboardEvent) => {
@@ -234,9 +246,14 @@ export default function AskPage() {
   useEffect(() => {
     let active = true;
     const timer = setTimeout(() => {
-      if (!identity || !urlConversation) { setConversation(IDLE); return; }
+      if (!identity || !requestedConversation
+          || (answer.state === "ready"
+            && answer.data.conversationId === requestedConversation)) {
+        setConversation(IDLE);
+        return;
+      }
       setConversation({state: "loading"});
-      fetch(`/api/ask/conversations/${urlConversation}`, {cache: "no-store"})
+      fetch(`/api/ask/conversations/${requestedConversation}`, {cache: "no-store"})
         .then(async response => {
           if (!active) return;
           if (response.status === 401) return loseAccess();
@@ -258,7 +275,7 @@ export default function AskPage() {
         });
     }, 0);
     return () => { active = false; clearTimeout(timer); };
-  }, [identity, urlConversation, loseAccess]);
+  }, [identity, requestedConversation, answer, loseAccess]);
 
   // Best-effort gap detail after honest-null (state shown when readable).
   const loadGap = useCallback((gapId: string) => {
@@ -348,7 +365,6 @@ export default function AskPage() {
 
   const reopenConversation = useCallback((id: string) => {
     window.history.pushState({}, "", `/ask?${askQuery(id)}`);
-    setUrlConversation(id);
     setConversationId(id);
     setAnswer(IDLE); setResearch(IDLE); setGap(IDLE);
     setActiveCitation(null);
@@ -356,7 +372,6 @@ export default function AskPage() {
 
   const newConversation = useCallback(() => {
     window.history.pushState({}, "", "/ask");
-    setUrlConversation(null);
     setConversationId(null);
     setAnswer(IDLE); setResearch(IDLE); setGap(IDLE);
     setConversation(IDLE); setActiveCitation(null); setQuestion("");
@@ -408,6 +423,7 @@ export default function AskPage() {
   return <div className="ask-workspace">
     <PageHeader eyebrow={t("ask.eyebrow")} title={t("ask.title")}
       actions={<button className="ask-rail-toggle" type="button"
+        disabled={railEntries.length === 0}
         onClick={() => setRailOpen(true)}>{t("ask.evidenceButton")}</button>}/>
     <div className="ask-layout">
       {/* Distinct landmark name — the grounded-answer region below carries
@@ -439,6 +455,9 @@ export default function AskPage() {
                 onClick={() => setFileScope(null)}>×</button>
             </span>}
           </div>
+          <details className="ask-advanced">
+            <summary>{t("ask.advanced")}</summary>
+            <div className="ask-advanced-body">
           <fieldset className="ask-scope">
             <legend>{t("ask.scope.legend")}</legend>
             <label>
@@ -501,6 +520,8 @@ export default function AskPage() {
               <p className="form-note">{t("ask.file.note")}</p>
             </div>}
           </fieldset>
+            </div>
+          </details>
           <div className="action-row">
             <button type="submit" className="primary"
               disabled={!question.trim() || asking}>{t("ask.submit")}</button>
@@ -610,18 +631,16 @@ export default function AskPage() {
           </ol>
         </section>}
 
-        <section className="ask-history" aria-label={t("ask.history.title")}>
-          <h2>{t("ask.history.title")}</h2>
+        <details className="ask-history" aria-label={t("ask.history.title")}>
+          <summary>{t("ask.history.title")}</summary>
           <Surface load={history} empty={t("ask.history.empty")}>{page =>
             page.items.length === 0
               ? <p className="surface-empty">{t("ask.history.empty")}</p>
               : <ol>{page.items.map(item => <li key={item.conversationId}>
                   <span className="ask-history-question">
-                    <code title={item.firstQuestionDigest ?? undefined}>
-                      {item.firstQuestionDigest
-                        ? `${item.firstQuestionDigest.slice(0, 12)}…`
-                        : item.conversationId.slice(0, 8)}
-                    </code>
+                    {t("shell.recent.conversation")} · {formatDateTime(item.startedAt, locale, {
+                      day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+                    })}
                   </span>
                   <small>{formatDateTime(item.lastActivityAt, locale)}</small>
                   <button type="button"
@@ -630,7 +649,7 @@ export default function AskPage() {
                   </button>
                 </li>)}</ol>}
           </Surface>
-        </section>
+        </details>
       </section>
 
       <EvidenceRail entries={railEntries} activeKey={activeCitation}

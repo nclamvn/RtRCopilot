@@ -208,6 +208,19 @@ async function submitQuestion(page: Page, question: string) {
   await page.getByRole("button", {name: "Gửi câu hỏi"}).click();
 }
 
+test("sidebar recent conversation opens in the mounted Ask page without reload", async ({page}) => {
+  await mockAsk(page);
+  await page.goto("/ask");
+  await expect(page.locator(".pc-recent-item")).toBeVisible();
+  await page.evaluate(() => ((window as Window & {tip245Marker?: string}).tip245Marker = "mounted"));
+  await page.locator(".pc-recent-item").click();
+  await expect(page).toHaveURL(new RegExp(`conversation=${conversationId}`));
+  await expect(page.getByText("Chính sách bảo hành robot?")).toBeVisible();
+  expect(await page.evaluate(
+    () => (window as Window & {tip245Marker?: string}).tip245Marker,
+  )).toBe("mounted");
+});
+
 test("grounded answer: citation focuses the rail entry and the locator opens the viewer at the exact position", async ({page}) => {
   await mockAsk(page);
   await page.goto("/ask");
@@ -270,6 +283,7 @@ test("honest-null renders the recorded gap id and state with a Knowledge Ops lin
 test("research scope renders results exactly as the backend labels them, distinct from SOT facts", async ({page}) => {
   await mockAsk(page, {research: "results"});
   await page.goto("/ask");
+  await page.getByText("Phạm vi & tùy chọn", {exact: true}).click();
   const researchOption = page.getByLabel("Kèm vùng nghiên cứu");
   await expect(researchOption).toBeEnabled();
   await researchOption.check();
@@ -293,6 +307,7 @@ test("a denied scope capability disables the research option", async ({page}) =>
   // replaces the audited search probe's typed 403.
   await mockAsk(page, {research: "denied"});
   await page.goto("/ask");
+  await page.getByText("Phạm vi & tùy chọn", {exact: true}).click();
   await expect(page.getByLabel("Kèm vùng nghiên cứu")).toBeDisabled();
   await expect(page.getByText(/Phạm vi nghiên cứu bị từ chối theo chính sách/))
     .toBeVisible();
@@ -301,6 +316,7 @@ test("a denied scope capability disables the research option", async ({page}) =>
 test("denied file catalog renders the typed state inside the picker", async ({page}) => {
   await mockAsk(page, {catalog: "denied"});
   await page.goto("/ask");
+  await page.getByText("Phạm vi & tùy chọn", {exact: true}).click();
   await page.getByRole("button", {name: "Chọn tệp được cấp quyền"}).click();
   await expect(page.getByText(/Bị từ chối theo chính sách/))
     .toContainText("policy_denied · req-files-403");
@@ -309,6 +325,7 @@ test("denied file catalog renders the typed state inside the picker", async ({pa
 test("a picked file scopes the ask request to its immutable version id", async ({page}) => {
   const askBodies = await mockAsk(page);
   await page.goto("/ask");
+  await page.getByText("Phạm vi & tùy chọn", {exact: true}).click();
   await page.getByRole("button", {name: "Chọn tệp được cấp quyền"}).click();
   await page.getByRole("button", {name: /company-spec\.pdf/}).click();
   // The picked file is now echoed both in the fieldset and the composer chip.
@@ -384,12 +401,15 @@ test("mobile: the rail is a bottom sheet with no horizontal overflow", async ({p
   await page.goto("/ask");
   const rail = page.locator("#evidence-rail");
   await expect(rail).not.toHaveClass(/open/);
-  await page.getByRole("button", {name: "Bằng chứng", exact: true}).click();
+  const evidenceButton = page.getByRole("button", {name: "Bằng chứng", exact: true});
+  await expect(evidenceButton).toBeDisabled();
+  await submitQuestion(page, "Chính sách bảo hành robot?");
+  await expect(evidenceButton).toBeEnabled();
+  await evidenceButton.click();
   await expect(rail).toHaveClass(/open/);
   await page.keyboard.press("Escape");
   await expect(rail).not.toHaveClass(/open/);
   // A citation click reopens the sheet and focuses the entry.
-  await submitQuestion(page, "Chính sách bảo hành robot?");
   await page.getByRole("button", {name: /Trích dẫn — mở bằng chứng.*C1/}).click();
   await expect(rail).toHaveClass(/open/);
   const overflow = await page.evaluate(
@@ -424,8 +444,9 @@ test("the history panel lists the caller's server conversations and reopens one"
   // id, timestamps, stored first-question digest — never content).
   await mockAsk(page);
   await page.goto("/ask");
-  const historyPanel = page.getByRole("region", {name: "Hội thoại của bạn"});
-  await expect(historyPanel.getByText(`${sha.slice(0, 12)}…`)).toBeVisible();
+  const historyPanel = page.locator("details.ask-history");
+  await historyPanel.locator("summary").click();
+  await expect(historyPanel.getByText(/Hội thoại ·/)).toBeVisible();
   await historyPanel.getByRole("button", {name: "Mở lại"}).click();
   await expect(page).toHaveURL(new RegExp(`conversation=${conversationId}`));
   await expect(page.getByRole("heading", {name: "Hội thoại", exact: true})).toBeVisible();

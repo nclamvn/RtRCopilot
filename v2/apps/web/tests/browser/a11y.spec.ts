@@ -222,6 +222,7 @@ test("axe stateful: ask file-scope picker open (vi desktop)", async ({page, base
   await mockAsk(page);
   await page.setViewportSize({width: 1440, height: 900});
   await page.goto("/ask");
+  await page.getByText("Phạm vi & tùy chọn", {exact: true}).click();
   await page.getByRole("button", {name: "Chọn tệp được cấp quyền"}).click();
   await expect(page.locator(".ask-file-list button").first()).toBeVisible();
   await scan(page, "/ask picker open vi @1440×900");

@@ -15,6 +15,12 @@ import "./styles/ask.css";
 import "./styles/admin.css";
 // WP-B: theme-aware aliases for the frozen tokens (must load after styles.css).
 import "./styles/legacy-bridge.css";
+// TIP-024.5: explicit recovery boundary, imported last so the content-aware
+// responsive and readability contracts override frozen TIP-011 legacy rules.
+import "./styles/ux-recovery.css";
+// TIP-024.5: achromatic palette + provenance line grammar. Kept last so the
+// product-wide refinement also reaches legacy workspaces through their bridge.
+import "./styles/monochrome-premium.css";
 
 export const metadata: Metadata = {
   title: "RtR Copilot",

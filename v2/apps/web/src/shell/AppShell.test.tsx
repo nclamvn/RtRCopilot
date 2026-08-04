@@ -5,12 +5,14 @@ import {cleanup, fireEvent, render, screen, within} from "@testing-library/react
 import React from "react";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {I18nProvider} from "../i18n/provider";
-import {AppShell, activeArea} from "./AppShell";
+import {AppShell, activeArea, visibleAreas} from "./AppShell";
 
-const nav = vi.hoisted(() => ({pathname: "/ask", view: null as string | null}));
+const nav = vi.hoisted(() => ({
+  pathname: "/ask", view: null as string | null, push: vi.fn(),
+}));
 vi.mock("next/navigation", () => {
   const router = {
-    push() {}, replace() {}, prefetch() {}, back() {}, forward() {}, refresh() {},
+    push: nav.push, replace() {}, prefetch() {}, back() {}, forward() {}, refresh() {},
   };
   return {
     usePathname: () => nav.pathname,
@@ -21,7 +23,7 @@ vi.mock("next/navigation", () => {
 
 const identity = {
   user_id: "77777777-7777-4777-8777-777777777777",
-  email: "curator@rtrobotics.com", display_name: "RtR Curator", roles: ["curator"],
+  email: "admin@rtrobotics.com", display_name: "RtR Admin", roles: ["admin"],
 };
 
 function json(value: unknown, status = 200) {
@@ -33,6 +35,7 @@ function json(value: unknown, status = 200) {
 beforeEach(() => {
   nav.pathname = "/ask";
   nav.view = null;
+  nav.push.mockClear();
   vi.stubGlobal("fetch", vi.fn(async () => json(identity)));
 });
 
@@ -51,8 +54,13 @@ function renderShell(initialLocale: "vi" | "en" = "vi") {
 
 test("shell renders topbar, six nav areas and marks the active area", async () => {
   renderShell();
-  expect(screen.getByText("Copilot")).toBeInTheDocument();
-  expect(screen.getByText("Real-time Robotics")).toBeInTheDocument();
+  expect(screen.getAllByText("Copilot")).toHaveLength(1);
+  expect(document.querySelector(".pc-topbar .pc-brand")).not.toBeInTheDocument();
+  expect(screen.queryByText("Real-time Robotics")).not.toBeInTheDocument();
+  const workspace = screen.getByRole("button", {name: "Mở bảng lệnh không gian làm việc"});
+  expect(within(workspace).getByText("Copilot")).toBeInTheDocument();
+  expect(within(workspace).queryByText("Không gian nội bộ")).not.toBeInTheDocument();
+  expect(await screen.findByText("RtR Admin")).toBeInTheDocument();
   const navigation = screen.getByRole("navigation", {name: "Điều hướng chính"});
   const links = [
     ["Hỏi", "/ask"], ["Tệp", "/files"], ["Tài liệu", "/documents"],
@@ -69,7 +77,6 @@ test("shell renders topbar, six nav areas and marks the active area", async () =
     .toHaveAttribute("aria-current", "page");
   expect(within(navigation).getByRole("link", {name: "Quản trị"}))
     .not.toHaveAttribute("aria-current");
-  expect(await screen.findByText("RtR Curator")).toBeInTheDocument();
 });
 
 test("active-area rules cover every route, including knowledge-ops views", () => {
@@ -87,6 +94,16 @@ test("active-area rules cover every route, including knowledge-ops views", () =>
   expect(activeArea("/elsewhere", null)).toBeNull();
 });
 
+test("role-scoped information architecture removes privileged dead ends", () => {
+  expect(visibleAreas({...identity, roles: ["staff"]}).map(item => item.area))
+    .toEqual(["ask", "files", "documents"]);
+  expect(visibleAreas({...identity, roles: ["curator"]}).map(item => item.area))
+    .toEqual(["ask", "files", "documents", "knowledge", "operations"]);
+  expect(visibleAreas(identity).map(item => item.area)).toEqual([
+    "ask", "files", "documents", "knowledge", "operations", "admin",
+  ]);
+});
+
 test("skip link is the first focusable element and moves focus to main", () => {
   const {container} = renderShell();
   const skip = screen.getByRole("link", {name: "Bỏ qua tới nội dung chính"});
@@ -100,15 +117,22 @@ test("skip link is the first focusable element and moves focus to main", () => {
 
 test("global search opens the command palette", () => {
   renderShell();
-  const search = screen.getByRole("button", {name: "Tìm kiếm trong tri thức công ty"});
+  const search = screen.getByRole("button", {name: "Hỏi hoặc tìm trong tri thức công ty"});
   expect(search).toHaveAttribute("aria-haspopup", "dialog");
   fireEvent.click(search);
-  expect(screen.getByRole("dialog", {name: "Tìm kiếm trong tri thức công ty"}))
+  expect(screen.getByRole("dialog", {name: "Hỏi hoặc tìm trong tri thức công ty"}))
     .toBeInTheDocument();
+  fireEvent.change(screen.getByRole("textbox", {name: "Hỏi hoặc tìm trong tri thức công ty"}), {
+    target: {value: "bảo hành robot"},
+  });
+  const askAction = screen.getByRole("link", {name: /Hỏi Copilot:.*bảo hành robot/});
+  expect(askAction).toBeInTheDocument();
+  expect(askAction).toHaveAttribute("href", "/ask?q=b%E1%BA%A3o%20h%C3%A0nh%20robot");
 });
 
-test("language switch flips strings, lang attribute and persists via cookie only", () => {
+test("language switch flips strings, lang attribute and persists via cookie only", async () => {
   renderShell();
+  expect(await screen.findByText("RtR Admin")).toBeInTheDocument();
   const en = screen.getByRole("button", {name: "EN"});
   expect(en).toHaveAttribute("aria-pressed", "false");
   fireEvent.click(en);

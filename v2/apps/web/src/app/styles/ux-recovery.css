@@ -1,0 +1,217 @@
+/**
+ * TIP-024.5 — UX Recovery & Pilot Readiness.
+ *
+ * This layer is intentionally imported last. It fixes the shell-content
+ * geometry and moves proof rails on demand without rewriting the frozen
+ * legacy sheet. New work should use --pc-* tokens; delete matching legacy
+ * declarations when those workspaces are component-migrated.
+ */
+
+/* One product type system on every shell workspace. */
+.pc-main,
+.pc-main button,
+.pc-main input,
+.pc-main textarea,
+.pc-main select {
+  font-family: var(--pc-font-ui);
+}
+.pc-main .page-head h1,
+.pc-main h2,
+.pc-main h3,
+.pc-main h4,
+.pc-main .viewer-empty h2,
+.pc-main .evidence-rail .doc-note h3 {
+  font-family: var(--pc-font-ui);
+  letter-spacing: -0.015em;
+}
+.pc-main .page-head h1 {
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.08;
+  font-weight: 650;
+}
+.pc-main :where(.form-note, .surface-empty, .surface-loading, .grounding-note,
+  .hit-snippet, .message-meta, .ask-history, .picker, .picker-option,
+  .catalog-search, .file-list, .template-ledger, .ops-ledger, .rail-snippet,
+  .rail-facts, .doc-note, .fidelity) {
+  font-size: max(13px, 1em);
+  line-height: 1.5;
+}
+.pc-main :where(.eyebrow, legend, dt, .zone-chip, .file-kind) {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* Core shell controls are touch-safe at every density. */
+.pc-iconbtn,
+.pc-collapse,
+.pc-profile-action,
+.pc-locale button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.pc-search { min-height: 44px; }
+.pc-recent-item { min-height: 44px; }
+.pc-palette-item { text-decoration: none; }
+
+/* Ask: one readable conversation column; proof is an on-demand trail. */
+.ask-workspace {
+  width: min(100%, 960px);
+  margin-inline: auto;
+}
+.ask-workspace .ask-layout { display: block; }
+.ask-workspace .ask-surface {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-4);
+  min-height: 0;
+}
+.ask-workspace .ask-form {
+  order: 0;
+  position: relative;
+  bottom: auto;
+  z-index: auto;
+  border-color: var(--pc-border-strong);
+  box-shadow: none;
+}
+.ask-workspace .ask-history { order: 110; }
+.ask-workspace .ask-advanced {
+  border-top: 1px solid var(--pc-border);
+  padding-top: var(--pc-space-2);
+}
+.ask-workspace .ask-advanced > summary,
+.ask-workspace .ask-history > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  color: var(--pc-text-secondary);
+  cursor: pointer;
+  font-size: var(--pc-small-size);
+  font-weight: 600;
+  list-style-position: inside;
+}
+.ask-workspace .ask-advanced-body {
+  display: grid;
+  gap: var(--pc-space-3);
+  padding-top: var(--pc-space-2);
+}
+.ask-workspace .ask-history {
+  display: block;
+  padding-block: var(--pc-space-3);
+}
+.ask-workspace .ask-history > :not(summary) { margin-top: var(--pc-space-2); }
+.ask-workspace .ask-history button,
+.ask-workspace .ask-file-scope button,
+.ask-workspace .action-row button,
+.ask-workspace .ask-rail-toggle {
+  min-height: 44px;
+}
+.ask-workspace .ask-rail-toggle { display: inline-flex; align-items: center; }
+.ask-workspace .ask-rail-toggle:disabled { opacity: 0.45; cursor: default; }
+
+.ask-workspace .evidence-rail {
+  position: fixed;
+  inset: var(--pc-topbar-h) 0 0 auto;
+  width: min(420px, calc(100vw - 24px));
+  max-height: none;
+  border-radius: 0;
+  transform: translateX(104%);
+  transition: transform var(--pc-dur-drawer) var(--pc-ease);
+  z-index: var(--pc-z-drawer);
+  box-shadow: var(--pc-shadow-md);
+  pointer-events: none;
+}
+.ask-workspace .evidence-rail.open {
+  transform: none;
+  pointer-events: auto;
+}
+.ask-workspace .evidence-rail .close-mobile {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+.ask-workspace .ask-scrim,
+.ask-scrim {
+  display: block;
+  position: fixed;
+  inset: var(--pc-topbar-h) 0 0;
+  border: 0;
+  background: var(--pc-scrim);
+  z-index: var(--pc-z-scrim);
+}
+
+/* The shell removes 264 px before page breakpoints are evaluated. Collapse
+   three-column workspaces early enough for the 1280/1366 pilot laptops. */
+@media (max-width: 1365px) {
+  .files-layout { grid-template-columns: minmax(220px, 250px) minmax(0, 1fr); }
+  .doc-layout { grid-template-columns: 260px minmax(0, 1fr); }
+  .ops-layout { grid-template-columns: minmax(240px, 280px) minmax(0, 1fr); }
+  .ops-split { grid-template-columns: minmax(0, 1fr); }
+  .rail-sheet-toggle { display: inline-flex; align-items: center; min-height: 44px; }
+
+  .files-layout > .evidence-rail,
+  .doc-layout > .evidence-rail,
+  .ops-layout > .evidence-rail {
+    position: fixed;
+    inset: var(--pc-topbar-h) 0 0 auto;
+    width: min(420px, calc(100vw - 24px));
+    max-height: none;
+    border: 1px solid var(--pc-border);
+    transform: translateX(104%);
+    transition: transform var(--pc-dur-drawer) var(--pc-ease);
+    z-index: var(--pc-z-drawer);
+    box-shadow: var(--pc-shadow-md);
+  }
+  .files-layout > .evidence-rail.open,
+  .doc-layout > .evidence-rail.open,
+  .ops-layout > .evidence-rail.open { transform: none; }
+}
+
+@media (max-width: 760px) {
+  .pc-topbar { gap: var(--pc-space-2); }
+  .pc-iconbtn,
+  .pc-locale button,
+  .pc-search { min-width: 44px; min-height: 44px; }
+  .pc-locale button { padding-inline: 8px; }
+  .pc-main { padding-inline: var(--pc-space-4); }
+  .pc-dock { min-height: 64px; }
+  .pc-dock-item { min-width: 44px; min-height: 48px; }
+
+  .page-actions :where(button, a),
+  .files-layout :where(.type-filters button, .load-more),
+  .doc-layout :where(button, a),
+  .ops-layout :where(button, a) {
+    min-height: 44px;
+  }
+  .files-layout,
+  .doc-layout,
+  .ops-layout { grid-template-columns: minmax(0, 1fr); }
+  .files-layout .work-surface { grid-row: 1; }
+  .files-layout { height: calc(100vh - 196px); min-height: 480px; }
+  .ask-workspace .page-head { margin-bottom: var(--pc-space-4); }
+  .ask-workspace .ask-form {
+    margin-inline: calc(-1 * var(--pc-space-2));
+    padding: var(--pc-space-4);
+    bottom: auto;
+  }
+  .ask-workspace .ask-answer,
+  .ask-workspace .ask-research,
+  .ask-workspace .ask-conversation,
+  .ask-workspace .honest-null {
+    padding: var(--pc-space-4);
+  }
+  .ask-workspace .conversation-messages li[data-role="user"] { max-width: 92%; }
+  .ask-workspace .ask-history li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--pc-space-2);
+  }
+  .ask-workspace .ask-history li small { grid-column: 1; }
+  .ask-workspace .ask-history li button { grid-column: 2; grid-row: 1 / 3; }
+}
+
+@media (max-width: 420px) {
+  .pc-topbar-right { gap: 4px; }
+  .pc-help-btn { display: none; }
+  .pc-locale button:not([aria-pressed="true"]) { display: none; }
+}

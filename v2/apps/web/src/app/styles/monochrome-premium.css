@@ -1,0 +1,456 @@
+/**
+ * TIP-024.5 — Graphite premium refinement.
+ *
+ * Signature: provenance is a line grammar. SOT/verified uses a solid keyline,
+ * research uses a dashed keyline, private uses a dotted keyline, and blocked
+ * states use a double keyline. No workflow meaning depends on hue.
+ */
+
+html {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--pc-accent);
+  color: var(--pc-accent-contrast);
+}
+
+/* Quiet product chrome: close luminance steps, precise hairlines. */
+.pc-sidebar,
+.pc-topbar,
+.pc-dock {
+  background: color-mix(in srgb, var(--pc-bg-sidebar) 94%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.pc-topbar { border-bottom-color: color-mix(in srgb, var(--pc-border) 82%, transparent); }
+.pc-sidebar { border-right-color: color-mix(in srgb, var(--pc-border) 82%, transparent); }
+
+.pc-mark {
+  border: 1px solid var(--pc-border-strong);
+  background: var(--pc-accent);
+  color: var(--pc-accent-contrast);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc-accent-contrast) 12%, transparent);
+}
+
+.pc-workspace,
+.pc-new,
+.pc-nav-item,
+.pc-iconbtn,
+.pc-search,
+.pc-locale,
+.pc-kbd {
+  box-shadow: none;
+}
+
+.pc-new {
+  border: 0;
+  background: transparent;
+}
+.pc-new:hover {
+  background: transparent;
+}
+.pc-new .pc-new-ico {
+  border: 0;
+  background: transparent;
+  color: var(--pc-text-primary);
+}
+
+.pc-nav-item[aria-current="page"] {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.pc-nav-item[aria-current="page"] .pc-nav-ico {
+  background: transparent;
+  color: var(--pc-text-primary);
+}
+.pc-nav-item[aria-current="page"]::before {
+  left: 0;
+  width: 2px;
+  height: 24px;
+  border-radius: 0;
+  background: var(--pc-text-primary);
+}
+.pc-nav-item:hover::before,
+.pc-nav-item:focus-visible::before { width: 3px; height: 26px; }
+
+.pc-search {
+  border-color: var(--pc-border);
+  background: var(--pc-surface);
+}
+.pc-search:hover { border-color: var(--pc-border-strong); }
+.pc-locale button[aria-pressed="true"] {
+  background: var(--pc-surface-hover);
+  color: var(--pc-text-primary);
+  box-shadow: inset 0 -2px var(--pc-text-primary);
+}
+.pc-avatar {
+  border: 1px solid var(--pc-border-strong);
+  background: var(--pc-surface-hover);
+  color: var(--pc-text-primary);
+}
+
+/* Status remains scannable in monochrome through shape and texture. */
+.pc-status-dot { border: 1px solid var(--pc-text-muted); background: transparent; }
+.pc-status-dot[data-state="ok"] { border-color: var(--pc-success); background: var(--pc-success); }
+.pc-status-dot[data-state="warn"] { border-style: dashed; background: transparent; }
+.pc-status-dot[data-state="down"] {
+  border-style: double;
+  border-width: 3px;
+  background: transparent;
+}
+.pc-progress > span { background: var(--pc-text-primary); }
+.pc-progress[data-state="warn"] > span {
+  background: repeating-linear-gradient(90deg, var(--pc-warning) 0 5px, transparent 5px 8px);
+}
+.pc-progress[data-state="down"] > span {
+  background: repeating-linear-gradient(135deg, var(--pc-danger) 0 2px, transparent 2px 5px);
+}
+
+/* Refined editorial hierarchy: deliberate, compact, not billboard-like. */
+.pc-main .page-head {
+  align-items: flex-end;
+  padding-bottom: 22px;
+  margin-bottom: 28px;
+}
+.pc-main .page-head h1 {
+  max-width: 16ch;
+  font-size: clamp(32px, 3.2vw, 40px);
+  line-height: 1.04;
+  font-weight: 620;
+  letter-spacing: -0.035em;
+}
+.pc-main .page-head .eyebrow {
+  margin-bottom: 10px;
+  color: var(--pc-text-muted);
+  letter-spacing: 0.14em;
+}
+
+/* Ask composer: one opaque instrument; context and actions share one baseline. */
+.ask-workspace { width: min(100%, 960px); }
+.ask-workspace .ask-form {
+  grid-template-columns: max-content minmax(160px, 1fr) max-content;
+  column-gap: 12px;
+  row-gap: 14px;
+  align-items: start;
+  padding: 16px;
+  border-radius: 16px;
+  border-color: var(--pc-border-strong);
+  background: var(--pc-surface);
+  box-shadow: none;
+}
+.ask-workspace .ask-form:focus-within {
+  border-color: var(--pc-border-strong);
+  box-shadow: none;
+}
+.ask-workspace .ask-form:focus-within .ask-question { color: var(--pc-text-primary); }
+.ask-workspace .ask-question {
+  grid-column: 1 / -1;
+  gap: 10px;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-small-size);
+  letter-spacing: -0.005em;
+}
+.ask-workspace .ask-question textarea {
+  min-height: 84px;
+  padding: 4px 2px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 17px;
+  line-height: 1.55;
+  letter-spacing: -0.012em;
+}
+.ask-workspace .ask-question textarea:focus {
+  border-color: transparent;
+  background: transparent;
+  outline: 0;
+}
+.ask-workspace .ask-chips {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  gap: 6px;
+  padding-top: 0;
+  border-top: 0;
+}
+.ask-workspace .ask-chip {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: transparent;
+}
+.ask-workspace .ask-chip code,
+.ask-workspace .ask-file-current code,
+.ask-workspace .ask-file-picker code { color: var(--pc-text-primary); }
+.ask-workspace .ask-advanced {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.ask-workspace .ask-advanced > summary,
+.ask-workspace .ask-history > summary {
+  font-weight: 500;
+  color: var(--pc-text-muted);
+}
+.ask-workspace .ask-advanced > summary {
+  width: max-content;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--pc-border);
+  border-radius: 12px;
+  list-style: none;
+  background: transparent;
+}
+.ask-workspace .ask-advanced > summary::-webkit-details-marker { display: none; }
+.ask-workspace .ask-advanced > summary::after {
+  content: "+";
+  margin-left: 8px;
+  color: var(--pc-text-muted);
+  font-family: var(--pc-font-mono);
+}
+.ask-workspace .ask-advanced[open] > summary::after { content: "−"; }
+.ask-workspace .ask-advanced-body {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  padding-top: 12px;
+}
+.ask-workspace .ask-scope,
+.ask-workspace .ask-file-scope { border-radius: 12px; }
+.ask-workspace .action-row {
+  grid-column: 3;
+  grid-row: 2;
+  align-self: start;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 0;
+  border-top: 0;
+}
+.ask-workspace .action-row .primary,
+.ask-workspace .action-row button:not(.primary) {
+  min-height: 44px;
+  padding-block: 0;
+  border-radius: 12px;
+}
+.ask-workspace .action-row .primary,
+.pc-main .assembly-actions .primary,
+.pc-main .download,
+.admin-editor button,
+.admin-health-meta button {
+  border: 1px solid var(--pc-accent);
+  background: var(--pc-accent);
+  color: var(--pc-accent-contrast);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc-accent-contrast) 10%, transparent);
+}
+.ask-workspace .action-row .primary:hover:not(:disabled),
+.pc-main .assembly-actions .primary:hover:not(:disabled),
+.pc-main .download:hover,
+.admin-editor button:hover:not(:disabled),
+.admin-health-meta button:hover:not(:disabled) {
+  border-color: var(--pc-accent-hover);
+  background: var(--pc-accent-hover);
+}
+
+.ask-workspace .ask-answer,
+.ask-workspace .ask-research,
+.ask-workspace .ask-conversation,
+.ask-workspace .ask-history,
+.ask-workspace .honest-null,
+.ask-workspace .evidence-rail,
+.admin-workspace,
+.admin-access {
+  border-color: var(--pc-border);
+  border-radius: var(--pc-radius-xl);
+  box-shadow: none;
+}
+.ask-workspace .ask-answer,
+.ask-workspace .ask-research,
+.ask-workspace .ask-conversation,
+.ask-workspace .honest-null {
+  padding: 24px 26px;
+}
+.ask-workspace .answer-text {
+  line-height: 1.78;
+  letter-spacing: -0.006em;
+}
+.ask-workspace .grounding-note {
+  color: var(--pc-text-secondary);
+  font-family: var(--pc-font-mono);
+  font-size: var(--pc-caption-size);
+}
+.ask-workspace .confidence-caveat {
+  border-left-width: 1px;
+  border-left-style: double;
+  border-left-color: var(--pc-text-primary);
+  background: var(--pc-surface-subtle);
+}
+.ask-workspace .citation-marker,
+.ask-workspace .rail-marker {
+  border-color: var(--pc-border-strong);
+  background: transparent;
+  color: var(--pc-text-primary);
+}
+.ask-workspace .citation-marker:hover { border-color: var(--pc-text-primary); }
+.ask-workspace .rail-entries article[aria-current="true"] {
+  background: var(--pc-surface-subtle);
+  box-shadow: inset 0 0 0 1px var(--pc-text-primary), inset 4px 0 var(--pc-text-primary);
+}
+.ask-workspace .rail-locator,
+.ask-workspace .gap-link,
+.ask-workspace .research-hit code,
+.ask-workspace .message-meta code,
+.ask-workspace .ask-history code,
+.ask-workspace .rail-redacted { color: var(--pc-text-primary); }
+
+/* Provenance line grammar — the product's monochrome signature. */
+.zone-chip,
+.ask-workspace .zone-chip {
+  border-color: var(--pc-text-secondary);
+  border-style: solid;
+  background: transparent;
+  color: var(--pc-text-primary);
+}
+.zone-chip.zone-research,
+.ask-workspace .zone-chip.zone-research {
+  border-color: var(--pc-text-secondary);
+  border-style: dashed;
+  background: transparent;
+  color: var(--pc-text-secondary);
+}
+.zone-chip.zone-private,
+.ask-workspace .zone-chip.zone-private {
+  border-color: var(--pc-text-muted);
+  border-style: dotted;
+  color: var(--pc-text-muted);
+}
+.honest-null,
+.surface-denied,
+.admin-ledger article.risk,
+.pilot-gates article.partial { border-style: dashed; }
+.surface-error,
+.admin-notice.error,
+.admin-access,
+.pilot-gates article.blocked { border-style: double; }
+
+/* Legacy workspaces inherit the same visual precision without logic changes. */
+.pc-main :where(input, textarea, select) {
+  border-color: var(--pc-border);
+  border-radius: var(--pc-radius-sm);
+}
+.pc-main :where(button, a) { text-underline-offset: 3px; }
+.files-layout .type-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+  gap: 8px;
+  align-items: stretch;
+}
+.files-layout .type-filters button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--pc-text-secondary);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.files-layout .type-filters button:hover { border-color: var(--pc-border-strong); color: var(--pc-text-primary); }
+.files-layout .type-filters button[aria-pressed="true"] {
+  border-color: var(--pc-text-primary);
+  background: var(--pc-text-primary);
+  color: var(--pc-bg-app);
+}
+.files-layout :where(.load-more, .files-catalog-toggle, .rail-sheet-toggle) {
+  border-radius: 10px;
+}
+.file-list button[aria-current="true"],
+.template-ledger li button[aria-current="true"],
+.queue-list button[aria-current="true"],
+.ops-list li button[aria-current="true"],
+.admin-list button.selected {
+  box-shadow: inset 1px 0 var(--pc-text-primary);
+}
+.locator-spine {
+  background: repeating-linear-gradient(to bottom, transparent 0 16px,
+    var(--pc-border-strong) 16px 17px, transparent 17px 32px);
+}
+.admin-boundary { border-left-width: 1px; }
+.admin-live-dot {
+  border: 1px solid var(--pc-success);
+  background: var(--pc-success);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--pc-success) 10%, transparent);
+}
+.admin-ledger article header b,
+.admin-notice,
+.pilot-gates article b {
+  color: var(--pc-text-primary);
+  background: var(--pc-surface-subtle);
+}
+
+/* Quiet focus language: no surrounding focus frames anywhere in the product.
+   Keyboard focus remains perceivable through an internal baseline (controls),
+   an underline (links), or a left proof-cursor (shell regions). */
+html body :where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline-color: transparent !important;
+  outline-style: none !important;
+  outline-width: 0 !important;
+  outline-offset: 0 !important;
+}
+:where(button, input, textarea, select, [tabindex]):focus-visible {
+  box-shadow: inset 0 -2px currentColor !important;
+}
+a:focus-visible {
+  box-shadow: none !important;
+  text-decoration-line: underline;
+  text-decoration-thickness: 2px;
+}
+[data-shell-region]:focus-visible {
+  box-shadow: inset 3px 0 currentColor !important;
+}
+.ask-workspace .ask-question textarea:focus-visible {
+  box-shadow: none !important;
+  background: var(--pc-surface-subtle);
+}
+
+@media (max-width: 760px) {
+  .pc-main .page-head h1 { font-size: 34px; }
+  .ask-workspace .ask-form {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .ask-workspace .ask-question,
+  .ask-workspace .ask-chips,
+  .ask-workspace .ask-advanced,
+  .ask-workspace .action-row {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .ask-workspace .ask-chips { width: 100%; }
+  .ask-workspace .ask-chip { flex: 1; justify-content: center; }
+  .ask-workspace .ask-advanced > summary { width: 100%; justify-content: space-between; }
+  .ask-workspace .ask-advanced-body { grid-template-columns: minmax(0, 1fr); }
+  .ask-workspace .action-row { width: 100%; }
+  .ask-workspace .action-row .primary { flex: 1; justify-content: center; }
+  .files-layout .type-filters button { min-height: 44px; }
+  .ask-workspace .ask-answer,
+  .ask-workspace .ask-research,
+  .ask-workspace .ask-conversation,
+  .ask-workspace .honest-null { padding: 20px; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .pc-sidebar,
+  .pc-topbar,
+  .pc-dock {
+    background: var(--pc-bg-sidebar);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

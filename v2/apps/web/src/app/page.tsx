@@ -1,10 +1,9 @@
 import {redirect} from "next/navigation";
 
 /**
- * TIP-011 route consolidation: the Files workspace now lives under the shell
- * at /files. The legacy root URL redirects there, preserving the query string
- * so pre-move deep links minted against `/?version=…&page=…` (TIP-008
- * locator contract) keep opening the exact position.
+ * TIP-024.5: Ask is the product's primary entry. Legacy root-level file
+ * locators still carry a query string, so those links continue to open Files
+ * with the exact query preserved.
  */
 export default async function RootRedirect({searchParams}: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -16,5 +15,5 @@ export default async function RootRedirect({searchParams}: {
     }
   }
   const query = params.toString();
-  redirect(query ? `/files?${query}` : "/files");
+  redirect(query ? `/files?${query}` : "/ask");
 }

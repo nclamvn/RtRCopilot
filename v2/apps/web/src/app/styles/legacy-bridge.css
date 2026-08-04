@@ -5,9 +5,9 @@
  * Imported AFTER styles.css so these `:root` aliases override the frozen dark
  * literal tokens. Because every `--pc-*` value already switches per
  * `data-theme`, one alias set here makes the whole legacy surface theme-aware.
- * `--signal` (overloaded brand+danger in TIP-011) aliases to the brand accent;
- * the genuine danger/warning selectors are pinned below so red stays red and
- * research stays amber in both themes.
+ * `--signal` (overloaded brand+danger in TIP-011) aliases to the product
+ * accent; semantic selectors remain independently addressable even though
+ * TIP-024.5 renders them through neutral tone and line grammar.
  */
 
 :root {
@@ -21,8 +21,8 @@
   --locator: var(--pc-accent);
 }
 
-/* Danger / warning semantics preserved (borders + accents that `--signal`
-   used to carry as red/amber). Text colours are migrated at the literals. */
+/* Danger / warning semantics preserved independently from the old overloaded
+   `--signal`; the final visual encoding is supplied by the premium layer. */
 .surface-error { border-color: var(--pc-danger); }
 .surface-denied { border-color: var(--pc-warning); }
 .action-row .danger, .row-head .danger { border-color: var(--pc-danger); }
