@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** Blueprint APPROVED · TIP-013B local activation complete · TIP-022 Recovery Gate IN BUILD (04/08/2026)
+**Trạng thái:** Blueprint APPROVED · TIP-022 Recovery Gate VERIFIED · TIP-018 NEXT (04/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -55,7 +55,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-019 ✅ | Theming zero-debt: rgba overlays → color-mix tokens; prefers-color-scheme default (no flash) | 016,017 | VERIFIED: 6/6 AC; axe 0 crit/serious both themes × both locales; Playwright 88/88; vitest 148; next build EXIT 0; no backend/migration change |
 | TIP-020 ◇ | Pytest async-loop CI stabilization | 012 | RECOVERED / MERGED / BASELINE-VERIFIED at `356f9ac`; see traceability recovery record |
 | TIP-021 ◇ | Compose readiness and tolerant cleanup stabilization | 012 | RECOVERED / MERGED / BASELINE-VERIFIED at `f816dca`; see traceability recovery record |
-| TIP-022 ◐ | Recovery gate: reproducible verify, runtime/build convergence, worker operational readiness, repository hygiene | 012,013B,019 | APPROVED / IN BUILD; mandatory gate before TIP-018 |
+| TIP-022 ✅ | Recovery gate: reproducible verify, runtime/build convergence, worker operational readiness, repository hygiene | 012,013B,019 | VERIFIED: 8/8 AC; local `make verify` PASS; Playwright 88/88; Trivy 0 HIGH/CRITICAL; runtime Git/API/Web SHA converged; GitHub aggregate green |
 
 ## Audit trail rule
 

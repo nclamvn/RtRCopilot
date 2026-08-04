@@ -9,7 +9,7 @@
 - Priority: P0
 - Issued: 2026-08-04
 - Baseline commit: `0d8f9e0392dc9dc1eb23e7a8befcb53bda4933da`
-- Status: APPROVED / IN BUILD
+- Status: VERIFIED (2026-08-04)
 
 ## CONTEXT
 

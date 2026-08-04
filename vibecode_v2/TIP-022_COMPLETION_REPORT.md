@@ -1,7 +1,7 @@
 # COMPLETION REPORT — TIP-022 · Recovery Gate & Runtime Convergence
 
 **Date:** 2026-08-04
-**Builder status:** DONE — pending Contractor runtime/CI sign-off
+**Builder status:** DONE — Contractor VERIFIED
 **Baseline:** `0d8f9e0392dc9dc1eb23e7a8befcb53bda4933da`
 
 ## What was built
