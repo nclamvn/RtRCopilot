@@ -17,6 +17,7 @@ from rtr_copilot.config import Settings, get_settings
 from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.ingestion.errors import IngestionFailure
 from rtr_copilot.ingestion.extractors import Artifact, canonical_json, extract_required
+from rtr_copilot.ingestion.file_index import index_artifact
 from rtr_copilot.ingestion.jobs import JobClaim, JobRepository
 from rtr_copilot.ingestion.malware import ClamAVAdapter, MalwareAdapter
 from rtr_copilot.ingestion.metrics import (
@@ -39,6 +40,7 @@ from rtr_copilot.ingestion.validators import (
     validate_content,
 )
 from rtr_copilot.observability.worker import log_job_request_id
+from rtr_copilot.rag.adapters import OfflineHashEmbedding
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.resources import ResourceRecord, ResourceRepository
 from rtr_copilot.storage.s3 import S3ObjectStorage, StoredObject
@@ -816,6 +818,16 @@ class IngestionService:
                     "job_id": claim.job_id,
                     "attempt": claim.attempt,
                 })
+                indexed_chunks = await index_artifact(
+                    session,
+                    version_id=claim.version_id,
+                    rendition_id=item["rendition_id"],
+                    source_sha256=claim.input_sha256,
+                    artifact=artifact,
+                    embedding=OfflineHashEmbedding(
+                        self.settings.rag_embedding_dimension,
+                    ),
+                )
                 await AuditRepository().append(
                     session,
                     actor_kind="service",
@@ -830,6 +842,7 @@ class IngestionService:
                         "job_id": str(claim.job_id),
                         "kind": item["artifact"].kind,
                         "quality_state": item["artifact"].quality_state,
+                        "indexed_chunks": indexed_chunks,
                     },
                 )
                 RENDITION_BYTES.labels(item["artifact"].kind).inc(

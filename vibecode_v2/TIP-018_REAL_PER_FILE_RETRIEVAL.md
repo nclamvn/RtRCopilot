@@ -1,7 +1,10 @@
-# TIP-018 · Real Per-File Retrieval (design + gate plan)
+# TIP-018 · Real Per-File Retrieval
 
-**Depends:** TIP-006 (SOT/provenance), TIP-007 (hybrid RAG), TIP-008 (file versions/renditions), TIP-011 (Ask file-scope, safe form). **Branch:** `tip-013b`.
-**Contractor** authored this packet + design. **Builder** slice is **NOT executed** — see §8 Build disposition (BLOCKED on the compose stack). **Homeowner:** the DB-backed safety gates are the merge condition.
+**Status:** VERIFIED (04/08/2026)<br>
+**Depends:** TIP-006, TIP-007, TIP-008, TIP-011, TIP-022.<br>
+**Branch:** `agent/tip-018-per-file-retrieval`.<br>
+**Baseline:** `064d5db6f77f19624e43e9cd0f25f547a79643b4`.<br>
+**Merge rule:** DB-backed isolation, ACL, grounding and regression gates are mandatory.
 
 ---
 
@@ -22,12 +25,16 @@ This closes the deferral recorded in TIP-007 (§92/§262 "no attachments") and T
 
 ### 3.2 Real per-file retrieval
 - **D — Scope by immutable `version_id`, not `source_key`.** Add `SearchFilters.version_id: uuid | None`. When set, retrieval targets the chunks produced from **that file version** (join `chunks c → renditions/extraction of version_id`), NOT the SOT source key. `source_key` and `version_id` are mutually exclusive at the API boundary.
-- **Indexing.** Per-version content must be searchable. Two options, decided in DRY-RUN by measuring index cost:
-  - (a) **On-ingest version chunks** — TIP-005 already extracts text/renditions per version; add a per-version chunk generation (lexical `tsvector` + `OfflineHashEmbedding` vector) written at ingest, lifecycle-tied to the version. Preferred (query-time parity with SOT).
-  - (b) **On-demand extraction** — extract+embed the version at ask time if not indexed; higher latency, no new storage. Fallback only.
+- **Indexing.** The 04/08 DRY-RUN found that `chunks` is intentionally SOT-only
+  (`source_zone='sot'` plus mandatory package/record/generation FKs). File content
+  therefore uses a separate immutable `file_chunks` plane, keyed by
+  `document_version_id`, populated from verified JSON renditions during ingest.
+  It has the same lexical/vector primitives but cannot masquerade as SOT.
 - **ACL — identical predicate, version-anchored.** Reuse the SOT guards against the version's resource: `has_effective_acl_deny(version_record, principal, 'view')`, classification ceiling from `filters.classification_ceiling`, owner/department/project ABAC via `policy.decide`. A caller may ask within a version **iff** they may view it (same predicate the Files catalog/viewer uses — no second, weaker path).
 - **Isolation invariant.** With `version_id` set, every candidate row MUST satisfy `chunk.version_id = :version_id`; a row from any other version is a leak and fails the gate. Denied/other-version → honest-null (never a partial answer from the wrong file).
-- **Grounding unchanged.** `verify_grounding` still requires a citation per sentence; citations carry the version's provenance (version_id, checksums, locator) so the Evidence Rail deep-links into the exact file position (TIP-008 locator contract) — already wired in the UI.
+- **Grounding unchanged.** `verify_grounding` still requires a citation per sentence.
+  Citation persistence uses an XOR source reference (`chunk_id` for SOT or
+  `file_chunk_id` for private context), with exact version checksum and locator.
 - **DLP / provider policy unchanged.** `ProviderPolicy` and DLP redaction apply as today.
 
 ### 3.3 API contract
@@ -37,8 +44,12 @@ This closes the deferral recorded in TIP-007 (§92/§262 "no attachments") and T
 
 - **D-018-01** version_id scope replaces source_key when present; mutually exclusive; source_key path retained (no behaviour change for SOT-only asks).
 - **D-018-02** ACL predicate for a version == the Files viewer predicate (single source of truth; no weaker retrieval path).
-- **D-018-03** per-version indexing at ingest (option a) unless DRY-RUN shows unacceptable storage; else on-demand (option b) with a recorded latency note.
+- **D-018-03** use a dedicated on-ingest `file_chunks` plane. Reusing SOT chunks
+  was rejected because it would break publish provenance and source-zone truth.
 - **D-018-04** isolation invariant enforced in SQL (`version_id` equality) AND asserted by two-file leak probes.
+- **D-018-05** persisted citations have exactly one source: SOT chunk XOR file
+  chunk. Conversation replay re-authorizes the same version lineage before text
+  or citation disclosure.
 
 ## 5. Acceptance criteria
 
@@ -69,11 +80,9 @@ Run on the live stack (Postgres 16 + pgvector, MinIO, Redis) via `compose.yaml`:
 
 Measure per-version index cost (option a vs b) → add `SearchFilters.version_id` + SQL version-scope + ACL anchor → write leak/ACL/grounding fixtures + tests → run §6 → switch the Ask client filter → Completion + Verify.
 
-## 8. Build disposition — **BLOCKED (infra), not started**
+## 8. Build disposition
 
-The Builder slice is **intentionally not executed in this sandbox.** Contractor due-diligence (03/08/2026):
-
-- The safety gates (§6.1–6.4) require Postgres+pgvector+MinIO+Redis via Docker. In this sandbox the **Docker daemon cannot be started** (`ulimit: Operation not permitted` — privileged start denied), `5432/6379/9000` are closed, and there is **no local pgvector**. Non-DB unit toolchain works (61/61) but covers none of the retrieval safety path.
-- Per Vibecode — *gates with teeth; never green-by-assertion; no silent leak* — a change to evidence isolation / ACL **must not** be written-and-shipped without its leak/ACL/grounding gates running. Producing that code here would be exactly the unverified safety-critical change the method forbids.
-
-**To unblock (Homeowner / infra):** bring the compose stack up (a Docker-capable environment) and re-run this TIP's Builder slice; the design above is ready to implement against the live gates. Until then TIP-018 stays at **DESIGN COMPLETE · BUILD BLOCKED**.
+TIP-022 restored the full local compose gate. Postgres+pgvector, MinIO, Redis,
+API, worker and Web are operational at the baseline SHA, so the prior
+infrastructure blocker is closed. Builder implementation and live verification
+are now authorized; no completion claim is permitted until §6 passes.

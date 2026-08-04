@@ -12,8 +12,8 @@
  *   denied state; research results render exactly as the backend labels
  *   them (zone_label/tier/grounding).
  * - Optional file scope: picker over the ACL-filtered Files catalog proxy;
- *   the frozen ask API scopes retrieval by `filters.source_key`, so the
- *   picked file's logical name is sent as that key — evidence outside the
+ *   the ask API scopes retrieval by immutable `filters.version_id`, so the
+ *   picked file's exact version is sent — evidence outside the
  *   caller's policy scope never appears either way.
  * - Honest-null is first-class: the recorded gap id (and its state when the
  *   caller may read the gap) with a Knowledge Ops link for curators.
@@ -312,7 +312,7 @@ export default function AskPage() {
         body: JSON.stringify({
           question: trimmed,
           ...(conversationId ? {conversation_id: conversationId} : {}),
-          ...(fileScope ? {filters: {source_key: fileScope.logicalName}} : {}),
+          ...(fileScope ? {filters: {version_id: fileScope.versionId}} : {}),
         }),
       });
       if (response.status === 401) return loseAccess();

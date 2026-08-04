@@ -86,7 +86,7 @@ if [[ ! -f .env.demo ]]; then
     echo "APP_ENV=development"
     echo "DEV_OIDC_ENABLED=true"
     echo "SESSION_COOKIE_SECURE=false"
-    echo "EXPECTED_SCHEMA_REVISION=0009_governance_research"
+    echo "EXPECTED_SCHEMA_REVISION=0010_file_retrieval"
     echo "SOT_SIGNING_SECRET=${SECRET}"
     echo "SOT_STAGING_ROOT=/tmp/rtr-sot-staging"
     echo "RAG_PROVIDER_MODE=local"
@@ -128,6 +128,7 @@ compose run --rm \
     python -m rtr_copilot.commands.onboard_batch \
       --manifest /tmp/manifest.json --apply --approve --report /tmp/ledger.json
     python /app/eval/demo/run_reindex.py
+    python -m rtr_copilot.commands.reindex_file_chunks
     echo "---- activation ledger ----"
     python -c "import json;l=json.load(open(\"/tmp/ledger.json\"));print(\"status=\"+l[\"status\"],\"activated=\"+str(l[\"activated_count\"]))"
   '

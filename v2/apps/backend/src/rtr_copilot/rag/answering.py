@@ -219,7 +219,7 @@ class AnswerService:
             async with self.uow.factory() as session:
                 generation_ids = list((await session.execute(text("""
                     SELECT DISTINCT generation_id FROM chunks
-                    WHERE chunk_id=ANY(:chunk_ids)
+                    WHERE chunk_id=ANY(CAST(:chunk_ids AS uuid[]))
                 """), {"chunk_ids": [item.chunk_id for item in hits]})).scalars())
         async with self.uow.transaction() as session:
             await session.execute(text("""
@@ -371,14 +371,30 @@ class AnswerService:
         if not hits:
             return False
         async with self.uow.factory() as session:
-            count = await session.scalar(text("""
+            sot_ids = [item.chunk_id for item in hits if item.citation.zone_label == "sot"]
+            file_ids = [
+                item.chunk_id for item in hits if item.citation.zone_label == "private"
+            ]
+            sot_count = await session.scalar(text("""
                 SELECT count(*) FROM chunks c
                 JOIN active_search_generations ag ON ag.generation_id=c.generation_id
                 JOIN records r ON r.record_id=c.record_id
-                WHERE c.chunk_id=ANY(:chunk_ids) AND c.lifecycle='active'
+                WHERE c.chunk_id=ANY(CAST(:chunk_ids AS uuid[]))
+                  AND c.lifecycle='active'
                   AND r.current_version_id=c.record_version_id
-            """), {"chunk_ids": [item.chunk_id for item in hits]})
-        return int(count or 0) == len(hits)
+            """), {"chunk_ids": sot_ids})
+            file_count = await session.scalar(text("""
+                SELECT count(*) FROM file_chunks fc
+                JOIN renditions rd ON rd.rendition_id=fc.rendition_id
+                JOIN resources rr ON rr.resource_id=rd.rendition_id
+                WHERE fc.file_chunk_id=ANY(CAST(:chunk_ids AS uuid[]))
+                  AND fc.lifecycle='active' AND rd.status='ready'
+                  AND rr.lifecycle_state='active'
+            """), {"chunk_ids": file_ids})
+        return (
+            int(sot_count or 0) == len(sot_ids)
+            and int(file_count or 0) == len(file_ids)
+        )
 
     async def _soft_cited_version_ids(
         self,
@@ -394,6 +410,7 @@ class AnswerService:
         """
         version_ids = sorted({
             item.citation.record_version_id for item in selected
+            if item.citation.record_version_id is not None
         })
         if not version_ids:
             return set()
@@ -458,23 +475,31 @@ class AnswerService:
                 citation = hit.citation
                 await session.execute(text("""
                     INSERT INTO answer_citations(
-                      citation_id,answer_run_id,marker,chunk_id,record_key,
-                      record_version_id,evidence_key,record_checksum,evidence_checksum,
+                      citation_id,answer_run_id,marker,chunk_id,file_chunk_id,
+                      record_key,record_version_id,document_version_id,
+                      evidence_key,record_checksum,evidence_checksum,
                       source_key,source_revision,provenance_level,verification_state,
-                      freshness_state,source_label,locator,redacted
+                      freshness_state,source_label,locator,redacted,zone_label
                     ) VALUES (
-                      :citation_id,:run_id,:marker,:chunk_id,:record_key,:version_id,
+                      :citation_id,:run_id,:marker,:chunk_id,:file_chunk_id,
+                      :record_key,:version_id,:document_version_id,
                       :evidence_key,:record_checksum,:evidence_checksum,:source_key,
                       :revision,:provenance,:verification,:freshness,:source_label,
-                      CAST(:locator AS jsonb),:redacted
+                      CAST(:locator AS jsonb),:redacted,:zone_label
                     )
                 """), {
                     "citation_id": uuid.uuid5(run_id, citation.marker),
                     "run_id": run_id,
                     "marker": citation.marker,
-                    "chunk_id": citation.chunk_id,
+                    "chunk_id": (
+                        citation.chunk_id if citation.zone_label == "sot" else None
+                    ),
+                    "file_chunk_id": (
+                        citation.chunk_id if citation.zone_label == "private" else None
+                    ),
                     "record_key": citation.record_key,
                     "version_id": citation.record_version_id,
+                    "document_version_id": citation.document_version_id,
                     "evidence_key": citation.evidence_key,
                     "record_checksum": citation.record_checksum,
                     "evidence_checksum": citation.evidence_checksum,
@@ -486,6 +511,7 @@ class AnswerService:
                     "source_label": citation.source_label,
                     "locator": json.dumps(citation.locator),
                     "redacted": citation.redacted,
+                    "zone_label": citation.zone_label,
                 })
             latency = int((time.monotonic() - started) * 1000)
             await session.execute(text("""

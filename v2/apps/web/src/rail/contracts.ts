@@ -162,12 +162,16 @@ export function evidenceFromAskCitation(
   if (!record(value)) throw new Error("invalid_citation");
   let zone: EvidenceZone | null = null;
   if ("zone_label" in value) {
-    if (value.zone_label !== "sot") throw new Error("zone_label_forged");
-    zone = "sot";
+    if (value.zone_label !== "sot" && value.zone_label !== "private") {
+      throw new Error("zone_label_forged");
+    }
+    zone = value.zone_label;
   }
+  const versionId = value.zone_label === "private"
+    ? value.document_version_id : value.record_version_id;
   if (!text(value.marker, 8) || !MARKER.test(value.marker as string)
       || !uuid(value.chunk_id) || !text(value.record_key, 500)
-      || !uuid(value.record_version_id)
+      || !uuid(versionId)
       || !(value.evidence_key === null || text(value.evidence_key, 500))
       || !hex64(value.record_checksum)
       || !(value.evidence_checksum === null || hex64(value.evidence_checksum))
@@ -188,7 +192,7 @@ export function evidenceFromAskCitation(
     sourceLabel: value.source_label as string,
     sourceRevision: value.source_revision as number,
     recordKey: value.record_key as string,
-    recordVersionId: value.record_version_id as string,
+    recordVersionId: versionId as string,
     versionOrdinal: null,
     evidenceKey: text(value.evidence_key, 500) && value.evidence_key
       ? value.evidence_key as string : null,

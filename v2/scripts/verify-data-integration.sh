@@ -156,6 +156,15 @@ owner_sql "SELECT to_regclass('public.research_sources') IS NOT NULL
 run_migration downgrade 0008_document_operating_system
 owner_sql "SELECT to_regclass('public.research_records') IS NULL" | grep -q "t"
 run_migration upgrade 0009_governance_research
+run_migration upgrade 0010_file_retrieval
+owner_sql "SELECT to_regclass('public.file_chunks') IS NOT NULL
+  AND EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name='answer_citations' AND column_name='file_chunk_id'
+  )" | grep -q "t"
+run_migration downgrade 0009_governance_research
+owner_sql "SELECT to_regclass('public.file_chunks') IS NULL" | grep -q "t"
+run_migration upgrade 0010_file_retrieval
 run_migration downgrade 0004_append_only_audit
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NULL" | grep -q "t"
 run_migration upgrade 0005_ingestion_renditions
@@ -190,6 +199,7 @@ docker compose --profile tools run --rm --no-deps \
       tests/test_data_integration.py tests/test_ingestion_integration.py \
       tests/test_documents_integration.py \
       tests/test_sot_integration.py tests/test_rag_integration.py \
+      tests/test_tip018_integration.py \
       tests/test_governance_integration.py
   '
 
@@ -375,6 +385,8 @@ for statement in \
   "DELETE FROM sot_reindex_outbox" \
   "DELETE FROM chunks" \
   "UPDATE chunks SET normalized_text='tamper'" \
+  "DELETE FROM file_chunks" \
+  "UPDATE file_chunks SET normalized_text='tamper'" \
   "DELETE FROM answer_citations" \
   "UPDATE answer_citations SET marker='C999'" \
   "DELETE FROM messages" \
@@ -384,5 +396,5 @@ do
     denied=$((denied + 1))
   fi
 done
-[[ "$denied" -eq 18 ]]
-echo "DATA INTEGRATION PASS · migrations=9 · revision_fixtures=9 · failing_ddl_rollback=1 · tests=45 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=18"
+[[ "$denied" -eq 20 ]]
+echo "DATA INTEGRATION PASS · migrations=10 · revision_fixtures=10 · failing_ddl_rollback=1 · tests=48 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=20"

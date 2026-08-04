@@ -42,10 +42,10 @@ const citation = {
   redacted: false,
 };
 
-type Handler = () => {status?: number; json: unknown};
+type Handler = (init?: RequestInit) => {status?: number; json: unknown};
 
 function mockFetch(routes: Record<string, Handler>) {
-  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const raw = typeof input === "string"
       ? input
       : input instanceof URL ? input.toString() : input.url;
@@ -54,7 +54,7 @@ function mockFetch(routes: Record<string, Handler>) {
     if (!handler) return new Response(JSON.stringify({error: {code: "unmocked"}}), {
       status: 500, headers: {"content-type": "application/json"},
     });
-    const {status = 200, json} = handler();
+    const {status = 200, json} = handler(init);
     return new Response(JSON.stringify(json), {
       status, headers: {"content-type": "application/json"},
     });
@@ -264,4 +264,45 @@ test("denied file catalog renders the typed state inside the picker", async () =
   fireEvent.click(await screen.findByRole("button", {name: "Chọn tệp được cấp quyền"}));
   const denied = await screen.findByText(/Bị từ chối theo chính sách/);
   expect(denied).toHaveTextContent("policy_denied · req-5");
+});
+
+test("file-scoped Ask sends the immutable version id", async () => {
+  let askBody: unknown = null;
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-file",
+    }}),
+    "/api/files": () => ({json: {items: [{
+      document_id: "77777777-7777-4777-8777-777777777777",
+      version_id: versionId,
+      logical_name: "flight-envelope",
+      display_filename: "flight-envelope.pdf",
+      viewer_kind: "pdf",
+      classification: "internal",
+    }], next_cursor: null}}),
+    "/api/ask/ask": init => {
+      askBody = JSON.parse(String(init?.body));
+      return {json: {
+        state: "honest_null", answer: "Không tìm thấy bằng chứng.", citations: [],
+        conversation_id: conversationId, answer_run_id: runId,
+        gap_id: gapId, request_id: "req-file",
+      }};
+    },
+    [`/api/governance/gaps/${gapId}`]: () => ({status: 403, json: {
+      error: {code: "forbidden", message: ""}, request_id: "req-gap-file",
+    }}),
+  });
+  render(<AskPage/>);
+  fireEvent.click(await screen.findByRole("button", {name: "Chọn tệp được cấp quyền"}));
+  fireEvent.click(await screen.findByText("flight-envelope.pdf"));
+  fireEvent.change(screen.getByLabelText("Câu hỏi"), {
+    target: {value: "Giới hạn bay là gì?"},
+  });
+  fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
+  await waitFor(() => expect(askBody).toEqual({
+    question: "Giới hạn bay là gì?",
+    filters: {version_id: versionId},
+  }));
 });

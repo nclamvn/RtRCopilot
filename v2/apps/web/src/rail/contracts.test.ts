@@ -69,7 +69,7 @@ describe("ask citation adapter", () => {
     expect(entry.locator).toEqual({page: 4});
   });
 
-  test("the literal server sot label renders the chip; any other label is forged", () => {
+  test("server sot/private labels render; other evidence planes are forged", () => {
     const labeled = evidenceFromAskCitation(
       {...citation, zone_label: "sot"},
       "grounded",
@@ -77,8 +77,14 @@ describe("ask citation adapter", () => {
     expect(labeled.zone).toBe("sot");
     expect(() => evidenceFromAskCitation({...citation, zone_label: "research"}, "grounded"))
       .toThrow("zone_label_forged");
-    expect(() => evidenceFromAskCitation({...citation, zone_label: "private"}, "grounded"))
-      .toThrow("zone_label_forged");
+    const privateEntry = evidenceFromAskCitation({
+      ...citation,
+      zone_label: "private",
+      record_version_id: null,
+      document_version_id: versionId,
+    }, "grounded");
+    expect(privateEntry.zone).toBe("private");
+    expect(privateEntry.recordVersionId).toBe(versionId);
     expect(() => evidenceFromAskCitation({...citation, zone_label: "SOT"}, "grounded"))
       .toThrow("zone_label_forged");
   });
