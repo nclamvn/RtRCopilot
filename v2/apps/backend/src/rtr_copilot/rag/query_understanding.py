@@ -169,6 +169,8 @@ class QueryRewriter(Protocol):
     The shipped default is offline + deterministic, so runtime behavior is
     unchanged until a provider is injected."""
 
+    calls: int
+
     async def rewrite(self, question: str) -> RewriteResult: ...
 
 
@@ -176,6 +178,8 @@ class OfflineRewriter:
     """Deterministic, no LLM/network. Also the fallback path for ``understand``:
     it simply returns the Phase 1 resolution, so with no provider the pipeline
     behaves exactly as Phase 1."""
+
+    calls = 0
 
     async def rewrite(self, question: str) -> RewriteResult:
         return RewriteResult(entities=resolve_entities(question))

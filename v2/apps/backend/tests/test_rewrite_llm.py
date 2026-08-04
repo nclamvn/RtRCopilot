@@ -63,6 +63,14 @@ class _FakeClient:
         return self._result
 
 
+class _HangingClient(_FakeClient):
+    async def propose(self, question: str, catalog: list[str]) -> RewriteResult:
+        del question, catalog
+        self.calls += 1
+        await asyncio.sleep(10)
+        raise AssertionError("orchestration timeout failed")
+
+
 class _FakeBreaker:
     def __init__(self, admit: bool) -> None:
         self.admit = admit
@@ -108,6 +116,7 @@ class TestFallbackChain:
         out = asyncio.run(rewriter.rewrite("hr"))
         assert out.entities == ["HERA"]
         assert primary.calls == 1 and fallback.calls == 0
+        assert rewriter.calls == 1
 
     def test_primary_failure_falls_to_secondary(self) -> None:
         primary = _FakeClient("anthropic", error=RuntimeError("boom"))
@@ -116,6 +125,16 @@ class TestFallbackChain:
         out = asyncio.run(rewriter.rewrite("vega"))
         assert out.entities == ["VEGA"]
         assert primary.calls == 1 and fallback.calls == 1
+        assert rewriter.calls == 2
+        assert rewriter.total_timeout == pytest.approx(2.1)
+
+    def test_hanging_primary_is_bounded_and_falls_to_secondary(self) -> None:
+        primary = _HangingClient("anthropic")
+        fallback = _FakeClient("openai", result=RewriteResult(entities=["VEGA"]))
+        rewriter = ExternalLLMRewriter([primary, fallback], timeout=0.01)
+        out = asyncio.run(rewriter.rewrite("vega"))
+        assert out.entities == ["VEGA"]
+        assert rewriter.calls == 2
 
     def test_all_fail_raises(self) -> None:
         primary = _FakeClient("anthropic", error=RuntimeError("boom"))
@@ -136,6 +155,7 @@ class TestFallbackChain:
         out = asyncio.run(rewriter.rewrite("q"))
         assert out.entities == ["VEGA"]
         assert primary.calls == 0 and fallback.calls == 1
+        assert rewriter.calls == 1
 
     def test_breaker_records_failure_then_success(self) -> None:
         breakers = {"anthropic": _FakeBreaker(admit=True),
@@ -190,7 +210,11 @@ class TestBuildRewriter:
         assert isinstance(build_rewriter(settings), OfflineRewriter)
 
     def test_anthropic_only(self) -> None:
-        settings = _settings(rag_rewrite_enabled=True, anthropic_api_key="k")
+        settings = _settings(
+            rag_rewrite_enabled=True,
+            rag_external_classification_allowlist="internal",
+            anthropic_api_key="k",
+        )
         rewriter = build_rewriter(settings)
         assert isinstance(rewriter, ExternalLLMRewriter)
         assert [client.name for client in rewriter.clients] == ["anthropic"]
@@ -198,9 +222,17 @@ class TestBuildRewriter:
     def test_both_keys_anthropic_first(self) -> None:
         settings = _settings(
             rag_rewrite_enabled=True,
+            rag_external_classification_allowlist="internal",
             anthropic_api_key="k1",
             openai_api_key="k2",
         )
         rewriter = build_rewriter(settings)
         assert isinstance(rewriter, ExternalLLMRewriter)
         assert [client.name for client in rewriter.clients] == ["anthropic", "openai"]
+
+    def test_key_without_external_allowlist_fails_closed(self) -> None:
+        settings = _settings(
+            rag_rewrite_enabled=True,
+            anthropic_api_key="k",
+        )
+        assert isinstance(build_rewriter(settings), OfflineRewriter)

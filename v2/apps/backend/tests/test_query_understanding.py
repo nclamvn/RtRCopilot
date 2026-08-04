@@ -24,18 +24,26 @@ class _StubRewriter:
 
     def __init__(self, result: RewriteResult) -> None:
         self._result = result
+        self.calls = 0
 
     async def rewrite(self, question: str) -> RewriteResult:
+        self.calls += 1
         return self._result
 
 
 class _FailingRewriter:
+    calls = 0
+
     async def rewrite(self, question: str) -> RewriteResult:
+        self.calls += 1
         raise RuntimeError("provider exploded")
 
 
 class _SlowRewriter:
+    calls = 0
+
     async def rewrite(self, question: str) -> RewriteResult:
+        self.calls += 1
         await asyncio.sleep(10)
         return RewriteResult()
 

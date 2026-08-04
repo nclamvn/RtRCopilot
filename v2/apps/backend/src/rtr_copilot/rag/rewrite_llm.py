@@ -18,6 +18,7 @@ untouched.
 """
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import json
 from collections.abc import Callable
@@ -180,7 +181,11 @@ class ExternalLLMRewriter:
         breaker_factory: Callable[[str], CircuitBreaker] | None = None,
     ) -> None:
         self.clients = clients
+        self.calls = 0
         self._timeout = timeout
+        # The outer query-understanding guard must leave enough time for every
+        # configured provider to receive its own bounded attempt.
+        self.total_timeout = timeout * max(1, len(clients)) + 0.1
         self._breaker_factory = breaker_factory
 
     async def rewrite(self, question: str) -> RewriteResult:
@@ -199,7 +204,9 @@ class ExternalLLMRewriter:
                 if not admitted:
                     continue
             try:
-                result = await client.propose(question, catalog)
+                self.calls += 1
+                async with asyncio.timeout(self._timeout):
+                    result = await client.propose(question, catalog)
             except Exception:  # noqa: BLE001 — any provider failure -> next/fallback
                 if breaker is not None:
                     with contextlib.suppress(RedisError):
@@ -220,6 +227,16 @@ def build_rewriter(settings: Settings) -> QueryRewriter:
     deterministic ``OfflineRewriter`` (so behavior is unchanged by default).
     """
     if not settings.rag_rewrite_enabled:
+        return OfflineRewriter()
+    # A rewrite sends the user's question to an external provider.  Require an
+    # explicit classification export decision in addition to the feature flag
+    # and credential: keys alone are never authorization to export data.
+    external_allowlist = {
+        item.strip()
+        for item in settings.rag_external_classification_allowlist.split(",")
+        if item.strip()
+    }
+    if "internal" not in external_allowlist:
         return OfflineRewriter()
     clients: list[RewriteClient] = []
     if settings.anthropic_api_key is not None:

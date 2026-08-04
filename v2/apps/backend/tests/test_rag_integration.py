@@ -229,6 +229,72 @@ async def test_active_reindex_search_grounded_answer_and_citation(
 
 
 @pytest.mark.asyncio
+async def test_tip014_alias_variants_ground_to_the_scoped_source(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    hera_source = f"tip014.hera.{uuid.uuid4().hex}"
+    hera_record = f"TIP014.HERA.{uuid.uuid4().hex}"
+    vega_source = f"tip014.vega.{uuid.uuid4().hex}"
+    vega_record = f"TIP014.VEGA.{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=hera_source,
+        record_key=hera_record,
+        text_value=(
+            "HERA maximum takeoff weight MTOW is 31 kilograms and its payload "
+            "capacity is 15 kilograms."
+        ),
+    )
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=vega_source,
+        record_key=vega_record,
+        text_value="VEGA payload capacity is 14 kilograms maximum lift.",
+    )
+    tuned = settings(tmp_path)
+    service = AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+        provider=OfflineExtractiveAnswer(),
+    )
+    probes = (
+        ("hira mtow", hera_source, hera_record),
+        ("hr payload", hera_source, hera_record),
+        ("Hera là gì?", hera_source, hera_record),
+        ("vga payload", vega_source, vega_record),
+    )
+    for ordinal, (question, source_key, expected_record) in enumerate(probes, 1):
+        response = await service.ask(
+            subject(owner),
+            question,
+            filters=SearchFilters(source_key=source_key),
+            require_verified=True,
+            conversation_id=None,
+            request_id=f"tip014-alias-{ordinal}",
+        )
+        assert response.state == "grounded"
+        assert expected_record in {item.record_key for item in response.citations}
+
+    unavailable = await service.ask(
+        subject(owner),
+        "hira warranty period",
+        filters=SearchFilters(source_key=f"absent.{uuid.uuid4().hex}"),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip014-alias-unavailable",
+    )
+    assert unavailable.state == "honest_null"
+    assert unavailable.citations == []
+
+
+@pytest.mark.asyncio
 async def test_confidence_caveat_set_only_when_a_soft_fact_is_cited(
     tmp_path: Path,
     factory: async_sessionmaker[Any],

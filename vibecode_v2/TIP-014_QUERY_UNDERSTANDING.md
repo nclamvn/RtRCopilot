@@ -7,7 +7,9 @@
 - **Vai đề xuất:** Tổng công trình sư (Contractor)
 - **Ngày:** 02/08/2026
 - **Depends on:** TIP-007 (Hybrid RAG), TIP-011 (Ask UI), TIP-012 (breaker + cost limit), TIP-013B (soft/caveat). Kernel `entities.yaml` + `capabilities.yaml`.
-- **Trạng thái:** DRAFT — chờ Homeowner chốt phạm vi + thứ tự.
+- **Trạng thái:** CONTRACTOR VERIFIED PARTIAL — Phase 1 + guarded Phase 2 đạt;
+  Phase 0 real embedding/live benchmark còn phụ thuộc hợp đồng provider và
+  credential của Homeowner (04/08/2026).
 - **Nguồn gốc:** hợp nhất hai đề xuất —
   - **Homeowner:** gọi LLM chuẩn hóa/hiểu câu hỏi trước để mượt (typo "hira/heara", viết tắt "hr", câu tự nhiên "Hera là gì?").
   - **Contractor:** embedding thật + từ điển alias từ registry + gate grounding bất động + LLM **không bao giờ** là nguồn sự thật + thứ tự "đo trước, xây sau".
@@ -147,3 +149,15 @@ Bộ eval cố định gồm biến thể: đúng chuẩn / typo / viết tắt 
 4. Muốn câu trả lời "mượt" như hội thoại → **Phase 3** answer composition.
 
 *Không mục nào ở đây nới chuẩn grounding. Ta làm việc TÌM bằng chứng khôn hơn, không hạ tiêu chuẩn cái gì được tính là bằng chứng.*
+
+## 10. CONTRACTOR DISPOSITION — 04/08/2026
+
+Phase 1 và đường Phase 2 mặc định an toàn đã qua Verify độc lập. Contractor đã
+bổ sung ba guard còn thiếu trong báo cáo Builder: external rewrite fail-closed
+nếu chưa allowlist classification `internal`, timeout cấp orchestration cho từng
+provider/fallback, và debit mọi provider attempt vào cost budget chung.
+
+TIP-014 chưa được đánh dấu hoàn tất toàn bộ vì AC-2 đòi embedding thật và
+benchmark corpus đại diện. Repository hiện không có credential hay provider
+contract cho embedding; không được dùng test double để tuyên bố AC-2 PASS. Xem
+`TIP-014_VERIFY_REPORT.md` cho evidence matrix và điều kiện mở Phase 0.
