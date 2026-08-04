@@ -752,6 +752,36 @@ async def test_job_health_is_admin_gated_live_and_payload_free(
 
 
 @pytest.mark.asyncio
+async def test_pilot_readiness_is_admin_gated_and_reconciles_live_state(
+    factory: async_sessionmaker[Any],
+    admin_service: AdminGovernanceService,
+) -> None:
+    admin_id, owner_id = uuid.uuid4(), uuid.uuid4()
+    await insert_actor(factory, admin_id)
+    await insert_actor(factory, owner_id)
+    admin = subject(Role.ADMIN, admin_id)
+    with pytest.raises(PermissionError, match="admin_required"):
+        await admin_service.pilot_readiness(
+            subject(Role.CURATOR, owner_id), request_id="pilot-0",
+        )
+    before = await admin_service.pilot_readiness(admin, request_id="pilot-1")
+    await insert_sot_version(factory, owner_id)
+    after = await admin_service.pilot_readiness(admin, request_id="pilot-2")
+    assert after.sot.active_records == before.sot.active_records + 1
+    assert after.sot.strict_records == before.sot.strict_records + 1
+    assert after.sot.named_owner_records == before.sot.named_owner_records + 1
+    assert after.sot.zone_masquerade_findings == 0
+    assert after.files.original_checksum_mismatches >= 0
+    assert after.files.rendition_lineage_mismatches >= 0
+    assert after.production_boundary == "local_dev_only"
+    assert {gate.gate_key for gate in after.gates} == {
+        "sot_gold_baseline", "caveated_named_owners", "representative_files",
+        "viewer_families", "approved_templates", "research_records",
+        "pilot_questions", "zone_integrity", "checksum_integrity",
+    }
+
+
+@pytest.mark.asyncio
 async def test_admin_boundary_probes_fail_typed_and_audited(
     factory: async_sessionmaker[Any],
 ) -> None:

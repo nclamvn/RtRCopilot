@@ -25,6 +25,9 @@ def research_record_sha_raw(row: dict[str, Any]) -> str:
         "tier": row["tier"],
         "content": row["content"],
         "searchable_text": row["searchable_text"],
+        "corroboration_state": row.get(
+            "corroboration_state", "uncorroborated",
+        ),
         "evidence": [
             {
                 "source_url": span["source_url"],
@@ -53,6 +56,7 @@ def research_record_row(
         "tier": tier,
         "content": {"claim": body},
         "searchable_text": body,
+        "corroboration_state": "uncorroborated",
         "evidence": [{
             "source_url": source_url,
             "locator": locator or {"selector": "main > p:nth-of-type(2)"},

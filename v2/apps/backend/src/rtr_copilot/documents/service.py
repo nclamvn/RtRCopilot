@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import io
 import json
+import re
 import uuid
 from collections.abc import AsyncIterator
 from datetime import UTC, date, datetime
@@ -54,6 +55,7 @@ from rtr_copilot.storage.s3 import S3ObjectStorage
 policy = PolicyEngine(StructuredAuditSink())
 RENDERER_VERSION = "rtr-doc-os-1"
 DOCUMENT_QUEUE = "rtr:jobs"
+LOCKED_PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]{0,127})\}")
 
 
 def hash_json(value: Any) -> str:
@@ -108,10 +110,49 @@ def changed_keys(left: dict[str, Any], right: dict[str, Any]) -> list[str]:
     )
 
 
+def _scalar_at(payload: Any, path: str) -> str | int | float | bool:
+    current = payload
+    for part in path.split("."):
+        if not isinstance(current, dict) or part not in current:
+            raise ValueError("fact_value_invalid")
+        current = current[part]
+    if isinstance(current, bool | int | float | str):
+        return current
+    raise ValueError("fact_value_invalid")
+
+
+def locked_fact_value(binding: BindingDefinition, payload: Any) -> Any:
+    """Extract a bounded display scalar without executing template logic."""
+    if binding.value_literal is not None:
+        source = canonical_json(payload).decode("utf-8")
+        if binding.value_literal not in source:
+            raise ValueError("fact_literal_drift")
+        return binding.value_literal
+    if binding.value_template is not None:
+        found = LOCKED_PLACEHOLDER.findall(binding.value_template)
+        scrubbed = LOCKED_PLACEHOLDER.sub("", binding.value_template)
+        if not found or "{" in scrubbed or "}" in scrubbed:
+            raise ValueError("fact_value_invalid")
+        values = {path: _scalar_at(payload, path) for path in found}
+        result = binding.value_template
+        for path, value in values.items():
+            result = result.replace("{" + path + "}", str(value))
+        if len(result) > 2_000:
+            raise ValueError("fact_value_invalid")
+        return result
+    if isinstance(payload, bool | int | float | str):
+        return payload
+    if isinstance(payload, dict) and isinstance(
+        payload.get("value"), bool | int | float | str,
+    ):
+        return payload["value"]
+    raise ValueError("fact_value_invalid")
+
+
 def safe_error(error: Exception) -> str:
     allowed = {
         "template_invalid", "binding_invalid", "fact_unavailable", "fact_stale",
-        "fact_unverified", "fact_policy_denied", "render_failed",
+        "fact_unverified", "fact_caveated", "fact_policy_denied", "render_failed",
         "template_not_approved", "shape_text_overflow", "unresolved_placeholder",
         "formula_error",
     }
@@ -695,11 +736,18 @@ class DocumentOSService:
                     value = None
                 elif binding.derived_operation == "concat":
                     value = " ".join(str(item) for item in inputs)
-                elif binding.derived_operation == "date_year":
+                elif binding.derived_operation in {
+                    "date_day", "date_month", "date_year",
+                }:
                     try:
-                        value = date.fromisoformat(str(inputs[0])).year
+                        parsed = date.fromisoformat(str(inputs[0]))
                     except ValueError as error:
                         raise ValueError("binding_invalid") from error
+                    value = {
+                        "date_day": parsed.day,
+                        "date_month": parsed.month,
+                        "date_year": parsed.year,
+                    }[binding.derived_operation]
                 else:
                     raise ValueError("binding_invalid")
                 fields.append(BoundField(
@@ -729,9 +777,11 @@ class DocumentOSService:
                       rv.verification_state,rv.fact_state,rv.freshness_state,
                       rv.effective_from,rv.effective_to,rv.content_sha256,
                       rv.package_revision,e.evidence_key,e.evidence_sha256,
-                      e.source_blob_sha256,e.locator
+                      e.source_blob_sha256,e.locator,
+                      COALESCE(s.display_name,s.email,s.user_id::text) AS owner_name
                     FROM records r JOIN record_versions rv
                       ON rv.version_id=r.current_version_id
+                    JOIN subjects s ON s.user_id=r.owner_subject_id
                     JOIN sot_packages p ON p.package_id=rv.package_id
                     LEFT JOIN LATERAL (
                       SELECT evidence_key,evidence_sha256,source_blob_sha256,locator
@@ -746,6 +796,15 @@ class DocumentOSService:
                 continue
             now = datetime.now(UTC)
             official = row["document_class"] in {"official", "legal"}
+            caveated = (
+                fact["value_payload"].get("confidence_signal", {}).get(
+                    "needs_double_check",
+                ) is True
+                if isinstance(fact["value_payload"], dict) else False
+            )
+            if official and caveated:
+                blocked.append({"field": binding.field_path, "code": "fact_caveated"})
+                continue
             if official and (
                 fact["verification_state"] not in {"verified", "approved"}
                 or fact["fact_state"] not in {"verified", "approved"}
@@ -761,9 +820,19 @@ class DocumentOSService:
                 blocked.append({"field": binding.field_path, "code": "fact_stale"})
                 continue
             revision = max(revision or 0, int(fact["package_revision"]))
+            try:
+                display_value = locked_fact_value(binding, fact["value_payload"])
+            except ValueError:
+                blocked.append({"field": binding.field_path, "code": "fact_unavailable"})
+                continue
+            if caveated:
+                display_value = (
+                    f"{display_value} [CAVEAT: needs_double_check · "
+                    f"owner: {fact['owner_name'] or 'unassigned'}]"
+                )
             fields.append(BoundField(
                 field_path=binding.field_path, source="locked_fact",
-                value=fact["value_payload"], record_key=binding.record_key,
+                value=display_value, record_key=binding.record_key,
                 record_version_id=fact["version_id"],
                 record_checksum=str(fact["content_sha256"]),
                 evidence_key=fact["evidence_key"],
@@ -793,7 +862,8 @@ class DocumentOSService:
             request_id=request_id,
         )
         if not binding.valid:
-            raise ValueError("binding_invalid")
+            code = binding.blocked[0]["code"] if binding.blocked else "binding_invalid"
+            raise ValueError(code)
         canonical_hash = hash_json({
             "template_version_id": str(version_id),
             "parameters": request.parameters,

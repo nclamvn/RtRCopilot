@@ -156,7 +156,7 @@ owner_sql "SELECT to_regclass('public.research_sources') IS NOT NULL
 run_migration downgrade 0008_document_operating_system
 owner_sql "SELECT to_regclass('public.research_records') IS NULL" | grep -q "t"
 run_migration upgrade 0009_governance_research
-run_migration upgrade 0010_file_retrieval
+run_migration upgrade 0011_ingestion_pub_deferred
 owner_sql "SELECT to_regclass('public.file_chunks') IS NOT NULL
   AND EXISTS (
     SELECT 1 FROM information_schema.columns
@@ -164,7 +164,7 @@ owner_sql "SELECT to_regclass('public.file_chunks') IS NOT NULL
   )" | grep -q "t"
 run_migration downgrade 0009_governance_research
 owner_sql "SELECT to_regclass('public.file_chunks') IS NULL" | grep -q "t"
-run_migration upgrade 0010_file_retrieval
+run_migration upgrade 0011_ingestion_pub_deferred
 run_migration downgrade 0004_append_only_audit
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NULL" | grep -q "t"
 run_migration upgrade 0005_ingestion_renditions
@@ -398,4 +398,4 @@ do
   fi
 done
 [[ "$denied" -eq 20 ]]
-echo "DATA INTEGRATION PASS · migrations=10 · revision_fixtures=10 · failing_ddl_rollback=1 · tests=57 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=20"
+echo "DATA INTEGRATION PASS · migrations=11 · revision_fixtures=11 · failing_ddl_rollback=1 · tests=58 · document_os_runtime_probes=2 · formats=14 · required_outputs=31 · private_engine_proofs=4 · policy_scenarios=48 · tip009_nonempty_restore=1 · runtime_denials=20"

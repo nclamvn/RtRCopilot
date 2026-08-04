@@ -14,6 +14,15 @@ const health = {computed_at: "2026-08-04T08:00:00Z", families: [
   {family: "reindex", job_counts: {}, outbox_counts: {}, recent_failures: []},
 ]};
 const subject = {user_id: "33333333-3333-4333-8333-333333333333", issuer: "https://accounts.example", email: "staff@rtr.vn", display_name: "Staff RtR", status: "active", security_version: 2, roles: ["staff"], groups: [], last_seen_at: "2026-08-04T08:00:00Z"};
+const pilot = {computed_at: "2026-08-04T08:00:00Z",
+  sot: {active_records: 219, strict_records: 8, caveated_records: 211, current_records: 219, stale_records: 0, named_owner_records: 0, placeholder_owner_records: 219, caveated_named_owner_records: 0, caveated_placeholder_owner_records: 211, high_risk_records: 20, high_risk_caveated_records: 12, zone_masquerade_findings: 0},
+  files: {documents: 6, versions: 6, representative_versions: 0, ready_versions: 6, indexed_versions: 6, viewer_families: {}, original_checksum_mismatches: 0, rendition_lineage_mismatches: 0},
+  templates: {templates: 0, approved_templates: 0, locked_bindings: 0, official_or_legal_approved: 0},
+  research: {active_sources: 0, imported_packages: 0, records: 0, tiers: {}, corroboration: {}},
+  question_count: 32, gates: [
+    {gate_key: "sot_gold_baseline", target: 8, actual: 8, state: "met", detail: "Strict records retained"},
+    {gate_key: "caveated_named_owners", target: 211, actual: 0, state: "blocked", detail: "Human owners required"},
+  ], production_boundary: "local_dev_only"};
 
 afterEach(() => {cleanup(); vi.unstubAllGlobals();});
 
@@ -21,6 +30,7 @@ async function responseFor(input: URL | RequestInfo, init?: RequestInit) {
   const url = String(input);
   if (url === "/api/auth/me") return Response.json(identity);
   if (url.includes("jobs/health")) return Response.json(health);
+  if (url.includes("pilot-readiness")) return Response.json(pilot);
   if (url.includes("subjects/") && init?.method === "POST") return Response.json({...subject, security_version: 3, roles: ["staff", "curator"]});
   if (url.includes("subjects")) return Response.json([subject]);
   if (url.includes("research-sources")) return Response.json([]);
@@ -41,6 +51,15 @@ test("admin sees live job ledger and explicit failures", async () => {
   expect(await screen.findByText("renderer_timeout")).toBeInTheDocument();
   expect(screen.getByText("CẦN CHÚ Ý")).toBeInTheDocument();
   expect(screen.getByText(/SOT, audit log/)).toBeInTheDocument();
+});
+
+test("pilot corpus panel renders live gates and the local-only boundary", async () => {
+  vi.stubGlobal("fetch", vi.fn(responseFor)); render(<AdminPage/>);
+  fireEvent.click(await screen.findByRole("button", {name: /Corpus pilot/}));
+  expect(await screen.findByRole("heading", {name: "Corpus pilot và provenance"})).toBeInTheDocument();
+  expect(screen.getByText(/211 fact có caveat/)).toBeInTheDocument();
+  expect(screen.getByText("caveated_named_owners")).toBeInTheDocument();
+  expect(screen.getByText(/LOCAL \/ DEV ONLY/)).toBeInTheDocument();
 });
 
 test("403 is persistent and does not drop the authenticated identity", async () => {

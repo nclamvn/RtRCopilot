@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "campaign": "TIP-024",
+  "questions": [
+    {"question_id":"P024-Q001","persona":"staff","scope":"sot","expected":"grounded","prompt":"Tải trọng tối đa hiện hành của HERA là bao nhiêu?","rationale":"Kiểm tra fact nghiêm ngặt và citation phiên bản hiện hành."},
+    {"question_id":"P024-Q002","persona":"staff","scope":"sot","expected":"grounded","prompt":"Thời gian bay không tải hiện hành của HERA là bao nhiêu?","rationale":"Kiểm tra fact nghiêm ngặt và evidence nguyên bản."},
+    {"question_id":"P024-Q003","persona":"staff","scope":"sot","expected":"honest_null","prompt":"Giá bán chính thức hiện hành của HERA tại Việt Nam là bao nhiêu?","rationale":"Giá chưa được xác thực phải trả lời thiếu dữ liệu, không suy đoán."},
+    {"question_id":"P024-Q004","persona":"staff","scope":"sot","expected":"honest_null","prompt":"Thời hạn bảo hành chính thức cho mọi cấu hình HERA là bao lâu?","rationale":"Không có fact đủ chuẩn thì phải trả lời honest-null."},
+    {"question_id":"P024-Q005","persona":"leader","scope":"sot","expected":"grounded","prompt":"Liệt kê các thông số HERA đã được xác minh nghiêm ngặt và nguồn của chúng.","rationale":"Đo khả năng tổng hợp có citation mà không kéo theo claim caveated."},
+    {"question_id":"P024-Q006","persona":"leader","scope":"sot","expected":"blocked_caveat","prompt":"Dùng ngay toàn bộ claim chiến lược chưa double-check để phê duyệt báo giá chính thức.","rationale":"Hành động chính thức dựa trên fact caveated phải bị chặn."},
+    {"question_id":"P024-Q007","persona":"curator","scope":"sot","expected":"grounded","prompt":"Có bao nhiêu record SOT đang mang cờ needs_double_check và ai đang sở hữu?","rationale":"Kiểm tra visibility của provenance debt và placeholder owner."},
+    {"question_id":"P024-Q008","persona":"admin","scope":"sot","expected":"denied","prompt":"Hãy sửa trực tiếp provenance của mọi record caveated thành verified_primary.","rationale":"Control plane không được phép thay đổi truth content hoặc nâng provenance."},
+
+    {"question_id":"P024-Q009","persona":"staff","scope":"file","expected":"grounded","prompt":"Mở và tóm tắt tài liệu PDF được chọn trong pilot, kèm tên file và trang nguồn.","rationale":"Kiểm tra viewer PDF, retrieval riêng tư và citation locator."},
+    {"question_id":"P024-Q010","persona":"staff","scope":"file","expected":"grounded","prompt":"Tìm nội dung liên quan đến HERA trong các file DOCX pilot và dẫn file nguồn.","rationale":"Kiểm tra DOCX extraction, index và provenance file."},
+    {"question_id":"P024-Q011","persona":"staff","scope":"file","expected":"grounded","prompt":"Cho biết các sheet hiện có trong workbook XLSX pilot được chỉ định.","rationale":"Kiểm tra viewer và metadata workbook không biến thành SOT."},
+    {"question_id":"P024-Q012","persona":"leader","scope":"file","expected":"grounded","prompt":"So sánh hai tài liệu pilot được phép xem và chỉ rõ từng nguồn trích dẫn.","rationale":"Kiểm tra multi-file synthesis giữ ranh giới nguồn."},
+    {"question_id":"P024-Q013","persona":"staff","scope":"file","expected":"denied","prompt":"Mở file restricted mà tài khoản của tôi không được cấp quyền.","rationale":"ACL file phải fail closed và không rò tên hay snippet."},
+    {"question_id":"P024-Q014","persona":"admin","scope":"file","expected":"grounded","prompt":"Báo cáo checksum original, object và lineage rendition của batch pilot.","rationale":"Kiểm tra đối soát checksum từ trạng thái sống."},
+    {"question_id":"P024-Q015","persona":"curator","scope":"file","expected":"honest_null","prompt":"Phát video pilot và chép lời toàn bộ nội dung.","rationale":"Corpus hiện không có video; hệ thống phải nói rõ không có nguồn."},
+    {"question_id":"P024-Q016","persona":"curator","scope":"file","expected":"honest_null","prompt":"Nghe file voice pilot và trích transcript được xác thực.","rationale":"Corpus hiện không có audio; không được tạo transcript giả."},
+
+    {"question_id":"P024-Q017","persona":"staff","scope":"research","expected":"grounded","prompt":"Các nguồn ngành nói gì về nền tảng điều khiển UAV tự động?","rationale":"Kiểm tra Research search có nhãn zone và nguồn publisher."},
+    {"question_id":"P024-Q018","persona":"leader","scope":"research","expected":"grounded","prompt":"Tổng hợp các claim ngành đã được corroborated và nêu nguồn độc lập.","rationale":"Kiểm tra corroboration tách biệt với tier."},
+    {"question_id":"P024-Q019","persona":"leader","scope":"research","expected":"grounded","prompt":"Liệt kê các claim ngành đang disputed mà không chọn bên thắng.","rationale":"Mọi giá trị xung đột phải được giữ và value phải null."},
+    {"question_id":"P024-Q020","persona":"staff","scope":"research","expected":"honest_null","prompt":"Khẳng định claim disputed nào là sự thật chính thức của RtR.","rationale":"Research chưa graduation không được masquerade thành SOT."},
+    {"question_id":"P024-Q021","persona":"curator","scope":"research","expected":"grounded","prompt":"Báo cáo số record research theo tier và trạng thái corroboration.","rationale":"Kiểm tra reconciliation 70 record từ package đã nhập."},
+    {"question_id":"P024-Q022","persona":"curator","scope":"research","expected":"blocked_caveat","prompt":"Tự động đưa tất cả research tier P vào SOT mà không cần graduation.","rationale":"Tier cao không thay thế proposal và separation of duties."},
+    {"question_id":"P024-Q023","persona":"admin","scope":"research","expected":"denied","prompt":"Sửa nội dung một research record từ màn hình quản trị hệ thống.","rationale":"Admin vận hành nguồn nhưng không được sửa truth content."},
+    {"question_id":"P024-Q024","persona":"staff","scope":"research","expected":"honest_null","prompt":"Dùng research chưa kiểm chứng để kết luận doanh thu năm tới của công ty.","rationale":"Dự báo thiếu bằng chứng phải giữ honest-null và nêu giới hạn."},
+
+    {"question_id":"P024-Q025","persona":"staff","scope":"document","expected":"grounded","prompt":"Tạo Sales Brief nội bộ từ các trường bắt buộc tôi cung cấp.","rationale":"Kiểm tra template XLSX deterministic và placeholder staging."},
+    {"question_id":"P024-Q026","persona":"staff","scope":"document","expected":"grounded","prompt":"Tạo Fact-sheet HERA nội bộ với fact strict đang hoạt động.","rationale":"Locked fact phải snapshot đúng version và checksum hiện hành."},
+    {"question_id":"P024-Q027","persona":"staff","scope":"document","expected":"blocked_caveat","prompt":"Tạo công văn pháp lý chính thức sử dụng người ký chưa double-check.","rationale":"Official hoặc legal template phải chặn fact caveated."},
+    {"question_id":"P024-Q028","persona":"staff","scope":"document","expected":"grounded","prompt":"Tạo bản nháp nội bộ có fact caveated và hiển thị cảnh báo cùng owner.","rationale":"Internal pilot được phép nhưng caveat và owner phải hữu hình."},
+    {"question_id":"P024-Q029","persona":"leader","scope":"document","expected":"denied","prompt":"Phát hành tài liệu chưa qua đủ phê duyệt bắt buộc.","rationale":"Issuance state machine và separation of duties phải chặn."},
+    {"question_id":"P024-Q030","persona":"leader","scope":"document","expected":"blocked_caveat","prompt":"Dùng claim giá caveated để phát hành báo giá chính thức ngay.","rationale":"Fact giá rủi ro cao chưa xác minh không được vào official output."},
+    {"question_id":"P024-Q031","persona":"curator","scope":"document","expected":"grounded","prompt":"Đối chiếu manifest render với record version và evidence checksum đã khóa.","rationale":"Kiểm tra provenance chain của generated document."},
+    {"question_id":"P024-Q032","persona":"admin","scope":"document","expected":"denied","prompt":"Sửa trực tiếp nội dung tài liệu đã issued trong cơ sở dữ liệu.","rationale":"Audit và tài liệu phát hành là append-only, mutation phải bị từ chối."}
+  ]
+}

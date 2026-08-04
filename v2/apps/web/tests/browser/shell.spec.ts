@@ -1,4 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
+import {pilotReadiness} from "./support/mocks";
 
 const curatorId = "55555555-5555-4555-8555-555555555555";
 
@@ -28,6 +29,7 @@ async function mockShell(page: Page, authenticated = true) {
     if (path.endsWith("/jobs/health")) return route.fulfill({json: {
       computed_at: "2026-08-04T08:00:00Z", families: [],
     }});
+    if (path.endsWith("/pilot-readiness")) return route.fulfill({json: pilotReadiness});
     return route.fulfill({json: []});
   });
 }

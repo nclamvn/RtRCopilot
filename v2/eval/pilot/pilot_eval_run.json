@@ -1,0 +1,303 @@
+{
+  "campaign": "TIP-024",
+  "computed_at": "2026-08-04T07:06:56.524529+00:00",
+  "provider_result_claimed": false,
+  "results": [
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q001",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q002",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "honest_null",
+      "pass": null,
+      "question_id": "P024-Q003",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "honest_null",
+      "pass": null,
+      "question_id": "P024-Q004",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q005",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "blocked_caveat",
+      "pass": null,
+      "question_id": "P024-Q006",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q007",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "denied",
+      "pass": null,
+      "question_id": "P024-Q008",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q009",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q010",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q011",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q012",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "denied",
+      "pass": null,
+      "question_id": "P024-Q013",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q014",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "honest_null",
+      "pass": null,
+      "question_id": "P024-Q015",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "honest_null",
+      "pass": null,
+      "question_id": "P024-Q016",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q017",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q018",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q019",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "honest_null",
+      "pass": null,
+      "question_id": "P024-Q020",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q021",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "blocked_caveat",
+      "pass": null,
+      "question_id": "P024-Q022",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "denied",
+      "pass": null,
+      "question_id": "P024-Q023",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "honest_null",
+      "pass": null,
+      "question_id": "P024-Q024",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q025",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q026",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "blocked_caveat",
+      "pass": null,
+      "question_id": "P024-Q027",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q028",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "denied",
+      "pass": null,
+      "question_id": "P024-Q029",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "blocked_caveat",
+      "pass": null,
+      "question_id": "P024-Q030",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "grounded",
+      "pass": null,
+      "question_id": "P024-Q031",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    },
+    {
+      "actual": null,
+      "evidence": null,
+      "expected": "denied",
+      "pass": null,
+      "question_id": "P024-Q032",
+      "status": "untestable",
+      "untestable_reason": "requires_authenticated_live_pilot_observation"
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "failed": 0,
+    "measured": 0,
+    "passed": 0,
+    "total": 32,
+    "untestable": 32
+  }
+}

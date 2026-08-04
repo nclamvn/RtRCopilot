@@ -28,13 +28,22 @@ def validate_schema(schema: TemplateSchema) -> None:
         if binding.source == "locked_fact":
             if not binding.record_key or not binding.accepted_provenance:
                 raise ValueError("locked_fact_contract_required")
+            if binding.value_template and binding.value_literal:
+                raise ValueError("locked_fact_format_ambiguous")
         elif binding.record_key is not None:
             raise ValueError("literal_fact_fallback_forbidden")
+        elif binding.value_template is not None or binding.value_literal is not None:
+            raise ValueError("locked_fact_format_invalid")
         if binding.source == "derived":
             if binding.derived_operation is None or not binding.derived_fields:
                 raise ValueError("derived_contract_required")
         elif binding.derived_operation is not None or binding.derived_fields:
             raise ValueError("derived_contract_invalid")
+        if (
+            binding.derived_operation in {"date_day", "date_month", "date_year"}
+            and len(binding.derived_fields) != 1
+        ):
+            raise ValueError("derived_date_contract_invalid")
         if (
             binding.rules.min_length is not None
             and binding.rules.max_length is not None

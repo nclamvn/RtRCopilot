@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** TIP-022 + TIP-018 + TIP-023 VERIFIED · TIP-014 SAFE CORE VERIFIED / REAL EMBEDDING PENDING (04/08/2026)
+**Trạng thái:** TIP-022 + TIP-018 + TIP-023 + TIP-024 VERIFIED · TIP-014 SAFE CORE VERIFIED / REAL EMBEDDING PENDING (04/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -57,6 +57,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-021 ◇ | Compose readiness and tolerant cleanup stabilization | 012 | RECOVERED / MERGED / BASELINE-VERIFIED at `f816dca`; see traceability recovery record |
 | TIP-022 ✅ | Recovery gate: reproducible verify, runtime/build convergence, worker operational readiness, repository hygiene | 012,013B,019 | VERIFIED: 8/8 AC; local `make verify` PASS; Playwright 88/88; Trivy 0 HIGH/CRITICAL; runtime Git/API/Web SHA converged; GitHub aggregate green |
 | TIP-023 ✅ | Admin Workspace: operator-safe identities, research sources, governance settings, gap priority and job health UI | 010,011,022 | VERIFIED: 9/9 AC; Web 162/162; Playwright 92/92; axe 0 critical/serious; full `make verify` PASS; GitHub 8/8; PR #5 merged |
+| TIP-024 ✅ | Pilot corpus & provenance: representative Files, internal templates, Research package, readiness truth and role-labelled evaluation set | 006,008,009,010,013B,018,023 | VERIFIED READY-with-deferred: 11/11 AC; 30 real files/5 families; 4 templates; 70 research records; 32 questions; checksum/zone findings 0; 211 caveated owner assignments deferred to humans |
 
 ## Audit trail rule
 

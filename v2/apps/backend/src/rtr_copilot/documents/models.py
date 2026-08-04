@@ -13,8 +13,10 @@ class StrictModel(BaseModel):
 class FieldRules(StrictModel):
     min_length: int | None = Field(default=None, ge=0, le=10_000)
     max_length: int | None = Field(default=None, ge=1, le=10_000)
-    minimum: Decimal | None = None
-    maximum: Decimal | None = None
+    # JSONB stores Decimal bounds as strings. These two fields deliberately
+    # accept that canonical round-trip while the surrounding schema stays strict.
+    minimum: Decimal | None = Field(default=None, strict=False)
+    maximum: Decimal | None = Field(default=None, strict=False)
     enum: list[str] = Field(default_factory=list, max_length=100)
     max_items: int | None = Field(default=None, ge=1, le=500)
     max_rows: int | None = Field(default=None, ge=1, le=5_000)
@@ -34,7 +36,11 @@ class BindingDefinition(StrictModel):
         Literal["verified_primary", "verified_secondary", "approved_internal"]
     ] = Field(default_factory=list, max_length=3)
     require_fresh: bool = True
-    derived_operation: Literal["concat", "date_year"] | None = None
+    value_template: str | None = Field(default=None, min_length=1, max_length=500)
+    value_literal: str | None = Field(default=None, min_length=1, max_length=500)
+    derived_operation: Literal[
+        "concat", "date_day", "date_month", "date_year",
+    ] | None = None
     derived_fields: list[str] = Field(default_factory=list, max_length=20)
 
 

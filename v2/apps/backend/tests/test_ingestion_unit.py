@@ -3,6 +3,7 @@ import json
 import stat
 import warnings
 import zipfile
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -92,6 +93,11 @@ def write_xlsx(path: Path) -> None:
     sheet.title = "Safe"
     sheet["A1"] = "golden cell"
     sheet["B1"] = "=1+1"
+    sheet["A2"] = date(2026, 8, 4)
+    sheet["B2"] = datetime(2026, 8, 4, 9, 15, 30)
+    sheet["C2"] = time(9, 15, 30)
+    sheet["D2"] = timedelta(days=2, seconds=30)
+    sheet["D4"] = "sparse cell"
     workbook.save(path)
 
 
@@ -472,6 +478,12 @@ def test_golden_extractors_are_deterministic_and_keep_locators(
     sheet_json = next(item for item in xlsx if item.kind == "sheet_preview_json")
     assert b'"cell":"B1"' in sheet_json.payload
     assert b'"formula":"=1+1"' in sheet_json.payload
+    assert b'"value":"2026-08-04T00:00:00"' in sheet_json.payload
+    assert b'"value":"2026-08-04T09:15:30"' in sheet_json.payload
+    assert b'"value":"09:15:30"' in sheet_json.payload
+    assert b'"value":"2 days, 0:00:30"' in sheet_json.payload
+    assert b'"cell":"A3"' in sheet_json.payload
+    assert b'"cell":"D4"' in sheet_json.payload
     assert output_count == 11
 
 

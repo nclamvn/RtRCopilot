@@ -1,0 +1,199 @@
+{
+  "apply": true,
+  "approved": true,
+  "byte_size": 15155639,
+  "campaign": "TIP-024",
+  "computed_at": "2026-08-04T07:07:26.062967+00:00",
+  "families": {
+    "docx": 7,
+    "image": 6,
+    "pdf": 6,
+    "pptx": 4,
+    "xlsx": 7
+  },
+  "file_count": 30,
+  "manifest_fingerprint": "1579aee012284e9f536c9b5c757598bb6d865eeebc0354926de1c27e840174a7",
+  "outcomes": [
+    {
+      "manifest_key": "pdf.reviter-scenarios",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "a77a6500-b769-4b8d-b379-351417323387"
+    },
+    {
+      "manifest_key": "pdf.evnnpt-executive",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "a8603658-3aab-4554-999c-b8f09042a9fe"
+    },
+    {
+      "manifest_key": "pdf.hbc-executive",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "3c419d45-e0ee-4fc4-8e3b-d99459f5b462"
+    },
+    {
+      "manifest_key": "pdf.vinatea-field-script",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "a9871c79-a56f-4132-b659-b53310a3cd5f"
+    },
+    {
+      "manifest_key": "pdf.cangio-email",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "8e776971-dcd3-4c84-889e-19e237872c0e"
+    },
+    {
+      "manifest_key": "pdf.cncl-vinatea",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "7354a490-74b8-411e-9c41-3547b9502d64"
+    },
+    {
+      "manifest_key": "docx.rtr-factsheet",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "04469b26-fb27-4411-aa72-9563861ed1dc"
+    },
+    {
+      "manifest_key": "docx.cncl-letter",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "73d2ec48-11f2-4d6c-b723-334555124d1e"
+    },
+    {
+      "manifest_key": "docx.cangio-direction",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "29ec84b7-80be-41fb-9aa0-b73a4e7d1310"
+    },
+    {
+      "manifest_key": "docx.cangio-survey-note",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "9594699b-0514-4023-abe3-bd131a430ee9"
+    },
+    {
+      "manifest_key": "docx.cangio-questionnaire",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "3569f645-0e21-443d-ade6-25aade4500f8"
+    },
+    {
+      "manifest_key": "docx.caoloc-prd",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "d4068b91-2e5b-4a94-8aa6-c57ba840f028"
+    },
+    {
+      "manifest_key": "docx.sales-brief-bilingual",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "7ecebfa3-d9aa-461c-aafe-0f2584cef3ea"
+    },
+    {
+      "manifest_key": "xlsx.maintenance-program",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "6dc73c6d-453c-4c2c-8b49-65c4c13a27aa"
+    },
+    {
+      "manifest_key": "xlsx.maintenance-example",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "a9366935-d4ee-4263-9c5d-b9ba42372f1e"
+    },
+    {
+      "manifest_key": "xlsx.evnnpt-cost",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "0ebcda73-af34-407c-92ba-d9cade40a7a0"
+    },
+    {
+      "manifest_key": "xlsx.hbc-cost",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "10afec2a-46d1-4603-9d92-e979ea3d02b3"
+    },
+    {
+      "manifest_key": "xlsx.cangio-budget",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "8c8ab64e-c55f-4310-b625-499ff1e51544"
+    },
+    {
+      "manifest_key": "xlsx.sales-brief",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "5e6e651c-a0c9-4ee4-9655-a98e4ddf6cde"
+    },
+    {
+      "manifest_key": "xlsx.hardware-cost-sot",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "8677dd0b-c87a-4678-8cbe-c477d5b5aa4e"
+    },
+    {
+      "manifest_key": "pptx.hera-evn-method",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "0ea360cf-6e05-4650-b4ed-2980cd810211"
+    },
+    {
+      "manifest_key": "pptx.vega-tactical",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "d15179c2-79ef-487d-b3b4-74db17d7df76"
+    },
+    {
+      "manifest_key": "pptx.danang-uav",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "2a9300aa-1232-494f-90e0-935b3cdc6e05"
+    },
+    {
+      "manifest_key": "pptx.uel-ai-talk",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "b08636f5-53c8-4319-811e-8094160c1e62"
+    },
+    {
+      "manifest_key": "image.hera-studio",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "ebce4398-0ac7-4ac7-a90d-a415a00768e9"
+    },
+    {
+      "manifest_key": "image.vega-studio",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "247e6b47-fc0e-4f82-97ea-3bc4b6dc6f02"
+    },
+    {
+      "manifest_key": "image.skywatch-sensor",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "bb2c42ee-6418-4d6a-9dca-e2561d9cd0ed"
+    },
+    {
+      "manifest_key": "image.hera-demo",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "9a2966d1-a876-4c69-ada3-b3a059420157"
+    },
+    {
+      "manifest_key": "image.dualsight-sensor",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "bdc3722e-bb66-4c83-9e8d-7b4a7b7b33c3"
+    },
+    {
+      "manifest_key": "image.maintenance-readme",
+      "result": "idempotent",
+      "state": "ready",
+      "version_id": "35c114a7-8ee3-42cb-8ba3-51a1497aed34"
+    }
+  ],
+  "production_boundary": "local_dev_only"
+}

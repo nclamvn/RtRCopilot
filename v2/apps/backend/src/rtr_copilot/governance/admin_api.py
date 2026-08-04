@@ -21,6 +21,7 @@ from rtr_copilot.governance.admin import (
     BindingKind,
     BindingOperation,
     JobHealthReport,
+    PilotReadinessReport,
     SettingView,
     SubjectAccountView,
 )
@@ -291,6 +292,19 @@ async def job_health(
     if subject is None:
         return _error(request, 401, "authentication_required")
     return await call(request, AdminGovernanceService().job_health(
+        subject,
+        request_id=str(request.state.request_id),
+    ))
+
+
+@router.get("/pilot-readiness", response_model=PilotReadinessReport)
+async def pilot_readiness(
+    request: Request,
+    subject: Annotated[Subject | None, Depends(governance_subject)],
+) -> Any:
+    if subject is None:
+        return _error(request, 401, "authentication_required")
+    return await call(request, AdminGovernanceService().pilot_readiness(
         subject,
         request_id=str(request.state.request_id),
     ))

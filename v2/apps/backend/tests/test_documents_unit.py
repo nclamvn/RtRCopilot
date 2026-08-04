@@ -3,6 +3,7 @@ import uuid
 import zipfile
 from copy import copy
 from datetime import date
+from decimal import Decimal
 
 import fitz
 import pytest
@@ -23,6 +24,7 @@ from rtr_copilot.documents.service import (
     changed_keys,
     decode_cursor,
     encode_cursor,
+    locked_fact_value,
     manifest_views,
 )
 from rtr_copilot.documents.validation import validate_schema, validate_template
@@ -175,6 +177,35 @@ def test_schema_rejects_literal_fact_fallback_and_undeclared_derived_logic() -> 
     )
     with pytest.raises(ValueError, match="derived_contract_required"):
         validate_schema(TemplateSchema(bindings=[derived]))
+
+
+def test_locked_fact_format_is_bounded_and_literal_drift_fails_closed() -> None:
+    templated = BindingDefinition(
+        field_path="payload", field_type="string", source="locked_fact",
+        record_key="SPEC.HERA.PAYLOAD.MAX",
+        accepted_provenance=["verified_primary"],
+        value_template="{value} {unit}", rules=FieldRules(max_length=100),
+    )
+    assert locked_fact_value(templated, {"value": 15, "unit": "kg"}) == "15 kg"
+    literal = templated.model_copy(update={
+        "value_template": None, "value_literal": "IP54",
+    })
+    assert locked_fact_value(literal, {"statement": "IP54 certified"}) == "IP54"
+    with pytest.raises(ValueError, match="fact_literal_drift"):
+        locked_fact_value(literal, {"statement": "IP55 certified"})
+    with pytest.raises(ValueError, match="locked_fact_format_ambiguous"):
+        validate_schema(TemplateSchema(bindings=[templated.model_copy(update={
+            "value_literal": "15 kg",
+        })]))
+
+
+def test_date_day_month_year_derivations_are_declared() -> None:
+    for operation in ("date_day", "date_month", "date_year"):
+        validate_schema(TemplateSchema(bindings=[BindingDefinition(
+            field_path=operation, field_type="integer", source="derived",
+            derived_operation=operation, derived_fields=["signed_at"],
+            rules=FieldRules(minimum=Decimal(1), maximum=Decimal(9999)),
+        )]))
 
 
 def test_schema_is_strict_and_bounds_are_enforced() -> None:

@@ -43,7 +43,7 @@ rewrite; it is closure, activation and proof.
 | 1 | Resume TIP-018 | P0 product | version-scoped private file retrieval; leak 0 |
 | 2 | Close TIP-014 | P0 quality | real embedding path + independent Verify Report |
 | 3 | TIP-023 Admin Workspace — verified and merged | P1 rollout | operator can manage approved admin surfaces without raw APIs |
-| 4 | TIP-024 Pilot Corpus & Provenance | P0 rollout | representative Files/Templates/Research live; soft-fact ownership |
+| 4 | TIP-024 Pilot Corpus & Provenance — verified, local pilot ready with ownership deferred | P0 rollout | 30 files, 4 templates, 70 Research records and readiness live; named soft-fact ownership remains human gate |
 | 5 | TIP-025 Production-like Pilot | P0 rollout | real OIDC/TLS/secrets, measured pilot, go/no-go |
 | 6 | Phase C connectors | post-pilot | read-only MRP/CRM/HRM/IP/Workspace/chat adapters |
 | 7 | Action workflows | post-governance | approvals, idempotency, audit and rollback proven |
@@ -214,7 +214,15 @@ Estimated effort: **2–3 focused days**.
 
 ---
 
-## 7. Proposed TIP-024 — Pilot corpus and provenance campaign
+## 7. TIP-024 — Pilot corpus and provenance campaign
+
+**Execution status 04/08/2026:** implemented and Contractor-verified as
+`READY-with-deferred`. The local corpus now has 30 representative files across
+five families, four approved internal templates, 70 CNCL Research records and
+32 pilot questions. Checksum and zone findings are zero. The 211 caveated facts
+remain intentionally blocked on named human ownership; see
+`TIP-024_PILOT_CORPUS_PROVENANCE.md`, `TIP-024_COMPLETION_REPORT.md` and
+`TIP-024_VERIFY_REPORT.md`.
 
 ### Objective
 

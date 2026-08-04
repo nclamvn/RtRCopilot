@@ -260,7 +260,7 @@ async def test_migration_head_provisions_governance_tables(
                 WHERE tablename IN ('records','record_versions')
               )
         """))).scalars().all()
-    assert revision == "0010_file_retrieval"
+    assert revision == "0011_ingestion_pub_deferred"
     assert missing == []
     assert list(shared_indexes) == []
 
