@@ -381,14 +381,22 @@ async def test_tip0246_vega_definition_beats_live_like_distractors_and_fails_clo
         conversation_id=None,
         request_id="tip0246-required-no-key",
     )
-    assert required_mode.state == "honest_null"
-    assert required_mode.citations == []
+    assert required_mode.state == "grounded"
+    assert {item.record_key for item in required_mode.citations} == {vega_record}
+    assert required_mode.gap_id is None
+    assert required_mode.reason_code is None
+    assert required_mode.answer_mode == "evidence_only"
     async with factory() as session:
-        provider_decision = await session.scalar(text("""
-            SELECT provider_decision FROM answer_runs
+        run = (await session.execute(text("""
+            SELECT provider_decision,reason_code FROM answer_runs
             WHERE answer_run_id=:run_id
+        """), {"run_id": required_mode.answer_run_id})).mappings().one()
+        false_gap_count = await session.scalar(text("""
+            SELECT count(*) FROM gaps WHERE answer_run_id=:run_id
         """), {"run_id": required_mode.answer_run_id})
-    assert provider_decision == "not_called_provider_unavailable"
+    assert run["provider_decision"] == "called_local"
+    assert run["reason_code"] is None
+    assert false_gap_count == 0
 
 
 @pytest.mark.asyncio

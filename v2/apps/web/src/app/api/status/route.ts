@@ -34,7 +34,10 @@ export async function GET() {
           ? "version_mismatch"
           : typeof body.status === "string" ? body.status : "unavailable",
         answer_quality: body.capabilities?.grounded_answering === "ready"
-          ? "ready" : "configuration_required",
+          ? "ready"
+          : body.capabilities?.grounded_answering === "evidence_only"
+            ? "evidence_only"
+            : "configuration_required",
         build_sha: webBuildSha,
         request_id: requestId,
       },

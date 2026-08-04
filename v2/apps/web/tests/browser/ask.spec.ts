@@ -48,6 +48,14 @@ const honestNull = {
   gap_id: gapId, request_id: "req-ask-2",
 };
 
+const providerSetupRequired = {
+  state: "honest_null",
+  answer: "Đã tìm thấy bằng chứng phù hợp trong SOT, nhưng chưa thể tổng hợp.",
+  citations: [], conversation_id: conversationId, answer_run_id: runId,
+  gap_id: null, reason_code: "answer_quality_configuration_required",
+  request_id: "req-ask-setup",
+};
+
 const researchHit = {
   zone_label: "research", research_record_id: researchRecordId,
   record_key: "vendor.abb.profile", tier: "P",
@@ -278,6 +286,18 @@ test("honest-null renders the recorded gap id and state with a Knowledge Ops lin
     .toHaveAttribute("href", `/knowledge-ops?view=gaps&gap=${gapId}`);
   // No fabricated evidence appears anywhere.
   await expect(page.getByText("Chưa có bằng chứng để hiển thị.")).toBeVisible();
+});
+
+test("provider setup abstention reports evidence found without a false gap", async ({page}) => {
+  await mockAsk(page, {ask: providerSetupRequired});
+  await page.goto("/ask");
+  await submitQuestion(page, "Vega là gì?");
+  await expect(page.getByRole("heading", {
+    name: "Đã tìm thấy bằng chứng · Chưa thể tổng hợp",
+  })).toBeVisible();
+  await expect(page.getByText(/Đây không phải khoảng trống tri thức/)).toBeVisible();
+  await expect(page.getByText("Khoảng trống đã ghi nhận")).toHaveCount(0);
+  await expect(page.getByRole("link", {name: /Vận hành tri thức/})).toHaveCount(0);
 });
 
 test("research scope renders results exactly as the backend labels them, distinct from SOT facts", async ({page}) => {

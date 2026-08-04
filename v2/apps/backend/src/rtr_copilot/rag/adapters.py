@@ -152,3 +152,54 @@ class OfflineExtractiveAnswer:
             used_markers=used,
             follow_ups=[],
         )
+
+
+class StrictEvidenceAnswer:
+    """A no-inference fallback over one approved, current evidence unit.
+
+    This is intentionally narrower than the legacy local extractor: it emits
+    only the highest-ranked eligible chunk, verbatim, with a marker on every
+    sentence.  It keeps the product useful without pretending to provide LLM
+    synthesis when external processing is unavailable.
+    """
+
+    name = "evidence-only"
+    model = "rtr-strict-evidence-v1"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def answer(
+        self,
+        question: str,
+        evidence: Sequence[ProviderEvidence],
+        *,
+        system_policy: str,
+    ) -> ProviderAnswer:
+        del question
+        self.calls += 1
+        if "evidence only" not in system_policy.casefold():
+            raise ValueError("evidence_required")
+        selected = next(
+            (
+                item
+                for item in evidence
+                if item.text.strip()
+                and item.provenance_level != "claim"
+                and item.verification_state in {"verified", "approved"}
+                and item.freshness_state == "current"
+            ),
+            None,
+        )
+        if selected is None:
+            raise ValueError("approved_current_evidence_required")
+        sentences = [
+            sentence.strip()
+            for sentence in _SENTENCE_RE.split(selected.text.strip())
+            if sentence.strip()
+        ] or [selected.text.strip()]
+        return ProviderAnswer(
+            answer=" ".join(f"{sentence} [{selected.marker}]" for sentence in sentences),
+            used_markers=[selected.marker],
+            follow_ups=[],
+        )

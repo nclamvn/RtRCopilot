@@ -51,6 +51,23 @@ describe("status endpoint keeps internal topology behind the ingress", () => {
     expect(serialized).not.toContain("postgres");
   });
 
+  test("preserves the usable evidence-only answer capability", async () => {
+    vi.stubEnv("API_INTERNAL_URL", "http://api:8000");
+    vi.stubEnv("RTR_BUILD_SHA", "0123456789ab");
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({
+      ok: true,
+      status: "operational",
+      build_sha: "0123456789ab",
+      capabilities: {grounded_answering: "evidence_only"},
+    }))));
+    const response = await GET();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      answer_quality: "evidence_only",
+    });
+  });
+
   test("unreachable upstream fails closed without upstream disclosure", async () => {
     vi.stubEnv("API_INTERNAL_URL", "http://api:8000");
     vi.stubEnv("RTR_BUILD_SHA", "0123456789ab");

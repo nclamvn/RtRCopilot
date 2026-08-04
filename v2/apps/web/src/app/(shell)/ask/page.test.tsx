@@ -115,6 +115,7 @@ test("grounded ask renders citation markers wired to the shared rail; research d
       citations: [citation],
       conversation_id: conversationId,
       answer_run_id: runId,
+      answer_mode: "evidence_only",
       request_id: "req-1",
     }}),
   });
@@ -127,6 +128,8 @@ test("grounded ask renders citation markers wired to the shared rail; research d
   fireEvent.change(input, {target: {value: "Chính sách bảo hành robot?"}});
   fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
   expect(await screen.findByText(/Robot RtR được bảo hành 24 tháng/)).toBeInTheDocument();
+  expect(screen.getByText(/Trích xuất nguyên văn từ SOT đã phê duyệt/))
+    .toBeInTheDocument();
   // TIP-013B AC-4: an unflagged (strict-grounded) answer shows NO caveat.
   expect(screen.queryByText(/vui lòng kiểm chứng lại/)).toBeNull();
   // Citation marker focuses the rail entry.
@@ -210,6 +213,38 @@ test("honest-null is a first-class state showing the recorded gap id and state",
     .toHaveAttribute("href", `/knowledge-ops?view=gaps&gap=${gapId}`);
   // No fabricated citations appear.
   expect(screen.getByText("Chưa có bằng chứng để hiển thị.")).toBeInTheDocument();
+});
+
+test("provider setup failure is not presented or routed as a knowledge gap", async () => {
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-setup",
+    }}),
+    "/api/ask/ask": () => ({json: {
+      state: "honest_null",
+      answer: "Đã tìm thấy bằng chứng phù hợp trong SOT, nhưng chưa thể tổng hợp.",
+      citations: [],
+      conversation_id: conversationId,
+      answer_run_id: runId,
+      gap_id: null,
+      reason_code: "answer_quality_configuration_required",
+      request_id: "req-setup",
+    }}),
+  });
+  render(<AskPage/>);
+  const input = await screen.findByLabelText("Câu hỏi");
+  fireEvent.change(input, {target: {value: "Vega là gì?"}});
+  fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
+  expect(await screen.findByRole("heading", {
+    name: "Đã tìm thấy bằng chứng · Chưa thể tổng hợp",
+  })).toBeInTheDocument();
+  expect(screen.getByText(/Đây không phải khoảng trống tri thức/))
+    .toBeInTheDocument();
+  expect(screen.queryByText("Khoảng trống đã ghi nhận")).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", {name: /Vận hành tri thức/}))
+    .not.toBeInTheDocument();
 });
 
 test("research-scoped results render exactly the server zone, tier and grounding labels", async () => {

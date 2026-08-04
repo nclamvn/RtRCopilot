@@ -92,6 +92,17 @@ class SearchResponse(StrictModel):
     request_id: str
 
 
+AskOutcomeReason = Literal[
+    "no_evidence",
+    "denied_or_unavailable",
+    "insufficient_confidence",
+    "stale_only",
+    "grounding_failed",
+    "manual_entry",
+    "answer_quality_configuration_required",
+]
+
+
 class AskResponse(StrictModel):
     state: Literal["grounded", "honest_null", "failed"]
     answer: str
@@ -99,6 +110,11 @@ class AskResponse(StrictModel):
     conversation_id: uuid.UUID
     answer_run_id: uuid.UUID
     gap_id: uuid.UUID | None = None
+    answer_mode: Literal["quality_llm", "evidence_only"] | None = None
+    # Honest-null is an abstention, not necessarily a knowledge gap.  This
+    # typed reason lets clients distinguish missing/unsafe evidence from an
+    # unavailable answer-quality provider without inferring from prose.
+    reason_code: AskOutcomeReason | None = None
     # TIP-013B AC-3: True iff the answer is grounded on at least one cited
     # record carrying the soft-tier ``needs_double_check`` marker (Part A).
     # Strict-only answers and honest-null answers stay False. Additive

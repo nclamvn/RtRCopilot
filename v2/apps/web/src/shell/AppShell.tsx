@@ -237,7 +237,7 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
   const [health, setHealth] = useState<{
     ok: boolean;
     status: string;
-    answerQuality: "ready" | "configuration_required";
+    answerQuality: "ready" | "evidence_only" | "configuration_required";
   } | null>(null);
   const [lastPathname, setLastPathname] = useState(pathname);
   const searchRef = useRef<HTMLButtonElement>(null);
@@ -263,7 +263,11 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
         setHealth(body ? {
           ok: body.ok === true,
           status: body.status ?? "unavailable",
-          answerQuality: body.answer_quality === "ready" ? "ready" : "configuration_required",
+          answerQuality: body.answer_quality === "ready"
+            ? "ready"
+            : body.answer_quality === "evidence_only"
+              ? "evidence_only"
+              : "configuration_required",
         } : null);
       }).catch(() => setHealth({
         ok: false, status: "unavailable", answerQuality: "configuration_required",
@@ -419,6 +423,8 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
     ? {state: "idle" as const, value: "—", width: "40%", sub: t("shell.integrity.checking")}
     : health.ok && health.answerQuality === "ready"
       ? {state: "ok" as const, value: "100%", width: "100%", sub: t("shell.integrity.ready")}
+      : health.ok && health.answerQuality === "evidence_only"
+        ? {state: "ok" as const, value: "SOT", width: "92%", sub: t("shell.integrity.evidenceOnly")}
       : health.ok
         ? {state: "warn" as const, value: "LLM", width: "72%", sub: t("shell.integrity.answerSetup")}
         : {state: "down" as const, value: "—", width: "28%", sub: t("shell.integrity.down")};

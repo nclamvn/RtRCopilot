@@ -459,6 +459,8 @@ export default function AskPage() {
   }
 
   const current = answer.state === "ready" ? answer.data : null;
+  const answerSetupRequired = current?.state === "honest_null"
+    && current.reasonCode === "answer_quality_configuration_required";
 
   return <div className="ask-workspace">
     <PageHeader eyebrow={t("ask.eyebrow")} title={t("ask.title")}
@@ -581,7 +583,11 @@ export default function AskPage() {
           aria-label={t("ask.answer.title")}>
           <header className="answer-header">
             <h2>{t("ask.answer.title")}</h2>
-            <p className="grounding-note">{t("ask.answer.grounded")}</p>
+            <p className="grounding-note">{t(
+              current.answerMode === "evidence_only"
+                ? "ask.answer.evidenceOnly"
+                : "ask.answer.grounded",
+            )}</p>
           </header>
           <AnswerText text={current.answer} onCitation={openCitation}/>
           {/* TIP-013B AC-4: shown ONLY when the answer is grounded on a softly
@@ -592,10 +598,12 @@ export default function AskPage() {
         </section>}
 
         {current && current.state === "honest_null" && <section className="honest-null"
-          aria-label={t("ask.null.title")}>
-          <h2>{t("ask.null.title")}</h2>
+          aria-label={t(answerSetupRequired ? "ask.setup.title" : "ask.null.title")}>
+          <h2>{t(answerSetupRequired ? "ask.setup.title" : "ask.null.title")}</h2>
           <p className="honest-null-answer">{current.answer}</p>
-          <p className="form-note">{t("ask.null.body")}</p>
+          <p className="form-note">
+            {t(answerSetupRequired ? "ask.setup.body" : "ask.null.body")}
+          </p>
           {current.gapId && <dl className="detail-facts">
             <div><dt>{t("ask.null.gap")}</dt>
               <dd><code>{current.gapId}</code></dd></div>

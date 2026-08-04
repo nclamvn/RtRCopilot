@@ -77,7 +77,7 @@ def test_operational_requires_worker_and_reports_build(
             "worker": "ready",
         },
         "capabilities": {
-            "grounded_answering": "configuration_required",
+            "grounded_answering": "evidence_only",
         },
     }
 

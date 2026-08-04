@@ -2,15 +2,12 @@ import asyncio
 import json
 
 import httpx
-import pytest
 
 from rtr_copilot.config import Settings
-from rtr_copilot.rag.adapters import OfflineExtractiveAnswer
+from rtr_copilot.rag.adapters import OfflineExtractiveAnswer, StrictEvidenceAnswer
 from rtr_copilot.rag.answer_llm import (
-    InsufficientEvidence,
     OpenAIAnswerClient,
     QualityLLMAnswer,
-    UnavailableLLMAnswer,
     answer_quality_readiness,
     build_answer_provider,
 )
@@ -141,12 +138,15 @@ def test_quality_router_falls_back_and_uses_separate_review_route() -> None:
     assert router.name == "fallback" and router.calls == 3
 
 
-def test_required_mode_never_builds_local_fallback() -> None:
+def test_required_mode_builds_strict_evidence_fallback_without_credentials() -> None:
     provider = build_answer_provider(settings())
-    assert isinstance(provider, UnavailableLLMAnswer)
-    with pytest.raises(InsufficientEvidence):
-        asyncio.run(provider.answer("q", evidence(), system_policy="evidence only"))
-    assert provider.calls == 0
+    assert isinstance(provider, StrictEvidenceAnswer)
+    result = asyncio.run(provider.answer(
+        "What is VEGA?", evidence(), system_policy="Use supplied evidence only.",
+    ))
+    assert result.used_markers == ["C1"]
+    assert "tactical heavy-lift" in result.answer
+    assert provider.calls == 1
 
 
 def test_local_extract_only_when_requirement_explicitly_disabled() -> None:
@@ -155,7 +155,7 @@ def test_local_extract_only_when_requirement_explicitly_disabled() -> None:
 
 
 def test_answer_quality_readiness_requires_policy_and_credential() -> None:
-    assert answer_quality_readiness(settings()) == "configuration_required"
+    assert answer_quality_readiness(settings()) == "evidence_only"
     configured = settings(
         rag_provider_mode="external",
         rag_external_classification_allowlist="internal",

@@ -13,6 +13,14 @@ import {ViewerKind} from "../files/contracts";
 import {EvidenceEntry, evidenceFromAskCitation} from "../rail/contracts";
 
 export type AnswerState = "grounded" | "honest_null" | "failed";
+export type AnswerReason =
+  | "no_evidence"
+  | "denied_or_unavailable"
+  | "insufficient_confidence"
+  | "stale_only"
+  | "grounding_failed"
+  | "manual_entry"
+  | "answer_quality_configuration_required";
 
 export type AskAnswer = {
   state: AnswerState;
@@ -21,6 +29,9 @@ export type AskAnswer = {
   conversationId: string;
   answerRunId: string;
   gapId: string | null;
+  answerMode: "quality_llm" | "evidence_only" | null;
+  /** Typed abstention reason; configuration failures are not knowledge gaps. */
+  reasonCode: AnswerReason | null;
   /**
    * TIP-013B AC-4: true only when the backend grounded this answer on at
    * least one softly-verified fact (server `confidence_caveat`). The Ask
@@ -73,6 +84,15 @@ export type FileScopeItem = {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const STATES = new Set<AnswerState>(["grounded", "honest_null", "failed"]);
+const REASONS = new Set<AnswerReason>([
+  "no_evidence",
+  "denied_or_unavailable",
+  "insufficient_confidence",
+  "stale_only",
+  "grounding_failed",
+  "manual_entry",
+  "answer_quality_configuration_required",
+]);
 const KINDS = new Set(["image", "pdf", "docx", "xlsx", "pptx", "video", "audio"]);
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -96,6 +116,10 @@ export function parseAskAnswer(value: unknown): AskAnswer {
       || value.citations.length > 20 || !uuid(value.conversation_id)
       || !uuid(value.answer_run_id)
       || !(value.gap_id === null || value.gap_id === undefined || uuid(value.gap_id))
+      || !(value.answer_mode === null || value.answer_mode === undefined
+        || value.answer_mode === "quality_llm" || value.answer_mode === "evidence_only")
+      || !(value.reason_code === null || value.reason_code === undefined
+        || REASONS.has(value.reason_code as AnswerReason))
       || !(value.confidence_caveat === undefined
         || typeof value.confidence_caveat === "boolean")
       || !text(value.request_id, 128)) {
@@ -115,6 +139,10 @@ export function parseAskAnswer(value: unknown): AskAnswer {
     conversationId: value.conversation_id as string,
     answerRunId: value.answer_run_id as string,
     gapId: uuid(value.gap_id) ? value.gap_id : null,
+    answerMode: value.answer_mode === "quality_llm" || value.answer_mode === "evidence_only"
+      ? value.answer_mode : null,
+    reasonCode: REASONS.has(value.reason_code as AnswerReason)
+      ? value.reason_code as AnswerReason : null,
     // Only a grounded answer can carry the caveat — never inferred client-side.
     confidenceCaveat: state === "grounded" && value.confidence_caveat === true,
     requestId: value.request_id as string,

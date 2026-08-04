@@ -56,6 +56,7 @@ const vi = {
   "shell.integrity.title": "Tình trạng hệ thống",
   "shell.integrity.checking": "Đang kiểm tra…",
   "shell.integrity.ready": "Tất cả dịch vụ sẵn sàng",
+  "shell.integrity.evidenceOnly": "Sẵn sàng · Trả lời trích xuất trực tiếp từ SOT",
   "shell.integrity.answerSetup": "Cần cấu hình API chất lượng trả lời",
   "shell.integrity.down": "Một số dịch vụ chưa sẵn sàng",
   "shell.palette.empty": "Không có lệnh phù hợp",
@@ -114,6 +115,8 @@ const vi = {
   "ask.surfaceAria": "Bàn hỏi đáp",
   "ask.answer.title": "Câu trả lời",
   "ask.answer.grounded": "Được đối chiếu với SOT · Mỗi nhận định liên kết tới bằng chứng",
+  "ask.answer.evidenceOnly":
+    "Trích xuất nguyên văn từ SOT đã phê duyệt · Không suy diễn",
   "ask.confidenceCaveat":
     "Một số căn cứ chưa có trích dẫn nguyên văn — vui lòng kiểm chứng lại.",
   "ask.answer.failed": "Trả lời thất bại",
@@ -126,6 +129,11 @@ const vi = {
   "ask.null.gapState": "Trạng thái",
   "ask.null.gapStateHidden": "ngoài phạm vi xem của bạn",
   "ask.null.link": "Mở trong Vận hành tri thức (dành cho curator)",
+  "ask.setup.title": "Đã tìm thấy bằng chứng · Chưa thể tổng hợp",
+  "ask.setup.body":
+    "SOT đã trả về căn cứ phù hợp, nhưng dịch vụ LLM chất lượng cao chưa được "
+    + "cấu hình hoặc chưa được phép xử lý phạm vi này. Đây không phải khoảng "
+    + "trống tri thức.",
   "ask.research.title": "Kết quả vùng nghiên cứu",
   "ask.research.note":
     "Kết quả nghiên cứu chỉ mang tính hỗ trợ (research_supported) — không phải SOT.",
@@ -585,6 +593,7 @@ const en: Record<MessageKey, string> = {
   "shell.integrity.title": "System integrity",
   "shell.integrity.checking": "Checking…",
   "shell.integrity.ready": "All services ready",
+  "shell.integrity.evidenceOnly": "Ready · Answers extracted directly from SOT",
   "shell.integrity.answerSetup": "Answer-quality API configuration required",
   "shell.integrity.down": "Some services unavailable",
   "shell.palette.empty": "No matching command",
@@ -643,6 +652,8 @@ const en: Record<MessageKey, string> = {
   "ask.surfaceAria": "Ask desk",
   "ask.answer.title": "Answer",
   "ask.answer.grounded": "Grounded in SOT · Every claim links to evidence",
+  "ask.answer.evidenceOnly":
+    "Verbatim extraction from approved SOT evidence · No inference",
   "ask.confidenceCaveat":
     "Some sources lack a verbatim citation — please double-check.",
   "ask.answer.failed": "Answer failed",
@@ -655,6 +666,10 @@ const en: Record<MessageKey, string> = {
   "ask.null.gapState": "State",
   "ask.null.gapStateHidden": "outside your view scope",
   "ask.null.link": "Open in Knowledge Operations (for curators)",
+  "ask.setup.title": "Evidence found · Synthesis unavailable",
+  "ask.setup.body":
+    "The SOT returned relevant evidence, but the high-quality LLM service is "
+    + "not configured or not approved for this scope. This is not a knowledge gap.",
   "ask.research.title": "Research-zone results",
   "ask.research.note":
     "Research results are supporting only (research_supported) — not SOT.",

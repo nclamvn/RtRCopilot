@@ -539,7 +539,10 @@ class EnterpriseService:
             rewriter=OfflineRewriter(),
             ontology=ontology,
         )
-        answer_configured = answer.provider.name != "unavailable"
+        # Evidence-only mode keeps day-to-day Ask usable, but it must never
+        # masquerade as the independently generated/reviewed LLM path required
+        # for enterprise release certification.
+        answer_configured = answer.provider.name not in {"unavailable", "evidence-only"}
         started = datetime.now(UTC)
         results: list[dict[str, Any]] = []
         metrics: dict[str, dict[str, int]] = defaultdict(

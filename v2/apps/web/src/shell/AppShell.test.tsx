@@ -189,3 +189,21 @@ test("answer-quality setup debt is visible while core services remain healthy", 
   ).toBeInTheDocument());
   expect(screen.getByText("LLM")).toBeInTheDocument();
 });
+
+test("evidence-only mode is presented as usable grounded SOT answering", async () => {
+  vi.stubGlobal("fetch", vi.fn(async input => {
+    const url = String(input);
+    if (url === "/api/status") return json({
+      ok: true,
+      status: "operational",
+      answer_quality: "evidence_only",
+    });
+    if (url === "/api/auth/me") return json(identity);
+    return json({items: []});
+  }));
+  renderShell();
+  await waitFor(() => expect(
+    screen.getByText("Sẵn sàng · Trả lời trích xuất trực tiếp từ SOT"),
+  ).toBeInTheDocument());
+  expect(screen.getByText("SOT")).toBeInTheDocument();
+});

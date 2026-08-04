@@ -30,6 +30,7 @@ from rtr_copilot.observability.metrics import (
 from rtr_copilot.rag.adapters import AnswerAdapter, normalize_query
 from rtr_copilot.rag.answer_llm import build_answer_provider
 from rtr_copilot.rag.models import (
+    AskOutcomeReason,
     AskResponse,
     ProviderAnswer,
     ProviderEvidence,
@@ -344,18 +345,25 @@ class AnswerService:
         provider_calls: int = 0,
         provider_decision: str | None = None,
         answer_override: str | None = None,
+        response_reason: AskOutcomeReason | None = None,
+        record_gap: bool = True,
     ) -> AskResponse:
         answer = answer_override or (
             "Không tìm thấy bằng chứng được phép và đủ tin cậy để trả lời."
         )
         answer_message_id = uuid.uuid4()
+        outcome_reason: AskOutcomeReason = response_reason or reason
         async with self.uow.transaction() as session:
-            gap_id = await self._gap(
-                session,
-                subject=subject,
-                run_id=run_id,
-                question=question,
-                reason=reason,
+            gap_id = (
+                await self._gap(
+                    session,
+                    subject=subject,
+                    run_id=run_id,
+                    question=question,
+                    reason=reason,
+                )
+                if record_gap
+                else None
             )
             await session.execute(
                 text("""
@@ -385,7 +393,7 @@ class AnswerService:
             """),
                 {
                     "message_id": answer_message_id,
-                    "reason": reason,
+                    "reason": outcome_reason,
                     "provider_decision": provider_decision
                     or (
                         "not_called_no_evidence"
@@ -407,8 +415,8 @@ class AnswerService:
                 resource_type="answer_run",
                 details={
                     "answer_run_id": str(run_id),
-                    "gap_id": str(gap_id),
-                    "reason_category": reason,
+                    **({"gap_id": str(gap_id)} if gap_id is not None else {}),
+                    "reason_category": outcome_reason,
                     "provider_calls": provider_calls,
                     "provider_decision": provider_decision
                     or (
@@ -425,6 +433,7 @@ class AnswerService:
             conversation_id=conversation_id,
             answer_run_id=run_id,
             gap_id=gap_id,
+            reason_code=outcome_reason,
             request_id=request_id,
         )
 
@@ -1091,6 +1100,7 @@ class AnswerService:
             budget_limits=budget_limits,
         )
         if output is None:
+            provider_unavailable = self.provider.name == "unavailable"
             return await self._honest_null(
                 subject,
                 conversation_id=conversation_id,
@@ -1102,7 +1112,20 @@ class AnswerService:
                 provider_calls=self.provider.calls - calls_before,
                 provider_decision=(
                     "not_called_provider_unavailable"
-                    if self.provider.name == "unavailable"
+                    if provider_unavailable
+                    else None
+                ),
+                response_reason=(
+                    "answer_quality_configuration_required"
+                    if provider_unavailable
+                    else "grounding_failed"
+                ),
+                record_gap=not provider_unavailable,
+                answer_override=(
+                    "Đã tìm thấy bằng chứng phù hợp trong SOT, nhưng dịch vụ "
+                    "tổng hợp câu trả lời tin cậy chưa được cấu hình. Hệ thống "
+                    "không suy đoán và không ghi nhận đây là khoảng trống tri thức."
+                    if provider_unavailable
                     else None
                 ),
             )
@@ -1155,6 +1178,11 @@ class AnswerService:
             ],
             conversation_id=conversation_id,
             answer_run_id=run_id,
+            answer_mode=(
+                "evidence_only"
+                if self.provider.name == "evidence-only"
+                else "quality_llm"
+            ),
             confidence_caveat=bool(soft_versions),
             request_id=request_id,
         )

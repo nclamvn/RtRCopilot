@@ -1,9 +1,9 @@
-"""Quality-first external grounded-answer providers for TIP-024.6.
+"""Quality-first grounded-answer providers for TIP-024.6.
 
-The runtime contract is deliberately fail-closed.  When quality LLM mode is
-required, missing policy/credentials or provider failures raise and the caller
-records an honest-null.  The local extractive adapter is never selected as a
-runtime fallback.
+External LLM generation remains the preferred path.  When its approved policy
+or credentials are unavailable, runtime degrades to a deliberately narrow,
+verbatim evidence-only answer rather than making the whole product unusable or
+allowing a lower-confidence generative fallback.
 """
 
 from __future__ import annotations
@@ -15,7 +15,11 @@ from typing import Any, Literal, Protocol
 import httpx
 
 from rtr_copilot.config import Settings
-from rtr_copilot.rag.adapters import AnswerAdapter, OfflineExtractiveAnswer
+from rtr_copilot.rag.adapters import (
+    AnswerAdapter,
+    OfflineExtractiveAnswer,
+    StrictEvidenceAnswer,
+)
 from rtr_copilot.rag.models import ProviderAnswer, ProviderEvidence
 
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
@@ -398,7 +402,7 @@ class UnavailableLLMAnswer:
         raise InsufficientEvidence(self.reason)
 
 
-AnswerQualityReadiness = Literal["ready", "configuration_required"]
+AnswerQualityReadiness = Literal["ready", "evidence_only"]
 
 
 def answer_quality_readiness(settings: Settings) -> AnswerQualityReadiness:
@@ -422,22 +426,22 @@ def answer_quality_readiness(settings: Settings) -> AnswerQualityReadiness:
         and configured_provider
     ):
         return "ready"
-    return "configuration_required"
+    return "evidence_only"
 
 
 def build_answer_provider(settings: Settings) -> AnswerAdapter:
-    """Build the runtime provider without a quality-degrading fallback."""
+    """Prefer reviewed LLM synthesis; otherwise use strict verbatim evidence."""
     if not settings.rag_answer_llm_required:
         return OfflineExtractiveAnswer()
     if settings.rag_provider_mode != "external":
-        return UnavailableLLMAnswer("external_mode_required")
+        return StrictEvidenceAnswer()
     allowlist = {
         item.strip()
         for item in settings.rag_external_classification_allowlist.split(",")
         if item.strip()
     }
     if "internal" not in allowlist:
-        return UnavailableLLMAnswer("internal_export_not_allowed")
+        return StrictEvidenceAnswer()
 
     clients: list[GroundedAnswerClient] = []
     if settings.openai_api_key is not None:
@@ -459,5 +463,5 @@ def build_answer_provider(settings: Settings) -> AnswerAdapter:
             max_output_tokens=settings.rag_answer_max_output_tokens,
         ))
     if not clients:
-        return UnavailableLLMAnswer("provider_credentials_missing")
+        return StrictEvidenceAnswer()
     return QualityLLMAnswer(clients)
