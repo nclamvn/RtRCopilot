@@ -306,7 +306,7 @@ test("denied file catalog renders the typed state inside the picker", async ({pa
     .toContainText("policy_denied · req-files-403");
 });
 
-test("a picked file scopes the ask request to that file's source key", async ({page}) => {
+test("a picked file scopes the ask request to its immutable version id", async ({page}) => {
   const askBodies = await mockAsk(page);
   await page.goto("/ask");
   await page.getByRole("button", {name: "Chọn tệp được cấp quyền"}).click();
@@ -316,7 +316,7 @@ test("a picked file scopes the ask request to that file's source key", async ({p
   await submitQuestion(page, "Tệp này nói gì về bảo hành?");
   await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
   expect(askBodies).toHaveLength(1);
-  expect(askBodies[0].filters).toEqual({source_key: "rtr.specs"});
+  expect(askBodies[0].filters).toEqual({version_id: versionId});
   // Clearing the scope removes the filter on the next ask.
   await page.getByRole("button", {name: "Bỏ giới hạn tệp"}).click();
   await submitQuestion(page, "Còn câu hỏi chung thì sao?");

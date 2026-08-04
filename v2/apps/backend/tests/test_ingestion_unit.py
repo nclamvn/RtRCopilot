@@ -16,7 +16,8 @@ from reportlab.pdfgen import canvas
 from rtr_copilot.config import Settings
 from rtr_copilot.ingestion.api import _decode_cursor, _encode_cursor, _parse_range
 from rtr_copilot.ingestion.errors import IngestionFailure, safe_message
-from rtr_copilot.ingestion.extractors import extract_required
+from rtr_copilot.ingestion.extractors import Artifact, canonical_json, extract_required
+from rtr_copilot.ingestion.file_index import searchable_units
 from rtr_copilot.ingestion.malware import DeterministicTestScanner
 from rtr_copilot.ingestion.models import (
     OCRPayload,
@@ -550,3 +551,32 @@ def test_sandbox_rejects_network_and_path_escape_and_kills_timeout(
     with pytest.raises(IngestionFailure, match="tool_timeout"):
         sandbox.run(["sleep", "5"], temp_root=tmp_path)
     assert list(tmp_path.iterdir()) == []
+
+
+def test_private_file_index_extracts_text_with_exact_locators() -> None:
+    artifact = Artifact(
+        kind="page_text_json",
+        mime_type="application/json",
+        payload=canonical_json({
+            "schema_version": 1,
+            "pages": [
+                {"page": 1, "text": "Alpha flight envelope"},
+                {"page": 2, "text": ""},
+            ],
+        }),
+        origin="native",
+        quality_state="complete",
+        quality={},
+    )
+    assert searchable_units(artifact) == [
+        ("Alpha flight envelope", {"page": 1}),
+    ]
+    hostile = Artifact(
+        kind="unknown_json",
+        mime_type="application/json",
+        payload=b'{"text":"must not be indexed"}',
+        origin="native",
+        quality_state="complete",
+        quality={},
+    )
+    assert searchable_units(hostile) == []

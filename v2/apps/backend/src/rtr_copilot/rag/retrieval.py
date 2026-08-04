@@ -20,7 +20,10 @@ from rtr_copilot.rag.adapters import (
 )
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.rag.models import Citation, RetrievalHit, SearchFilters
-from rtr_copilot.repositories.resources import CLASSIFICATION_TO_POLICY
+from rtr_copilot.repositories.resources import (
+    CLASSIFICATION_TO_POLICY,
+    ResourceRepository,
+)
 
 CLASSIFICATION_RANK = {
     "public_internal": 0,
@@ -67,6 +70,195 @@ class RetrievalService:
             external_allowlist=allowlist,
         )
         self.trace = RetrievalTrace()
+
+    async def _file_authorized(
+        self,
+        session: AsyncSession,
+        subject: Subject,
+        version_id: uuid.UUID,
+        request_id: str,
+    ) -> tuple[dict[str, Any], ResourceAttributes] | None:
+        principal = uuid.UUID(subject.user_id)
+        principal_rows = (await session.execute(text("""
+            SELECT group_id principal_id FROM subject_groups
+            WHERE subject_id=:subject_id AND valid_from<=now()
+              AND (expires_at IS NULL OR expires_at>now())
+            UNION SELECT role_id FROM subject_roles
+            WHERE subject_id=:subject_id AND valid_from<=now()
+              AND (expires_at IS NULL OR expires_at>now())
+            UNION SELECT CAST(scope_key AS uuid) FROM subject_scopes
+            WHERE subject_id=:subject_id AND valid_from<=now()
+              AND (expires_at IS NULL OR expires_at>now())
+              AND scope_key ~* :uuid_pattern
+        """), {
+            "subject_id": principal,
+            "uuid_pattern": (
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-"
+                "[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            ),
+        })).scalars().all()
+        principals = {principal, *principal_rows}
+        effective = await ResourceRepository().effective_policy_attributes(
+            session,
+            version_id,
+            action="view",
+            principal_ids=principals,
+        )
+        row = (await session.execute(text("""
+            SELECT v.version_id,v.sha256,v.original_filename,d.logical_name,
+              r.classification
+            FROM document_versions v
+            JOIN documents d ON d.document_id=v.document_id
+            JOIN resources r ON r.resource_id=v.version_id
+            WHERE v.version_id=:version_id AND r.lifecycle_state='active'
+        """), {"version_id": version_id})).mappings().one_or_none()
+        if effective is None or row is None:
+            return None
+        attributes = effective[0]
+        if not self.policy.decide(
+            subject,
+            "view",
+            attributes,
+            PolicyContext(request_id=request_id),
+        ).allow:
+            return None
+        return dict(row), attributes
+
+    async def _search_file(
+        self,
+        subject: Subject,
+        query: str,
+        normalized: str,
+        *,
+        filters: SearchFilters,
+        request_id: str,
+        top_k: int | None,
+    ) -> list[RetrievalHit]:
+        assert filters.version_id is not None
+        async with self.uow.factory() as session:
+            authorized = await self._file_authorized(
+                session, subject, filters.version_id, request_id,
+            )
+            if authorized is None:
+                return []
+            version, attributes = authorized
+            effective_rank = {
+                "public": 0, "internal": 1, "restricted": 2, "classified": 3,
+            }[attributes.classification]
+            effective_classification = {
+                "public": "public_internal",
+                "internal": "internal",
+                "restricted": "restricted",
+                "classified": "highly_restricted",
+            }[attributes.classification]
+            ceiling = (
+                CLASSIFICATION_RANK[filters.classification_ceiling]
+                if filters.classification_ceiling else 3
+            )
+            if effective_rank > ceiling:
+                return []
+            metadata_count = await session.scalar(text("""
+                SELECT count(*)
+                FROM file_chunks fc
+                JOIN renditions rd ON rd.rendition_id=fc.rendition_id
+                JOIN resources rr ON rr.resource_id=rd.rendition_id
+                WHERE fc.document_version_id=:version_id
+                  AND fc.lifecycle='active' AND rd.status='ready'
+                  AND rr.lifecycle_state='active'
+            """), {
+                "version_id": filters.version_id,
+            })
+        self.trace.metadata_rows = int(metadata_count or 0)
+        self.trace.policy_allowed = self.trace.metadata_rows
+        if not metadata_count:
+            return []
+        query_vector = self.embedding.embed(normalized)
+        self.trace.content_queries = 1
+        async with self.uow.factory() as session:
+            rows = (await session.execute(text("""
+                SELECT fc.file_chunk_id,fc.chunk_key,fc.display_text,
+                  fc.document_version_id,fc.rendition_kind,fc.source_sha256,
+                  fc.rendition_sha256,fc.locator,
+                  ts_rank_cd(fc.lexical,to_tsquery('simple',:lexquery)) lexical_score,
+                  greatest(0,1-(fc.embedding <=> CAST(:embedding AS vector))) vector_score
+                FROM file_chunks fc
+                JOIN renditions rd ON rd.rendition_id=fc.rendition_id
+                JOIN resources rr ON rr.resource_id=rd.rendition_id
+                WHERE fc.document_version_id=:version_id
+                  AND fc.lifecycle='active'
+                  AND rd.status='ready' AND rr.lifecycle_state='active'
+                ORDER BY lexical_score DESC,vector_score DESC,fc.chunk_key
+                LIMIT :candidate_limit
+            """), {
+                "lexquery": lexical_query(normalized),
+                "embedding": json.dumps(query_vector),
+                "version_id": filters.version_id,
+                "candidate_limit": self.settings.rag_candidate_limit,
+            })).mappings().all()
+        content = [dict(row) for row in rows]
+        self.trace.loaded_chunk_ids = [row["file_chunk_id"] for row in content]
+        lex_order = {row["file_chunk_id"]: rank for rank, row in enumerate(
+            sorted(content, key=lambda item: (-float(item["lexical_score"]), item["chunk_key"])), 1,
+        )}
+        vector_order = {row["file_chunk_id"]: rank for rank, row in enumerate(
+            sorted(content, key=lambda item: (-float(item["vector_score"]), item["chunk_key"])), 1,
+        )}
+        ranked: list[tuple[float, dict[str, Any]]] = []
+        for row in content:
+            if (
+                float(row["lexical_score"]) <= 0
+                and float(row["vector_score"])
+                < self.settings.rag_min_vector_score
+            ):
+                continue
+            dlp = self.provider_policy.inspect(
+                str(row["display_text"]), classification=effective_classification,
+            )
+            if not dlp.allow or dlp.text is None:
+                self.trace.dlp_rule_ids.extend(dlp.rule_ids)
+                continue
+            row["display_text"] = dlp.text
+            fusion = (
+                1.0 / (60 + lex_order[row["file_chunk_id"]])
+                + 1.0 / (60 + vector_order[row["file_chunk_id"]])
+                + min(float(row["lexical_score"]), 1.0) * 0.1
+            )
+            ranked.append((fusion, row))
+        ranked.sort(key=lambda item: (-item[0], item[1]["chunk_key"]))
+        limit = min(top_k or self.settings.rag_top_k, self.settings.rag_top_k)
+        output: list[RetrievalHit] = []
+        used_bytes = 0
+        for fusion, row in ranked:
+            payload = str(row["display_text"])
+            used_bytes += len(payload.encode())
+            if used_bytes > self.settings.rag_evidence_max_bytes:
+                break
+            chunk_id = row["file_chunk_id"]
+            output.append(RetrievalHit(
+                chunk_id=chunk_id,
+                chunk_key=row["chunk_key"],
+                snippet=payload,
+                lexical_score=float(row["lexical_score"]),
+                vector_score=float(row["vector_score"]),
+                fusion_score=fusion,
+                classification=effective_classification,
+                citation=Citation(
+                    zone_label="private", marker=f"C{len(output) + 1}",
+                    chunk_id=chunk_id, record_key=str(version["logical_name"]),
+                    document_version_id=filters.version_id,
+                    evidence_key=str(row["rendition_kind"]),
+                    record_checksum=str(row["source_sha256"]),
+                    evidence_checksum=str(row["rendition_sha256"]),
+                    source_key=f"file:{filters.version_id}", source_revision=1,
+                    provenance_level="approved_internal",
+                    verification_state="approved", freshness_state="current",
+                    source_label=str(version["original_filename"]),
+                    locator=dict(row["locator"]),
+                ),
+            ))
+            if len(output) >= limit:
+                break
+        return output
 
     async def _metadata(
         self,
@@ -159,6 +351,25 @@ class RetrievalService:
         """Revalidate exact active lineage and effective policy without content."""
         if not chunk_ids:
             return False
+        file_versions = list((await session.execute(text("""
+            SELECT DISTINCT document_version_id FROM file_chunks
+            WHERE file_chunk_id=ANY(CAST(:chunk_ids AS uuid[]))
+              AND lifecycle='active'
+        """), {"chunk_ids": chunk_ids})).scalars())
+        if file_versions:
+            file_count = await session.scalar(text("""
+                SELECT count(*) FROM file_chunks fc
+                JOIN renditions rd ON rd.rendition_id=fc.rendition_id
+                JOIN resources rr ON rr.resource_id=rd.rendition_id
+                WHERE fc.file_chunk_id=ANY(CAST(:chunk_ids AS uuid[]))
+                  AND fc.lifecycle='active' AND rd.status='ready'
+                  AND rr.lifecycle_state='active'
+            """), {"chunk_ids": chunk_ids})
+            if len(file_versions) != 1 or int(file_count or 0) != len(set(chunk_ids)):
+                return False
+            return await self._file_authorized(
+                session, subject, file_versions[0], request_id,
+            ) is not None
         principal = uuid.UUID(subject.user_id)
         rows = (await session.execute(text("""
             SELECT c.chunk_id,c.chunk_key,c.record_id,c.generation_id,
@@ -206,6 +417,15 @@ class RetrievalService:
         normalized = normalize_query(query)
         if not normalized:
             raise RetrievalError("query_empty_after_normalization")
+        if filters.version_id is not None:
+            return await self._search_file(
+                subject,
+                query,
+                normalized,
+                filters=filters,
+                request_id=request_id,
+                top_k=top_k,
+            )
         metadata: list[dict[str, Any]] = []
         allowed_ids: list[uuid.UUID] = []
         cursor: str | None = None

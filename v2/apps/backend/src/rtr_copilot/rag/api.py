@@ -140,10 +140,12 @@ async def ask(
 
 def _citation(row: dict[str, Any]) -> Citation:
     return Citation(
+        zone_label=row.get("zone_label", "sot"),
         marker=row["marker"],
-        chunk_id=row["chunk_id"],
+        chunk_id=uuid.UUID(str(row.get("chunk_id") or row.get("file_chunk_id"))),
         record_key=row["record_key"],
         record_version_id=row["record_version_id"],
+        document_version_id=row.get("document_version_id"),
         evidence_key=row["evidence_key"],
         record_checksum=str(row["record_checksum"]),
         evidence_checksum=(
@@ -300,6 +302,7 @@ async def conversation(
             JOIN records r ON r.record_id=c.record_id
             JOIN record_versions rv ON rv.version_id=c.record_version_id
             WHERE ar.conversation_id=:conversation_id
+              AND ac.zone_label='sot'
             ORDER BY ar.created_at,ac.marker
         """), {
             "conversation_id": conversation_id,
@@ -318,6 +321,30 @@ async def conversation(
             for row in citation_metadata
             if not row["current_active"] or row["chunk_id"] not in allowed_chunks
         }
+        file_metadata = (await session.execute(text("""
+            SELECT ar.answer_message_id,ac.citation_id,ac.file_chunk_id chunk_id,
+              ac.document_version_id,
+              (fc.lifecycle='active' AND rd.status='ready'
+                AND rr.lifecycle_state='active') AS current_active
+            FROM answer_runs ar JOIN answer_citations ac
+              ON ac.answer_run_id=ar.answer_run_id
+            JOIN file_chunks fc ON fc.file_chunk_id=ac.file_chunk_id
+            JOIN renditions rd ON rd.rendition_id=fc.rendition_id
+            JOIN resources rr ON rr.resource_id=rd.rendition_id
+            WHERE ar.conversation_id=:conversation_id
+              AND ac.zone_label='private'
+            ORDER BY ar.created_at,ac.marker
+        """), {"conversation_id": conversation_id})).mappings().all()
+        retrieval = RetrievalService()
+        authorized_versions: dict[uuid.UUID, bool] = {}
+        for row in file_metadata:
+            version_id = row["document_version_id"]
+            if version_id not in authorized_versions:
+                authorized_versions[version_id] = await retrieval._file_authorized(
+                    session, subject, version_id, request_id,
+                ) is not None
+            if not row["current_active"] or not authorized_versions[version_id]:
+                blocked_messages.add(row["answer_message_id"])
         readable_message_ids = [
             row["message_id"]
             for row in headers
@@ -341,6 +368,13 @@ async def conversation(
                 and row["chunk_id"] in allowed_chunks
             )
         ]
+        allowed_citation_ids.extend(
+            row["citation_id"] for row in file_metadata
+            if (
+                row["answer_message_id"] not in blocked_messages
+                and authorized_versions.get(row["document_version_id"], False)
+            )
+        )
         citations = (await session.execute(text("""
             SELECT ar.answer_message_id,ac.*
             FROM answer_runs ar JOIN answer_citations ac

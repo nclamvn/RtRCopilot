@@ -138,7 +138,7 @@ describe("conversation contract", () => {
     })).toThrow();
     expect(() => parseConversation({
       conversation_id: conversationId,
-      messages: [{...message, citations: [{...citation, zone_label: "private"}]}],
+      messages: [{...message, citations: [{...citation, zone_label: "external"}]}],
       request_id: "req-2",
     })).toThrow("zone_label_forged");
   });

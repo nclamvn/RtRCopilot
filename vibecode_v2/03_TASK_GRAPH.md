@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** Blueprint APPROVED · TIP-022 Recovery Gate VERIFIED · TIP-018 NEXT (04/08/2026)
+**Trạng thái:** Blueprint APPROVED · TIP-022 + TIP-018 VERIFIED · TIP-014 RE-VERIFY NEXT (04/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -51,7 +51,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-015 ✅ | Premium UI rebuild (PRD UI/UX v1.0): design tokens light+dark, shell/sidebar/ask/rail reskin, ⌘K palette, composer textarea, citation keyboard nav | 011 | VERIFIED: 12/12 AC; axe 0 crit/serious (5×4×2 + 10 stateful); Playwright 75/75; vitest 148; next build EXIT 0; no backend/migration change |
 | TIP-016 ✅ | UI completion: mobile bottom-dock nav (§13), full light-mode for frozen pages (theming only), composer scope chips (§11) | 015 | VERIFIED: 7/7 AC; axe 0 crit/serious **both themes** (dark 5×4×2 + light 5×4 + 10 stateful); Playwright 80/80; vitest 148; next build EXIT 0; no backend/migration change |
 | TIP-017 ✅ | Keyboard & theming completeness: shortcuts help dialog (`?`), light-axe extended to EN | 015,016 | VERIFIED: 6/6 AC; axe 0 crit/serious **both themes × both locales** (+ help dialog); Playwright 87/87; vitest 148; next build EXIT 0; no backend/migration change |
-| TIP-018 ▶ | Real per-file retrieval (replace safe-form source_key with version_id scope) — closes TIP-007/011 deferral | 007,008,011 | DESIGN COMPLETE · UNBLOCKED by available Docker/runtime; queued immediately after TIP-022 VERIFY |
+| TIP-018 ✅ | Real per-file retrieval: immutable version scope, private chunk plane, ACL-isolated grounding and deep citations | 007,008,011,022 | VERIFIED: schema 0010; 411 backend + 150 Web unit; DB 48/48; leak/ACL/replay probes 2/2; Playwright/axe 88/88; Trivy 0 HIGH/CRITICAL |
 | TIP-019 ✅ | Theming zero-debt: rgba overlays → color-mix tokens; prefers-color-scheme default (no flash) | 016,017 | VERIFIED: 6/6 AC; axe 0 crit/serious both themes × both locales; Playwright 88/88; vitest 148; next build EXIT 0; no backend/migration change |
 | TIP-020 ◇ | Pytest async-loop CI stabilization | 012 | RECOVERED / MERGED / BASELINE-VERIFIED at `356f9ac`; see traceability recovery record |
 | TIP-021 ◇ | Compose readiness and tolerant cleanup stabilization | 012 | RECOVERED / MERGED / BASELINE-VERIFIED at `f816dca`; see traceability recovery record |

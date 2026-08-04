@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class StrictModel(BaseModel):
@@ -11,6 +11,7 @@ class StrictModel(BaseModel):
 
 class SearchFilters(StrictModel):
     source_key: str | None = None
+    version_id: uuid.UUID | None = None
     classification_ceiling: Literal[
         "public_internal",
         "internal",
@@ -19,6 +20,12 @@ class SearchFilters(StrictModel):
     ] | None = None
     provenance: list[str] = Field(default_factory=list, max_length=10)
     include_stale: bool = False
+
+    @model_validator(mode="after")
+    def one_scope(self) -> "SearchFilters":
+        if self.source_key is not None and self.version_id is not None:
+            raise ValueError("source_key_and_version_id_are_mutually_exclusive")
+        return self
 
 
 class SearchRequest(StrictModel):
@@ -44,11 +51,12 @@ class Citation(StrictModel):
     visible to clients.
     """
 
-    zone_label: Literal["sot"] = "sot"
+    zone_label: Literal["sot", "private"] = "sot"
     marker: str
     chunk_id: uuid.UUID
     record_key: str
-    record_version_id: uuid.UUID
+    record_version_id: uuid.UUID | None = None
+    document_version_id: uuid.UUID | None = None
     evidence_key: str | None
     record_checksum: str
     evidence_checksum: str | None
