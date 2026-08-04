@@ -1,6 +1,6 @@
 import {NextRequest} from "next/server";
 import {afterEach, describe, expect, test, vi} from "vitest";
-import {GET, POST} from "./route";
+import {GET, PATCH, POST, PUT} from "./route";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -100,5 +100,23 @@ describe("Knowledge Ops same-origin proxy boundary", () => {
     expect(body.error.message).not.toContain("api:8000");
     expect(body.request_id).toBeTruthy();
     expect(response.headers.get("x-request-id")).toBe(body.request_id);
+  });
+
+  test.each([
+    {method: "PUT", handler: PUT, path: ["admin", "settings", "gap.sla_hours"]},
+    {method: "PATCH", handler: PATCH, path: ["admin", "research-sources", "11111111-1111-4111-8111-111111111111"]},
+  ])("forwards bounded admin $method mutations", async ({method, handler, path}) => {
+    vi.stubEnv("API_INTERNAL_URL", "http://api:8000");
+    vi.stubGlobal("fetch", vi.fn(async (request: URL | RequestInfo, init?: RequestInit) => {
+      expect(init?.method).toBe(method);
+      expect(new URL(String(request)).pathname).toBe(`/api/v1/${path.join("/")}`);
+      expect(init?.body).toBeTruthy();
+      return Response.json({ok: true});
+    }));
+    const response = await handler(new NextRequest(
+      `http://localhost/api/governance/${path.join("/")}`,
+      {method, body: JSON.stringify({reason: "approved change"}), headers: {"content-type": "application/json"}},
+    ), {params: Promise.resolve({path})});
+    expect(response.status).toBe(200);
   });
 });

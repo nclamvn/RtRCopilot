@@ -42,7 +42,7 @@ rewrite; it is closure, activation and proof.
 | 0 | Recovery Gate / TIP-022 | P0 for continuation | local + CI green, runtime matches HEAD, worker healthy |
 | 1 | Resume TIP-018 | P0 product | version-scoped private file retrieval; leak 0 |
 | 2 | Close TIP-014 | P0 quality | real embedding path + independent Verify Report |
-| 3 | TIP-023 Admin Workspace | P1 rollout | operator can manage approved admin surfaces without raw APIs |
+| 3 | TIP-023 Admin Workspace — local verified, PR/CI pending | P1 rollout | operator can manage approved admin surfaces without raw APIs |
 | 4 | TIP-024 Pilot Corpus & Provenance | P0 rollout | representative Files/Templates/Research live; soft-fact ownership |
 | 5 | TIP-025 Production-like Pilot | P0 rollout | real OIDC/TLS/secrets, measured pilot, go/no-go |
 | 6 | Phase C connectors | post-pilot | read-only MRP/CRM/HRM/IP/Workspace/chat adapters |
@@ -179,7 +179,12 @@ Estimated effort: **2–4 focused days**, plus provider access/calibration.
 
 ---
 
-## 6. Proposed TIP-023 — Admin Workspace
+## 6. TIP-023 — Admin Workspace
+
+**Execution status 04/08/2026:** implemented and Contractor-verified locally;
+GitHub PR/CI and post-merge convergence remain. See
+`TIP-023_ADMIN_WORKSPACE.md`, `TIP-023_COMPLETION_REPORT.md` and
+`TIP-023_VERIFY_REPORT.md`.
 
 ### Objective
 

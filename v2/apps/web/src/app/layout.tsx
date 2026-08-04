@@ -12,6 +12,7 @@ import "./styles/motion.css";
 import "./styles.css";
 import "./styles/shell.css";
 import "./styles/ask.css";
+import "./styles/admin.css";
 // WP-B: theme-aware aliases for the frozen tokens (must load after styles.css).
 import "./styles/legacy-bridge.css";
 

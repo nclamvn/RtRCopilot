@@ -17,6 +17,7 @@ import {
   honestNullAnswer,
   ids,
   mockAsk,
+  mockAdmin,
   mockAuth,
   mockDocuments,
   mockFiles,
@@ -92,12 +93,12 @@ const LOCALE_ANCHORS = {
     ops: "Vận hành tri thức", admin: "Quản trị"},
   surface: {files: "Tìm tệp", documents: "Mẫu đã duyệt",
     ops: "Bảng điều hành tri thức",
-    admin: "Chưa có giao diện quản trị; các bề mặt API quản trị hiện có:"}},
+    admin: "Sức khỏe job và worker"}},
   en: {nav: "Ask", h1: {ask: "Ask", files: "Files", documents: "Documents",
     ops: "Knowledge operations", admin: "Administration"},
   surface: {files: "Find files", documents: "Approved templates",
     ops: "Knowledge operations dashboard",
-    admin: "No admin UI yet; existing admin API surfaces:"}},
+    admin: "Job and worker health"}},
 } as const;
 
 async function expectLocaleChrome(
@@ -156,9 +157,9 @@ for (const locale of LOCALES) {
 
   test(`axe matrix: /admin (${locale}) at all four viewports`, async ({page, baseURL}) => {
     await setLocale(page, baseURL, locale);
-    await mockAuth(page);
+    await mockAdmin(page);
     await page.goto("/admin");
-    await expect(page.locator(".placeholder-card li").first()).toBeVisible();
+    await expect(page.locator(".admin-ledger article").first()).toBeVisible();
     await expectLocaleChrome(page, locale, "admin");
     await sweep(page, `/admin ${locale}`);
   });
@@ -172,7 +173,7 @@ for (const locale of LOCALES) for (const pg of [
   {key: "files", path: `/files?version=${ids.versionId}&page=4`, ready: ".pdf-stage iframe"},
   {key: "documents", path: "/documents", ready: ".template-ledger li button"},
   {key: "ops", path: "/knowledge-ops", ready: ".tile-grid .tile"},
-  {key: "admin", path: "/admin", ready: ".placeholder-card li"},
+  {key: "admin", path: "/admin", ready: ".admin-ledger article"},
 ] as const) {
   test(`axe light-theme: ${pg.key} (${locale}) at all four viewports`, async ({page, baseURL}) => {
     await setLocale(page, baseURL, locale);
@@ -181,7 +182,7 @@ for (const locale of LOCALES) for (const pg of [
     else if (pg.key === "files") { await mockAuth(page); await mockFiles(page); }
     else if (pg.key === "documents") await mockDocuments(page);
     else if (pg.key === "ops") await mockKnowledgeOps(page);
-    else await mockAuth(page);
+    else await mockAdmin(page);
     await page.goto(pg.path);
     await expect(page.locator(pg.ready).first()).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
