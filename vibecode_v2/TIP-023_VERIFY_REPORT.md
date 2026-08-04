@@ -2,13 +2,13 @@
 
 **Date:** 2026-08-04
 **Verifier:** Contractor — independent local rerun after Builder completion
-**Disposition:** **VERIFIED LOCAL · PR/CI PENDING**
+**Disposition:** **VERIFIED · MERGED**
 
 ## Verdict
 
-TIP-023 satisfies **AC 9/9 locally**. Critical issues: **0**. P0/P1 open in
-scope: **0**. Merge remains prohibited until the branch GitHub aggregate is
-green.
+TIP-023 satisfies **AC 9/9**. Critical issues: **0**. P0/P1 open in scope:
+**0**. PR #5 passed all eight required jobs and was merged into `main` as
+`46197ccd8d30d660f686f1ecc9963b32f0f58ff3`.
 
 ## Acceptance evidence
 
@@ -22,7 +22,7 @@ green.
 | 023.6 contract safety | PASS | seven parser probes plus component failure path; invalid/expanded contracts fail closed |
 | 023.7 accessibility | PASS | 92/92 browser; Admin axe VI/EN × dark/light × 4 viewports, 0 critical/serious; 360 px overflow 0 |
 | 023.8 localization/theme | PASS | i18n catalog parity test; both locales and themes in browser matrix |
-| 023.9 repository verification | PASS local | `make verify`: Web 162, backend 413 + 114 skipped, live data 57, migrations 10, Trivy 0 HIGH/CRITICAL, final `VERIFY PASS` |
+| 023.9 repository verification | PASS | `make verify`: Web 162, backend 413 + 114 skipped, live data 57, migrations 10, Trivy 0 HIGH/CRITICAL, final `VERIFY PASS`; GitHub run `30877498885` 8/8 jobs green |
 
 ## Adversarial probes
 
@@ -41,4 +41,4 @@ green.
   production OIDC/TLS/secrets or a populated pilot corpus.
 - Real semantic embedding for TIP-014 remains an external provider dependency
   and is not hidden by this UI delivery.
-- GitHub PR and post-merge runtime convergence are the remaining release steps.
+- Post-merge runtime convergence is recorded separately from this source/CI verification.
