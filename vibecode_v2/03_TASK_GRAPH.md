@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** Blueprint APPROVED · TIP-022 + TIP-018 VERIFIED · TIP-014 SAFE CORE VERIFIED / REAL EMBEDDING PENDING (04/08/2026)
+**Trạng thái:** TIP-022 + TIP-018 VERIFIED · TIP-014 SAFE CORE VERIFIED / REAL EMBEDDING PENDING · TIP-023 LOCAL VERIFIED / CI PENDING (04/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -56,6 +56,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-020 ◇ | Pytest async-loop CI stabilization | 012 | RECOVERED / MERGED / BASELINE-VERIFIED at `356f9ac`; see traceability recovery record |
 | TIP-021 ◇ | Compose readiness and tolerant cleanup stabilization | 012 | RECOVERED / MERGED / BASELINE-VERIFIED at `f816dca`; see traceability recovery record |
 | TIP-022 ✅ | Recovery gate: reproducible verify, runtime/build convergence, worker operational readiness, repository hygiene | 012,013B,019 | VERIFIED: 8/8 AC; local `make verify` PASS; Playwright 88/88; Trivy 0 HIGH/CRITICAL; runtime Git/API/Web SHA converged; GitHub aggregate green |
+| TIP-023 ◐ | Admin Workspace: operator-safe identities, research sources, governance settings, gap priority and job health UI | 010,011,022 | LOCAL VERIFIED: 9/9 AC; Web 162/162; Playwright 92/92; axe 0 critical/serious; full `make verify` PASS; PR/CI pending |
 
 ## Audit trail rule
 

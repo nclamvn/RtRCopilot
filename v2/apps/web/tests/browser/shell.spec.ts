@@ -23,6 +23,13 @@ async function mockShell(page: Page, authenticated = true) {
   await page.route("**/api/governance/research/scope", route => route.fulfill({json: {
     allowed: false,
   }}));
+  await page.route("**/api/governance/admin/**", route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/jobs/health")) return route.fulfill({json: {
+      computed_at: "2026-08-04T08:00:00Z", families: [],
+    }});
+    return route.fulfill({json: []});
+  });
 }
 
 test("shell shows one topbar, six nav areas, and active state follows navigation", async ({page}) => {

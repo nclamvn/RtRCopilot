@@ -43,6 +43,26 @@ export async function mockAuth(page: Page) {
   }}));
 }
 
+/** Admin workspace control-plane fixture: operational snapshot plus empty
+ * bounded registries. No truth-family route is exposed by this mock. */
+export async function mockAdmin(page: Page) {
+  await mockAuth(page);
+  await page.route("**/api/governance/admin/**", route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === "/api/governance/admin/jobs/health") return route.fulfill({json: {
+      computed_at: "2026-08-04T08:00:00Z", families: [
+        {family: "ingestion", job_counts: {completed: 8}, outbox_counts: {published: 8}, recent_failures: []},
+        {family: "render", job_counts: {completed: 4}, outbox_counts: {published: 4}, recent_failures: []},
+        {family: "reindex", job_counts: {completed: 3}, outbox_counts: {published: 3}, recent_failures: []},
+      ],
+    }});
+    if (["/api/governance/admin/subjects", "/api/governance/admin/research-sources", "/api/governance/admin/settings"].includes(path)) {
+      return route.fulfill({json: []});
+    }
+    return route.fulfill({status: 404, json: {error: {code: "not_found", message: ""}, request_id: "req-admin"}});
+  });
+}
+
 const citation = {
   zone_label: "sot",
   marker: "C1", chunk_id: ids.chunkId, record_key: "company.warranty",
