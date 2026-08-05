@@ -472,6 +472,7 @@ class EnterpriseService:
             request_id=request_id,
             query_entities=plan.entities,
             query_intent=plan.intent,
+            query_definition_record_keys=plan.definition_record_keys,
         )
         record_keys = [item.citation.record_key for item in hits]
         if case.kind == "retrieval":

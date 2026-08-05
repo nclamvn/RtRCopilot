@@ -4,6 +4,17 @@
   "owner": "curator:sot",
   "entities": [
     {
+      "entity_id": "rtr.company.real-time-robotics",
+      "canonical_name": "Real-time Robotics",
+      "entity_type": "company",
+      "domain": "company",
+      "aliases": ["rtr", "rtrobotics", "real time robotics"],
+      "definition_record_keys": ["L3F.ENT.002"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
       "entity_id": "rtr.product.hera",
       "canonical_name": "HERA",
       "entity_type": "product",

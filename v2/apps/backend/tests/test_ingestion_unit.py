@@ -56,6 +56,27 @@ class FakeProbeSandbox:
 
     def run(self, argv: list[str], *, temp_root: Path) -> SandboxResult:
         self.calls.append(argv)
+        if argv[0] == "soffice":
+            source = Path(argv[-1])
+            output = temp_root / f"{source.stem}.pdf"
+            pdf = canvas.Canvas(str(output), invariant=1)
+            if source.suffix == ".pptx":
+                presentation = Presentation(str(source))
+                for slide in presentation.slides:
+                    text = " ".join(
+                        str(getattr(shape, "text", ""))
+                        for shape in slide.shapes
+                    )
+                    pdf.drawString(50, 750, text)
+                    pdf.showPage()
+            else:
+                document = Document(str(source))
+                pdf.drawString(50, 750, " ".join(
+                    paragraph.text for paragraph in document.paragraphs
+                ))
+                pdf.showPage()
+            pdf.save()
+            return SandboxResult(stdout=b"converted", stderr_fingerprint=None)
         return SandboxResult(
             stdout=json.dumps({
                 "format": {"duration": str(self.duration)},

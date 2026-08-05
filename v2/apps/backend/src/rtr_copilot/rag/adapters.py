@@ -8,9 +8,12 @@ from typing import Protocol
 from rtr_copilot.rag.models import ProviderAnswer, ProviderEvidence
 
 TOKEN_RE = re.compile(r"[a-z0-9][a-z0-9._-]*")
-# Split conventional CamelCase without changing exact identifiers such as
-# ``L3F.ENT.002`` where an uppercase letter follows a digit.
-CAMEL_RE = re.compile(r"(?<=[a-z])(?=[A-Z])")
+# Split conventional CamelCase only when the uppercase character starts a
+# capitalized word. A terminal/multi-cap acronym such as ``RtR`` must remain
+# atomic; the previous lower->upper rule changed it to ``rt r`` and silently
+# defeated exact ontology aliases. Exact identifiers such as ``L3F.ENT.002``
+# also remain unchanged.
+CAMEL_RE = re.compile(r"(?<=[a-z])(?=[A-Z][a-z])")
 ALIASES = {
     "uav": "drone",
     "uas": "drone",

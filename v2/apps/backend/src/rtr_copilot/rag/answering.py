@@ -983,6 +983,7 @@ class AnswerService:
                 top_k=self.settings.rag_answer_candidate_k,
                 query_entities=query_plan.entities,
                 query_intent=query_plan.intent,
+                query_definition_record_keys=query_plan.definition_record_keys,
             )
             if question_dlp.allow and query_plan.resolution_state != "clarification_required"
             else []

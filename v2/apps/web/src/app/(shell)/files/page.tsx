@@ -400,11 +400,6 @@ export default function FilesPage() {
           onUpload={startUpload} onRetry={retryUpload}/>
       </aside>
       <section className="work-surface" aria-label={t("files.viewerLabel")}>
-        <div className="locator-spine" aria-hidden><span>{
-          locator.page ? `P${locator.page}` : locator.cell ?? locator.slide ?? (
-            locator.t !== undefined ? `${(locator.t / 1000).toFixed(1)}s` : "—"
-          )
-        }</span></div>
         {!selected && <div className="viewer-empty">
           <p className="eyebrow">{t("files.viewerEmptyEyebrow")}</p>
           <h2>{t("files.viewerEmptyTitle")}</h2><p>{t("files.viewerEmptyBody")}</p></div>}

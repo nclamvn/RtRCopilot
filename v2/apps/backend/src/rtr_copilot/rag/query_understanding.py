@@ -158,6 +158,7 @@ class QueryPlan:
     intent: QueryIntent
     entities: tuple[str, ...]
     entity_ids: tuple[str, ...]
+    definition_record_keys: tuple[str, ...]
     candidates: tuple[OntologyMatch, ...]
     resolution_state: QueryResolutionState
     retrieval_query: str
@@ -171,6 +172,7 @@ class QueryPlan:
             "intent": self.intent,
             "resolution_state": self.resolution_state,
             "entity_count": len(self.entities),
+            "definition_record_count": len(self.definition_record_keys),
             "candidate_count": len(self.candidates),
             "expansion_count": len(self.expansions),
             "planner_source": self.planner_source,
@@ -178,6 +180,9 @@ class QueryPlan:
             "query_digest": hashlib.sha256(self.normalized.encode()).hexdigest(),
             "entity_set_digest": hashlib.sha256(
                 "\n".join(sorted(self.entity_ids)).encode(),
+            ).hexdigest(),
+            "definition_record_set_digest": hashlib.sha256(
+                "\n".join(sorted(self.definition_record_keys)).encode(),
             ).hexdigest(),
             "candidate_set_digest": hashlib.sha256(
                 "\n".join(sorted(item.entity_id for item in self.candidates)).encode(),
@@ -308,6 +313,12 @@ async def plan_query(
         for entity in entities
         for ontology_entity in ontology.by_canonical.get(entity, ())
     )
+    definition_record_keys = tuple(dict.fromkeys(
+        record_key
+        for entity in entities
+        for ontology_entity in ontology.by_canonical.get(entity, ())
+        for record_key in ontology_entity.definition_record_keys
+    ))
     retrieval_query = _augment_with(question, entities, expansions)
     terms = tuple(dict.fromkeys(normalized.split()))
     return QueryPlan(
@@ -316,6 +327,7 @@ async def plan_query(
         intent=classify_intent(question),
         entities=tuple(entities),
         entity_ids=entity_ids,
+        definition_record_keys=definition_record_keys,
         candidates=tuple(candidates),
         resolution_state=state,
         retrieval_query=retrieval_query,

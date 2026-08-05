@@ -123,31 +123,74 @@ function SearchPanel({payload, onLocator}: {payload: unknown; onLocator: Props["
   </section>;
 }
 
+function SearchDrawer({
+  open, error, payload, onLocator,
+}: {
+  open: boolean;
+  error: MessageKey | "";
+  payload: unknown;
+  onLocator: Props["onLocator"];
+}) {
+  const {t} = useI18n();
+  if (!open) return null;
+  return <aside className="viewer-search-drawer" id="viewer-search-drawer">
+    {error ? <p role="status">{t(error)}</p>
+      : <SearchPanel payload={payload} onLocator={onLocator}/>}
+  </aside>;
+}
+
+function SearchToggle({open, onClick}: {open: boolean; onClick: () => void}) {
+  const {t} = useI18n();
+  return <button className="viewer-search-toggle" type="button" onClick={onClick}
+    aria-expanded={open} aria-controls="viewer-search-drawer">
+    {open ? t("files.viewer.closeSearch") : t("files.viewer.openSearch")}
+  </button>;
+}
+
+function collectionTotal(value: unknown, key: "pages" | "slides"): number | undefined {
+  const root = safeRecord(value);
+  const collection = root?.[key];
+  if (!Array.isArray(collection)) return undefined;
+  const positionKey = key === "pages" ? "page" : "slide";
+  const positions = collection.map(item => Number(safeRecord(item)?.[positionKey]))
+    .filter(position => Number.isInteger(position) && position > 0);
+  return positions.length ? Math.max(...positions) : collection.length;
+}
+
 function PdfSurface({
   manifest, locator, onLocator, onAccessLoss, office,
-}: Props & {office?: boolean}) {
+}: Props & {office?: "document" | "presentation"}) {
   const {t, locale} = useI18n();
+  const [searchOpen, setSearchOpen] = useState(false);
   const preview = rendition(manifest, "preview_pdf");
   const textItem = rendition(manifest, "page_text_json", "structured_text_json");
   const {value, error} = useJson(textItem, onAccessLoss);
   if (!preview) return <Partial reason={t("files.viewer.noPdf")}/>;
   const page = locator.page ?? locator.slide ?? 1;
-  return <div className="viewer-split">
-    <div className="pdf-stage">
-      {office && <p className="fidelity">{t("files.viewer.fidelity")}</p>}
-      <iframe title={t("files.viewer.pdfTitle")}
-        src={`${proxyContentUrl(preview)}#page=${page}`}/>
-    </div>
-    <div className="viewer-tools">
-      <div className="pager">
-        <button type="button" onClick={() => onLocator({page: Math.max(1, page - 1)})}>
-          {t("files.viewer.prevPage")}</button>
-        <output>{t("rail.locator.page")} {formatNumber(page, locale)}</output>
-        <button type="button" onClick={() => onLocator({page: page + 1})}>
-          {t("files.viewer.nextPage")}</button>
+  const total = collectionTotal(value, office === "presentation" ? "slides" : "pages");
+  const unit = office === "presentation" ? t("files.viewer.slide") : t("files.viewer.page");
+  const move = (offset: number) => {
+    const next = Math.max(1, Math.min(total ?? Number.MAX_SAFE_INTEGER, page + offset));
+    onLocator(office === "presentation" ? {slide: next} : {page: next});
+  };
+  return <div className="asset-viewer">
+    <header className="viewer-commandbar">
+      <div className="pager" aria-label={unit}>
+        <button type="button" onClick={() => move(-1)} disabled={page <= 1}
+          aria-label={t("files.viewer.prevPage")} title={t("files.viewer.prevPage")}>←</button>
+        <output><span>{unit}</span> {formatNumber(page, locale)}
+          {total !== undefined && <> / {formatNumber(total, locale)}</>}</output>
+        <button type="button" onClick={() => move(1)} disabled={total !== undefined && page >= total}
+          aria-label={t("files.viewer.nextPage")} title={t("files.viewer.nextPage")}>→</button>
       </div>
-      {error ? <p role="status">{t(error)}</p> : <SearchPanel payload={value} onLocator={onLocator}/>}
+      {office && <span className="viewer-fidelity">{t("files.viewer.fidelity")}</span>}
+      <SearchToggle open={searchOpen} onClick={() => setSearchOpen(value => !value)}/>
+    </header>
+    <div className="pdf-stage viewer-canvas">
+      <iframe title={t("files.viewer.pdfTitle")}
+        src={`${proxyContentUrl(preview)}#page=${page}&view=FitH`}/>
     </div>
+    <SearchDrawer open={searchOpen} error={error} payload={value} onLocator={onLocator}/>
   </div>;
 }
 
@@ -157,27 +200,30 @@ function ImageViewer(props: Props) {
   const ocr = rendition(props.manifest, "ocr_json");
   const {value, error} = useJson(ocr, props.onAccessLoss);
   const [actual, setActual] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   if (!image) return <Partial reason={t("files.viewer.noImage")}/>;
-  return <div className="viewer-split">
-    <div className={`image-stage ${actual ? "actual" : ""}`}>
+  return <div className="asset-viewer">
+    <header className="viewer-commandbar">
+      <span className="viewer-format">IMAGE</span>
+      <button type="button" onClick={() => setActual(value => !value)}>
+        {actual ? t("files.viewer.fit") : t("files.viewer.actualSize")}
+      </button>
+      <SearchToggle open={searchOpen} onClick={() => setSearchOpen(value => !value)}/>
+    </header>
+    <div className={`image-stage viewer-canvas ${actual ? "actual" : ""}`}>
       {/* Safe authenticated rendition URLs cannot use the Next image optimizer. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={proxyContentUrl(image)} alt={t("files.viewer.imageAlt")}/>
       {props.locator.region && <span className="region-indicator">
         {t("files.viewer.region")} {props.locator.region}</span>}
     </div>
-    <div className="viewer-tools">
-      <button type="button" onClick={() => setActual(value => !value)}>
-        {actual ? t("files.viewer.fit") : t("files.viewer.actualSize")}
-      </button>
-      {error ? <p role="status">{t(error)}</p>
-        : <SearchPanel payload={value} onLocator={props.onLocator}/>}
-    </div>
+    <SearchDrawer open={searchOpen} error={error} payload={value} onLocator={props.onLocator}/>
   </div>;
 }
 
 function SheetViewer(props: Props) {
   const {t} = useI18n();
+  const [searchOpen, setSearchOpen] = useState(false);
   const preview = rendition(props.manifest, "sheet_preview_json");
   const {value, error} = useJson(preview, props.onAccessLoss);
   const root = safeRecord(value);
@@ -196,15 +242,22 @@ function SheetViewer(props: Props) {
   const mergedRanges = Array.isArray(selected?.merged_ranges)
     ? selected.merged_ranges.filter(item => typeof item === "string").slice(0, 100)
     : [];
-  return <div className="sheet-layout">
-    <div className="sheet-tabs" role="tablist" aria-label={t("files.viewer.sheetTabs")}>
+  return <div className="asset-viewer">
+    <header className="viewer-commandbar">
+      <span className="viewer-format">XLSX</span>
+      <output className="viewer-position">{activeName}
+        {props.locator.cell ? ` · ${props.locator.cell}` : ""}</output>
+      <SearchToggle open={searchOpen} onClick={() => setSearchOpen(value => !value)}/>
+    </header>
+    <div className="sheet-layout">
+      <div className="sheet-tabs" role="tablist" aria-label={t("files.viewer.sheetTabs")}>
       {sheets.map(item => {
         const name = String(safeRecord(item)?.sheet ?? "");
         return <button type="button" role="tab" aria-selected={name === activeName}
           key={name} onClick={() => props.onLocator({sheet: name})}>{name}</button>;
       })}
-    </div>
-    <div className="sheet-grid" role="region" aria-label={t("files.viewer.sheetGrid")} tabIndex={0}>
+      </div>
+      <div className="sheet-grid" role="region" aria-label={t("files.viewer.sheetGrid")} tabIndex={0}>
       {mergedRanges.length > 0 && <p className="merged-ranges">
         {t("files.viewer.mergedRanges")} {mergedRanges.join(", ")}
       </p>}
@@ -224,13 +277,15 @@ function SheetViewer(props: Props) {
             </button></td>;
           })}</tr>;
       })}</tbody></table>
+      </div>
     </div>
-    <SearchPanel payload={value} onLocator={props.onLocator}/>
+    <SearchDrawer open={searchOpen} error="" payload={value} onLocator={props.onLocator}/>
   </div>;
 }
 
 function MediaViewer(props: Props & {video: boolean}) {
-  const {t} = useI18n();
+  const {t, locale} = useI18n();
+  const [searchOpen, setSearchOpen] = useState(false);
   const mediaItem = rendition(props.manifest, props.video ? "browser_video" : "browser_audio");
   const poster = rendition(props.manifest, props.video ? "poster" : "waveform");
   const transcript = rendition(props.manifest, "transcript_json");
@@ -250,8 +305,15 @@ function MediaViewer(props: Props & {video: boolean}) {
       if (milliseconds % 1000 < 250) props.onLocator({t: milliseconds});
     },
   };
-  return <div className="media-layout">
-    <div className="media-stage">
+  return <div className="asset-viewer">
+    <header className="viewer-commandbar">
+      <span className="viewer-format">{props.video ? "VIDEO" : "AUDIO"}</span>
+      <output className="viewer-position">
+        {formatNumber(Math.floor((props.locator.t ?? 0) / 1000), locale)} s
+      </output>
+      <SearchToggle open={searchOpen} onClick={() => setSearchOpen(value => !value)}/>
+    </header>
+    <div className="media-stage viewer-canvas">
       {props.video
         ? <video {...common} poster={poster ? proxyContentUrl(poster) : undefined}/>
         : <><audio {...common}/>{poster &&
@@ -260,8 +322,7 @@ function MediaViewer(props: Props & {video: boolean}) {
           <img className="waveform" src={proxyContentUrl(poster)}
             alt={t("files.viewer.waveformAlt")}/>}</>}
     </div>
-    {error ? <p role="status">{t(error)}</p>
-      : <SearchPanel payload={value} onLocator={props.onLocator}/>}
+    <SearchDrawer open={searchOpen} error={error} payload={value} onLocator={props.onLocator}/>
   </div>;
 }
 
@@ -276,7 +337,8 @@ export function FileViewer(props: Props) {
   const kind = viewerFor(props.manifest.viewer_kind);
   if (kind === "image") return <ImageViewer {...props}/>;
   if (kind === "pdf") return <PdfSurface {...props}/>;
-  if (kind === "docx" || kind === "pptx") return <PdfSurface {...props} office/>;
+  if (kind === "docx") return <PdfSurface {...props} office="document"/>;
+  if (kind === "pptx") return <PdfSurface {...props} office="presentation"/>;
   if (kind === "xlsx") return <SheetViewer {...props}/>;
   if (kind === "video") return <MediaViewer {...props} video/>;
   if (kind === "audio") return <MediaViewer {...props} video={false}/>;

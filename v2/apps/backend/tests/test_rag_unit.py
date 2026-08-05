@@ -30,6 +30,10 @@ def test_normalization_embedding_typo_camelcase_and_vietnamese() -> None:
     assert adapter.embed("L3F.ENT.002") == adapter.embed("l3f.ent.002")
 
 
+def test_mixed_case_acronym_remains_one_normalized_token() -> None:
+    assert normalize_query("RtR là gì?") == "rtr la gi"
+
+
 def test_stable_chunking_is_bounded_and_deterministic() -> None:
     content = "Một câu thứ nhất. " * 100
     first = stable_split(content, maximum=180, overlap=20)

@@ -677,7 +677,7 @@ class IngestionService:
                     output_byte_size=stored.byte_size,
                     output_mime=artifact.mime_type,
                     generator="rtr-safe-pipeline",
-                    generator_version="1",
+                    generator_version="2",
                     pipeline_version=claim.pipeline_version,
                     config_fingerprint=claim.pipeline_fingerprint,
                     created_at=datetime.now(UTC),
@@ -724,6 +724,51 @@ class IngestionService:
                         "error_fingerprint": optional_failure.fingerprint,
                     },
                 )
+            replacement_kinds = sorted({item["artifact"].kind for item in published})
+            superseded = (await session.execute(text("""
+                SELECT r.rendition_id,r.object_id,r.manifest_object_id,r.kind
+                FROM renditions r
+                JOIN resources rr ON rr.resource_id=r.rendition_id
+                WHERE r.version_id=:version_id
+                  AND r.kind=ANY(:kinds)
+                  AND rr.lifecycle_state='active'
+                FOR UPDATE
+            """), {
+                "version_id": claim.version_id,
+                "kinds": replacement_kinds,
+            })).mappings().all()
+            if superseded:
+                superseded_resource_ids = [
+                    resource_id
+                    for rendition in superseded
+                    for resource_id in (
+                        rendition["rendition_id"],
+                        rendition["object_id"],
+                        rendition["manifest_object_id"],
+                    )
+                ]
+                await session.execute(text("""
+                    UPDATE resources
+                    SET lifecycle_state='superseded',updated_at=now()
+                    WHERE resource_id=ANY(:resource_ids)
+                      AND lifecycle_state='active'
+                """), {"resource_ids": superseded_resource_ids})
+                for previous in superseded:
+                    await AuditRepository().append(
+                        session,
+                        actor_kind="service",
+                        actor_user_id=None,
+                        action="rendition.superseded",
+                        result="success",
+                        reason_code="verified_pipeline_replacement",
+                        request_id=claim.request_id,
+                        resource_id=previous["rendition_id"],
+                        resource_type="rendition",
+                        details={
+                            "replacement_job_id": str(claim.job_id),
+                            "kind": previous["kind"],
+                        },
+                    )
             for item in published:
                 artifact = item["artifact"]
                 for object_id, stored, mime in (
@@ -799,7 +844,7 @@ class IngestionService:
                       quality_summary,provenance,job_id,attempt
                     ) VALUES (
                       :rendition_id,:version_id,:kind,:object_id,:mime,'ready',
-                      'rtr-safe-pipeline','1',:fingerprint,:source_sha,
+                      'rtr-safe-pipeline','2',:fingerprint,:source_sha,
                       :manifest_object_id,:quality_state,
                       CAST(:quality AS jsonb),CAST(:provenance AS jsonb),:job_id,:attempt
                     )

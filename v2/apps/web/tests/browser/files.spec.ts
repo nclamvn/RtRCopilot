@@ -107,6 +107,7 @@ for (const kind of ["image", "pdf", "docx", "xlsx", "pptx", "video", "audio"]) {
       await expect(page.getByRole("region", {name: "Lưới bảng tính"})).toBeVisible();
       await expect(page.getByText("Ô gộp: A1:B1")).toBeVisible();
       await expect(page.getByTitle("Công thức")).toContainText("UPPER");
+      await page.getByRole("button", {name: "Tìm trong tệp", exact: true}).click();
       await page.getByRole("textbox", {name: "Tìm trong tệp"}).fill("Secondary");
       await page.getByRole("button", {name: /Secondary rotor/}).click();
       await expect(page.getByRole("tab", {name: "Archive"})).toHaveAttribute("aria-selected", "true");
@@ -115,6 +116,37 @@ for (const kind of ["image", "pdf", "docx", "xlsx", "pptx", "video", "audio"]) {
     }
     if (kind === "video") await expect(page.locator("video")).toBeVisible();
     if (kind === "audio") await expect(page.locator("audio")).toBeVisible();
+    await expect(page.locator(".locator-spine")).toHaveCount(0);
+  });
+}
+
+for (const kind of ["image", "pdf", "docx", "xlsx", "pptx", "video", "audio"]) {
+  test(`${kind} viewer stays balanced across enterprise breakpoints`, async ({page}) => {
+    await mockWorkspace(page, kind);
+    for (const viewport of [
+      {width: 360, height: 800},
+      {width: 768, height: 1024},
+      {width: 1024, height: 768},
+      {width: 1440, height: 900},
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/files");
+      if (viewport.width <= 720) {
+        await page.getByRole("button", {name: "Danh mục", exact: true}).click();
+      }
+      await page.getByRole("button", {name: `fixture.${kind}`}).click();
+      await expect(page.locator(".viewer-commandbar")).toBeVisible();
+      const geometry = await page.evaluate(() => ({
+        pageOverflow: document.documentElement.scrollWidth
+          - document.documentElement.clientWidth,
+        surfaceOverflow: document.querySelector(".work-surface")
+          ? (document.querySelector(".work-surface") as HTMLElement).scrollWidth
+            - (document.querySelector(".work-surface") as HTMLElement).clientWidth
+          : 0,
+      }));
+      expect(geometry.pageOverflow).toBeLessThanOrEqual(0);
+      expect(geometry.surfaceOverflow).toBeLessThanOrEqual(0);
+    }
   });
 }
 

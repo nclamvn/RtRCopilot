@@ -259,7 +259,7 @@ test("grounded answer: citation focuses the rail entry and the locator opens the
   await expect(page).toHaveURL(new RegExp(`version=${versionId}`));
   await expect(page).toHaveURL(/page=4/);
   await expect(page.getByTitle("Bản xem PDF an toàn")).toBeVisible();
-  await expect(page.locator(".locator-spine")).toContainText("P4");
+  await expect(page.locator(".pager output")).toContainText("4 / 4");
 });
 
 test("TIP-013B: a soft-grounded answer surfaces the double-check caveat as a note", async ({page}) => {

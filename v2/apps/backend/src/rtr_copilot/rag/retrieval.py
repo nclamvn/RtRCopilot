@@ -436,6 +436,7 @@ class RetrievalService:
         top_k: int | None = None,
         query_entities: tuple[str, ...] | None = None,
         query_intent: QueryIntent | None = None,
+        query_definition_record_keys: tuple[str, ...] | None = None,
     ) -> list[RetrievalHit]:
         self.trace = RetrievalTrace()
         if len(query.encode()) > self.settings.rag_query_max_bytes:
@@ -501,6 +502,10 @@ class RetrievalService:
             query,
             entities=query_entities,
             intent=query_intent,
+            definition_record_keys=(
+                () if filters.version_id is not None
+                else query_definition_record_keys
+            ),
         )
         query_vector = self.embedding.embed(" ".join(query_profile.terms))
         self.trace.content_queries += 1

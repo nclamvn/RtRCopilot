@@ -64,7 +64,7 @@ test("keyboard-only: file open → deep locator (pager moves the rtr.locator.v1 
   await expectVisibleFocus(page);
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/page=2/);
-  await expect(page.locator(".locator-spine")).toContainText("P2");
+  await expect(page.locator(".pager output")).toContainText("2 / 4");
 });
 
 test("keyboard-only: documents template → bind → render → approve; approval form in the rail keeps a sane focus order", async ({page}) => {

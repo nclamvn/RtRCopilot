@@ -54,6 +54,7 @@ async def evaluate(subject_id: uuid.UUID) -> dict[str, Any]:
                 top_k=12,
                 query_entities=plan.entities,
                 query_intent=plan.intent,
+                query_definition_record_keys=plan.definition_record_keys,
             )
             if plan.resolution_state != "clarification_required"
             else []
@@ -62,11 +63,15 @@ async def evaluate(subject_id: uuid.UUID) -> dict[str, Any]:
 
     for case in spec["known_definitions"]:
         plan, record_keys = await retrieve(case["question"])
+        forbidden_found = sorted(
+            set(record_keys).intersection(case.get("forbidden", []))
+        )
         passed = (
             plan.resolution_state == "resolved"
             and plan.entities == (case["entity"],)
             and bool(record_keys)
             and record_keys[0] in case["expected_top"]
+            and not forbidden_found
         )
         rows.append({
             "kind": "known_definition",
@@ -74,6 +79,7 @@ async def evaluate(subject_id: uuid.UUID) -> dict[str, Any]:
             "state": plan.resolution_state,
             "entity_count": len(plan.entities),
             "top": record_keys[0] if record_keys else None,
+            "forbidden_found": forbidden_found,
             "passed": passed,
         })
 

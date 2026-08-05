@@ -35,6 +35,7 @@ class OntologyEntity(BaseModel):
     entity_type: str = Field(pattern=r"^[a-z][a-z0-9_-]{1,63}$")
     domain: str = Field(pattern=r"^[a-z][a-z0-9_-]{1,63}$")
     aliases: tuple[str, ...] = ()
+    definition_record_keys: tuple[str, ...] = ()
     lifecycle: Literal["active", "retired"] = "active"
     owner: str = Field(min_length=1, max_length=160)
     provenance_level: Literal["verified_primary", "approved_internal", "claim", "flagged"]
@@ -43,6 +44,13 @@ class OntologyEntity(BaseModel):
     def aliases_are_meaningful(self) -> OntologyEntity:
         if any(not normalize_query(alias) for alias in self.aliases):
             raise ValueError("ontology_alias_empty_after_normalization")
+        if any(
+            not record_key.strip() or len(record_key) > 160
+            for record_key in self.definition_record_keys
+        ):
+            raise ValueError("ontology_definition_record_key_invalid")
+        if len(self.definition_record_keys) != len(set(self.definition_record_keys)):
+            raise ValueError("ontology_definition_record_key_duplicate")
         return self
 
 

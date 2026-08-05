@@ -57,6 +57,33 @@ def test_vega_definition_requires_vega_as_primary_subject() -> None:
     ) is None
 
 
+def test_authoritative_definition_binding_rejects_incidental_acronym_record() -> None:
+    profile = profile_query(
+        "rtr là gì? Real-time Robotics",
+        entities=("Real-time Robotics",),
+        intent="definition",
+        definition_record_keys=("L3F.ENT.002",),
+    )
+    company = candidate_relevance_score(
+        profile,
+        text="Real-time Robotics (RtR) là công ty Việt Nam phát triển hệ thống UAV.",
+        record_key="L3F.ENT.002",
+        base_score=0.07,
+        vector_score=0.25,
+        min_vector_score=0.15,
+    )
+    droneverse = candidate_relevance_score(
+        profile,
+        text="RTR DroneVerse là hệ thống mô phỏng UAV chiến thuật của RtR.",
+        record_key="L3F.4.007",
+        base_score=0.07,
+        vector_score=0.25,
+        min_vector_score=0.15,
+    )
+    assert company is not None
+    assert droneverse is None
+
+
 def test_question_evidence_gate_rejects_single_entity_padding() -> None:
     good = evidence("VEGA · Tactical heavy lifter: payload 20 kg.")
     irrelevant = evidence("Người đứng đầu công ty là CEO.", "C2")

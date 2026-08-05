@@ -19,6 +19,7 @@ from httpx import ASGITransport, AsyncClient
 from openpyxl import Workbook
 from PIL import Image, ImageDraw, ImageFont
 from pptx import Presentation
+from pypdf import PdfReader
 from reportlab.pdfgen import canvas
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -113,6 +114,61 @@ def _document_fixtures(tmp_path: Path) -> dict[str, tuple[str, bytes]]:
         pptx_path.read_bytes(),
     )
     return fixtures
+
+
+@pytest.mark.skipif(
+    shutil.which("soffice") is None,
+    reason="LibreOffice runtime not installed",
+)
+def test_office_previews_preserve_vietnamese_and_presentation_geometry(
+    tmp_path: Path,
+) -> None:
+    app_settings = get_settings()
+    sandbox = ProcessSandbox(
+        timeout_seconds=app_settings.ingestion_tool_timeout_seconds,
+        temp_bytes=app_settings.ingestion_temp_bytes,
+    )
+    pptx_path = tmp_path / "fidelity.pptx"
+    presentation = Presentation()
+    for text_value in ("Đà Nẵng · lãnh đạo", "Khung năng lực UAV"):
+        slide = presentation.slides.add_slide(presentation.slide_layouts[5])
+        shape = slide.shapes.add_textbox(914400, 914400, 7315200, 1828800)
+        run = shape.text_frame.paragraphs[0].add_run()
+        run.text = text_value
+        run.font.name = "Be Vietnam Pro"
+    presentation.save(pptx_path)
+
+    first = extract_required(
+        pptx_path,
+        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        structural={},
+        settings=app_settings,
+        sandbox=sandbox,
+    )
+    second = extract_required(
+        pptx_path,
+        mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        structural={},
+        settings=app_settings,
+        sandbox=sandbox,
+    )
+    preview = next(item for item in first if item.kind == "preview_pdf")
+    reader = PdfReader(io.BytesIO(preview.payload), strict=True)
+    rendered_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    assert len(reader.pages) == 2
+    assert "Đà Nẵng" in rendered_text
+    assert "lãnh đạo" in rendered_text
+    assert "năng lực" in rendered_text
+    assert preview.quality["render_engine"] == "libreoffice"
+    assert preview.quality["unicode_coverage"] == 1.0
+    source_ratio = float(presentation.slide_width) / float(presentation.slide_height)
+    rendered_ratio = float(reader.pages[0].mediabox.width) / float(
+        reader.pages[0].mediabox.height,
+    )
+    assert abs(source_ratio - rendered_ratio) < 0.01
+    assert preview.sha256 == next(
+        item for item in second if item.kind == "preview_pdf"
+    ).sha256
 
 
 def _media_fixtures(tmp_path: Path) -> dict[str, tuple[str, bytes]]:

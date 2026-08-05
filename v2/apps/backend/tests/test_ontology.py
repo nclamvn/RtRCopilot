@@ -1,7 +1,7 @@
 import asyncio
 import json
 
-from rtr_copilot.rag.ontology import EnterpriseOntology, OntologySpec
+from rtr_copilot.rag.ontology import EnterpriseOntology, OntologySpec, load_ontology
 from rtr_copilot.rag.query_understanding import (
     OfflineRewriter,
     RewriteResult,
@@ -85,6 +85,30 @@ def test_registry_is_domain_agnostic_and_data_driven() -> None:
     ]
     assert ontology.exact_matches("Project Phoenix")
     assert ontology.exact_matches("Phoenix Industries")
+
+
+def test_packaged_registry_resolves_rtr_as_the_company_identity() -> None:
+    ontology = load_ontology()
+    company = ontology.by_id["rtr.company.real-time-robotics"]
+    assert company.entity_type == "company"
+    assert company.domain == "company"
+    assert company.definition_record_keys == ("L3F.ENT.002",)
+    for question in (
+        "rtr là gì?",
+        "RtR là gì?",
+        "RTR là gì?",
+        "Real time Robotics là gì?",
+        "Real-time Robotics là gì?",
+    ):
+        plan = asyncio.run(plan_query(
+            question,
+            OfflineRewriter(),
+            registry=ontology,
+        ))
+        assert plan.resolution_state == "resolved"
+        assert plan.entities == ("Real-time Robotics",)
+        assert plan.entity_ids == ("rtr.company.real-time-robotics",)
+        assert plan.definition_record_keys == ("L3F.ENT.002",)
 
 
 def test_spacing_casing_and_safe_typo_resolve_same_entity() -> None:

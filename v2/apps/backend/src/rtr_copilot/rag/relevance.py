@@ -26,6 +26,7 @@ class QueryProfile:
     terms: tuple[str, ...]
     entities: tuple[str, ...]
     intent: QueryIntent
+    definition_record_keys: tuple[str, ...]
 
 
 def meaningful_terms(value: str) -> tuple[str, ...]:
@@ -42,6 +43,7 @@ def profile_query(
     *,
     entities: tuple[str, ...] | list[str] | None = None,
     intent: QueryIntent | None = None,
+    definition_record_keys: tuple[str, ...] | list[str] | None = None,
 ) -> QueryProfile:
     normalized = normalize_query(value)
     return QueryProfile(
@@ -49,6 +51,7 @@ def profile_query(
         terms=meaningful_terms(value),
         entities=tuple(resolve_entities(value) if entities is None else entities),
         intent=intent or classify_intent(value),
+        definition_record_keys=tuple(definition_record_keys or ()),
     )
 
 
@@ -81,6 +84,12 @@ def candidate_relevance_score(
     min_vector_score: float,
 ) -> float | None:
     """Return an adjusted rank, or ``None`` when evidence is ineligible."""
+    if (
+        profile.intent == "definition"
+        and profile.definition_record_keys
+        and record_key not in profile.definition_record_keys
+    ):
+        return None
     mentions = mentioned_entities(text, record_key)
     primary = primary_entities(text, record_key)
     targets = set(profile.entities)

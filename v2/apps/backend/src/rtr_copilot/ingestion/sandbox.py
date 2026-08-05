@@ -3,6 +3,7 @@ import errno
 import os
 import resource
 import signal
+import socket
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,6 +29,7 @@ class ProcessSandbox:
             "ffmpeg",
             "ffprobe",
             "python",
+            "soffice",
             "tesseract",
         }),
         read_only_roots: tuple[Path, ...] = (Path("/opt/rtr/models"),),
@@ -39,6 +41,14 @@ class ProcessSandbox:
 
     @staticmethod
     def _network_seccomp() -> None:
+        class ScmpArgCmp(ctypes.Structure):
+            _fields_ = [
+                ("arg", ctypes.c_uint),
+                ("op", ctypes.c_uint),
+                ("datum_a", ctypes.c_uint64),
+                ("datum_b", ctypes.c_uint64),
+            ]
+
         try:
             library = ctypes.CDLL("libseccomp.so.2", use_errno=True)
         except OSError as exc:
@@ -47,13 +57,14 @@ class ProcessSandbox:
         library.seccomp_init.restype = ctypes.c_void_p
         library.seccomp_syscall_resolve_name.argtypes = [ctypes.c_char_p]
         library.seccomp_syscall_resolve_name.restype = ctypes.c_int
-        library.seccomp_rule_add.argtypes = [
+        library.seccomp_rule_add_array.argtypes = [
             ctypes.c_void_p,
             ctypes.c_uint32,
             ctypes.c_int,
             ctypes.c_uint,
+            ctypes.POINTER(ScmpArgCmp),
         ]
-        library.seccomp_rule_add.restype = ctypes.c_int
+        library.seccomp_rule_add_array.restype = ctypes.c_int
         library.seccomp_load.argtypes = [ctypes.c_void_p]
         library.seccomp_load.restype = ctypes.c_int
         library.seccomp_release.argtypes = [ctypes.c_void_p]
@@ -63,32 +74,23 @@ class ProcessSandbox:
         if not context:
             raise RuntimeError("seccomp_init_failed")
         try:
-            for name in (
-                b"socket",
-                b"socketpair",
-                b"connect",
-                b"accept",
-                b"accept4",
-                b"bind",
-                b"listen",
-                b"sendto",
-                b"sendmsg",
-                b"sendmmsg",
-                b"recvfrom",
-                b"recvmsg",
-                b"recvmmsg",
-                b"getsockname",
-                b"getpeername",
-                b"setsockopt",
-                b"getsockopt",
-                b"shutdown",
-            ):
+            # LibreOffice requires AF_UNIX sockets for local headless-process
+            # IPC. Deny creation of every non-local socket domain instead of
+            # disabling IPC operations such as bind/connect globally.
+            comparison = (ScmpArgCmp * 1)(ScmpArgCmp(
+                arg=0,
+                op=1,  # SCMP_CMP_NE
+                datum_a=socket.AF_UNIX,
+                datum_b=0,
+            ))
+            for name in (b"socket", b"socketpair"):
                 syscall = library.seccomp_syscall_resolve_name(name)
-                if syscall >= 0 and library.seccomp_rule_add(
+                if syscall >= 0 and library.seccomp_rule_add_array(
                     context,
                     deny,
                     syscall,
-                    0,
+                    1,
+                    comparison,
                 ) != 0:
                     raise RuntimeError("seccomp_rule_failed")
             if library.seccomp_load(context) != 0:
@@ -133,8 +135,11 @@ class ProcessSandbox:
         environment = {
             "HOME": str(root),
             "TMPDIR": str(root),
+            "XDG_CACHE_HOME": str(root / ".cache"),
+            "XDG_CONFIG_HOME": str(root / ".config"),
             "PATH": "/usr/bin:/bin",
             "LANG": "C.UTF-8",
+            "SAL_USE_VCLPLUGIN": "svp",
             "http_proxy": "",
             "https_proxy": "",
             "HTTP_PROXY": "",
