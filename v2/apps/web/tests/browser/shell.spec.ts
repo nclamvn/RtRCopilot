@@ -59,6 +59,32 @@ test("shell shows one topbar, six nav areas, and active state follows navigation
   await page.screenshot({path: "test-results/tip011-shell-desktop.png", fullPage: true});
 });
 
+test("desktop shell uses moderate compact density without shrinking body copy", async ({page}) => {
+  await mockShell(page);
+  await page.setViewportSize({width: 1280, height: 720});
+  await page.goto("/ask");
+  const density = await page.evaluate(() => {
+    const measure = (selector: string) => {
+      const node = document.querySelector(selector) as HTMLElement;
+      const rect = node.getBoundingClientRect();
+      return {width: rect.width, height: rect.height};
+    };
+    const main = getComputedStyle(document.querySelector(".pc-main") as HTMLElement);
+    return {
+      topbar: measure(".pc-topbar"),
+      pageHeader: measure(".page-head"),
+      heading: measure(".page-head h1"),
+      bodySize: Number.parseFloat(getComputedStyle(document.querySelector(".pc-main") as HTMLElement).fontSize),
+      mainPadding: Number.parseFloat(main.paddingLeft),
+    };
+  });
+  expect(density.topbar.height).toBe(56);
+  expect(density.pageHeader.height).toBeLessThanOrEqual(84);
+  expect(density.heading.height).toBeLessThanOrEqual(38);
+  expect(density.bodySize).toBeGreaterThanOrEqual(15);
+  expect(density.mainPadding).toBeLessThanOrEqual(32);
+});
+
 test("skip link is the first tab stop and moves focus to the work surface", async ({page}) => {
   await mockShell(page);
   await page.goto("/ask");
@@ -249,7 +275,7 @@ test("collapsed sidebar has collision-free identity and mobile restores full lab
   const sideBox = await sidebar.boundingBox();
   const workspaceBox = await workspace.boundingBox();
   const collapseBox = await page.getByRole("button", {name: "Mở rộng thanh bên"}).boundingBox();
-  expect(sideBox?.width).toBe(72);
+  expect(sideBox?.width).toBe(64);
   expect(Math.abs((workspaceBox?.x ?? 0) + (workspaceBox?.width ?? 0) / 2
     - ((collapseBox?.x ?? 0) + (collapseBox?.width ?? 0) / 2))).toBeLessThanOrEqual(1);
   expect((workspaceBox?.y ?? 0) + (workspaceBox?.height ?? 0))

@@ -62,7 +62,7 @@ test("1280 Ask keeps a readable stream and opens proof on demand", async ({page}
     height: element.getBoundingClientRect().height,
     radius: getComputedStyle(element).borderRadius,
   })));
-  expect(alignedControls.every(control => Math.abs(control.height - 44) <= 1)).toBe(true);
+  expect(alignedControls.every(control => Math.abs(control.height - 40) <= 1)).toBe(true);
   expect(alignedControls.every(control => control.radius === "12px")).toBe(true);
   await page.screenshot({path: "test-results/tip0245-ask-composer-refined.png", fullPage: true});
   const rail = page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"});

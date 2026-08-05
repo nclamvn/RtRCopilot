@@ -1,0 +1,273 @@
+/**
+ * TIP-026.4 — Application-wide compact density.
+ *
+ * The interface is an enterprise instrument panel: navigation and controls
+ * recede so documents, answers and operational data own the viewport. Body
+ * copy is deliberately unchanged; density comes from chrome geometry,
+ * spacing and grouping rather than shrinking readable content.
+ */
+
+:root {
+  --pc-topbar-h: 56px;
+  --pc-sidebar-w: 240px;
+  --pc-sidebar-w-collapsed: 64px;
+  --pc-rail-w: 360px;
+  --pc-nav-item-h: 40px;
+  --pc-workspace-gutter: clamp(16px, 2.5vw, 32px);
+}
+
+/* Shell chrome -------------------------------------------------------- */
+.pc-main { padding: 20px var(--pc-workspace-gutter); }
+.pc-topbar { gap: var(--pc-space-3); }
+.pc-search { height: 38px; min-height: 38px; max-width: 500px; }
+.pc-iconbtn,
+.pc-collapse,
+.pc-profile-action,
+.pc-locale button {
+  min-width: 40px;
+  min-height: 40px;
+}
+.pc-iconbtn { width: 40px; height: 40px; }
+.pc-locale button { padding: 6px 8px; }
+.pc-topbar-right { gap: var(--pc-space-2); }
+
+.pc-sidebar-head {
+  min-height: 64px;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  gap: var(--pc-space-1);
+  padding: 6px var(--pc-space-2) 0;
+}
+.pc-workspace { height: 48px; gap: 10px; padding: 6px; }
+.pc-mark { width: 34px; height: 34px; }
+.pc-collapse { width: 40px; height: 40px; margin-top: 4px; }
+.pc-sidebar-scroll {
+  gap: var(--pc-space-4);
+  padding: 6px var(--pc-space-2) var(--pc-space-3);
+}
+.pc-new {
+  height: 40px;
+  margin-inline: var(--pc-space-2);
+  padding-inline: 10px;
+}
+.pc-new .pc-new-ico,
+.pc-nav-ico { width: 28px; height: 28px; }
+.pc-nav-item { gap: 10px; padding-inline: 10px; }
+.pc-recent-item { height: 36px; min-height: 36px; padding-inline: 10px; }
+.pc-integrity {
+  margin: 6px var(--pc-space-2) var(--pc-space-2);
+  padding: 10px;
+}
+.pc-profile { height: 56px; padding-inline: var(--pc-space-3); }
+.pc-avatar { width: 34px; height: 34px; }
+
+@media (min-width: 1100px) {
+  .pc-shell[data-collapsed="true"] .pc-sidebar-head {
+    min-height: 88px;
+    gap: 4px;
+    padding: 6px 6px 0;
+  }
+  .pc-shell[data-collapsed="true"] .pc-workspace {
+    width: 44px;
+    height: 44px;
+  }
+  .pc-shell[data-collapsed="true"] .pc-new {
+    width: 40px;
+    margin-top: 4px;
+  }
+  .pc-shell[data-collapsed="true"] .pc-nav-item[aria-current="page"]::before {
+    left: -6px;
+  }
+}
+
+/* Page hierarchy ------------------------------------------------------ */
+.pc-main .page-head {
+  min-height: 68px;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+.pc-main .page-head h1 {
+  font-size: clamp(28px, 2.4vw, 34px);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+}
+.pc-main .page-head .eyebrow { margin-bottom: 6px; }
+.page-actions { gap: 6px; }
+.page-actions :where(button, a),
+.files-catalog-toggle,
+.rail-sheet-toggle,
+.ledger-toggle {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--pc-radius-sm);
+}
+.placeholder-card { padding: 18px; gap: 10px; }
+.viewer-empty { padding: 24px; }
+.viewer-empty h2 {
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.04;
+  margin: 6px;
+}
+
+/* Files: compact controls, dominant viewer canvas -------------------- */
+.files-layout {
+  grid-template-columns: 220px minmax(0, 1fr) 260px;
+  height: calc(100vh - 182px);
+  min-height: 500px;
+}
+.files-layout > .catalog { padding: 14px; }
+.files-layout .panel-heading h2 {
+  margin: 2px 0 12px;
+  font-size: 18px;
+}
+.files-layout .catalog-search { font-size: 11px; }
+.files-layout .catalog-search input {
+  height: 38px;
+  margin: 4px 0 10px;
+  padding: 7px 9px;
+}
+.files-layout .type-filters {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.files-layout .type-filters button {
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  letter-spacing: 0.025em;
+}
+.files-layout .file-list button {
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 2px 6px;
+  padding: 10px 6px;
+}
+.files-layout .upload-panel { margin-top: 14px; padding-top: 12px; }
+.files-layout .upload-panel h2 { margin: 0 0 10px; }
+.files-layout .upload-panel select { min-height: 38px; padding: 7px 8px; }
+.files-layout .upload-panel > button,
+.files-layout .load-more { min-height: 36px; padding: 7px 9px; }
+
+.asset-viewer { grid-template-rows: 42px minmax(0, 1fr); }
+.viewer-commandbar { padding-inline: 8px; }
+.viewer-commandbar button { min-height: 30px; padding: 4px 8px; }
+.viewer-search-drawer { top: 42px; padding: 14px; }
+.pdf-stage { padding: 8px; }
+.image-stage,
+.media-stage { padding: 14px; }
+.evidence-rail { padding: 14px; }
+
+@media (max-width: 1365px) {
+  .files-layout { grid-template-columns: 220px minmax(0, 1fr); }
+  .doc-layout { grid-template-columns: 240px minmax(0, 1fr); }
+  .ops-layout { grid-template-columns: minmax(220px, 250px) minmax(0, 1fr); }
+}
+
+/* Ask, documents and operations -------------------------------------- */
+.ask-workspace { margin-inline: 0; }
+.ask-workspace .ask-form { padding: 14px; row-gap: 12px; }
+.ask-workspace .ask-question textarea {
+  min-height: 72px;
+  padding-bottom: 10px;
+}
+.ask-workspace .ask-chip,
+.ask-workspace .ask-advanced > summary,
+.ask-workspace .action-row .primary,
+.ask-workspace .action-row button:not(.primary),
+.ask-workspace .ask-history button,
+.ask-workspace .ask-file-scope button,
+.ask-workspace .ask-rail-toggle {
+  min-height: 40px;
+}
+.ask-workspace .ask-answer,
+.ask-workspace .ask-research,
+.ask-workspace .ask-conversation,
+.ask-workspace .honest-null { padding: 20px 22px; }
+.ask-workspace .ask-answer { padding: 0; }
+.ask-workspace .answer-header { padding: 18px 0 16px; }
+.ask-workspace .answer-claim { padding: 15px 0 17px; }
+
+.doc-layout { grid-template-columns: 240px minmax(0, 1fr) 280px; }
+.template-ledger,
+.document-rail { padding: 14px; }
+.template-ledger li button { padding: 10px 7px; }
+.assembly-form { padding: 18px clamp(18px, 3vw, 40px); }
+.assembly-form h2 {
+  font-size: clamp(24px, 2.4vw, 32px);
+  margin: 6px 0 16px;
+}
+.assembly-actions,
+.rail-actions { margin-top: 12px; gap: 7px; }
+.assembly-actions button,
+.rail-actions button { min-height: 38px; padding: 7px 11px; }
+
+.ops-layout { grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) 280px; }
+.ops-layout > .ops-surface { padding: 18px clamp(12px, 1.8vw, 24px); }
+.ops-detail { padding: 14px; }
+.ops-list li button,
+.queue-list button { padding: 10px 7px; }
+
+/* Admin follows the same density without shrinking data text. */
+.admin-workspace { grid-template-columns: 196px minmax(0, 1fr); min-height: 560px; }
+.admin-spine { padding: 16px 10px 10px; }
+.admin-spine > p { margin-bottom: 12px; }
+.admin-spine > button { min-height: 40px; padding-inline: 8px; }
+.admin-surface { padding: 22px; }
+.admin-panel-title { margin-bottom: 18px; }
+.admin-ledger article { padding-block: 16px; }
+.admin-list button { padding: 11px 9px; }
+.admin-editor { padding: 18px; }
+
+/* Coarse pointers keep comfortable touch targets; compact density is a
+   desktop information-density decision, never a loss of touch usability. */
+@media (pointer: coarse), (max-width: 760px) {
+  .pc-iconbtn,
+  .pc-profile-action,
+  .pc-locale button,
+  .pc-search,
+  .page-actions :where(button, a),
+  .files-layout .type-filters button,
+  .files-layout :where(.load-more, .upload-panel > button),
+  .ask-workspace .ask-chip,
+  .ask-workspace .ask-advanced > summary,
+  .ask-workspace .action-row button,
+  .ask-workspace .ask-history button,
+  .ask-workspace .ask-file-scope button,
+  .ask-workspace .ask-rail-toggle,
+  .assembly-actions button,
+  .rail-actions button,
+  .admin-spine > button {
+    min-height: 44px;
+  }
+  .pc-iconbtn,
+  .pc-profile-action,
+  .pc-locale button,
+  .pc-search { min-width: 44px; }
+  .ask-workspace .action-row .primary,
+  .ask-workspace .action-row button:not(.primary) { min-height: 44px; }
+}
+
+@media (max-width: 760px) {
+  .pc-main { padding: 16px var(--pc-workspace-gutter) 72px; }
+  .pc-main .page-head {
+    min-height: 62px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  .pc-main .page-head h1 { font-size: 30px; }
+  .files-layout {
+    grid-template-columns: minmax(0, 1fr);
+    height: calc(100vh - 166px);
+    min-height: 480px;
+  }
+  .files-layout > .catalog { padding: 14px; }
+  .files-layout .type-filters button { border-radius: 10px; }
+  .ask-workspace .ask-form { padding: 14px; }
+  .ask-workspace .ask-answer,
+  .ask-workspace .ask-research,
+  .ask-workspace .ask-conversation,
+  .ask-workspace .honest-null { padding: 16px; }
+  .ask-workspace .ask-answer { padding: 0; }
+  .admin-surface { padding: 18px 14px; }
+}

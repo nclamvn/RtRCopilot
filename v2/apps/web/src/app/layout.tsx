@@ -21,6 +21,9 @@ import "./styles/ux-recovery.css";
 // TIP-024.5: achromatic palette + provenance line grammar. Kept last so the
 // product-wide refinement also reaches legacy workspaces through their bridge.
 import "./styles/monochrome-premium.css";
+// TIP-026.4: moderate compact density. Imported last so chrome geometry is
+// consistent across both migrated and legacy-bridge workspaces.
+import "./styles/compact-density.css";
 
 export const metadata: Metadata = {
   title: "RtR Copilot",

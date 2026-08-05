@@ -190,6 +190,51 @@ for (const viewport of [
   });
 }
 
+test("desktop Files chrome is compact and yields the viewport to the canvas", async ({page}) => {
+  await mockWorkspace(page, "pdf");
+  await page.setViewportSize({width: 1280, height: 720});
+  await page.goto("/files");
+  const geometry = await page.evaluate(() => {
+    const rect = (selector: string) => {
+      const node = document.querySelector(selector) as HTMLElement;
+      const box = node.getBoundingClientRect();
+      return {width: box.width, height: box.height};
+    };
+    const main = getComputedStyle(document.querySelector(".pc-main") as HTMLElement);
+    const filter = rect(".type-filters button");
+    return {
+      header: rect(".page-head"),
+      heading: rect(".page-head h1"),
+      catalog: rect(".files-layout .catalog"),
+      layout: rect(".files-layout"),
+      filter,
+      mainPaddingInline: Number.parseFloat(main.paddingLeft),
+      overflow: document.documentElement.scrollWidth
+        - document.documentElement.clientWidth,
+    };
+  });
+  expect(geometry.header.height).toBeLessThanOrEqual(84);
+  expect(geometry.heading.height).toBeLessThanOrEqual(38);
+  expect(geometry.catalog.width).toBeLessThanOrEqual(224);
+  expect(geometry.layout.height).toBeGreaterThanOrEqual(530);
+  expect(geometry.filter.width).toBeLessThanOrEqual(50);
+  expect(geometry.filter.height).toBeLessThanOrEqual(38);
+  expect(geometry.mainPaddingInline).toBeLessThanOrEqual(32);
+  expect(geometry.overflow).toBeLessThanOrEqual(0);
+});
+
+test("compact density retains 44px touch targets on mobile", async ({page}) => {
+  await mockWorkspace(page, "pdf");
+  await page.setViewportSize({width: 360, height: 800});
+  await page.goto("/files");
+  await page.getByRole("button", {name: "Danh mục", exact: true}).click();
+  const filter = await page.getByRole("button", {name: "Tất cả"}).boundingBox();
+  expect(filter?.height).toBeGreaterThanOrEqual(44);
+  expect(await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )).toBeLessThanOrEqual(0);
+});
+
 test("anonymous user does not issue a file request", async ({page}) => {
   let fileRequests = 0;
   await page.route("**/api/status", route => route.fulfill({json: {ok: true, status: "ready"}}));
