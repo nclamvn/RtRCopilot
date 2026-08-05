@@ -147,6 +147,17 @@ def test_ontology_is_not_a_whitelist_for_generic_enterprise_questions() -> None:
     assert plan.entities == ()
 
 
+def test_compound_word_does_not_become_partial_registered_entity() -> None:
+    plan = asyncio.run(plan_query(
+        "What timeout evidence is current?",
+        OfflineRewriter(),
+        registry=load_ontology(),
+    ))
+    assert plan.resolution_state == "open"
+    assert plan.entities == ()
+    assert all(item.match_kind == "candidate" for item in plan.candidates)
+
+
 def test_colliding_exact_alias_requires_clarification() -> None:
     plan = asyncio.run(plan_query(
         "Phoenix là gì?",

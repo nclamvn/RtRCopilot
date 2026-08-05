@@ -233,14 +233,14 @@ class EnterpriseOntology:
             kind: MatchKind = "candidate"
             for token in tokens:
                 if any(
-                    part.startswith(token) or token.startswith(part)
+                    part.startswith(token)
                     for part in surface_tokens
                     if min(len(part), len(token)) >= 4
                 ):
                     score = min(
                         len(token) / max(len(part), 1)
                         for part in surface_tokens
-                        if part.startswith(token) or token.startswith(part)
+                        if part.startswith(token)
                     )
                     if score > best:
                         best = score

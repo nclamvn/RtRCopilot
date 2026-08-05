@@ -18,7 +18,11 @@ from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.ingestion.errors import IngestionFailure
 from rtr_copilot.ingestion.extractors import Artifact, canonical_json, extract_required
 from rtr_copilot.ingestion.file_index import index_artifact
-from rtr_copilot.ingestion.jobs import JobClaim, JobRepository
+from rtr_copilot.ingestion.jobs import (
+    RENDITION_GENERATOR_VERSION,
+    JobClaim,
+    JobRepository,
+)
 from rtr_copilot.ingestion.malware import ClamAVAdapter, MalwareAdapter
 from rtr_copilot.ingestion.metrics import (
     QUARANTINE_DEPTH,
@@ -677,7 +681,7 @@ class IngestionService:
                     output_byte_size=stored.byte_size,
                     output_mime=artifact.mime_type,
                     generator="rtr-safe-pipeline",
-                    generator_version="2",
+                    generator_version=RENDITION_GENERATOR_VERSION,
                     pipeline_version=claim.pipeline_version,
                     config_fingerprint=claim.pipeline_fingerprint,
                     created_at=datetime.now(UTC),
@@ -844,7 +848,7 @@ class IngestionService:
                       quality_summary,provenance,job_id,attempt
                     ) VALUES (
                       :rendition_id,:version_id,:kind,:object_id,:mime,'ready',
-                      'rtr-safe-pipeline','2',:fingerprint,:source_sha,
+                      'rtr-safe-pipeline',:generator_version,:fingerprint,:source_sha,
                       :manifest_object_id,:quality_state,
                       CAST(:quality AS jsonb),CAST(:provenance AS jsonb),:job_id,:attempt
                     )
@@ -857,6 +861,7 @@ class IngestionService:
                     "fingerprint": claim.pipeline_fingerprint,
                     "source_sha": claim.input_sha256,
                     "manifest_object_id": item["manifest_object_id"],
+                    "generator_version": RENDITION_GENERATOR_VERSION,
                     "quality_state": item["artifact"].quality_state,
                     "quality": json.dumps(item["artifact"].quality),
                     "provenance": item["provenance"].model_dump_json(),

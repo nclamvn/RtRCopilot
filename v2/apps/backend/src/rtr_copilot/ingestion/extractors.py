@@ -124,13 +124,77 @@ def _normalized_office_pdf(payload: bytes, *, source_identity: str) -> bytes:
         document.close()
 
 
+def _resolve_pdf_font_xref(
+    resources: dict[str, int],
+    used_name: str,
+) -> int | None:
+    """Resolve PyMuPDF's sometimes-truncated span font name safely.
+
+    ``Page.get_text("dict")`` truncates some PostScript names (for example
+    ``LiberationSerif-BoldItalic`` becomes ``LiberationSerif-BoldItal``),
+    while ``Page.get_fonts`` keeps the complete resource name.  Exact matching
+    remains preferred; a prefix match is accepted only when it identifies one
+    unique embedded PDF resource.
+    """
+    exact = resources.get(used_name)
+    if exact is not None:
+        return exact
+    candidates = {
+        xref
+        for resource_name, xref in resources.items()
+        if resource_name.startswith(used_name)
+    }
+    if len(candidates) == 1:
+        return candidates.pop()
+    return None
+
+
+def _embedded_office_font_count(payload: bytes) -> int:
+    document = fitz.open(stream=payload, filetype="pdf")
+    try:
+        font_xrefs: set[int] = set()
+        unresolved_fonts: set[str] = set()
+        for page in document:
+            page_fonts = {
+                str(font[3]).split("+", 1)[-1]: int(font[0])
+                for font in page.get_fonts(full=True)
+                if int(font[0]) > 0
+            }
+            used_fonts = {
+                str(span["font"]).split("+", 1)[-1]
+                for block in page.get_text("dict")["blocks"]
+                if "lines" in block
+                for line in block["lines"]
+                for span in line["spans"]
+                if span.get("text")
+            }
+            for name in used_fonts:
+                xref = _resolve_pdf_font_xref(page_fonts, name)
+                if xref is None:
+                    unresolved_fonts.add(name)
+                else:
+                    font_xrefs.add(xref)
+        if unresolved_fonts:
+            raise IngestionFailure("office_font_resource_missing", stage="render")
+        unembedded = [
+            xref
+            for xref in sorted(font_xrefs)
+            if not document.extract_font(xref)[3]
+        ]
+        if unembedded:
+            raise IngestionFailure("office_font_not_embedded", stage="render")
+        return len(font_xrefs)
+    finally:
+        document.close()
+
+
 def _office_preview_pdf(
     path: Path,
     sandbox: ProcessSandbox,
     *,
     source_text: str,
     expected_pages: int | None = None,
-) -> tuple[bytes, int, float]:
+) -> tuple[bytes, int, float, int]:
     output = path.with_suffix(".pdf")
     sandbox.run([
         "soffice",
@@ -165,6 +229,13 @@ def _office_preview_pdf(
         if ord(character) > 127 and character.isalnum()
     )
     rendered_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    introduced_markers = {
+        marker
+        for marker in ("\x00", "\ufffd", "\u25a0")
+        if marker not in source_text and marker in rendered_text
+    }
+    if introduced_markers:
+        raise IngestionFailure("office_replacement_glyph", stage="render")
     actual = Counter(
         character
         for character in unicodedata.normalize("NFC", rendered_text)
@@ -175,7 +246,8 @@ def _office_preview_pdf(
     unicode_coverage = matched_count / max(expected_count, 1)
     if expected_count and unicode_coverage < 0.98:
         raise IngestionFailure("office_unicode_fidelity_failed", stage="render")
-    return payload, page_count, unicode_coverage
+    embedded_font_count = _embedded_office_font_count(payload)
+    return payload, page_count, unicode_coverage, embedded_font_count
 
 
 def _image_artifacts(path: Path) -> list[Artifact]:
@@ -272,16 +344,21 @@ def _docx_artifacts(path: Path, sandbox: ProcessSandbox) -> list[Artifact]:
         }
         for index, paragraph in enumerate(document.paragraphs)
     ]
-    tables: list[dict[str, Any]] = [
-        {
-            "table": table_index,
-            "rows": [
-                [cell.text for cell in row.cells]
-                for row in table.rows
-            ],
-        }
-        for table_index, table in enumerate(document.tables)
-    ]
+    tables: list[dict[str, Any]] = []
+    for table_index, table in enumerate(document.tables):
+        seen_cells: set[int] = set()
+        rows: list[list[str]] = []
+        for row in table.rows:
+            values: list[str] = []
+            for cell in row.cells:
+                physical_cell = id(cell._tc)
+                if physical_cell in seen_cells:
+                    values.append("")
+                else:
+                    seen_cells.add(physical_cell)
+                    values.append(cell.text)
+            rows.append(values)
+        tables.append({"table": table_index, "rows": rows})
     headers = [
         {
             "section": section_index,
@@ -329,7 +406,7 @@ def _docx_artifacts(path: Path, sandbox: ProcessSandbox) -> list[Artifact]:
     lines.extend(str(item["text"]) for item in headers)
     lines.extend(str(item["text"]) for item in footers)
     lines.extend(str(item["text"]) for item in footnotes)
-    pdf, page_count, unicode_coverage = _office_preview_pdf(
+    pdf, page_count, unicode_coverage, embedded_font_count = _office_preview_pdf(
         path,
         sandbox,
         source_text="\n".join(lines),
@@ -350,6 +427,7 @@ def _docx_artifacts(path: Path, sandbox: ProcessSandbox) -> list[Artifact]:
         "render_engine": "libreoffice",
         "rendered_pages": page_count,
         "unicode_coverage": unicode_coverage,
+        "embedded_font_count": embedded_font_count,
     }
     return [
         Artifact(
@@ -513,7 +591,7 @@ def _pptx_artifacts(
             if notes:
                 lines.append(notes)
         slides.append({"slide": slide_index, "shapes": shapes, "notes": notes})
-    pdf, page_count, unicode_coverage = _office_preview_pdf(
+    pdf, page_count, unicode_coverage, embedded_font_count = _office_preview_pdf(
         path,
         sandbox,
         source_text="\n".join(visible_lines),
@@ -528,6 +606,7 @@ def _pptx_artifacts(
         "render_engine": "libreoffice",
         "rendered_pages": page_count,
         "unicode_coverage": unicode_coverage,
+        "embedded_font_count": embedded_font_count,
     }
     return [
         Artifact(

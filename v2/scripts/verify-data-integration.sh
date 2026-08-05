@@ -14,6 +14,12 @@ verify_database="rtr_verify_009_${verify_run_id}"
 verify_bucket="rtr-copilot-verify-009-${verify_run_id}"
 restore_database="${verify_database}_restore"
 restore_bucket="${verify_bucket}-restore"
+verify_redis_database="${RTR_VERIFY_REDIS_DATABASE:-15}"
+if ! [[ "$verify_redis_database" =~ ^([1-9]|1[0-5])$ ]]; then
+  echo "RTR_VERIFY_REDIS_DATABASE must be an isolated Redis DB from 1 to 15" >&2
+  exit 2
+fi
+verify_redis_url="redis://redis:6379/${verify_redis_database}"
 # AC18 runs against its own database so the pytest phase's deterministic
 # residue (templates, render jobs, issuances) can never skew the seeded counts.
 ac18_database="${verify_database}_ac18"
@@ -37,6 +43,8 @@ cleanup() {
     --if-exists "$restore_database" >/dev/null 2>&1
   docker compose exec -T postgres dropdb -U "$POSTGRES_USER" \
     --if-exists "$ac18_database" >/dev/null 2>&1
+  docker compose exec -T redis redis-cli -n "$verify_redis_database" \
+    FLUSHDB >/dev/null 2>&1
   minio_id="$(docker compose ps -q minio 2>/dev/null)"
   if [ -n "$minio_id" ]; then
     docker run --rm --network "container:$minio_id" \
@@ -54,6 +62,10 @@ trap cleanup EXIT
 # it, the next `compose exec … psql` races the postmaster and fails with
 # "connection to server on socket … .s.PGSQL.5432: No such file or directory".
 docker compose up -d --wait postgres minio redis
+# Breakers, budgets and rate limits are durable runtime state.  The integration
+# gate must never inherit them from the developer stack or another prior run.
+docker compose exec -T redis redis-cli -n "$verify_redis_database" FLUSHDB \
+  >/dev/null
 docker compose exec -T postgres psql -X -U "$POSTGRES_USER" -d postgres \
   -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity
       WHERE datname='$verify_database' AND pid <> pg_backend_pid()" >/dev/null
@@ -189,13 +201,14 @@ run_migration downgrade base
 run_migration upgrade head
 run_migration upgrade head
 
-docker compose --profile tools run --rm --no-deps \
+docker compose --profile tools run --rm --no-deps --build \
   -v "$project_root/apps/backend/src:/workspace/src:ro" \
   -v "$project_root/apps/backend/tests:/workspace/tests:ro" \
   -w /workspace \
   -e POSTGRES_DSN="$runtime_dsn" \
   -e MIGRATION_DSN="$owner_dsn" \
   -e INTEGRATION_DATABASE_DSN="$runtime_dsn" \
+  -e REDIS_URL="$verify_redis_url" \
   -e S3_BUCKET="$verify_bucket" \
   -e PYTHONPATH=/workspace/src \
   migrate sh -ec '

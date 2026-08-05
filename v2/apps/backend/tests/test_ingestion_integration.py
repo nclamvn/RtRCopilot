@@ -171,6 +171,52 @@ def test_office_previews_preserve_vietnamese_and_presentation_geometry(
     ).sha256
 
 
+@pytest.mark.skipif(
+    shutil.which("soffice") is None,
+    reason="LibreOffice runtime not installed",
+)
+def test_docx_merged_cells_preserve_vietnamese_without_false_fidelity_failure(
+    tmp_path: Path,
+) -> None:
+    app_settings = get_settings()
+    sandbox = ProcessSandbox(
+        timeout_seconds=app_settings.ingestion_tool_timeout_seconds,
+        temp_bytes=app_settings.ingestion_temp_bytes,
+    )
+    docx_path = tmp_path / "merged-vietnamese.docx"
+    document = Document()
+    document.add_paragraph("Sales Brief — Customer Pitch Record")
+    table = document.add_table(rows=1, cols=2)
+    table.cell(0, 0).merge(table.cell(0, 1)).text = (
+        "Báo Cáo Bán Hàng — Hồ Sơ Buổi Gặp Khách Hàng"
+    )
+    document.save(docx_path)
+
+    artifacts = extract_required(
+        docx_path,
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        structural={},
+        settings=app_settings,
+        sandbox=sandbox,
+    )
+    preview = next(item for item in artifacts if item.kind == "preview_pdf")
+    rendered_text = "\n".join(
+        page.extract_text() or ""
+        for page in PdfReader(io.BytesIO(preview.payload), strict=True).pages
+    )
+    assert "Báo Cáo Bán Hàng" in rendered_text
+    assert "Hồ Sơ Buổi Gặp Khách Hàng" in rendered_text
+    assert "\u25a0" not in rendered_text
+    assert preview.quality["unicode_coverage"] == 1.0
+    assert preview.quality["embedded_font_count"] >= 1
+    structured = next(
+        item for item in artifacts if item.kind == "structured_text_json"
+    )
+    assert __import__("json").loads(structured.payload)["tables"][0]["rows"] == [
+        ["Báo Cáo Bán Hàng — Hồ Sơ Buổi Gặp Khách Hàng", ""],
+    ]
+
+
 def _media_fixtures(tmp_path: Path) -> dict[str, tuple[str, bytes]]:
     speech = tmp_path / "fixture.wav"
     subprocess.run(

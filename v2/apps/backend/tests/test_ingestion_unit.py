@@ -8,16 +8,29 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import reportlab
 from docx import Document
 from openpyxl import Workbook
 from PIL import Image
 from pptx import Presentation
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
 from rtr_copilot.config import Settings
-from rtr_copilot.ingestion.api import _decode_cursor, _encode_cursor, _parse_range
+from rtr_copilot.ingestion.api import (
+    _decode_cursor,
+    _encode_cursor,
+    _is_current_visual_rendition,
+    _parse_range,
+)
 from rtr_copilot.ingestion.errors import IngestionFailure, safe_message
-from rtr_copilot.ingestion.extractors import Artifact, canonical_json, extract_required
+from rtr_copilot.ingestion.extractors import (
+    Artifact,
+    _resolve_pdf_font_xref,
+    canonical_json,
+    extract_required,
+)
 from rtr_copilot.ingestion.file_index import searchable_units
 from rtr_copilot.ingestion.malware import DeterministicTestScanner
 from rtr_copilot.ingestion.models import (
@@ -60,6 +73,13 @@ class FakeProbeSandbox:
             source = Path(argv[-1])
             output = temp_root / f"{source.stem}.pdf"
             pdf = canvas.Canvas(str(output), invariant=1)
+            font_name = "TIP0263Vera"
+            if font_name not in pdfmetrics.getRegisteredFontNames():
+                pdfmetrics.registerFont(TTFont(
+                    font_name,
+                    str(Path(reportlab.__file__).parent / "fonts" / "Vera.ttf"),
+                ))
+            pdf.setFont(font_name, 12)
             if source.suffix == ".pptx":
                 presentation = Presentation(str(source))
                 for slide in presentation.slides:
@@ -87,6 +107,15 @@ class FakeProbeSandbox:
             }).encode(),
             stderr_fingerprint=None,
         )
+
+
+class UnembeddedOfficeSandbox:
+    def run(self, argv: list[str], *, temp_root: Path) -> SandboxResult:
+        source = Path(argv[-1])
+        pdf = canvas.Canvas(str(temp_root / f"{source.stem}.pdf"), invariant=1)
+        pdf.drawString(50, 750, "unembedded")
+        pdf.save()
+        return SandboxResult(stdout=b"converted", stderr_fingerprint=None)
 
 
 def write_image(path: Path, format_name: str) -> None:
@@ -508,6 +537,61 @@ def test_golden_extractors_are_deterministic_and_keep_locators(
     assert output_count == 11
 
 
+def test_docx_merged_cells_keep_grid_without_duplicate_visible_text(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "merged.docx"
+    document = Document()
+    document.add_paragraph("Visible body")
+    table = document.add_table(rows=1, cols=2)
+    table.cell(0, 0).merge(table.cell(0, 1)).text = "Merged evidence"
+    document.save(source)
+    artifacts = extract_required(
+        source,
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        structural={},
+        settings=settings(),
+        sandbox=FakeProbeSandbox(),  # type: ignore[arg-type]
+    )
+    structured = next(
+        artifact for artifact in artifacts if artifact.kind == "structured_text_json"
+    )
+    payload = json.loads(structured.payload)
+    assert payload["tables"][0]["rows"] == [["Merged evidence", ""]]
+    preview = next(artifact for artifact in artifacts if artifact.kind == "preview_pdf")
+    assert preview.quality["embedded_font_count"] == 1
+
+
+def test_office_preview_rejects_unembedded_fonts(tmp_path: Path) -> None:
+    source = tmp_path / "unembedded.docx"
+    document = Document()
+    document.add_paragraph("unembedded")
+    document.save(source)
+    with pytest.raises(IngestionFailure) as captured:
+        extract_required(
+            source,
+            mime=(
+                "application/vnd.openxmlformats-officedocument."
+                "wordprocessingml.document"
+            ),
+            structural={},
+            settings=settings(),
+            sandbox=UnembeddedOfficeSandbox(),  # type: ignore[arg-type]
+        )
+    assert captured.value.code == "office_font_not_embedded"
+
+
+def test_pdf_font_resolution_accepts_only_unique_truncated_postscript_name() -> None:
+    resources = {
+        "LiberationSerif-BoldItalic": 79,
+        "LiberationSerif-Italic": 84,
+    }
+    assert _resolve_pdf_font_xref(resources, "LiberationSerif-Italic") == 84
+    assert _resolve_pdf_font_xref(resources, "LiberationSerif-BoldItal") == 79
+    assert _resolve_pdf_font_xref({"Font-Regular": 1, "Font-RegularAlt": 2}, "Font-Reg") is None
+    assert _resolve_pdf_font_xref(resources, "MissingFont") is None
+
+
 @pytest.mark.parametrize(
     ("extension", "format_name", "mime"),
     [
@@ -567,6 +651,30 @@ def test_file_cursor_and_byte_ranges_are_bounded() -> None:
     for invalid in ("bytes=10-", "bytes=5-2", "bytes=0-1,3-4", "items=0-1"):
         with pytest.raises(ValueError):
             _parse_range(invalid, 10)
+
+
+def test_stale_office_visual_renditions_fail_closed() -> None:
+    docx = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    assert not _is_current_visual_rendition(
+        mime=docx,
+        kind="preview_pdf",
+        generator_version="2",
+    )
+    assert _is_current_visual_rendition(
+        mime=docx,
+        kind="preview_pdf",
+        generator_version="3",
+    )
+    assert _is_current_visual_rendition(
+        mime=docx,
+        kind="structured_text_json",
+        generator_version="1",
+    )
+    assert _is_current_visual_rendition(
+        mime="application/pdf",
+        kind="preview_pdf",
+        generator_version="1",
+    )
 
 
 def test_sandbox_rejects_network_and_path_escape_and_kills_timeout(

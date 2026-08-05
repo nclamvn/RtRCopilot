@@ -17,7 +17,8 @@ from rtr_copilot.ingestion.metrics import LEASE_EXPIRY, QUEUE_DEPTH, RETRIES
 from rtr_copilot.repositories.audit import AuditRepository
 
 INGESTION_QUEUE = "rtr:ingestion:jobs"
-PIPELINE_VERSION = "rtr-ingestion-v2"
+PIPELINE_VERSION = "rtr-ingestion-v3"
+RENDITION_GENERATOR_VERSION = "3"
 
 
 @dataclass(frozen=True)
