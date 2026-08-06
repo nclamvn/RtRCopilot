@@ -17,8 +17,10 @@ from lib.operational_acceptance import (  # noqa: E402
     load_campaign,
     score_case,
     summarize,
+    term_present,
     validate_database_target,
 )
+from run_real_world_acceptance import bounded_cases, validate_http_target  # noqa: E402
 
 
 def test_real_world_fixture_is_valid_and_broad() -> None:
@@ -26,11 +28,12 @@ def test_real_world_fixture_is_valid_and_broad() -> None:
     cases = campaign["flattened_cases"]
     domains = {case["domain"] for case in cases}
     shapes = {shape for case in cases for shape in case["shapes"]}
-    assert len(cases) >= 60
+    assert len(cases) >= 77
     assert len(domains) >= 6
     assert len(shapes) >= 8
     assert any("follow_up" in case["shapes"] for case in cases)
     assert any(case["expect"] == "honest_null" for case in cases)
+    assert campaign["http_thresholds"]["p95_latency_ms"] <= 60_000
 
 
 def test_loader_rejects_answerable_case_without_citation_oracle(tmp_path: Path) -> None:
@@ -59,6 +62,27 @@ def test_database_target_guard_requires_exact_disposable_clone() -> None:
         validate_database_target("rtr_copilot", "rtr_tip026_run_1")
 
 
+def test_http_target_guard_accepts_loopback_only() -> None:
+    assert validate_http_target("http://127.0.0.1:3101/") == (
+        "http://127.0.0.1:3101"
+    )
+    with pytest.raises(ValueError, match="must_be_loopback"):
+        validate_http_target("https://example.com")
+
+
+def test_campaign_smoke_slice_is_explicit_bounded_and_deterministic() -> None:
+    campaign = {"flattened_cases": [{"id": "A"}, {"id": "B"}, {"id": "C"}]}
+    assert [item["id"] for item in bounded_cases(campaign, 2)] == ["A", "B"]
+    assert bounded_cases(campaign, None) == campaign["flattened_cases"]
+    assert [
+        item["id"] for item in bounded_cases(campaign, None, ("C", "A", "C"))
+    ] == ["C", "A"]
+    with pytest.raises(ValueError, match="campaign_case_ids_unknown:D"):
+        bounded_cases(campaign, None, ("D",))
+    with pytest.raises(ValueError, match="must_be_positive"):
+        bounded_cases(campaign, 0)
+
+
 def test_wrong_grounded_citation_is_counted_as_false_grounded() -> None:
     row = score_case(
         {
@@ -79,6 +103,106 @@ def test_wrong_grounded_citation_is_counted_as_false_grounded() -> None:
     assert row["passed"] is False
     assert row["false_grounded"] is True
     assert "citation_miss" in row["failures"]
+
+
+def test_incomplete_grounded_answer_is_not_mislabeled_false_grounded() -> None:
+    row = score_case(
+        {
+            "id": "X",
+            "domain": "product",
+            "shapes": ["broad"],
+            "question": "HERA có gì?",
+            "expect": "grounded",
+            "expected_record_groups": [["HC-001"]],
+            "required_terms": ["15 km", "12 trường hợp sử dụng"],
+        },
+        state="grounded",
+        answer="HERA có tầm điều khiển 15 km [C1]",
+        citations=["HC-001"],
+        reason_code=None,
+        latency_ms=15,
+    )
+    assert row["passed"] is False
+    assert row["false_grounded"] is False
+    assert row["failures"] == ["required_term_miss"]
+
+
+def test_alternate_approved_citation_is_not_mislabeled_false_grounded() -> None:
+    row = score_case(
+        {
+            "id": "X",
+            "domain": "operations",
+            "shapes": ["natural"],
+            "question": "Lịch bảo dưỡng là gì?",
+            "expect": "grounded",
+            "expected_record_groups": [["L3F.4.020"]],
+            "required_terms": ["3/6/12 tháng"],
+        },
+        state="grounded",
+        answer="Bảo dưỡng theo mốc 3, 6 và 12 tháng [C1]",
+        citations=["tip024.xlsx.maintenance-program"],
+        reason_code=None,
+        latency_ms=15,
+    )
+    assert row["passed"] is False
+    assert row["false_grounded"] is False
+    assert row["failures"] == ["citation_miss"]
+
+
+def test_grounded_answer_when_honest_null_expected_is_false_grounded() -> None:
+    row = score_case(
+        {
+            "id": "X",
+            "domain": "safety",
+            "shapes": ["ambiguous"],
+            "question": "IP là gì?",
+            "expect": "honest_null",
+            "allowed_reason_codes": ["ambiguous_entity"],
+        },
+        state="grounded",
+        answer="IP là quản lý tài sản trí tuệ [C1]",
+        citations=["L3F.4.002"],
+        reason_code=None,
+        latency_ms=15,
+    )
+    assert row["passed"] is False
+    assert row["false_grounded"] is True
+    assert "unexpected_state" in row["failures"]
+
+
+def test_term_oracle_tolerates_business_number_and_date_formatting() -> None:
+    assert term_present("64900", "Giá niêm yết là 64,900 USD.")
+    assert term_present(
+        "11-14/05/2026",
+        "Sự kiện diễn ra từ 11 đến 14 tháng 5 năm 2026.",
+    )
+    assert term_present(
+        "3/6/12 tháng",
+        "Bảo dưỡng ở mốc 3 tháng, 6 tháng và 12 tháng.",
+    )
+    assert term_present("50.4V", "Điện áp danh định là 50,4 V.")
+    assert term_present("61MP", "Camera RGB có độ phân giải 61 MP.")
+    assert not term_present("500 UAV", "Nền tảng có 50 nhà sản xuất UAV.")
+
+
+def test_term_group_accepts_one_governed_wording_variant() -> None:
+    row = score_case(
+        {
+            "id": "X",
+            "domain": "product",
+            "shapes": ["definition"],
+            "question": "HERA là gì?",
+            "expect": "grounded",
+            "expected_record_groups": [["HC-050"]],
+            "required_term_groups": [["12 use case", "12 trường hợp sử dụng"]],
+        },
+        state="grounded",
+        answer="HERA hỗ trợ 12 use case. [C1]",
+        citations=["HC-050"],
+        reason_code=None,
+        latency_ms=15,
+    )
+    assert row["passed"] is True
 
 
 def test_safe_refusal_and_correct_grounded_answer_pass() -> None:

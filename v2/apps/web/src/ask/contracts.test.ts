@@ -51,6 +51,7 @@ describe("ask answer contract", () => {
     expect(parsed.conversationId).toBe(conversationId);
     expect(parsed.gapId).toBeNull();
     expect(parsed.answerMode).toBeNull();
+    expect(parsed.coverageState).toBe("not_assessed");
   });
 
   test("grounded evidence-only mode is explicit at the client boundary", () => {
@@ -97,6 +98,15 @@ describe("ask answer contract", () => {
     }).confidenceCaveat).toBe(false);
     // A non-boolean caveat is a contract violation.
     expect(() => parseAskAnswer({...grounded, confidence_caveat: "yes"}))
+      .toThrow("invalid_ask_response");
+  });
+
+  test("grounded partial coverage is typed without changing grounding", () => {
+    const parsed = parseAskAnswer({...grounded, coverage_state: "partial"});
+    expect(parsed.state).toBe("grounded");
+    expect(parsed.coverageState).toBe("partial");
+    expect(parsed.entries).toHaveLength(1);
+    expect(() => parseAskAnswer({...grounded, coverage_state: "mostly"}))
       .toThrow("invalid_ask_response");
   });
 

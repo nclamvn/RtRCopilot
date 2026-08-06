@@ -346,12 +346,17 @@ def _docx_artifacts(path: Path, sandbox: ProcessSandbox) -> list[Artifact]:
     ]
     tables: list[dict[str, Any]] = []
     for table_index, table in enumerate(document.tables):
-        seen_cells: set[int] = set()
+        # Keep the XML cell objects themselves alive while traversing a table.
+        # Using ``id(cell._tc)`` let Python recycle object ids after a row's
+        # short-lived proxy objects were released, so unrelated cells in later
+        # rows were mistaken for vertically merged duplicates and their text
+        # disappeared from the searchable rendition.
+        seen_cells: set[object] = set()
         rows: list[list[str]] = []
         for row in table.rows:
             values: list[str] = []
             for cell in row.cells:
-                physical_cell = id(cell._tc)
+                physical_cell = cell._tc
                 if physical_cell in seen_cells:
                     values.append("")
                 else:

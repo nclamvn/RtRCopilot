@@ -202,9 +202,11 @@ def upgrade() -> None:
     RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN
       IF TG_OP = 'DELETE' THEN RAISE EXCEPTION 'enterprise domain history is immutable'; END IF;
-      IF (to_jsonb(NEW) - ARRAY['state','approved_by','decision_reason','decided_at','updated_at'])
+      IF (to_jsonb(NEW) - ARRAY['state','approved_by','decision_reason',
+           'decided_at','updated_at'])
          IS DISTINCT FROM
-         (to_jsonb(OLD) - ARRAY['state','approved_by','decision_reason','decided_at','updated_at']) THEN
+         (to_jsonb(OLD) - ARRAY['state','approved_by','decision_reason',
+           'decided_at','updated_at']) THEN
         RAISE EXCEPTION 'enterprise domain content is immutable';
       END IF;
       IF NEW.state IS DISTINCT FROM OLD.state AND NOT (
@@ -287,15 +289,20 @@ def upgrade() -> None:
     CREATE TRIGGER enterprise_domains_guarded BEFORE UPDATE OR DELETE
       ON enterprise_domains FOR EACH ROW EXECUTE FUNCTION guard_enterprise_domain_mutation();
     CREATE TRIGGER enterprise_corpus_guarded BEFORE UPDATE OR DELETE
-      ON enterprise_corpus_manifests FOR EACH ROW EXECUTE FUNCTION guard_enterprise_manifest_mutation();
+      ON enterprise_corpus_manifests FOR EACH ROW
+      EXECUTE FUNCTION guard_enterprise_manifest_mutation();
     CREATE TRIGGER enterprise_ontology_guarded BEFORE UPDATE OR DELETE
-      ON enterprise_ontology_revisions FOR EACH ROW EXECUTE FUNCTION guard_enterprise_ontology_mutation();
+      ON enterprise_ontology_revisions FOR EACH ROW
+      EXECUTE FUNCTION guard_enterprise_ontology_mutation();
     CREATE TRIGGER enterprise_suites_guarded BEFORE UPDATE OR DELETE
-      ON enterprise_evaluation_suites FOR EACH ROW EXECUTE FUNCTION guard_enterprise_suite_mutation();
+      ON enterprise_evaluation_suites FOR EACH ROW
+      EXECUTE FUNCTION guard_enterprise_suite_mutation();
     CREATE TRIGGER enterprise_runs_immutable BEFORE UPDATE OR DELETE
-      ON enterprise_evaluation_runs FOR EACH ROW EXECUTE FUNCTION prevent_enterprise_history_mutation();
+      ON enterprise_evaluation_runs FOR EACH ROW
+      EXECUTE FUNCTION prevent_enterprise_history_mutation();
     CREATE TRIGGER enterprise_releases_guarded BEFORE UPDATE OR DELETE
-      ON enterprise_release_attestations FOR EACH ROW EXECUTE FUNCTION guard_enterprise_release_mutation();
+      ON enterprise_release_attestations FOR EACH ROW
+      EXECUTE FUNCTION guard_enterprise_release_mutation();
 
     GRANT SELECT,INSERT,UPDATE ON enterprise_domains,
       enterprise_corpus_manifests,enterprise_ontology_revisions,

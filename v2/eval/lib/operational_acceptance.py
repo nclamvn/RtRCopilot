@@ -22,6 +22,35 @@ def folded(value: str) -> str:
     return " ".join(re.sub(r"[^a-z0-9]+", " ", without_marks).split())
 
 
+def _oracle_tokens(value: str) -> list[str]:
+    return [
+        str(int(token)) if token.isdigit() else token
+        for token in folded(value).split()
+    ]
+
+
+def term_present(term: str, answer: str) -> bool:
+    """Formatting-tolerant lexical oracle, never used by product runtime."""
+    normalized_term = folded(term)
+    normalized_answer = folded(answer)
+    if normalized_term in normalized_answer:
+        return True
+    if normalized_term.isdigit():
+        return normalized_term in re.sub(r"\D", "", answer)
+    # Business specifications are routinely rendered with typographic spacing
+    # or locale punctuation (``50.4V`` vs ``50,4 V``, ``61MP`` vs ``61 MP``).
+    # When the oracle contains both a number and a unit, compare an alphanumeric
+    # compact form so presentation does not become a factual failure.
+    if any(char.isdigit() for char in term) and any(char.isalpha() for char in term):
+        compact_term = re.sub(r"[^a-z0-9]", "", normalized_term)
+        compact_answer = re.sub(r"[^a-z0-9]", "", normalized_answer)
+        if compact_term and compact_term in compact_answer:
+            return True
+    expected = _oracle_tokens(term)
+    actual = iter(_oracle_tokens(answer))
+    return all(any(item == token for item in actual) for token in expected)
+
+
 def validate_database_target(actual: str, expected: str) -> None:
     """Refuse to run a write-realistic campaign outside its disposable clone."""
     if not expected.startswith(CAMPAIGN_DATABASE_PREFIX):
@@ -74,6 +103,12 @@ def load_campaign(path: Path) -> dict[str, Any]:
             or any(not isinstance(group, list) or not group for group in groups)
         ):
             raise ValueError(f"campaign_citation_oracle_missing:{case_id}")
+        term_groups = case.get("required_term_groups", [])
+        if (
+            not isinstance(term_groups, list)
+            or any(not isinstance(group, list) or not group for group in term_groups)
+        ):
+            raise ValueError(f"campaign_term_group_oracle_invalid:{case_id}")
 
     return {**payload, "flattened_cases": flattened}
 
@@ -93,18 +128,35 @@ def score_case(
     citation_ok = expected == "honest_null" or all(
         bool(group & citation_set) for group in groups
     )
-    normalized_answer = folded(answer)
     missing_terms = [
         term
         for term in case.get("required_terms", [])
-        if folded(str(term)) not in normalized_answer
+        if not term_present(str(term), answer)
     ]
-    terms_ok = expected == "honest_null" or not missing_terms
+    missing_term_groups = [
+        [str(term) for term in group]
+        for group in case.get("required_term_groups", [])
+        if not any(term_present(str(term), answer) for term in group)
+    ]
+    terms_ok = expected == "honest_null" or (
+        not missing_terms and not missing_term_groups
+    )
     allowed_reasons = set(case.get("allowed_reason_codes", []))
     reason_ok = not allowed_reasons or reason_code in allowed_reasons
     state_ok = state == expected
     passed = state_ok and citation_ok and terms_ok and reason_ok
-    false_grounded = state == "grounded" and not passed
+    # A grounded answer is not automatically false-grounded merely because it
+    # is incomplete or cites a different approved record than the campaign's
+    # preferred oracle. Keep those failures visible through ``terms_ok`` and
+    # ``citation_ok`` while reserving this safety metric for answers that are
+    # materially unsupported: an answer where silence was expected, an answer
+    # without citations, or an answer that misses both the evidence oracle and
+    # the required factual content.
+    false_grounded = state == "grounded" and (
+        expected == "honest_null"
+        or not citations
+        or (not citation_ok and not terms_ok)
+    )
     failures: list[str] = []
     if not state_ok:
         failures.append("unexpected_state")
@@ -132,6 +184,9 @@ def score_case(
         "missing_term_digests": [
             hashlib.sha256(str(term).encode()).hexdigest()[:16]
             for term in missing_terms
+        ] + [
+            hashlib.sha256("|".join(group).encode()).hexdigest()[:16]
+            for group in missing_term_groups
         ],
         "terms_ok": terms_ok,
         "false_grounded": false_grounded,
@@ -232,5 +287,6 @@ __all__ = [
     "load_campaign",
     "score_case",
     "summarize",
+    "term_present",
     "validate_database_target",
 ]

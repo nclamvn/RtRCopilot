@@ -24,6 +24,12 @@ import "./styles/monochrome-premium.css";
 // TIP-026.4: moderate compact density. Imported last so chrome geometry is
 // consistent across both migrated and legacy-bridge workspaces.
 import "./styles/compact-density.css";
+// TIP-026.11: conversation-first Ask workspace; the final Ask-only layer.
+import "./styles/chat-workspace.css";
+// TIP-026.12: final cross-workspace geometry contract. This is intentionally
+// last: it retires conflicting legacy grid/focus rules without widening the
+// component API or coupling individual pages to stylesheet import order.
+import "./styles/workspace-consistency.css";
 
 export const metadata: Metadata = {
   title: "RtR Copilot",

@@ -65,6 +65,28 @@ describe("Ask same-origin proxy boundary", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
   });
 
+  test("passes through the bounded Ask event stream without buffering headers", async () => {
+    vi.stubEnv("API_INTERNAL_URL", "http://api:8000");
+    vi.stubGlobal("fetch", vi.fn(async (request: URL | RequestInfo, init?: RequestInit) => {
+      expect(new URL(String(request)).pathname).toBe("/api/v1/ask");
+      expect(new Headers(init?.headers).get("accept")).toBe("text/event-stream");
+      return new Response(
+        "event: heartbeat\ndata: {\"elapsed_ms\":1000}\n\n",
+        {headers: {"content-type": "text/event-stream; charset=utf-8"}},
+      );
+    }));
+    const response = await POST(new NextRequest(
+      "http://localhost/api/ask/ask",
+      {method: "POST", headers: {accept: "text/event-stream"}, body: "{}"},
+    ), {params: Promise.resolve({path: ["ask"]})});
+
+    expect(response.headers.get("content-type")).toContain("text/event-stream");
+    expect(response.headers.get("cache-control"))
+      .toBe("no-cache, no-store, no-transform");
+    expect(response.headers.get("x-accel-buffering")).toBe("no");
+    expect(await response.text()).toContain("event: heartbeat");
+  });
+
   test("forwards session cookie and request id, passes typed errors through", async () => {
     vi.stubEnv("API_INTERNAL_URL", "http://api:8000");
     vi.stubGlobal("fetch", vi.fn(async (request: URL | RequestInfo, init?: RequestInit) => {

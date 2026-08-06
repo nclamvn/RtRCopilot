@@ -21,7 +21,7 @@ OFFICE_MIMES = (
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 )
-OFFICE_BACKFILL_REVISION = "2"
+OFFICE_BACKFILL_REVISION = "3"
 
 
 async def backfill(*, apply: bool = False, limit: int | None = None) -> dict[str, Any]:

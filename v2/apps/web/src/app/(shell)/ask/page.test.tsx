@@ -5,10 +5,19 @@ import {cleanup, fireEvent, render, screen, waitFor} from "@testing-library/reac
 import React from "react";
 import {afterEach, expect, test, vi} from "vitest";
 import {I18nProvider} from "../../../i18n/provider";
-import AskPage, {parseAnswerClaims} from "./page";
+import AskPage, {
+  AnswerText,
+  parseAnswerBlocks,
+  parseAnswerClaims,
+  readAskPayload,
+} from "./page";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
+  useRouter: () => ({
+    push: (href: string) => window.history.pushState({}, "", href),
+    replace: (href: string) => window.history.replaceState({}, "", href),
+  }),
 }));
 
 afterEach(() => {
@@ -54,6 +63,51 @@ test("answer claim parser uses citation boundaries without inventing structure",
     {text: "Nền tảng HERA dùng chung phần cứng lõi.", citations: ["C1"]},
     {text: "Biến thể Energy dự kiến Q4/2026.", citations: ["C2", "C3"]},
     {text: "Phần cuối chưa có căn cứ.", citations: []},
+  ]);
+});
+
+test("Ask SSE exposes backend checkpoints and heartbeat without invented phases", async () => {
+  const progress: string[] = [];
+  const heartbeats: number[] = [];
+  const stream = [
+    "event: progress\ndata: {\"stage\":\"understanding\",\"status\":\"started\",\"elapsed_ms\":4,\"detail\":null,\"source_count\":0,\"sources\":[]}\n\n",
+    "event: heartbeat\ndata: {\"elapsed_ms\":1000}\n\n",
+    "event: progress\ndata: {\"stage\":\"retrieving\",\"status\":\"completed\",\"elapsed_ms\":1200,\"detail\":null,\"source_count\":1,\"sources\":[{\"marker\":\"C1\",\"record_key\":\"rtr.product.hera\",\"source_label\":\"HERA spec\",\"verification_state\":\"approved\",\"freshness_state\":\"current\"}]}\n\n",
+    "event: result\ndata: {\"response\":{\"ok\":true}}\n\n",
+  ].join("");
+  const payload = await readAskPayload(new Response(stream, {
+    headers: {"content-type": "text/event-stream"},
+  }), event => progress.push(`${event.stage}:${event.status}`),
+  elapsed => heartbeats.push(elapsed));
+
+  expect(progress).toEqual(["understanding:started", "retrieving:completed"]);
+  expect(heartbeats).toEqual([1000]);
+  expect(payload).toEqual({ok: true});
+});
+
+test("answer renderer converts safe Markdown to semantic typography without raw markers", () => {
+  const {container} = render(<AnswerText
+    text={"## Đặc điểm chính\n**1-4-14**.\n- Một người vận hành\n- `14 kg` tải trọng [C1]"}
+    onCitation={() => undefined}/>);
+
+  expect(screen.getByRole("heading", {level: 3, name: "Đặc điểm chính"}))
+    .toBeInTheDocument();
+  expect(screen.getByText("1-4-14").tagName).toBe("STRONG");
+  expect(screen.getByRole("list")).toBeInTheDocument();
+  expect(screen.getByText("14 kg").tagName).toBe("CODE");
+  expect(container).not.toHaveTextContent("**");
+  expect(screen.getByRole("button", {
+    name: "Trích dẫn — mở bằng chứng trong Evidence Rail C1",
+  })).toBeInTheDocument();
+});
+
+test("answer block parser handles ordered lists, quotes and fenced code", () => {
+  expect(parseAnswerBlocks(
+    "1. HERA\n2. VEGA\n\n> Chỉ dùng dữ liệu có căn cứ\n\n```\nconst safe = true;\n```",
+  )).toEqual([
+    {kind: "list", ordered: true, items: ["HERA", "VEGA"]},
+    {kind: "quote", text: "Chỉ dùng dữ liệu có căn cứ"},
+    {kind: "code", text: "const safe = true;"},
   ]);
 });
 
@@ -116,6 +170,7 @@ test("grounded ask renders citation markers wired to the shared rail; research d
       conversation_id: conversationId,
       answer_run_id: runId,
       answer_mode: "evidence_only",
+      coverage_state: "partial",
       request_id: "req-1",
     }}),
   });
@@ -127,9 +182,12 @@ test("grounded ask renders citation markers wired to the shared rail; research d
   expect(screen.getByLabelText("Kèm vùng nghiên cứu")).toBeDisabled();
   fireEvent.change(input, {target: {value: "Chính sách bảo hành robot?"}});
   fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
+  expect(input).toHaveValue("");
   expect(await screen.findByText(/Robot RtR được bảo hành 24 tháng/)).toBeInTheDocument();
   expect(screen.getByText(/Trích xuất nguyên văn từ SOT đã phê duyệt/))
     .toBeInTheDocument();
+  const coverage = screen.getByText(/có thể chưa bao phủ toàn bộ hồ sơ/);
+  expect(coverage).toHaveAttribute("role", "note");
   // TIP-013B AC-4: an unflagged (strict-grounded) answer shows NO caveat.
   expect(screen.queryByText(/vui lòng kiểm chứng lại/)).toBeNull();
   // Citation marker focuses the rail entry.
@@ -147,6 +205,47 @@ test("grounded ask renders citation markers wired to the shared rail; research d
   // URL-restorable conversation id, without any browser storage.
   expect(location.search).toBe(`?conversation=${conversationId}`);
   expect(localStorage.length + sessionStorage.length).toBe(0);
+});
+
+test("composer respects Vietnamese IME, clears immediately and rejects double-submit", async () => {
+  let askCalls = 0;
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-composer",
+    }}),
+    "/api/ask/ask": () => {
+      askCalls += 1;
+      return {json: {
+        state: "grounded",
+        answer: "HERA là nền tảng UAV đa nhiệm. [C1]",
+        citations: [citation],
+        conversation_id: conversationId,
+        answer_run_id: runId,
+        request_id: "req-composer",
+      }};
+    },
+  });
+  render(<AskPage/>);
+  const input = await screen.findByLabelText("Câu hỏi");
+  fireEvent.change(input, {target: {value: "sản phẩm"}});
+
+  // Enter commits the Vietnamese IME candidate; it must not submit the form.
+  fireEvent.compositionStart(input);
+  fireEvent.keyDown(input, {
+    key: "Enter", code: "Enter", keyCode: 229, isComposing: true,
+  });
+  expect(askCalls).toBe(0);
+  expect(input).toHaveValue("sản phẩm");
+
+  fireEvent.compositionEnd(input, {data: "phẩm"});
+  fireEvent.keyDown(input, {key: "Enter", code: "Enter", keyCode: 13});
+  // A second Enter in the same frame must not create a duplicate request.
+  fireEvent.keyDown(input, {key: "Enter", code: "Enter", keyCode: 13});
+  expect(input).toHaveValue("");
+  await waitFor(() => expect(askCalls).toBe(1));
+  expect(await screen.findByText("sản phẩm")).toBeInTheDocument();
 });
 
 test("TIP-013B: a soft-grounded answer renders the double-check caveat as a note", async () => {
@@ -238,9 +337,9 @@ test("provider setup failure is not presented or routed as a knowledge gap", asy
   fireEvent.change(input, {target: {value: "Vega là gì?"}});
   fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
   expect(await screen.findByRole("heading", {
-    name: "Đã tìm thấy bằng chứng · Chưa thể tổng hợp",
+    name: "Chưa thể tổng hợp câu trả lời",
   })).toBeInTheDocument();
-  expect(screen.getByText(/Đây không phải khoảng trống tri thức/))
+  expect(screen.getByText(/xem Quá trình xử lý để biết nguồn/))
     .toBeInTheDocument();
   expect(screen.queryByText("Khoảng trống đã ghi nhận")).not.toBeInTheDocument();
   expect(screen.queryByRole("link", {name: /Vận hành tri thức/}))

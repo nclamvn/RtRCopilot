@@ -35,7 +35,7 @@ from rtr_copilot.governance.service import (
     encode_signed_cursor,
     policy,
 )
-from rtr_copilot.rag.adapters import normalize_query
+from rtr_copilot.rag.adapters import lexical_query, normalize_query
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.governance import GovernanceError, GovernanceRepository
@@ -62,7 +62,11 @@ from rtr_copilot.research.package import (
 from rtr_copilot.sot.package import PackageError, canonical_json, sha256_bytes
 from rtr_copilot.sot.service import PublishError, SOTPublishService
 
-RESEARCH_SCAN_LIMIT = 1000
+# Metadata is policy-checked before content retrieval.  The former 1,000-row
+# ceiling silently made later packages unsearchable once the real TheSkyWatch
+# corpus was activated (1,838 records by itself). Keep a bounded ceiling, but
+# size it for the governed enterprise corpus rather than synthetic fixtures.
+RESEARCH_SCAN_LIMIT = 50_000
 RESEARCH_SNIPPET_MAX_CHARS = 700
 
 ProposalDecisionInput = Literal["approved", "rejected"]
@@ -88,7 +92,7 @@ RESEARCH_CONTENT_SQL = """
     SELECT research_record_id, searchable_text, evidence_spans,
       ts_rank_cd(
         to_tsvector('simple', searchable_text),
-        plainto_tsquery('simple', :query)
+        to_tsquery('simple', :query)
       ) AS lexical_score
     FROM research_records
     WHERE research_record_id = ANY(CAST(:ids AS uuid[]))
@@ -131,12 +135,17 @@ class ResearchService:
         source: ResearchSource,
         request_id: str,
     ) -> bool:
-        """Owner or curator, and always inside classification clearance."""
+        """Visible within clearance; non-public research stays owner/curator-only."""
         attributes = self._source_attributes(source)
         context = PolicyContext(request_id=request_id)
         if not policy.decide(subject, "view", attributes, context).allow:
             return False
         if str(source.owner_subject_id) == subject.user_id:
+            return True
+        # Public-internal Research is deliberately shareable with authenticated
+        # company members.  It still needs the separate research search scope,
+        # remains zone-labeled and can never appear in SOT retrieval.
+        if source.classification == "public_internal":
             return True
         return policy.decide(subject, "curate", attributes, context).allow
 
@@ -756,6 +765,9 @@ class ResearchService:
         normalized = normalize_query(query)
         if not normalized:
             raise GovernanceError("query_empty_after_normalization")
+        query_expression = lexical_query(normalized)
+        if not query_expression:
+            raise GovernanceError("query_empty_after_normalization")
         dlp_rule_ids: list[str] = []
         async with self.uow.factory() as session:
             metadata = await self._search_metadata(session, tiers=tier_filter)
@@ -764,7 +776,7 @@ class ResearchService:
             if allowed:
                 content_rows = (await session.execute(
                     text(RESEARCH_CONTENT_SQL),
-                    {"ids": list(allowed), "query": normalized},
+                    {"ids": list(allowed), "query": query_expression},
                 )).mappings().all()
                 metadata_by_id = {
                     row["research_record_id"]: row for row in metadata

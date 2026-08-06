@@ -13,6 +13,7 @@ from docx import Document
 from openpyxl import Workbook
 from PIL import Image
 from pptx import Presentation
+from pypdf import PdfReader, PdfWriter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
@@ -32,6 +33,7 @@ from rtr_copilot.ingestion.extractors import (
     extract_required,
 )
 from rtr_copilot.ingestion.file_index import searchable_units
+from rtr_copilot.ingestion.jobs import RENDITION_GENERATOR_VERSION
 from rtr_copilot.ingestion.malware import DeterministicTestScanner
 from rtr_copilot.ingestion.models import (
     OCRPayload,
@@ -356,7 +358,12 @@ def test_safe_ooxml_budgets_entry_count_and_ratio(tmp_path: Path) -> None:
 def test_pdf_active_content_and_image_pixel_budget(tmp_path: Path) -> None:
     active = tmp_path / "active.pdf"
     write_pdf(active)
-    active.write_bytes(active.read_bytes() + b"\n/OpenAction /JavaScript")
+    reader = PdfReader(active)
+    writer = PdfWriter()
+    writer.append_pages_from_reader(reader)
+    writer.add_js("app.alert('blocked')")
+    with active.open("wb") as target:
+        writer.write(target)
     with pytest.raises(IngestionFailure, match="pdf_active_content"):
         validate_content(
             active,
@@ -364,6 +371,17 @@ def test_pdf_active_content_and_image_pixel_budget(tmp_path: Path) -> None:
             declared_mime="application/pdf",
             settings=settings(),
         )
+    safe_link = tmp_path / "safe-link.pdf"
+    safe_pdf = canvas.Canvas(str(safe_link), invariant=1)
+    safe_pdf.drawString(50, 750, "approved source")
+    safe_pdf.linkURL("https://rtrobotics.com", (45, 745, 220, 765))
+    safe_pdf.save()
+    validate_content(
+        safe_link,
+        filename=safe_link.name,
+        declared_mime="application/pdf",
+        settings=settings(),
+    )
     bomb = tmp_path / "pixel.png"
     Image.new("1", (1001, 1000)).save(bomb)
     with pytest.raises(IngestionFailure, match="image_budget_exceeded"):
@@ -562,6 +580,34 @@ def test_docx_merged_cells_keep_grid_without_duplicate_visible_text(
     assert preview.quality["embedded_font_count"] == 1
 
 
+def test_docx_table_rows_do_not_lose_text_to_recycled_proxy_ids(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "workflow.docx"
+    document = Document()
+    table = document.add_table(rows=16, cols=3)
+    for row_index, row in enumerate(table.rows, start=1):
+        row.cells[0].text = f"B{row_index}"
+        row.cells[1].text = f"Workflow step {row_index}"
+        row.cells[2].text = f"SLA {row_index}h"
+    document.save(source)
+
+    artifacts = extract_required(
+        source,
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        structural={},
+        settings=settings(),
+        sandbox=FakeProbeSandbox(),  # type: ignore[arg-type]
+    )
+    structured = next(
+        artifact for artifact in artifacts if artifact.kind == "structured_text_json"
+    )
+    rows = json.loads(structured.payload)["tables"][0]["rows"]
+    assert rows[0] == ["B1", "Workflow step 1", "SLA 1h"]
+    assert rows[-1] == ["B16", "Workflow step 16", "SLA 16h"]
+    assert all(all(cell for cell in row) for row in rows)
+
+
 def test_office_preview_rejects_unembedded_fonts(tmp_path: Path) -> None:
     source = tmp_path / "unembedded.docx"
     document = Document()
@@ -663,7 +709,7 @@ def test_stale_office_visual_renditions_fail_closed() -> None:
     assert _is_current_visual_rendition(
         mime=docx,
         kind="preview_pdf",
-        generator_version="3",
+        generator_version=RENDITION_GENERATOR_VERSION,
     )
     assert _is_current_visual_rendition(
         mime=docx,

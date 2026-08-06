@@ -8,11 +8,14 @@ allowing a lower-confidence generative fallback.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Sequence
+from contextvars import ContextVar
 from typing import Any, Literal, Protocol
 
 import httpx
+from pydantic import SecretStr
 
 from rtr_copilot.config import Settings
 from rtr_copilot.rag.adapters import (
@@ -21,10 +24,28 @@ from rtr_copilot.rag.adapters import (
     StrictEvidenceAnswer,
 )
 from rtr_copilot.rag.models import ProviderAnswer, ProviderEvidence
+from rtr_copilot.rag.provider_usage import EMPTY_PROVIDER_USAGE, ProviderUsage
 
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
 ANTHROPIC_MESSAGES_URL = "https://api.anthropic.com/v1/messages"
 ANTHROPIC_VERSION = "2023-06-01"
+
+
+def _prompt_cache_key(route: str, model: str) -> str:
+    """Stable, non-PII routing key for provider-side prompt caching."""
+    digest = hashlib.sha256(f"rtr-copilot:{route}:{model}:v1".encode()).hexdigest()
+    return f"rtr-{route}-{digest[:32]}"
+
+
+def _max_output_for_policy(configured: int, system_policy: str) -> int:
+    """Right-size output headroom without truncating dossier/list answers."""
+    if "governed entity-profile request" in system_policy:
+        return min(configured, 3072)
+    if "Intent=lookup" in system_policy and "completeness=point" in system_policy:
+        return min(configured, 1024)
+    if "Intent=definition" in system_policy:
+        return min(configured, 1536)
+    return configured
 
 ANSWER_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -79,9 +100,20 @@ def _generation_instructions(system_policy: str) -> str:
         "- use only relevant supplied evidence; ignore irrelevant records\n"
         "- preserve the language of the user's question\n"
         "- every factual sentence ends with one or more exact [C#] markers\n"
+        "- do not emit an uncited factual heading, lead-in or standalone verdict; "
+        "attach its evidence marker or make it a non-factual label\n"
         "- distinguish similarly named products and state material conflicts\n"
-        "- set answerable=false when evidence is insufficient, irrelevant or "
-        "cannot resolve a conflict\n"
+        "- collection membership and detailed attributes are separate coverage "
+        "questions: when membership is supported but a member's requested detail "
+        "is not, keep the member in the answer and explicitly say the supplied "
+        "evidence does not provide that detail\n"
+        "- a truthful, clearly labelled lack of detail is useful partial content, "
+        "not a reason to discard otherwise supported facts\n"
+        "- for best_effort coverage, set answerable=true whenever at least one "
+        "material part of the request is supported; answer that part and never "
+        "present it as complete\n"
+        "- set answerable=false only when no material part is supported, evidence "
+        "is irrelevant, or a material conflict cannot be resolved\n"
         "- never infer missing specifications, dates, owners or commercial facts\n"
         "Output only the required structured object. "
         f"Security policy: {system_policy}"
@@ -94,7 +126,18 @@ def _review_instructions() -> str:
         "the candidate directly answers the original question, uses the correct "
         "product/entity, contains no irrelevant facts, and every factual unit is "
         "supported by the cited evidence marker. Reject uncertainty disguised as "
-        "fact and unresolved source conflicts. Output only the required object."
+        "fact and unresolved source conflicts. A useful supported partial answer "
+        "is acceptable for an ordinary question; missing detail alone is not a "
+        "rejection unless the user explicitly asks for set or dossier coverage "
+        "using all, complete, full, exhaustive, tất cả, toàn bộ or đầy đủ. "
+        "Do not confuse a single requested attribute such as full legal name, "
+        "full address, company email or exact identifier with an exhaustive set. "
+        "For an ordinary point lookup, accept a concise direct answer and any "
+        "directly supported alternatives (for example general and sales email). "
+        "For a governed collection, accept "
+        "a complete supported member list that clearly labels unavailable per-item "
+        "detail; never require the candidate to invent missing attributes. Output "
+        "only the required object."
     )
 
 
@@ -167,6 +210,7 @@ class OpenAIAnswerClient:
         timeout: float,
         reasoning_effort: str,
         max_output_tokens: int,
+        prompt_cache_enabled: bool = True,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self._api_key = api_key
@@ -174,7 +218,15 @@ class OpenAIAnswerClient:
         self._timeout = timeout
         self._reasoning_effort = reasoning_effort
         self._max_output_tokens = max_output_tokens
+        self._prompt_cache_enabled = prompt_cache_enabled
         self._transport = transport
+        self._last_usage: ContextVar[ProviderUsage] = ContextVar(
+            f"openai_answer_usage_{id(self)}",
+            default=EMPTY_PROVIDER_USAGE,
+        )
+
+    def last_usage(self) -> ProviderUsage:
+        return self._last_usage.get()
 
     async def _structured(
         self,
@@ -183,7 +235,34 @@ class OpenAIAnswerClient:
         payload: dict[str, Any],
         schema_name: str,
         schema: dict[str, Any],
+        reasoning_effort: str | None = None,
+        max_output_tokens: int | None = None,
     ) -> str:
+        self._last_usage.set(ProviderUsage())
+        request_payload: dict[str, Any] = {
+            "model": self.model,
+            "store": False,
+            "reasoning": {
+                "effort": reasoning_effort or self._reasoning_effort,
+            },
+            "max_output_tokens": max_output_tokens or self._max_output_tokens,
+            "instructions": instructions,
+            "input": json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+            "text": {
+                "verbosity": "medium",
+                "format": {
+                    "type": "json_schema",
+                    "name": schema_name,
+                    "strict": True,
+                    "schema": schema,
+                },
+            },
+        }
+        if self._prompt_cache_enabled:
+            request_payload["prompt_cache_key"] = _prompt_cache_key(
+                schema_name,
+                self.model,
+            )
         async with httpx.AsyncClient(
             timeout=self._timeout,
             transport=self._transport,
@@ -194,26 +273,11 @@ class OpenAIAnswerClient:
                     "authorization": f"Bearer {self._api_key}",
                     "content-type": "application/json",
                 },
-                json={
-                    "model": self.model,
-                    "store": False,
-                    "reasoning": {"effort": self._reasoning_effort},
-                    "max_output_tokens": self._max_output_tokens,
-                    "instructions": instructions,
-                    "input": json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
-                    "text": {
-                        "verbosity": "medium",
-                        "format": {
-                            "type": "json_schema",
-                            "name": schema_name,
-                            "strict": True,
-                            "schema": schema,
-                        },
-                    },
-                },
+                json=request_payload,
             )
             response.raise_for_status()
             body = response.json()
+        self._last_usage.set(ProviderUsage.from_openai(body))
         if body.get("status") != "completed":
             raise ValueError("openai_response_incomplete")
         return _openai_output_text(body)
@@ -225,11 +289,32 @@ class OpenAIAnswerClient:
         *,
         system_policy: str,
     ) -> ProviderAnswer:
+        # Direct lookup and governed enumeration are evidence organization
+        # tasks, not open-ended analysis. Medium reasoning is both more stable
+        # and materially faster for long catalogs; high remains configured for
+        # comparison/procedure/analysis where reasoning depth changes quality.
+        adaptive_effort = (
+            "medium"
+            if any(
+                marker in system_policy
+                for marker in (
+                    "Intent=definition",
+                    "Intent=lookup",
+                    "Intent=enumeration",
+                )
+            )
+            else self._reasoning_effort
+        )
         output = await self._structured(
             instructions=_generation_instructions(system_policy),
             payload={"question": question, "evidence": _evidence_payload(evidence)},
             schema_name="rtr_grounded_answer",
             schema=ANSWER_SCHEMA,
+            reasoning_effort=adaptive_effort,
+            max_output_tokens=_max_output_for_policy(
+                self._max_output_tokens,
+                system_policy,
+            ),
         )
         return _parse_answer_text(output)
 
@@ -269,8 +354,16 @@ class AnthropicAnswerClient:
         self._timeout = timeout
         self._max_output_tokens = max_output_tokens
         self._transport = transport
+        self._last_usage: ContextVar[ProviderUsage] = ContextVar(
+            f"anthropic_answer_usage_{id(self)}",
+            default=EMPTY_PROVIDER_USAGE,
+        )
+
+    def last_usage(self) -> ProviderUsage:
+        return self._last_usage.get()
 
     async def _json(self, system: str, payload: dict[str, Any]) -> str:
+        self._last_usage.set(ProviderUsage())
         async with httpx.AsyncClient(
             timeout=self._timeout,
             transport=self._transport,
@@ -296,7 +389,9 @@ class AnthropicAnswerClient:
                 },
             )
             response.raise_for_status()
-            blocks = response.json().get("content", [])
+            body = response.json()
+            blocks = body.get("content", [])
+        self._last_usage.set(ProviderUsage.from_anthropic(body))
         output = "".join(
             block.get("text", "")
             for block in blocks
@@ -344,15 +439,77 @@ class AnthropicAnswerClient:
 
 
 class QualityLLMAnswer:
-    """Generate with one client and review with a separate route when possible."""
+    """Generate with one client and review with a separate route when possible.
+
+    Review is a small binary structured task.  A dedicated reviewer client can
+    therefore use a 256-token budget and low reasoning effort without weakening
+    the high-reasoning generator. Keeping the routes distinct also prevents a
+    compact audit from inheriting the generator's 4K budget and
+    turning every ordinary answer into two equally expensive calls.
+    """
 
     name = "quality-llm"
     model = "provider-router"
     breaker_name = "quality-llm"
 
-    def __init__(self, clients: list[GroundedAnswerClient]) -> None:
+    def __init__(
+        self,
+        clients: list[GroundedAnswerClient],
+        *,
+        reviewers: list[GroundedAnswerClient] | None = None,
+    ) -> None:
         self.clients = clients
+        self.reviewers = reviewers
         self.calls = 0
+        self._request_calls: ContextVar[int] = ContextVar(
+            "quality_llm_request_calls",
+            default=0,
+        )
+        self._request_token_usage: ContextVar[ProviderUsage] = ContextVar(
+            "quality_llm_request_token_usage",
+            default=EMPTY_PROVIDER_USAGE,
+        )
+
+    def begin_request_usage(self) -> None:
+        """Reset usage for only the current async request context."""
+        self._request_calls.set(0)
+        self._request_token_usage.set(ProviderUsage())
+
+    def request_usage(self) -> int:
+        return self._request_calls.get()
+
+    def request_provider_usage(self) -> ProviderUsage:
+        usage = self._request_token_usage.get()
+        return ProviderUsage(
+            calls=self._request_calls.get(),
+            input_tokens=usage.input_tokens,
+            cached_input_tokens=usage.cached_input_tokens,
+            output_tokens=usage.output_tokens,
+            reasoning_tokens=usage.reasoning_tokens,
+            total_tokens=usage.total_tokens,
+        )
+
+    def _record_call(self) -> None:
+        self.calls += 1
+        self._request_calls.set(self._request_calls.get() + 1)
+
+    def _record_tokens(self, client: object) -> None:
+        usage_reader = getattr(client, "last_usage", None)
+        if not callable(usage_reader):
+            return
+        usage = usage_reader()
+        if not isinstance(usage, ProviderUsage):
+            return
+        self._request_token_usage.set(
+            self._request_token_usage.get()
+            + ProviderUsage(
+                input_tokens=usage.input_tokens,
+                cached_input_tokens=usage.cached_input_tokens,
+                output_tokens=usage.output_tokens,
+                reasoning_tokens=usage.reasoning_tokens,
+                total_tokens=usage.total_tokens,
+            )
+        )
 
     async def answer(
         self,
@@ -365,22 +522,59 @@ class QualityLLMAnswer:
             raise InsufficientEvidence("provider_unavailable")
         for index, generator in enumerate(self.clients):
             try:
-                self.calls += 1
+                self._record_call()
                 candidate = await generator.generate(
                     question,
                     evidence,
                     system_policy=system_policy,
                 )
-                reviewer = self.clients[(index + 1) % len(self.clients)]
-                self.calls += 1
-                accepted = await reviewer.review(question, evidence, candidate)
             except Exception:  # noqa: BLE001 — try configured provider fallback
+                self._record_tokens(generator)
                 continue
-            if accepted:
+            self._record_tokens(generator)
+            # Point/direct answers still pass deterministic citation, evidence
+            # overlap, entity and relevance gates in AnswerService. The LLM
+            # reviewer is advisory and cannot change final acceptance, so a
+            # second provider call here cannot improve the release decision.
+            if (
+                "completeness=point" in system_policy
+                and "answer_shape=direct" in system_policy
+            ):
                 self.name = generator.name
                 self.model = generator.model
                 return candidate
-        raise InsufficientEvidence("quality_review_failed")
+            if self.reviewers:
+                reviewer = self.reviewers[index % len(self.reviewers)]
+            else:
+                reviewer = self.clients[(index + 1) % len(self.clients)]
+            try:
+                self._record_call()
+                accepted = await reviewer.review(question, evidence, candidate)
+            except Exception:  # noqa: BLE001 — review transport/parse failure
+                self._record_tokens(reviewer)
+                self.name = generator.name
+                self.model = generator.model
+                return candidate.model_copy(update={"review_state": "advisory_rejected"})
+            self._record_tokens(reviewer)
+            if accepted:
+                self.name = generator.name
+                self.model = generator.model
+                return candidate.model_copy(update={"review_state": "accepted"})
+            # The reviewer is an independent semantic signal, not the final
+            # availability authority. Live enterprise acceptance demonstrated
+            # repeatable false negatives on correct multi-facet definitions.
+            # Preserve the rejection for audit, then let AnswerService's
+            # mandatory deterministic citation, evidence-overlap, entity,
+            # profile and collection-coverage gates decide. This does not turn
+            # missing or irrelevant evidence into a grounded answer.
+            self.name = generator.name
+            self.model = generator.model
+            return candidate.model_copy(update={"review_state": "advisory_rejected"})
+        # Every configured generator failed before a candidate existed. This is
+        # a provider failure, not an advisory-review outcome; AnswerService must
+        # not spend its grounding-repair attempt by calling the same failed
+        # route again.
+        raise InsufficientEvidence("provider_unavailable")
 
 
 class UnavailableLLMAnswer:
@@ -402,7 +596,16 @@ class UnavailableLLMAnswer:
         raise InsufficientEvidence(self.reason)
 
 
-AnswerQualityReadiness = Literal["ready", "evidence_only"]
+AnswerQualityReadiness = Literal[
+    "ready", "evidence_only", "configuration_required",
+]
+
+
+def _credential_configured(value: SecretStr | None) -> bool:
+    """True only for a non-empty secret; Compose commonly injects ``""``."""
+    if value is None:
+        return False
+    return bool(str(value.get_secret_value()).strip())
 
 
 def answer_quality_readiness(settings: Settings) -> AnswerQualityReadiness:
@@ -413,9 +616,9 @@ def answer_quality_readiness(settings: Settings) -> AnswerQualityReadiness:
         if item.strip()
     }
     configured_provider = (
-        settings.openai_api_key is not None
+        _credential_configured(settings.openai_api_key)
         or (
-            settings.anthropic_api_key is not None
+            _credential_configured(settings.anthropic_api_key)
             and settings.rag_answer_anthropic_model is not None
         )
     )
@@ -426,11 +629,19 @@ def answer_quality_readiness(settings: Settings) -> AnswerQualityReadiness:
         and configured_provider
     ):
         return "ready"
+    if settings.rag_answer_llm_required and settings.rag_provider_mode == "external":
+        return "configuration_required"
     return "evidence_only"
 
 
 def build_answer_provider(settings: Settings) -> AnswerAdapter:
-    """Prefer reviewed LLM synthesis; otherwise use strict verbatim evidence."""
+    """Prefer reviewed LLM synthesis and fail closed in external-quality mode.
+
+    Local/test mode retains the narrow strict-evidence adapter. Once operators
+    explicitly select external processing, however, a missing policy or secret
+    is a configuration error—not permission to silently downgrade answer
+    quality.
+    """
     if not settings.rag_answer_llm_required:
         return OfflineExtractiveAnswer()
     if settings.rag_provider_mode != "external":
@@ -441,27 +652,52 @@ def build_answer_provider(settings: Settings) -> AnswerAdapter:
         if item.strip()
     }
     if "internal" not in allowlist:
-        return StrictEvidenceAnswer()
+        return UnavailableLLMAnswer("answer_quality_policy_required")
 
     clients: list[GroundedAnswerClient] = []
-    if settings.openai_api_key is not None:
+    reviewers: list[GroundedAnswerClient] = []
+    if _credential_configured(settings.openai_api_key):
+        assert settings.openai_api_key is not None
+        openai_key = settings.openai_api_key.get_secret_value()
         clients.append(OpenAIAnswerClient(
-            settings.openai_api_key.get_secret_value(),
+            openai_key,
             settings.rag_answer_openai_model,
             timeout=settings.rag_answer_timeout_seconds,
             reasoning_effort=settings.rag_answer_reasoning_effort,
             max_output_tokens=settings.rag_answer_max_output_tokens,
+            prompt_cache_enabled=settings.rag_prompt_cache_enabled,
+        ))
+        reviewers.append(OpenAIAnswerClient(
+            openai_key,
+            settings.rag_review_openai_model or settings.rag_answer_openai_model,
+            timeout=settings.rag_answer_timeout_seconds,
+            reasoning_effort=settings.rag_review_reasoning_effort,
+            max_output_tokens=settings.rag_review_max_output_tokens,
+            prompt_cache_enabled=settings.rag_prompt_cache_enabled,
         ))
     if (
-        settings.anthropic_api_key is not None
+        _credential_configured(settings.anthropic_api_key)
         and settings.rag_answer_anthropic_model is not None
     ):
+        assert settings.anthropic_api_key is not None
+        anthropic_key = settings.anthropic_api_key.get_secret_value()
         clients.append(AnthropicAnswerClient(
-            settings.anthropic_api_key.get_secret_value(),
+            anthropic_key,
             settings.rag_answer_anthropic_model,
             timeout=settings.rag_answer_timeout_seconds,
             max_output_tokens=settings.rag_answer_max_output_tokens,
         ))
+        reviewers.append(AnthropicAnswerClient(
+            anthropic_key,
+            settings.rag_answer_anthropic_model,
+            timeout=settings.rag_answer_timeout_seconds,
+            max_output_tokens=settings.rag_review_max_output_tokens,
+        ))
     if not clients:
-        return StrictEvidenceAnswer()
-    return QualityLLMAnswer(clients)
+        return UnavailableLLMAnswer("answer_quality_configuration_required")
+    if len(reviewers) > 1:
+        # Prefer a different provider family for the independent review when
+        # both approved routes exist; retain same-provider low-cost review as a
+        # reliable single-credential deployment mode.
+        reviewers = [*reviewers[1:], reviewers[0]]
+    return QualityLLMAnswer(clients, reviewers=reviewers)

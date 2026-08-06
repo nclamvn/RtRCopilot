@@ -72,6 +72,9 @@ def decode_cursor(cursor: str, secret: str) -> tuple[str, uuid.UUID]:
     try:
         padded = cursor + "=" * (-len(cursor) % 4)
         raw = base64.urlsafe_b64decode(padded)
+        canonical = base64.urlsafe_b64encode(raw).decode().rstrip("=")
+        if not hmac.compare_digest(canonical, cursor):
+            raise ValueError("invalid_cursor")
         payload, signature = raw[:-32], raw[-32:]
         expected = hmac.new(secret.encode(), payload, hashlib.sha256).digest()
         if not hmac.compare_digest(signature, expected):

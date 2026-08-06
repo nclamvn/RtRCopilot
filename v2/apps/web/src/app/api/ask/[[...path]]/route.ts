@@ -27,8 +27,11 @@ async function proxy(request: NextRequest, context: RouteContext) {
     );
   }
   const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
+  const requestedAccept = request.headers.get("accept") ?? "application/json";
+  const accept = requestedAccept.includes("text/event-stream")
+    ? "text/event-stream" : "application/json";
   const headers = new Headers({
-    "accept": "application/json",
+    accept,
     "x-request-id": requestId,
   });
   const contentType = request.headers.get("content-type");
@@ -49,12 +52,16 @@ async function proxy(request: NextRequest, context: RouteContext) {
       signal: AbortSignal.timeout(180_000),
       ...(request.method === "GET" ? {} : {duplex: "half"}),
     } as RequestInit & {duplex?: "half"});
+    const streaming = response.headers.get("content-type")
+      ?.includes("text/event-stream") === true;
     return new Response(response.body, {
       status: response.status,
       headers: {
         "content-type": response.headers.get("content-type") ?? "application/json",
-        "cache-control": "no-store",
+        "cache-control": streaming
+          ? "no-cache, no-store, no-transform" : "no-store",
         "x-request-id": response.headers.get("x-request-id") ?? requestId,
+        ...(streaming ? {"x-accel-buffering": "no"} : {}),
       },
     });
   } catch {

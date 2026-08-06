@@ -194,6 +194,10 @@ test("desktop Files chrome is compact and yields the viewport to the canvas", as
   await mockWorkspace(page, "pdf");
   await page.setViewportSize({width: 1280, height: 720});
   await page.goto("/files");
+  // Authentication and the catalog load after the initial route commit. Wait
+  // for the authenticated workspace contract before measuring its geometry.
+  await expect(page.locator(".files-layout .catalog")).toBeVisible();
+  await expect(page.locator(".type-filters button").first()).toBeVisible();
   const geometry = await page.evaluate(() => {
     const rect = (selector: string) => {
       const node = document.querySelector(selector) as HTMLElement;

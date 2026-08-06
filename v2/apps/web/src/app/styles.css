@@ -189,6 +189,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,[t
    --ink on --bg is ~15:1 (well above WCAG AA 4.5:1), never a faint grey; the
    --signal left rule is a ~6:1 non-text accent. Static (reduced-motion safe). */
 .confidence-caveat{margin:10px 0 0;padding:9px 11px;border-left:3px solid var(--signal);background:var(--bg);color:var(--ink);font-size:12px;line-height:1.5}
+.coverage-caveat{margin:10px 0 0;padding:9px 11px;border-left:3px solid var(--line);background:var(--bg);color:var(--muted);font-size:12px;line-height:1.5}
 .citation-marker{background:transparent;border:1px solid var(--locator);color:var(--pc-accent);font:700 10px/1 ui-monospace,monospace;padding:2px 4px;margin:0 2px;cursor:pointer;vertical-align:baseline}
 .citation-marker:hover{background:var(--pc-surface-hover)}
 .honest-null{border-color:var(--signal)}

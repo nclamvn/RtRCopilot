@@ -231,6 +231,9 @@ def _encode_cursor(created_at: datetime, version_id: uuid.UUID) -> str:
 def _decode_cursor(value: str) -> tuple[datetime, uuid.UUID]:
     try:
         raw = base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+        canonical = base64.urlsafe_b64encode(raw).decode().rstrip("=")
+        if not hmac.compare_digest(canonical, value):
+            raise ValueError
         payload, signature = raw[:-32], raw[-32:]
         expected = hmac.new(_cursor_secret(), payload, hashlib.sha256).digest()
         if len(payload) == 0 or not hmac.compare_digest(signature, expected):

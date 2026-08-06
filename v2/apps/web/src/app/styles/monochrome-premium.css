@@ -131,7 +131,7 @@ html {
 }
 
 /* Ask composer: one opaque instrument; context and actions share one baseline. */
-.ask-workspace { width: min(100%, 960px); }
+.ask-workspace { width: 100%; max-width: none; }
 .ask-workspace .ask-form {
   grid-template-columns: max-content minmax(160px, 1fr) max-content;
   column-gap: 12px;

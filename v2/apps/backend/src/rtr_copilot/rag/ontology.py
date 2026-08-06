@@ -26,6 +26,58 @@ from rtr_copilot.rag.adapters import normalize_query
 
 MatchKind = Literal["exact", "fuzzy", "partial", "candidate"]
 
+# A partial-name signal must come from an identifying token, not a generic
+# domain noun. Without this boundary, a registered alias such as "Da Nang
+# drone" made every ordinary question containing "drone" look like a partial
+# project name and forced an unnecessary clarification. These terms may still
+# contribute moderate candidate similarity for an external planner; they just
+# cannot independently trigger the fail-closed ambiguity gate.
+GENERIC_ENTITY_PARTS = frozenset({
+    "ai", "company", "cong", "customer", "data", "drone", "du", "enterprise",
+    "he", "internal", "khach", "management", "platform", "policy", "product",
+    "project", "robot", "robotics", "solution", "system", "technology", "thong",
+    "time", "uav",
+})
+
+
+class OntologyProfileFacet(BaseModel):
+    """One curator-defined evidence dimension of an entity profile."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    facet_id: str = Field(pattern=r"^[a-z][a-z0-9_-]{1,63}$")
+    label: str = Field(min_length=1, max_length=160)
+    presentation_labels: tuple[str, ...] = Field(default=(), max_length=12)
+    # Curator-governed ordinary-language surfaces that route a point lookup to
+    # this facet's authoritative records.  A profile is therefore both a
+    # definition dossier and a scalable attribute index; product/domain growth
+    # remains registry data instead of accumulating question-specific code.
+    query_aliases: tuple[str, ...] = Field(default=(), max_length=40)
+    record_keys: tuple[str, ...] = Field(min_length=1, max_length=20)
+
+    @model_validator(mode="after")
+    def record_keys_are_well_formed(self) -> OntologyProfileFacet:
+        if any(
+            not record_key.strip() or len(record_key) > 160
+            for record_key in self.record_keys
+        ):
+            raise ValueError("ontology_profile_record_key_invalid")
+        if len(self.record_keys) != len(set(self.record_keys)):
+            raise ValueError("ontology_profile_record_key_duplicate")
+        normalized_labels = [
+            normalize_query(label) for label in self.presentation_labels
+        ]
+        if any(not label for label in normalized_labels):
+            raise ValueError("ontology_profile_presentation_label_invalid")
+        if len(normalized_labels) != len(set(normalized_labels)):
+            raise ValueError("ontology_profile_presentation_label_duplicate")
+        normalized_aliases = [normalize_query(alias) for alias in self.query_aliases]
+        if any(not alias for alias in normalized_aliases):
+            raise ValueError("ontology_profile_query_alias_invalid")
+        if len(normalized_aliases) != len(set(normalized_aliases)):
+            raise ValueError("ontology_profile_query_alias_duplicate")
+        return self
+
 
 class OntologyEntity(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -36,6 +88,7 @@ class OntologyEntity(BaseModel):
     domain: str = Field(pattern=r"^[a-z][a-z0-9_-]{1,63}$")
     aliases: tuple[str, ...] = ()
     definition_record_keys: tuple[str, ...] = ()
+    profile_facets: tuple[OntologyProfileFacet, ...] = ()
     lifecycle: Literal["active", "retired"] = "active"
     owner: str = Field(min_length=1, max_length=160)
     provenance_level: Literal["verified_primary", "approved_internal", "claim", "flagged"]
@@ -51,6 +104,62 @@ class OntologyEntity(BaseModel):
             raise ValueError("ontology_definition_record_key_invalid")
         if len(self.definition_record_keys) != len(set(self.definition_record_keys)):
             raise ValueError("ontology_definition_record_key_duplicate")
+        facet_ids = [facet.facet_id for facet in self.profile_facets]
+        if len(facet_ids) != len(set(facet_ids)):
+            raise ValueError("ontology_profile_facet_duplicate")
+        return self
+
+
+class OntologyCollectionMember(BaseModel):
+    """One governed member of an enterprise collection.
+
+    ``entity_id`` is optional because operational catalogs can legitimately
+    contain bundles, service rows and workflow placeholders that are not
+    standalone ontology entities.  ``kind`` keeps that distinction explicit.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    name: str = Field(min_length=1, max_length=160)
+    kind: str = Field(pattern=r"^[a-z][a-z0-9_-]{1,63}$")
+    entity_id: str | None = Field(
+        default=None,
+        pattern=r"^[a-z0-9][a-z0-9._-]{2,127}$",
+    )
+
+
+class OntologyCollection(BaseModel):
+    """Provenance-bound set used to prove exhaustive answer coverage."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    collection_id: str = Field(pattern=r"^[a-z0-9][a-z0-9._-]{2,127}$")
+    canonical_name: str = Field(min_length=1, max_length=160)
+    domain: str = Field(pattern=r"^[a-z][a-z0-9_-]{1,63}$")
+    aliases: tuple[str, ...] = ()
+    subject_entity_ids: tuple[str, ...] = ()
+    members: tuple[OntologyCollectionMember, ...] = Field(
+        min_length=1,
+        max_length=512,
+    )
+    record_keys: tuple[str, ...] = Field(min_length=1, max_length=64)
+    lifecycle: Literal["active", "retired"] = "active"
+    owner: str = Field(min_length=1, max_length=160)
+    provenance_level: Literal[
+        "verified_primary", "approved_internal", "claim", "flagged",
+    ]
+
+    @model_validator(mode="after")
+    def collection_is_well_formed(self) -> OntologyCollection:
+        if any(not normalize_query(alias) for alias in self.aliases):
+            raise ValueError("ontology_collection_alias_empty")
+        member_names = [normalize_query(member.name) for member in self.members]
+        if any(not name for name in member_names):
+            raise ValueError("ontology_collection_member_empty")
+        if len(member_names) != len(set(member_names)):
+            raise ValueError("ontology_collection_member_duplicate")
+        if len(self.record_keys) != len(set(self.record_keys)):
+            raise ValueError("ontology_collection_record_key_duplicate")
         return self
 
 
@@ -61,12 +170,28 @@ class OntologySpec(BaseModel):
     registry_id: str = Field(pattern=r"^[a-z0-9][a-z0-9._-]{2,127}$")
     owner: str = Field(min_length=1, max_length=160)
     entities: tuple[OntologyEntity, ...] = Field(min_length=1, max_length=100_000)
+    collections: tuple[OntologyCollection, ...] = Field(
+        default=(),
+        max_length=10_000,
+    )
 
     @model_validator(mode="after")
     def stable_ids_are_unique(self) -> OntologySpec:
         ids = [entity.entity_id for entity in self.entities]
         if len(ids) != len(set(ids)):
             raise ValueError("ontology_entity_id_duplicate")
+        collection_ids = [item.collection_id for item in self.collections]
+        if len(collection_ids) != len(set(collection_ids)):
+            raise ValueError("ontology_collection_id_duplicate")
+        entity_ids = set(ids)
+        for collection in self.collections:
+            references = set(collection.subject_entity_ids) | {
+                member.entity_id
+                for member in collection.members
+                if member.entity_id is not None
+            }
+            if not references <= entity_ids:
+                raise ValueError("ontology_collection_entity_unknown")
         return self
 
 
@@ -88,6 +213,15 @@ class EnterpriseOntology:
         self.spec = spec
         self.entities = tuple(entity for entity in spec.entities if entity.lifecycle == "active")
         self.by_id = {entity.entity_id: entity for entity in self.entities}
+        self.collections = tuple(
+            item for item in spec.collections if item.lifecycle == "active"
+        )
+        self.collections_by_id = {
+            item.collection_id: item for item in self.collections
+        }
+        self.collections_by_name = {
+            item.canonical_name: item for item in self.collections
+        }
         self.by_canonical: dict[str, list[OntologyEntity]] = defaultdict(list)
         self._surface_index: dict[str, list[OntologyEntity]] = defaultdict(list)
         self._surfaces: list[tuple[str, OntologyEntity]] = []
@@ -136,10 +270,18 @@ class EnterpriseOntology:
 
     @staticmethod
     def _dedupe(matches: list[OntologyMatch]) -> list[OntologyMatch]:
+        kind_rank = {"candidate": 0, "partial": 1, "fuzzy": 2, "exact": 3}
         best: dict[str, OntologyMatch] = {}
         for match in matches:
             existing = best.get(match.entity_id)
-            if existing is None or match.confidence > existing.confidence:
+            if (
+                existing is None
+                or kind_rank[match.match_kind] > kind_rank[existing.match_kind]
+                or (
+                    match.match_kind == existing.match_kind
+                    and match.confidence > existing.confidence
+                )
+            ):
                 best[match.entity_id] = match
         return list(best.values())
 
@@ -233,14 +375,22 @@ class EnterpriseOntology:
             kind: MatchKind = "candidate"
             for token in tokens:
                 if any(
-                    part.startswith(token)
+                    token not in GENERIC_ENTITY_PARTS
+                    and part not in GENERIC_ENTITY_PARTS
+                    and part != token
+                    and part.startswith(token)
                     for part in surface_tokens
                     if min(len(part), len(token)) >= 4
                 ):
                     score = min(
                         len(token) / max(len(part), 1)
                         for part in surface_tokens
-                        if part.startswith(token)
+                        if (
+                            token not in GENERIC_ENTITY_PARTS
+                            and part not in GENERIC_ENTITY_PARTS
+                            and part != token
+                            and part.startswith(token)
+                        )
                     )
                     if score > best:
                         best = score
@@ -266,6 +416,49 @@ class EnterpriseOntology:
 
     def candidate_catalog(self, question: str, *, limit: int = 16) -> list[str]:
         return [match.canonical_name for match in self.candidate_matches(question, limit=limit)]
+
+    def collection_candidate_catalog(
+        self,
+        question: str,
+        *,
+        subject_entity_ids: tuple[str, ...] = (),
+        limit: int = 16,
+    ) -> list[str]:
+        """Bounded collection names whose governed aliases fit the question.
+
+        Subject ownership is a hard filter when the question resolved a known
+        entity.  Ranking is lexical and deterministic; the external planner may
+        choose only from the returned names.
+        """
+        normalized = normalize_query(question)
+        question_tokens = set(normalized.split())
+        subject_ids = set(subject_entity_ids)
+        ranked: list[tuple[float, str]] = []
+        for collection in self.collections:
+            if (
+                subject_ids
+                and collection.subject_entity_ids
+                and not subject_ids.intersection(collection.subject_entity_ids)
+            ):
+                continue
+            best = 0.0
+            for surface in (collection.canonical_name, *collection.aliases):
+                candidate = normalize_query(surface)
+                if not candidate:
+                    continue
+                if candidate in normalized or normalized in candidate:
+                    best = max(best, 1.0)
+                    continue
+                candidate_tokens = set(candidate.split())
+                union = question_tokens | candidate_tokens
+                overlap = len(question_tokens & candidate_tokens) / len(union) if union else 0
+                best = max(best, overlap)
+            if best > 0:
+                ranked.append((best, collection.canonical_name))
+        return [
+            name
+            for _, name in sorted(ranked, key=lambda item: (-item[0], item[1]))[:limit]
+        ]
 
     def canonical_names(self) -> frozenset[str]:
         return frozenset(entity.canonical_name for entity in self.entities)

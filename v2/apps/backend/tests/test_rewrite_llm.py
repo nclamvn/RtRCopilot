@@ -56,7 +56,10 @@ class _FakeClient:
         self._error = error
         self.calls = 0
 
-    async def propose(self, question: str, catalog: list[str]) -> RewriteResult:
+    async def propose(
+        self, question: str, catalog: list[str], collections: list[str],
+    ) -> RewriteResult:
+        del question, catalog, collections
         self.calls += 1
         if self._error is not None:
             raise self._error
@@ -64,8 +67,10 @@ class _FakeClient:
 
 
 class _HangingClient(_FakeClient):
-    async def propose(self, question: str, catalog: list[str]) -> RewriteResult:
-        del question, catalog
+    async def propose(
+        self, question: str, catalog: list[str], collections: list[str],
+    ) -> RewriteResult:
+        del question, catalog, collections
         self.calls += 1
         await asyncio.sleep(10)
         raise AssertionError("orchestration timeout failed")
@@ -75,10 +80,15 @@ class _CatalogClient(_FakeClient):
     def __init__(self) -> None:
         super().__init__("catalog")
         self.catalogs: list[list[str]] = []
+        self.collection_catalogs: list[list[str]] = []
 
-    async def propose(self, question: str, catalog: list[str]) -> RewriteResult:
+    async def propose(
+        self, question: str, catalog: list[str], collections: list[str],
+    ) -> RewriteResult:
+        del question
         self.calls += 1
         self.catalogs.append(catalog)
+        self.collection_catalogs.append(collections)
         return RewriteResult()
 
 
@@ -101,9 +111,13 @@ class _FakeBreaker:
 
 class TestParse:
     def test_valid_json(self) -> None:
-        result = _parse_rewrite('{"entities": ["HERA"], "expansions": ["payload"]}')
+        result = _parse_rewrite(
+            '{"entities": ["HERA"], "expansions": ["payload"], '
+            '"standalone_question": "HERA payload là gì?"}',
+        )
         assert result.entities == ["HERA"]
         assert result.expansions == ["payload"]
+        assert result.standalone_question == "HERA payload là gì?"
 
     def test_json_embedded_in_prose(self) -> None:
         result = _parse_rewrite('Here you go:\n{"entities": ["VEGA"]}\nthanks')
@@ -127,6 +141,32 @@ class TestFallbackChain:
         out = asyncio.run(rewriter.rewrite("hr"))
         assert out.entities == ["HERA"]
         assert primary.calls == 1 and fallback.calls == 0
+        assert rewriter.calls == 1
+
+    def test_request_usage_is_task_local(self) -> None:
+        rewriter = ExternalLLMRewriter([_FakeClient("openai")], timeout=1)
+
+        async def run_one() -> int:
+            rewriter.begin_request_usage()
+            task = asyncio.current_task()
+            await rewriter.rewrite(f"question-{id(task)}")
+            return rewriter.request_usage()
+
+        async def run_both() -> list[int]:
+            return list(await asyncio.gather(run_one(), run_one()))
+
+        assert asyncio.run(run_both()) == [1, 1]
+        assert rewriter.calls == 2
+
+    def test_identical_plan_uses_digest_cache_without_provider_call(self) -> None:
+        client = _FakeClient("openai", result=RewriteResult(entities=["HERA"]))
+        rewriter = ExternalLLMRewriter(
+            [client], timeout=1, cache_ttl_seconds=60, cache_max_entries=4,
+        )
+        first = asyncio.run(rewriter.rewrite("HERA payload"))
+        second = asyncio.run(rewriter.rewrite("HERA payload"))
+        assert first == second
+        assert client.calls == 1
         assert rewriter.calls == 1
 
     def test_primary_failure_falls_to_secondary(self) -> None:
@@ -187,7 +227,10 @@ class TestFallbackChain:
         asyncio.run(rewriter.rewrite("Omni là gì?"))
         assert client.catalogs == [["OmniSight"]]
 
-        asyncio.run(rewriter.rewrite("unrelated enterprise question"))
+        # Deliberately use tokens outside every governed surface. Natural
+        # language such as "enterprise question" can legitimately become a
+        # moderate candidate as the enterprise ontology grows.
+        asyncio.run(rewriter.rewrite("zzzx qqqq"))
         assert client.catalogs[-1] == []
 
 
@@ -200,12 +243,19 @@ class TestRealClients:
         client = AnthropicRewriteClient(
             "key", "model", timeout=2, transport=_transport(payload),
         )
-        out = asyncio.run(client.propose("hr payload", ["HERA", "VEGA"]))
+        out = asyncio.run(client.propose("hr payload", ["HERA", "VEGA"], []))
         assert out.entities == ["HERA"] and out.expansions == ["payload"]
 
     def test_openai_parses_responses_structured_output(self) -> None:
         payload = {
             "status": "completed",
+            "usage": {
+                "input_tokens": 80,
+                "input_tokens_details": {"cached_tokens": 20},
+                "output_tokens": 15,
+                "output_tokens_details": {"reasoning_tokens": 5},
+                "total_tokens": 95,
+            },
             "output": [{"type": "message", "content": [{
                 "type": "output_text",
                 "text": '{"entities": ["VEGA"], "expansions": []}',
@@ -214,15 +264,20 @@ class TestRealClients:
         client = OpenAIRewriteClient(
             "key", "model", timeout=2, transport=_transport(payload),
         )
-        out = asyncio.run(client.propose("vga", ["HERA", "VEGA"]))
+        async def propose_with_usage() -> tuple[RewriteResult, int]:
+            out = await client.propose("vga", ["HERA", "VEGA"], [])
+            return out, client.last_usage().total_tokens
+
+        out, total_tokens = asyncio.run(propose_with_usage())
         assert out.entities == ["VEGA"]
+        assert total_tokens == 95
 
     def test_http_error_raises(self) -> None:
         client = OpenAIRewriteClient(
             "key", "model", timeout=2, transport=_transport({}, status=500),
         )
         with pytest.raises(httpx.HTTPStatusError):
-            asyncio.run(client.propose("q", ["HERA"]))
+            asyncio.run(client.propose("q", ["HERA"], []))
 
 
 class TestBuildRewriter:
@@ -231,6 +286,14 @@ class TestBuildRewriter:
 
     def test_enabled_without_key_returns_offline(self) -> None:
         settings = _settings(rag_rewrite_enabled=True)
+        assert isinstance(build_rewriter(settings), OfflineRewriter)
+
+    def test_empty_compose_key_returns_offline(self) -> None:
+        settings = _settings(
+            rag_rewrite_enabled=True,
+            rag_external_classification_allowlist="internal",
+            openai_api_key="",
+        )
         assert isinstance(build_rewriter(settings), OfflineRewriter)
 
     def test_anthropic_only(self) -> None:

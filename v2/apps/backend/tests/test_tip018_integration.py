@@ -272,6 +272,85 @@ async def test_per_file_isolation_acl_and_grounded_persistence(
     )
 
 
+@pytest.mark.asyncio
+async def test_default_ask_searches_only_manifest_approved_company_files(
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner, viewer = uuid.uuid4(), uuid.uuid4()
+    approved_token = f"ENTERPRISE-{uuid.uuid4().hex} maintenance policy"
+    private_token = f"PRIVATE-{uuid.uuid4().hex} isolated note"
+    approved_version, approved_chunk = await seed_file(
+        factory, owner, token=approved_token,
+    )
+    await seed_file(factory, owner, token=private_token)
+    source_id = uuid.uuid4()
+    async with factory() as session, session.begin():
+        await session.execute(text("""
+            INSERT INTO subjects(user_id,issuer,provider_sub,email,canonical_domain)
+            VALUES (:viewer,'tip018',:sub,:email,'rtrobotics.com')
+        """), {
+            "viewer": viewer,
+            "sub": viewer.hex,
+            "email": f"{viewer.hex}@rtrobotics.com",
+        })
+        role_id = await session.scalar(text(
+            "SELECT role_id FROM roles WHERE key='staff'",
+        ))
+        await session.execute(text("""
+            INSERT INTO subject_roles(subject_id,role_id) VALUES (:viewer,:role_id)
+        """), {"viewer": viewer, "role_id": role_id})
+        await session.execute(text("""
+            INSERT INTO resources(resource_id,resource_type,owner_subject_id,
+              classification,source_zone,lifecycle_state)
+            VALUES (:source_id,'source',:owner,'internal','private_context','active')
+        """), {"source_id": source_id, "owner": owner})
+        await session.execute(text("""
+            INSERT INTO sources(source_id,kind,name,metadata)
+            VALUES (:source_id,'internal','Approved company corpus',
+              CAST(:metadata AS jsonb))
+        """), {
+            "source_id": source_id,
+            "metadata": json.dumps({
+                "enterprise_ask": {"state": "enterprise_approved"},
+            }),
+        })
+        await session.execute(text("""
+            UPDATE documents SET source_id=:source_id
+            WHERE current_version_id=:version_id
+        """), {"source_id": source_id, "version_id": approved_version})
+        await session.execute(text("""
+            INSERT INTO acl_entries(resource_id,principal_type,principal_id,
+              action,effect,granted_by)
+            VALUES (:source_id,'role',:role_id,'view','allow',:owner)
+        """), {
+            "source_id": source_id,
+            "role_id": role_id,
+            "owner": owner,
+        })
+
+    service = RetrievalService(get_settings(), factory=factory)
+    approved = await service.search(
+        caller(viewer),
+        approved_token,
+        filters=SearchFilters(),
+        request_id="enterprise-company-file",
+    )
+    assert approved
+    assert approved[0].chunk_id == approved_chunk
+    assert approved[0].citation.source_key.startswith("enterprise-file:")
+    assert approved[0].citation.zone_label == "private"
+    assert service.trace.enterprise_file_versions >= 1
+    assert service.trace.enterprise_file_policy_allowed >= 1
+
+    isolated = await service.search(
+        caller(viewer),
+        private_token,
+        filters=SearchFilters(),
+        request_id="enterprise-private-file",
+    )
+    assert all(private_token not in hit.snippet for hit in isolated)
+
+
 def test_file_scope_is_mutually_exclusive() -> None:
     with pytest.raises(ValueError, match="mutually_exclusive"):
         SearchFilters(source_key="rtr.specs", version_id=uuid.uuid4())

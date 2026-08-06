@@ -1,0 +1,443 @@
+/**
+ * TIP-026.13 — minimalist workspace shell and viewport recovery.
+ *
+ * One compact title grammar is shared by every workspace. Ask keeps the
+ * conversation as the primary surface: the transcript scrolls, the composer
+ * stays pinned to the lower edge, and related context owns a full-height rail.
+ * Explicit grid coordinates below deliberately neutralise earlier TIP layers.
+ */
+
+/* Full-height product workspaces -------------------------------------- */
+/* The route is explicit shell state, so page geometry does not depend on
+   :has() support or on compensating negative margins. Only workspaces with
+   their own internal scroller consume the bottom padding of <main>. */
+.pc-main[data-active-area="ask"],
+.pc-main[data-active-area="files"],
+.pc-main[data-active-area="documents"] {
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+/* A focused landmark must not become a giant rounded frame. Interactive
+   descendants retain their normal keyboard focus treatment. */
+.pc-main[data-shell-region]:focus,
+.pc-main[data-shell-region]:focus-visible {
+  outline: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.ask-workspace,
+.files-workspace,
+.document-workspace-embed {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.files-workspace,
+.document-workspace-embed {
+  display: grid;
+  grid-template-rows: 50px minmax(0, 1fr);
+}
+.ask-workspace,
+.files-workspace,
+.document-workspace-embed {
+  padding-bottom: 0;
+}
+.ask-workspace > .page-head,
+.files-workspace > .page-head,
+.document-workspace-embed > .page-head {
+  margin-bottom: 0;
+}
+
+/* Shared page title grammar ------------------------------------------- */
+.pc-main .page-head {
+  min-height: 50px;
+  height: 50px;
+  margin: 0 0 14px;
+  padding: 0 2px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--pc-border);
+}
+.pc-main .page-head > div:first-child {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.pc-main .page-head h1 {
+  order: 1;
+  flex: none;
+  max-width: none;
+  margin: 0;
+  color: var(--pc-text-primary);
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+.pc-main .page-head .eyebrow {
+  order: 2;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--pc-text-muted);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: .1em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ask-workspace > .page-head,
+.files-workspace > .page-head,
+.document-workspace-embed > .page-head {
+  margin-bottom: 0;
+}
+
+/* Quiet but still perceivable search focus. The former generic inset
+   baseline looked like a broken white input border on this large control. */
+.pc-search:focus-visible {
+  outline: 0 !important;
+  border-color: var(--pc-border-strong);
+  background: var(--pc-surface-hover);
+  box-shadow: none !important;
+}
+
+/* Ask geometry -------------------------------------------------------- */
+.ask-workspace,
+.ask-workspace .ask-layout,
+.ask-workspace .ask-surface {
+  min-height: 0;
+}
+.ask-workspace {
+  height: 100%;
+  padding-bottom: 0;
+}
+.ask-workspace .ask-layout,
+.ask-workspace .ask-surface {
+  height: 100%;
+}
+.ask-workspace .ask-surface {
+  position: relative;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+.ask-workspace .ask-thread {
+  grid-row: 1;
+  min-height: 0;
+  padding-bottom: 18px;
+}
+
+.ask-workspace .ask-form {
+  position: relative;
+  z-index: 4;
+  grid-row: 2;
+  align-self: end;
+  width: min(calc(100% - 48px), 820px);
+  min-height: 104px;
+  margin: 0 auto 14px;
+  padding: 10px 11px 9px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(48px, auto) auto;
+  column-gap: 12px;
+  row-gap: 7px;
+  align-items: end;
+  border: 1px solid var(--pc-border-strong);
+  border-radius: 22px;
+  background: var(--pc-bg-app);
+  box-shadow: none;
+}
+.ask-workspace .ask-form:focus-within {
+  border-color: var(--pc-border-strong);
+  background: var(--pc-bg-app);
+  box-shadow: none;
+}
+.ask-workspace .ask-question {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  display: block;
+  color: transparent;
+  font-size: 0;
+}
+.ask-workspace .ask-question textarea,
+.ask-workspace .ask-question textarea:focus,
+.ask-workspace .ask-question textarea:focus-visible {
+  width: 100%;
+  min-height: 48px;
+  max-height: 180px;
+  margin: 0;
+  padding: 9px 4px 3px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--pc-text-primary);
+  font: 400 15px/1.55 var(--pc-font-ui);
+  resize: none;
+}
+.ask-workspace .ask-composer-context {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: center;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.ask-workspace .ask-chips {
+  display: contents;
+}
+.ask-workspace .ask-chip,
+.ask-workspace .ask-advanced > summary {
+  min-height: 30px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: var(--pc-radius-pill);
+  line-height: 28px;
+}
+.ask-workspace .ask-advanced {
+  position: static;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+.ask-workspace .ask-advanced > summary {
+  width: auto;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ask-workspace .action-row {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.ask-workspace .action-row button:not(.primary) {
+  min-height: 30px;
+}
+.ask-workspace .action-row .ask-send {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* Related context is a structural rail, not a content-height card. */
+.ask-workspace .processing-inspector {
+  align-self: stretch;
+  min-height: 100%;
+  height: 100%;
+  margin: 0;
+  border-left: 0;
+  background: color-mix(in srgb, var(--pc-surface-subtle) 54%, var(--pc-bg-app));
+}
+
+/* Files and Documents: one workspace, three semantic regions. Dividers
+   encode navigation/content/provenance; there is no decorative outer card. */
+.files-layout,
+.doc-layout {
+  height: auto;
+  min-height: 0;
+  align-self: stretch;
+  border: 0;
+  background: var(--pc-bg-app);
+  overflow: hidden;
+}
+.files-layout > .catalog,
+.doc-layout > .template-ledger {
+  border: 0;
+  border-right: 1px solid var(--pc-border);
+  background: var(--pc-bg-app);
+}
+.files-layout > .work-surface,
+.doc-layout > .assembly-desk,
+.doc-layout .document-preview {
+  border: 0;
+  background: var(--pc-bg-app);
+}
+.files-layout > .evidence-rail,
+.doc-layout > .evidence-rail {
+  border: 0;
+  border-left: 1px solid var(--pc-border);
+  background: color-mix(in srgb, var(--pc-surface-subtle) 58%, var(--pc-bg-app));
+  box-shadow: none;
+}
+.files-layout > .evidence-rail h2,
+.doc-layout > .evidence-rail h2,
+.files-layout .panel-heading h2,
+.doc-layout .panel-heading h2 {
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+/* One grouped file-type control replaces eight competing button frames. */
+.files-layout .catalog-search input {
+  border-color: transparent;
+  border-radius: 10px;
+  background: var(--pc-surface-subtle);
+}
+.files-layout .catalog-search input:focus,
+.files-layout .catalog-search input:focus-visible {
+  outline: 0;
+  border-color: var(--pc-border-strong);
+  box-shadow: none;
+}
+.files-layout .type-filters {
+  gap: 2px;
+  padding: 3px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--pc-surface-subtle);
+}
+.files-layout .type-filters button {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--pc-text-muted);
+}
+.files-layout .type-filters button:hover {
+  border-color: transparent;
+  background: var(--pc-surface-hover);
+  color: var(--pc-text-primary);
+}
+.files-layout .type-filters button[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--pc-accent);
+  color: var(--pc-accent-contrast);
+}
+
+/* The document builder grows only with real fields. The preview, not an
+   empty form card, receives the remaining canvas. */
+.doc-layout > .assembly-desk {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.doc-layout .assembly-form {
+  max-height: 42vh;
+  border-bottom: 1px solid var(--pc-border);
+  background: var(--pc-bg-app);
+}
+.doc-layout .assembly-form h2 {
+  font-size: clamp(22px, 2vw, 28px);
+  line-height: 1.12;
+}
+.doc-layout .assembly-actions button,
+.doc-layout .rail-actions button {
+  border: 0;
+  border-radius: 9px;
+  background: var(--pc-surface-subtle);
+}
+.doc-layout .assembly-actions .primary {
+  border: 0;
+  background: var(--pc-accent);
+  color: var(--pc-accent-contrast);
+}
+
+@media (max-width: 1365px) {
+  .ask-workspace .processing-inspector {
+    top: var(--pc-topbar-h);
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: min(390px, calc(100vw - 20px));
+    min-height: 0;
+    height: calc(100dvh - var(--pc-topbar-h));
+    border-left: 1px solid var(--pc-border-strong);
+  }
+}
+
+@media (max-width: 760px) {
+  .pc-main[data-active-area="ask"],
+  .pc-main[data-active-area="files"],
+  .pc-main[data-active-area="documents"] {
+    padding-bottom: 72px;
+    overflow: auto;
+  }
+  .pc-main .page-head {
+    min-height: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+  .pc-main .page-head h1 { font-size: 17px; }
+  .pc-main .page-head .eyebrow {
+    font-size: 9px;
+    letter-spacing: .08em;
+  }
+  .files-workspace,
+  .document-workspace-embed {
+    grid-template-rows: 44px minmax(0, 1fr);
+  }
+  .ask-workspace > .page-head,
+  .files-workspace > .page-head,
+  .document-workspace-embed > .page-head {
+    margin-bottom: 0;
+  }
+  .ask-workspace .ask-form {
+    width: 100%;
+    min-height: 100px;
+    margin-bottom: 4px;
+    padding: 8px 8px 8px 11px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    border-radius: 19px;
+  }
+  .files-layout .type-filters button { border-radius: 10px; }
+  .ask-workspace .ask-composer-context {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .ask-workspace .ask-composer-context::-webkit-scrollbar { display: none; }
+  .ask-workspace .ask-chip {
+    flex: none;
+    width: auto;
+    min-height: 30px;
+    height: 30px;
+  }
+  .ask-workspace .ask-advanced > summary {
+    flex: none;
+    width: auto;
+    min-height: 44px;
+    height: 44px;
+  }
+  .ask-workspace .action-row button:not(.ask-send) { display: none; }
+  .ask-workspace .action-row .ask-send {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pc-main .page-head .eyebrow { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-search,
+  .ask-workspace .ask-form { transition: none; }
+}

@@ -110,7 +110,9 @@ const viewerManifest = {
 type AskMockOptions = {
   research?: "empty" | "denied" | "results";
   ask?: Record<string, unknown>;
+  stream?: boolean;
   catalog?: "ok" | "denied";
+  askDelayMs?: number;
 };
 
 async function mockAsk(page: Page, options: AskMockOptions = {}) {
@@ -144,10 +146,42 @@ async function mockAsk(page: Page, options: AskMockOptions = {}) {
       error: {code: "not_found", message: ""}, request_id: "req-x",
     }});
   });
-  await page.route("**/api/ask/**", route => {
+  await page.route("**/api/ask/**", async route => {
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/ask/ask") {
       askBodies.push(route.request().postDataJSON() as Record<string, unknown>);
+      if (options.askDelayMs) {
+        await new Promise(resolve => setTimeout(resolve, options.askDelayMs));
+      }
+      if (options.stream) {
+        const progressSource = {
+          marker: "C1", record_key: citation.record_key,
+          source_label: citation.source_label,
+          verification_state: citation.verification_state,
+          freshness_state: citation.freshness_state,
+        };
+        const progress = (stage: string, status: string, elapsed: number) =>
+          `event: progress\ndata: ${JSON.stringify({
+            stage, status, elapsed_ms: elapsed, detail: null,
+            source_count: stage === "understanding" ? 0 : 1,
+            sources: stage === "understanding" ? [] : [progressSource],
+          })}\n\n`;
+        const body = [
+          progress("understanding", "completed", 40),
+          progress("retrieving", "completed", 120),
+          progress("verifying", "completed", 180),
+          progress("synthesizing", "completed", 260),
+          progress("grounding", "completed", 310),
+          `event: result\ndata: ${JSON.stringify({
+            response: options.ask ?? groundedAnswer,
+          })}\n\n`,
+        ].join("");
+        return route.fulfill({
+          body,
+          contentType: "text/event-stream; charset=utf-8",
+          headers: {"cache-control": "no-cache"},
+        });
+      }
       return route.fulfill({json: options.ask ?? groundedAnswer});
     }
     if (path === "/api/ask/conversations") {
@@ -216,6 +250,33 @@ async function submitQuestion(page: Page, question: string) {
   await page.getByRole("button", {name: "Gửi câu hỏi"}).click();
 }
 
+test("composer clears on send and blocks rapid duplicate submits", async ({page}) => {
+  const askBodies = await mockAsk(page, {askDelayMs: 500});
+  await page.goto("/ask");
+  const composer = page.getByLabel("Câu hỏi");
+  await composer.fill("sản phẩm");
+  await composer.press("Enter");
+  await composer.press("Enter");
+  await expect(composer).toHaveValue("");
+  await expect(page.locator(".ask-turn-user")).toHaveText("sản phẩm");
+  await expect.poll(() => askBodies.length).toBe(1);
+});
+
+test("new conversation cancels a stale in-flight answer", async ({page}) => {
+  const askBodies = await mockAsk(page, {askDelayMs: 2000});
+  await page.goto(`/ask?conversation=${conversationId}`);
+  await expect(page.getByText("Chính sách bảo hành robot?")).toBeVisible();
+  await submitQuestion(page, "Câu hỏi đang xử lý");
+  await expect.poll(() => askBodies.length).toBe(1);
+  await page.getByRole("button", {name: "Hội thoại mới"}).click();
+
+  await expect(page).toHaveURL(/\/ask$/);
+  await expect(page.getByLabel("Câu hỏi")).toHaveValue("");
+  await page.waitForTimeout(2200);
+  await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toHaveCount(0);
+  await expect(page.getByText("Bạn muốn tìm hiểu điều gì?")).toBeVisible();
+});
+
 test("sidebar recent conversation opens in the mounted Ask page without reload", async ({page}) => {
   await mockAsk(page);
   await page.goto("/ask");
@@ -262,6 +323,35 @@ test("grounded answer: citation focuses the rail entry and the locator opens the
   await expect(page.locator(".pager output")).toContainText("4 / 4");
 });
 
+test("grounded answer renders Markdown as polished semantic content", async ({page}) => {
+  await mockAsk(page, {ask: {
+    ...groundedAnswer,
+    answer: "## Đặc điểm chính\n**1-4-14**.\n- Một người vận hành\n- `14 kg` tải trọng [C1]",
+  }});
+  await page.goto("/ask");
+  await submitQuestion(page, "HERA có gì nổi bật?");
+
+  await expect(page.getByRole("heading", {level: 3, name: "Đặc điểm chính"}))
+    .toBeVisible();
+  await expect(page.locator(".answer-markdown strong")).toHaveText("1-4-14");
+  await expect(page.locator(".answer-markdown ul")).toBeVisible();
+  await expect(page.locator(".answer-markdown code")).toHaveText("14 kg");
+  await expect(page.locator(".answer-markdown")).not.toContainText("**");
+});
+
+test("grounded partial coverage stays useful and shows a neutral limitation", async ({page}) => {
+  await mockAsk(page, {ask: {...groundedAnswer, coverage_state: "partial"}});
+  await page.goto("/ask");
+  await submitQuestion(page, "HERA là gì?");
+  await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
+  const note = page.getByRole("note").filter({
+    hasText: /có thể chưa bao phủ toàn bộ hồ sơ/,
+  });
+  await expect(note).toBeVisible();
+  await expect(page.getByRole("heading", {name: "Chưa có bằng chứng"}))
+    .toHaveCount(0);
+});
+
 test("TIP-013B: a soft-grounded answer surfaces the double-check caveat as a note", async ({page}) => {
   await mockAsk(page, {ask: groundedCaveat});
   await page.goto("/ask");
@@ -288,16 +378,42 @@ test("honest-null renders the recorded gap id and state with a Knowledge Ops lin
   await expect(page.getByText("Chưa có bằng chứng để hiển thị.")).toBeVisible();
 });
 
-test("provider setup abstention reports evidence found without a false gap", async ({page}) => {
+test("provider setup abstention never claims evidence that the stream did not report", async ({page}) => {
   await mockAsk(page, {ask: providerSetupRequired});
   await page.goto("/ask");
   await submitQuestion(page, "Vega là gì?");
   await expect(page.getByRole("heading", {
-    name: "Đã tìm thấy bằng chứng · Chưa thể tổng hợp",
+    name: "Chưa thể tổng hợp câu trả lời",
   })).toBeVisible();
-  await expect(page.getByText(/Đây không phải khoảng trống tri thức/)).toBeVisible();
+  await expect(page.getByText(/xem Quá trình xử lý để biết nguồn/)).toBeVisible();
   await expect(page.getByText("Khoảng trống đã ghi nhận")).toHaveCount(0);
   await expect(page.getByRole("link", {name: /Vận hành tri thức/})).toHaveCount(0);
+});
+
+test("live Ask stream fills the processing ledger and opens a cited source", async ({page}) => {
+  await mockAsk(page, {stream: true});
+  await page.setViewportSize({width: 2048, height: 1200});
+  await page.goto("/ask");
+  await submitQuestion(page, "Chính sách bảo hành robot?");
+
+  const inspector = page.getByRole("complementary", {name: "Quá trình xử lý"});
+  await expect(inspector.getByText("Xong", {exact: true})).toHaveCount(5);
+  await inspector.getByRole("tab", {name: /Nguồn/}).click();
+  await expect(inspector.getByText("Company specification", {exact: true}))
+    .toBeVisible();
+  await expect(inspector.getByText("Được trích dẫn", {exact: true})).toBeVisible();
+  await expect(inspector.getByText("approved · current", {exact: true})).toBeVisible();
+  await page.screenshot({
+    path: "test-results/tip02611-ask-wide-related.png", fullPage: true,
+  });
+
+  await inspector.getByRole("button", {name: /Company specification/}).click();
+  await expect.poll(() => page.evaluate(() => document.activeElement?.id))
+    .toBe("rail-entry-C1");
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
 });
 
 test("research scope renders results exactly as the backend labels them, distinct from SOT facts", async ({page}) => {
@@ -311,7 +427,8 @@ test("research scope renders results exactly as the backend labels them, distinc
   await expect(page.getByRole("heading", {name: "Kết quả vùng nghiên cứu"}))
     .toBeVisible();
   await expect(page.getByText(/research_supported.*không phải SOT/)).toBeVisible();
-  const hit = page.getByRole("button", {name: /vendor\.abb\.profile/});
+  const hit = page.locator(".ask-research")
+    .getByRole("button", {name: /vendor\.abb\.profile/});
   await expect(hit).toContainText("RESEARCH");
   await expect(hit).toContainText("Tier P");
   await expect(hit).toContainText("corroborated");
@@ -464,6 +581,9 @@ test("the history panel lists the caller's server conversations and reopens one"
   // id, timestamps, stored first-question digest — never content).
   await mockAsk(page);
   await page.goto("/ask");
+  await page.getByRole("button", {name: "Thông tin liên quan", exact: true}).click();
+  const inspector = page.getByRole("complementary", {name: "Quá trình xử lý"});
+  await inspector.getByRole("tab", {name: "Chi tiết"}).click();
   const historyPanel = page.locator("details.ask-history");
   await historyPanel.locator("summary").click();
   await expect(historyPanel.getByText(/Hội thoại ·/)).toBeVisible();

@@ -3,6 +3,7 @@ import {
   groundedAnswer,
   mockAsk,
   mockAuth,
+  mockDocuments,
   mockFiles,
   mockKnowledgeOps,
 } from "./support/mocks";
@@ -54,16 +55,21 @@ test("1280 Ask keeps a readable stream and opens proof on demand", async ({page}
   expect((await composer.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(700);
   await expect(composer).toHaveCSS("position", "relative");
   await expect(composer).toHaveCSS("box-shadow", "none");
-  const alignedControls = await page.locator([
+  const contextControls = await page.locator([
     ".ask-chip:visible",
     ".ask-advanced > summary:visible",
-    ".ask-form .action-row button:visible",
   ].join(",")).evaluateAll(elements => elements.map(element => ({
     height: element.getBoundingClientRect().height,
-    radius: getComputedStyle(element).borderRadius,
+    radius: Number.parseFloat(getComputedStyle(element).borderRadius),
   })));
-  expect(alignedControls.every(control => Math.abs(control.height - 40) <= 1)).toBe(true);
-  expect(alignedControls.every(control => control.radius === "12px")).toBe(true);
+  expect(contextControls.every(control => control.height >= 30)).toBe(true);
+  expect(contextControls.every(control => control.radius >= 15)).toBe(true);
+  const sendGeometry = await page.locator(".ask-send").evaluate(element => ({
+    width: element.getBoundingClientRect().width,
+    height: element.getBoundingClientRect().height,
+    radius: getComputedStyle(element).borderRadius,
+  }));
+  expect(sendGeometry).toEqual({width: 36, height: 36, radius: "50%"});
   await page.screenshot({path: "test-results/tip0245-ask-composer-refined.png", fullPage: true});
   const rail = page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"});
   await expect(rail).not.toHaveClass(/open/);
@@ -92,6 +98,132 @@ test("desktop search shares the workspace content spine", async ({page}) => {
   const search = await page.locator(".pc-search").boundingBox();
   const pageHeader = await page.locator(".page-head").boundingBox();
   expect(Math.abs((search?.x ?? 0) - (pageHeader?.x ?? 0))).toBeLessThanOrEqual(1);
+});
+
+test("all primary workspaces use one compact inline title grammar", async ({page}) => {
+  await page.setViewportSize({width: 1280, height: 720});
+  await mockAsk(page);
+  await mockFiles(page);
+  await mockDocuments(page);
+
+  for (const item of [
+    {path: "/ask", workspace: ".ask-workspace"},
+    {path: "/files", workspace: ".files-workspace"},
+    {path: "/documents", workspace: ".document-workspace-embed"},
+  ]) {
+    await page.goto(item.path);
+    await expect(page.locator(item.workspace)).toBeVisible();
+    const geometry = await page.locator(".page-head").evaluate(header => {
+      const title = header.querySelector("h1")!.getBoundingClientRect();
+      const eyebrow = header.querySelector(".eyebrow")!.getBoundingClientRect();
+      const own = header.getBoundingClientRect();
+      return {
+        height: own.height,
+        titleCenter: title.y + title.height / 2,
+        eyebrowCenter: eyebrow.y + eyebrow.height / 2,
+        titleSize: Number.parseFloat(getComputedStyle(header.querySelector("h1")!).fontSize),
+      };
+    });
+    expect(geometry.height).toBe(50);
+    expect(Math.abs(geometry.titleCenter - geometry.eyebrowCenter)).toBeLessThanOrEqual(5);
+    expect(geometry.titleSize).toBe(17);
+  }
+});
+
+test("wide primary workspaces reach the viewport edge without decorative frames", async ({page}) => {
+  await page.setViewportSize({width: 1920, height: 1080});
+  await mockAsk(page);
+  await mockFiles(page);
+  await mockDocuments(page);
+
+  for (const item of [
+    {path: "/files", selector: ".files-layout", area: "files"},
+    {path: "/documents", selector: ".doc-layout", area: "documents"},
+  ]) {
+    await page.goto(item.path);
+    await expect(page.locator(item.selector)).toBeVisible();
+    const geometry = await page.locator(item.selector).evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      const main = document.querySelector(".pc-main")!;
+      return {
+        bottom: rect.bottom,
+        borderWidth: style.borderTopWidth,
+        viewportBottom: window.innerHeight,
+        activeArea: main.getAttribute("data-active-area"),
+      };
+    });
+    expect(Math.abs(geometry.viewportBottom - geometry.bottom)).toBeLessThanOrEqual(1);
+    expect(geometry.borderWidth).toBe("0px");
+    expect(geometry.activeArea).toBe(item.area);
+  }
+
+  await page.goto("/ask");
+  await expect(page.locator(".ask-form")).toBeVisible();
+  const askGeometry = await page.locator(".ask-workspace").evaluate(workspace => {
+    const form = workspace.querySelector(".ask-form")!.getBoundingClientRect();
+    const rail = workspace.querySelector(".processing-inspector")!.getBoundingClientRect();
+    const main = document.querySelector(".pc-main")!;
+    return {
+      composerGap: window.innerHeight - form.bottom,
+      railGap: window.innerHeight - rail.bottom,
+      workspaceGap: window.innerHeight - workspace.getBoundingClientRect().bottom,
+      activeArea: main.getAttribute("data-active-area"),
+    };
+  });
+  expect(askGeometry.composerGap).toBeLessThanOrEqual(16);
+  expect(Math.abs(askGeometry.railGap)).toBeLessThanOrEqual(1);
+  expect(Math.abs(askGeometry.workspaceGap)).toBeLessThanOrEqual(1);
+  expect(askGeometry.activeArea).toBe("ask");
+});
+
+test("file type filters read as one segmented control instead of eight boxes", async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await mockAuth(page);
+  await mockFiles(page);
+  await page.goto("/files");
+  await expect(page.locator(".files-layout")).toBeVisible();
+  await expect(page.locator(".type-filters button")).toHaveCount(8);
+  const styles = await page.locator(".type-filters").evaluate(group => ({
+    groupRadius: getComputedStyle(group).borderRadius,
+    buttonBorders: Array.from(group.querySelectorAll("button"))
+      .map(button => getComputedStyle(button).borderTopWidth),
+  }));
+  expect(styles.groupRadius).toBe("10px");
+  expect(styles.buttonBorders.every(width => width === "0px")).toBe(true);
+});
+
+test("Ask composer is transparent, bottom-anchored and keeps context below typing", async ({page}) => {
+  await page.setViewportSize({width: 1280, height: 720});
+  await mockAsk(page);
+  await page.goto("/ask");
+
+  const geometry = await page.locator(".ask-surface").evaluate(surface => {
+    const read = (selector: string) => {
+      const element = surface.querySelector(selector)!;
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return {x: rect.x, y: rect.y, width: rect.width, height: rect.height,
+        right: rect.right, bottom: rect.bottom, background: style.backgroundColor};
+    };
+    const surfaceRect = surface.getBoundingClientRect();
+    return {
+      surfaceBottom: surfaceRect.bottom,
+      form: read(".ask-form"),
+      question: read(".ask-question"),
+      textarea: read("textarea"),
+      context: read(".ask-composer-context"),
+      actions: read(".action-row"),
+      appBackground: getComputedStyle(document.querySelector(".pc-shell")!).backgroundColor,
+    };
+  });
+
+  expect(geometry.surfaceBottom - geometry.form.bottom).toBeLessThanOrEqual(20);
+  expect(geometry.context.y).toBeGreaterThanOrEqual(geometry.question.bottom);
+  expect(Math.abs(geometry.context.bottom - geometry.actions.bottom)).toBeLessThanOrEqual(4);
+  expect(geometry.context.right).toBeLessThanOrEqual(geometry.actions.x);
+  expect(geometry.textarea.background).toBe("rgba(0, 0, 0, 0)");
+  expect(geometry.form.background).toBe(geometry.appBackground);
 });
 
 test("1280 Knowledge Ops has no compressed vertical detail column", async ({page}) => {
@@ -213,7 +345,7 @@ test("search and composer use quiet focus states without surrounding frames", as
     return {outline: style.outlineWidth, shadow: style.boxShadow};
   });
   expect(searchFocus.outline).toBe("0px");
-  expect(searchFocus.shadow).toContain("inset");
+  expect(searchFocus.shadow).toBe("none");
 
   await question.focus();
   const questionFocus = await question.evaluate(element => {

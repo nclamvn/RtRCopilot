@@ -7,10 +7,10 @@ persists (AOF/RDB) — see docs/limits.md. A breach raises :class:`BudgetExhaust
 which the ask surface renders as a typed 429 ``budget_exhausted`` with a
 ``Retry-After`` of the seconds remaining until reset.
 
-The debited unit is the honest usage the local adapter exposes: provider
-*calls* (``AnswerAdapter.calls``), which naturally counts a grounding-repair
-retry as two. Swapping to a token estimate is a one-line change once a real
-provider reports token usage (see SUGGESTIONS in the completion report).
+Two independent meters use this primitive: provider calls and actual provider
+tokens. Keeping both matters: calls bound runaway retry/fallback loops, while
+tokens bound large prompts and reasoning output. Token debit comes directly
+from provider response metadata; it is never estimated from character length.
 """
 
 from collections.abc import Callable
@@ -49,18 +49,26 @@ class CostBudget:
         *,
         subject_daily: int,
         global_daily: int,
+        metric: str = "calls",
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
     ) -> None:
         self.redis = redis
         self.subject_daily = subject_daily
         self.global_daily = global_daily
+        self.metric = metric
         self._clock = clock
 
     def _keys(self, subject_id: str) -> tuple[str, str]:
         day = utc_day(self._clock())
+        if self.metric == "calls":
+            # Preserve the deployed TIP-012 Redis key contract.
+            return (
+                f"rtr:budget:subject:{day}:{subject_id}",
+                f"rtr:budget:global:{day}",
+            )
         return (
-            f"rtr:budget:subject:{day}:{subject_id}",
-            f"rtr:budget:global:{day}",
+            f"rtr:budget:{self.metric}:subject:{day}:{subject_id}",
+            f"rtr:budget:{self.metric}:global:{day}",
         )
 
     async def usage(self, subject_id: str) -> tuple[int, int]:
@@ -79,14 +87,14 @@ class CostBudget:
         retry_after = seconds_to_utc_midnight(self._clock())
         if global_used >= self.global_daily:
             raise BudgetExhausted(
-                "global",
+                "global" if self.metric == "calls" else f"global_{self.metric}",
                 retry_after=retry_after,
                 limit=self.global_daily,
                 used=global_used,
             )
         if subject_used >= self.subject_daily:
             raise BudgetExhausted(
-                "subject",
+                "subject" if self.metric == "calls" else f"subject_{self.metric}",
                 retry_after=retry_after,
                 limit=self.subject_daily,
                 used=subject_used,

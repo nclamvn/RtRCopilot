@@ -448,6 +448,8 @@ async def test_settings_overview_and_versions_are_typed_and_admin_gated(
         # TIP-012 Task 2 — cost budgets and job concurrency caps.
         "limits.budget.subject_daily_units",
         "limits.budget.global_daily_units",
+        "limits.budget.subject_daily_tokens",
+        "limits.budget.global_daily_tokens",
         "limits.jobs.ingestion_max_inflight",
         "limits.jobs.render_max_inflight",
         "limits.jobs.index_max_backlog",

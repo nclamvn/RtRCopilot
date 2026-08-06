@@ -5,10 +5,12 @@ import unicodedata
 import zipfile
 from pathlib import Path, PurePosixPath
 from typing import Any
+from urllib.parse import urlsplit
 
 from defusedxml import ElementTree  # type: ignore[import-untyped]
 from PIL import Image
 from pypdf import PdfReader
+from pypdf.generic import IndirectObject
 
 from rtr_copilot.config import Settings
 from rtr_copilot.ingestion.errors import IngestionFailure
@@ -208,22 +210,70 @@ def _validate_image(path: Path, settings: Settings) -> dict[str, Any]:
     return {"width": width, "height": height, "pixels": width * height}
 
 
+PDF_FORBIDDEN_KEYS = {
+    "/AA",
+    "/EmbeddedFile",
+    "/EmbeddedFiles",
+    "/JavaScript",
+    "/JS",
+    "/Launch",
+    "/OpenAction",
+    "/RichMedia",
+}
+PDF_FORBIDDEN_ACTIONS = {
+    "/ImportData",
+    "/JavaScript",
+    "/Launch",
+    "/RichMedia",
+    "/SubmitForm",
+}
+PDF_SAFE_URI_SCHEMES = {"http", "https"}
+
+
+def _pdf_has_active_content(reader: PdfReader) -> bool:
+    """Inspect parsed objects instead of byte patterns in compressed media."""
+
+    stack: list[Any] = [reader.trailer]
+    for generation, object_ids in reader.xref.items():
+        stack.extend(
+            IndirectObject(object_id, generation, reader)
+            for object_id in object_ids
+            if object_id != 0
+        )
+    seen_indirect: set[tuple[int, int]] = set()
+    seen_direct: set[int] = set()
+    while stack:
+        value = stack.pop()
+        if isinstance(value, IndirectObject):
+            indirect_identity = (value.idnum, value.generation)
+            if indirect_identity in seen_indirect:
+                continue
+            seen_indirect.add(indirect_identity)
+            value = value.get_object()
+        elif isinstance(value, dict | list | tuple):
+            direct_identity = id(value)
+            if direct_identity in seen_direct:
+                continue
+            seen_direct.add(direct_identity)
+        if isinstance(value, dict):
+            keys = {str(key) for key in value}
+            if keys & PDF_FORBIDDEN_KEYS:
+                return True
+            action = str(value.get("/S", ""))
+            if action in PDF_FORBIDDEN_ACTIONS:
+                return True
+            if action == "/URI":
+                uri = str(value.get("/URI", "")).strip()
+                if urlsplit(uri).scheme.lower() not in PDF_SAFE_URI_SCHEMES:
+                    return True
+            stack.extend(value.values())
+        elif isinstance(value, list | tuple):
+            stack.extend(value)
+    return False
+
+
 def _validate_pdf(path: Path, settings: Settings) -> dict[str, Any]:
-    active_tokens = (
-        b"/JavaScript",
-        b"/JS",
-        b"/OpenAction",
-        b"/AA",
-        b"/Launch",
-        b"/EmbeddedFile",
-        b"/RichMedia",
-        b"/URI",
-    )
     try:
-        with path.open("rb") as source:
-            while chunk := source.read(1024 * 1024):
-                if any(token in chunk for token in active_tokens):
-                    raise IngestionFailure("pdf_active_content", stage="validate")
         reader = PdfReader(str(path), strict=True)
         pages = len(reader.pages)
         objects = sum(len(section) for section in reader.xref.values())
@@ -231,6 +281,8 @@ def _validate_pdf(path: Path, settings: Settings) -> dict[str, Any]:
             raise IngestionFailure("archive_budget_exceeded", stage="validate")
         if objects > settings.ingestion_max_pdf_objects:
             raise IngestionFailure("archive_budget_exceeded", stage="validate")
+        if _pdf_has_active_content(reader):
+            raise IngestionFailure("pdf_active_content", stage="validate")
     except IngestionFailure:
         raise
     except Exception as exc:

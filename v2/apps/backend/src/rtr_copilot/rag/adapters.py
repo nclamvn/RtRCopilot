@@ -41,10 +41,10 @@ _LEX_TOKEN = re.compile(r"[a-z0-9]+")
 # identifiers, product names, measurements and domain verbs remain searchable.
 QUERY_STOPWORDS = frozenset({
     "a", "an", "and", "are", "as", "at", "be", "by", "can", "cho", "co",
-    "cua", "da", "de", "do", "duoc", "gi", "how", "in", "is", "it", "la",
-    "dau", "mot", "nao", "nhung", "o", "of", "on", "or", "tai", "the", "thi", "to",
-    "trong", "va", "ve", "what", "when", "where", "which", "who", "why",
-    "with",
+    "cua", "da", "de", "duoc", "gi", "how", "in", "is", "it", "la",
+    "dau", "mot", "nao", "nhung", "o", "of", "on", "or", "the", "thi",
+    "va", "ve", "what", "when", "where", "which", "who", "why",
+    "with", "ben", "minh", "sao", "vay", "zay", "khong",
 })
 
 

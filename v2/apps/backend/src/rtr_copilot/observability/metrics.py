@@ -65,6 +65,22 @@ PROVIDER_BUDGET_DEBIT_UNITS = Counter(
     "rtr_provider_budget_debit_units_total",
     "Provider cost-budget units debited across all subjects.",
 )
+PROVIDER_INPUT_TOKENS = Counter(
+    "rtr_provider_input_tokens_total",
+    "Actual AI provider input tokens, including cached input tokens.",
+)
+PROVIDER_CACHED_INPUT_TOKENS = Counter(
+    "rtr_provider_cached_input_tokens_total",
+    "Actual AI provider cached input tokens.",
+)
+PROVIDER_OUTPUT_TOKENS = Counter(
+    "rtr_provider_output_tokens_total",
+    "Actual AI provider output tokens, including reasoning tokens.",
+)
+PROVIDER_REASONING_TOKENS = Counter(
+    "rtr_provider_reasoning_tokens_total",
+    "Actual AI provider reasoning tokens included in output usage.",
+)
 PROVIDER_BUDGET_EXHAUSTED = Counter(
     "rtr_provider_budget_exhausted_total",
     "Provider budget-exhaustion refusals, by breached scope (subject|global).",
@@ -135,4 +151,3 @@ AUDIT_CHAIN_LAST_VERIFIED = Gauge(
     "rtr_audit_chain_last_verified_timestamp_seconds",
     "Unix time of the last audit-chain verification run.",
 )
-

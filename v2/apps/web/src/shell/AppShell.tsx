@@ -571,7 +571,8 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
             onClick={() => setHelpOpen(true)}>?</button>
         </div>
       </header>
-      <main id="main" className="pc-main" tabIndex={-1} data-shell-region>
+      <main id="main" className="pc-main" tabIndex={-1} data-shell-region
+        data-active-area={active ?? undefined}>
         {children}
       </main>
     </div>

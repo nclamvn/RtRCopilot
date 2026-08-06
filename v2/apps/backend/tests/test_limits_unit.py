@@ -185,6 +185,24 @@ async def test_budget_rolls_over_at_utc_midnight() -> None:
     assert utc_day(day[0]) == "20260802"
 
 
+@pytest.mark.asyncio
+async def test_token_budget_is_independent_from_call_budget() -> None:
+    redis = FakeRedis()
+    call_budget = CostBudget(redis, subject_daily=10, global_daily=100)
+    token_budget = CostBudget(
+        redis,
+        subject_daily=1_000,
+        global_daily=2_000,
+        metric="tokens",
+    )
+    await call_budget.debit("subject-a", 1)
+    await token_budget.debit("subject-a", 1_000)
+    await call_budget.check("subject-a")
+    with pytest.raises(BudgetExhausted) as breach:
+        await token_budget.check("subject-a")
+    assert breach.value.scope == "subject_tokens"
+
+
 # --------------------------------------------------------------------------- #
 # CircuitBreaker
 # --------------------------------------------------------------------------- #

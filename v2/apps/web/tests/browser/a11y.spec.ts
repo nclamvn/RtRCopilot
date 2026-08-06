@@ -46,6 +46,11 @@ async function setTheme(page: Page, baseURL: string | undefined, theme: string) 
 
 /** Zero critical/serious axe violations; moderate/minor become annotations. */
 async function scan(page: Page, context: string) {
+  // Next streams metadata separately from the visible shell. Under the full
+  // parallel matrix the grounded body can become visible a few milliseconds
+  // before the document title settles, producing a false document-title axe
+  // failure. Audit only after the same user-visible title contract is met.
+  await expect(page).toHaveTitle("RtR Copilot");
   const results = await new AxeBuilder({page}).analyze();
   const severe = results.violations.filter(
     violation => violation.impact === "critical" || violation.impact === "serious",
