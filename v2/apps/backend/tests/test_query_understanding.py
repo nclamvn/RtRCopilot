@@ -325,3 +325,33 @@ def test_exact_governed_definition_bypasses_external_planner_without_quality_los
     assert plan.entities == ("HERA",)
     assert plan.resolution_state == "resolved"
     assert plan.profile_facets
+
+
+class TestTokenBoundaryPunctuation:
+    """TIP-029.1: sentence punctuation at token edges must not hide entities.
+
+    Root cause of the TIP-029 RECALL-MISS class: TOKEN_RE keeps interior
+    dots/hyphens for identifiers, so ``…Real-time Robotics.)`` tokenized as
+    ``robotics.`` and neither the alias map nor the ontology surface index
+    matched — a canonical mention became invisible to resolution, relevance
+    and lexical retrieval at once.
+    """
+
+    def test_parenthesized_source_mention_resolves(self):
+        assert resolve_entities("(Nguồn: Real-time Robotics.)") == [
+            "Real-time Robotics",
+        ]
+
+    def test_sentence_final_product_with_trailing_dot_resolves(self):
+        out = resolve_entities("OmniSight (DualSight).")
+        assert out == ["OmniSight", "DualSight"]
+
+    def test_interior_identifier_dots_survive(self):
+        from rtr_copilot.rag.adapters import normalize_query
+        assert "next.js" in normalize_query("dùng Next.js và Sanity.")
+        assert "l3r.2.005" in normalize_query("mã L3R.2.005.")
+
+    def test_edge_stripped_token_still_alias_mapped(self):
+        from rtr_copilot.rag.adapters import normalize_query
+        assert normalize_query("(Nguồn: Real-time Robotics.)") == \
+            normalize_query("Nguồn: Real-time Robotics")

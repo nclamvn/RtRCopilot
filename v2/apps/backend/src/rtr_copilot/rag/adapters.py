@@ -30,7 +30,18 @@ def normalize_query(value: str) -> str:
         char for char in unicodedata.normalize("NFKD", value.casefold())
         if not unicodedata.combining(char)
     ).replace("đ", "d")
-    tokens = TOKEN_RE.findall(folded)
+    # TOKEN_RE deliberately keeps interior dots/hyphens ("next.js",
+    # "l3r.2.005", "real-time") but that let sentence punctuation contaminate
+    # token EDGES: "…Real-time Robotics.)" tokenized as "robotics." so neither
+    # the alias map nor the ontology surface index matched, and a perfectly
+    # canonical entity mention became invisible to resolve_entities /
+    # relevance / lexical retrieval (TIP-029 RECALL-MISS root cause). Strip
+    # punctuation only at token boundaries; interior identifiers are intact.
+    tokens = (
+        stripped
+        for token in TOKEN_RE.findall(folded)
+        if (stripped := token.strip("._-"))
+    )
     return " ".join(ALIASES.get(token, token) for token in tokens)
 
 
