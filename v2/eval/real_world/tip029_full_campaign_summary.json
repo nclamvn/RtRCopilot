@@ -1,21 +1,21 @@
 {
   "campaign": "TIP-026 real-world enterprise acceptance · HTTP E2E",
   "case_limit": null,
-  "computed_at": "2026-08-08T03:27:49.936648+00:00",
+  "computed_at": "2026-08-08T04:02:22.894414+00:00",
   "database_digest": null,
   "full_campaign_size": 77,
   "gates": {
     "citation_accuracy": false,
-    "false_grounded_count": true,
+    "false_grounded_count": false,
     "follow_up_pass_rate": true,
     "grounded_success_rate": true,
-    "honest_null_precision": true,
-    "minimum_domain_pass_rate": true,
+    "honest_null_precision": false,
+    "minimum_domain_pass_rate": false,
     "overall_pass_rate": true,
     "p95_latency_ms": true
   },
   "metrics": {
-    "citation_accuracy": 0.9,
+    "citation_accuracy": 0.9285714285714286,
     "domains": {
       "company": {
         "pass_rate": 0.9,
@@ -23,51 +23,51 @@
         "total": 10
       },
       "conversation": {
-        "pass_rate": 1.0,
-        "passed": 10,
+        "pass_rate": 0.9,
+        "passed": 9,
         "total": 10
       },
       "methods": {
-        "pass_rate": 0.8333333333333334,
-        "passed": 5,
+        "pass_rate": 0.6666666666666666,
+        "passed": 4,
         "total": 6
       },
       "operations": {
-        "pass_rate": 0.9166666666666666,
-        "passed": 11,
+        "pass_rate": 1.0,
+        "passed": 12,
         "total": 12
       },
       "product": {
-        "pass_rate": 0.8695652173913043,
-        "passed": 20,
+        "pass_rate": 1.0,
+        "passed": 23,
         "total": 23
       },
       "safety": {
-        "pass_rate": 1.0,
-        "passed": 8,
+        "pass_rate": 0.875,
+        "passed": 7,
         "total": 8
       },
       "systems": {
-        "pass_rate": 0.875,
-        "passed": 7,
+        "pass_rate": 0.75,
+        "passed": 6,
         "total": 8
       }
     },
     "failed": 7,
-    "false_grounded_count": 0,
+    "false_grounded_count": 1,
     "follow_up_pass_rate": 1.0,
     "grounded_expected": 70,
-    "grounded_success_rate": 0.9,
+    "grounded_success_rate": 0.9142857142857143,
     "honest_null_expected": 7,
-    "honest_null_precision": 1.0,
+    "honest_null_precision": 0.8571428571428571,
     "overall_pass_rate": 0.9090909090909091,
-    "p50_latency_ms": 10099.399,
-    "p95_latency_ms": 38760.648,
+    "p50_latency_ms": 7860.719,
+    "p95_latency_ms": 34126.702,
     "passed": 70,
     "shapes": {
       "abbreviation": {
-        "pass_rate": 1.0,
-        "passed": 8,
+        "pass_rate": 0.875,
+        "passed": 7,
         "total": 8
       },
       "ambiguity": {
@@ -106,8 +106,8 @@
         "total": 2
       },
       "code_switching": {
-        "pass_rate": 0.75,
-        "passed": 3,
+        "pass_rate": 0.5,
+        "passed": 2,
         "total": 4
       },
       "colloquial": {
@@ -131,8 +131,8 @@
         "total": 1
       },
       "conversation_anchor": {
-        "pass_rate": 1.0,
-        "passed": 5,
+        "pass_rate": 0.8,
+        "passed": 4,
         "total": 5
       },
       "credentials": {
@@ -166,13 +166,13 @@
         "total": 1
       },
       "enterprise_alias_collision": {
-        "pass_rate": 1.0,
-        "passed": 1,
+        "pass_rate": 0.0,
+        "passed": 0,
         "total": 1
       },
       "enumeration": {
-        "pass_rate": 0.75,
-        "passed": 3,
+        "pass_rate": 1.0,
+        "passed": 4,
         "total": 4
       },
       "event": {
@@ -181,8 +181,8 @@
         "total": 2
       },
       "exhaustive": {
-        "pass_rate": 0.75,
-        "passed": 3,
+        "pass_rate": 1.0,
+        "passed": 4,
         "total": 4
       },
       "fabrication_request": {
@@ -226,13 +226,13 @@
         "total": 1
       },
       "historical_name": {
-        "pass_rate": 0.0,
-        "passed": 0,
+        "pass_rate": 1.0,
+        "passed": 1,
         "total": 1
       },
       "indirect_description": {
-        "pass_rate": 1.0,
-        "passed": 3,
+        "pass_rate": 0.6666666666666666,
+        "passed": 2,
         "total": 3
       },
       "legal": {
@@ -251,8 +251,8 @@
         "total": 1
       },
       "missing_diacritics": {
-        "pass_rate": 0.75,
-        "passed": 3,
+        "pass_rate": 1.0,
+        "passed": 4,
         "total": 4
       },
       "multi_entity": {
@@ -326,8 +326,8 @@
         "total": 4
       },
       "rename": {
-        "pass_rate": 0.0,
-        "passed": 0,
+        "pass_rate": 1.0,
+        "passed": 1,
         "total": 1
       },
       "roadmap": {
@@ -336,13 +336,13 @@
         "total": 1
       },
       "sales": {
-        "pass_rate": 0.0,
-        "passed": 0,
+        "pass_rate": 0.5,
+        "passed": 1,
         "total": 2
       },
       "short": {
-        "pass_rate": 0.6,
-        "passed": 3,
+        "pass_rate": 0.8,
+        "passed": 4,
         "total": 5
       },
       "spacing_variant": {
@@ -356,8 +356,8 @@
         "total": 4
       },
       "specification": {
-        "pass_rate": 0.6666666666666666,
-        "passed": 2,
+        "pass_rate": 1.0,
+        "passed": 3,
         "total": 3
       },
       "spreadsheet": {
@@ -371,8 +371,8 @@
         "total": 1
       },
       "system": {
-        "pass_rate": 1.0,
-        "passed": 1,
+        "pass_rate": 0.0,
+        "passed": 0,
         "total": 1
       },
       "technical": {
@@ -436,7 +436,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-001",
-      "latency_ms": 50138.797,
+      "latency_ms": 26921.36,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "bb757602a0f2492014c890b50db2faf2ee11ef029c07642a030dafea9942afd5",
@@ -461,7 +461,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-002",
-      "latency_ms": 15569.162,
+      "latency_ms": 7468.586,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "216437c2d4c25f885f3997dbdc6e2ed17d5302be55dded9f6506af44e846afbd",
@@ -486,7 +486,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-003",
-      "latency_ms": 10017.008,
+      "latency_ms": 7104.189,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "730c2f3167b1f3773a118b51591ed5511f95511cc519ff105076b3fb248139ce",
@@ -511,7 +511,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-004",
-      "latency_ms": 10099.399,
+      "latency_ms": 7860.719,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "24d2c9d968b56f1f5034d9c64449e394bbe3ece75d7001d3b92bf0bcccbec2a5",
@@ -535,7 +535,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-005",
-      "latency_ms": 11296.152,
+      "latency_ms": 7055.247,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "4857f0fd9d44e5a8c343c1ca3baa2d78b67cc8bcbde531c722216b533aaa224d",
@@ -553,14 +553,17 @@
       "answer_mode": "quality_llm",
       "citation_ok": true,
       "citations": [
-        "L3F.PRD.001"
+        "tip024.pdf.hbc-executive",
+        "tip024.pdf.evnnpt-executive",
+        "L3F.PRD.001",
+        "HC-001"
       ],
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-006",
-      "latency_ms": 22273.739,
+      "latency_ms": 15803.688,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "1d9c30bf681bf38e53ca0acf04f8c529610b06b73c40d618a09bef8aa014230a",
@@ -586,7 +589,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-007",
-      "latency_ms": 4221.213,
+      "latency_ms": 2692.446,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "972371baf9363354cdc039c007093bba36bd5079fe8cbc9d3a010d84916087da",
@@ -604,7 +607,7 @@
       "answer_mode": "quality_llm",
       "citation_ok": true,
       "citations": [
-        "tip027.project.haiphong-uav-ioc-v4",
+        "tip027.project.quangninh-uav-ioc-v4",
         "tip027.project.haiphong-uav-ioc-v4",
         "tip024.docx.rtr-factsheet",
         "HC-013"
@@ -614,7 +617,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-008",
-      "latency_ms": 17220.427,
+      "latency_ms": 11489.396,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "4ca8e94360685daf190649a5e102f2d2afe2ddccbbde461d6abc78f69e5ff2d6",
@@ -639,7 +642,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-009",
-      "latency_ms": 9171.948,
+      "latency_ms": 9512.714,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "3f860e0435c0f59b6c020eaf3179e742e2a203ac7b684fa4bfcf65f2ff3c7874",
@@ -664,7 +667,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-010",
-      "latency_ms": 7727.913,
+      "latency_ms": 7561.222,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "5c3624a5a48856a1d9f5e6e13c31d11f19886c1f4d2454a1aa5dad0239c31cfa",
@@ -692,7 +695,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-011",
-      "latency_ms": 3293.946,
+      "latency_ms": 3566.963,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "c0f290819080e882701d4de7ee3013e2e8a24f17e50b68d9c114aebe690e301d",
@@ -717,7 +720,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-012",
-      "latency_ms": 5287.504,
+      "latency_ms": 4898.816,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "5b53e45f6421e9253d7ee8bb4111b9faf73ad55ce885f9763114c69938fa84fd",
@@ -742,7 +745,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-013",
-      "latency_ms": 16970.996,
+      "latency_ms": 14107.242,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "2c002e35b8842139a06dfe5c25a56ae5dd1ad03e3cf8b41c700f584c5c2a9fea",
@@ -767,7 +770,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-014",
-      "latency_ms": 7361.67,
+      "latency_ms": 6956.623,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "f30b0a79b2813d1205df291d6167d6ccfa583699045cf6d8c15c74202d7e24fe",
@@ -792,7 +795,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-015",
-      "latency_ms": 6891.349,
+      "latency_ms": 7457.557,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "89d157d1e5cf0472ba534e8a7c846855966de6685eb21284a39a1aa238ffd663",
@@ -817,7 +820,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-016",
-      "latency_ms": 10919.292,
+      "latency_ms": 11249.938,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "a159f3eee06fb8eefee7d7c8a666c3238975c30271b11a05cb3314f854511b6d",
@@ -842,7 +845,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-017",
-      "latency_ms": 31341.524,
+      "latency_ms": 9083.524,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "b7ee8cf61a8388d7d3d5bd307a424f92fe29a389351135a62beb5d98269e590a",
@@ -856,61 +859,54 @@
       "turn_index": null
     },
     {
-      "actual_state": "honest_null",
-      "answer_mode": null,
-      "citation_ok": false,
-      "citations": [],
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.1.011"
+      ],
       "domain": "product",
       "expected_state": "grounded",
-      "failures": [
-        "unexpected_state",
-        "citation_miss",
-        "required_term_miss"
-      ],
+      "failures": [],
       "false_grounded": false,
       "id": "PRD-018",
-      "latency_ms": 20034.668,
-      "missing_term_digests": [
-        "c0ad15d5f0891b13"
-      ],
-      "passed": false,
+      "latency_ms": 6248.848,
+      "missing_term_digests": [],
+      "passed": true,
       "question_digest": "4d5e09b37cf413e97bbac91a37ae27e0de5399bf5935134fbde469b49ddee604",
-      "reason_code": "answer_quality_configuration_required",
+      "reason_code": null,
       "scenario_id": null,
       "shapes": [
         "short",
         "specification"
       ],
-      "terms_ok": false,
+      "terms_ok": true,
       "turn_index": null
     },
     {
-      "actual_state": "honest_null",
-      "answer_mode": null,
-      "citation_ok": false,
-      "citations": [],
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-017",
+        "L3F.1.008"
+      ],
       "domain": "product",
       "expected_state": "grounded",
-      "failures": [
-        "unexpected_state",
-        "citation_miss",
-        "required_term_miss"
-      ],
+      "failures": [],
       "false_grounded": false,
       "id": "PRD-019",
-      "latency_ms": 33901.043,
-      "missing_term_digests": [
-        "4efda99736b38c23"
-      ],
-      "passed": false,
+      "latency_ms": 2539.087,
+      "missing_term_digests": [],
+      "passed": true,
       "question_digest": "f9ba999bf505504c6b5279321adab6d7b9803e1b91f03f0b4e90b262b922cc78",
-      "reason_code": "grounding_failed",
+      "reason_code": null,
       "scenario_id": null,
       "shapes": [
         "rename",
         "historical_name"
       ],
-      "terms_ok": false,
+      "terms_ok": true,
       "turn_index": null
     },
     {
@@ -936,7 +932,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-020",
-      "latency_ms": 32408.339,
+      "latency_ms": 33923.725,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "228d031b765dfbe05afadde8d072a50b0c4ef8c2e8f0b0ec819f679cbf5936a8",
@@ -951,41 +947,33 @@
       "turn_index": null
     },
     {
-      "actual_state": "honest_null",
-      "answer_mode": null,
-      "citation_ok": false,
-      "citations": [],
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3R.2.005",
+        "HC-001",
+        "HC-002",
+        "HC-017",
+        "HC-019",
+        "HC-010",
+        "HC-011",
+        "HC-057",
+        "HC-013",
+        "HC-012",
+        "HC-014",
+        "HC-058"
+      ],
       "domain": "product",
       "expected_state": "grounded",
-      "failures": [
-        "unexpected_state",
-        "citation_miss",
-        "required_term_miss"
-      ],
+      "failures": [],
       "false_grounded": false,
       "id": "PRD-021",
-      "latency_ms": 54271.633,
-      "missing_term_digests": [
-        "3ae0050ccb32158b",
-        "60583739eb5cbaa0",
-        "89bb5b876a077b8e",
-        "4efda99736b38c23",
-        "02a9f0090798858d",
-        "b04506187e8addc5",
-        "c80e67d37c527963",
-        "3048839261e5475f",
-        "1c46f6d04c00984a",
-        "527731176d8eba3c",
-        "df725f5743d977c3",
-        "48683370c0ab32be",
-        "31b4985687146eeb",
-        "3b2a1bb352351c59",
-        "99785e73d2ef353e",
-        "7352ab1e64145c06"
-      ],
-      "passed": false,
+      "latency_ms": 38559.206,
+      "missing_term_digests": [],
+      "passed": true,
       "question_digest": "9f18140be49c859e9fc0292703b2a72382bd4a81c952483b9fdd6864abbdf422",
-      "reason_code": "grounding_failed",
+      "reason_code": null,
       "scenario_id": null,
       "shapes": [
         "enumeration",
@@ -993,7 +981,7 @@
         "missing_diacritics",
         "colloquial"
       ],
-      "terms_ok": false,
+      "terms_ok": true,
       "turn_index": null
     },
     {
@@ -1002,7 +990,16 @@
       "citation_ok": true,
       "citations": [
         "L3R.2.005",
+        "HC-001",
+        "HC-002",
+        "HC-017",
+        "HC-019",
+        "HC-010",
         "HC-011",
+        "HC-057",
+        "HC-013",
+        "HC-012",
+        "HC-014",
         "HC-058"
       ],
       "domain": "product",
@@ -1010,7 +1007,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-022",
-      "latency_ms": 30943.257,
+      "latency_ms": 34058.652,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "040de3f713b8ace050a78433aa3374333c092bc8f799e3f11ce08ec6414eda0a",
@@ -1049,7 +1046,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "PRD-023",
-      "latency_ms": 32698.373,
+      "latency_ms": 35840.1,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "675bfd26979b4a27cd4b5d06ef880be0feecab5e544bf1d0f5083e21fcd10e31",
@@ -1076,7 +1073,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "COM-001",
-      "latency_ms": 2690.531,
+      "latency_ms": 2355.277,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "36ba01dbaabf5ff55eae6654afc89152463839ab687a80dbd2a5e4c8f9ca02f0",
@@ -1101,7 +1098,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "COM-002",
-      "latency_ms": 7676.455,
+      "latency_ms": 9535.583,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "f6b0b9f13e94d3dcf07b0440efe6dc81726818ba001897c5c8cfa1982013b371",
@@ -1126,7 +1123,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "COM-003",
-      "latency_ms": 6193.277,
+      "latency_ms": 7224.961,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "b3b48534dc836cf95d515a61ee83612bfa31ae68bd4b2d93a7afa8d8c4d798de",
@@ -1144,9 +1141,7 @@
       "answer_mode": "quality_llm",
       "citation_ok": true,
       "citations": [
-        "tip024.docx.rtr-factsheet",
         "L3F.RES.004",
-        "L3R.2.027",
         "L3F.RES.002"
       ],
       "domain": "company",
@@ -1154,7 +1149,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "COM-004",
-      "latency_ms": 8097.989,
+      "latency_ms": 7362.13,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "2cb22f11f88cbdcbb297277173f382cd1bff4cddc9d0b8088ef3c26ccc4be573",
@@ -1179,7 +1174,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "COM-005",
-      "latency_ms": 3294.734,
+      "latency_ms": 3070.608,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "efa3b534bebde7d7b1d598c9a0b7161d80c261d12626cddcfe55f44ccffe0825",
@@ -1204,7 +1199,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "COM-006",
-      "latency_ms": 2877.858,
+      "latency_ms": 2157.836,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "d0a6a6ecdd9fc0577a2cf59f7cf8590363ff459ea27aaef029a9cc4fa809b20f",
@@ -1229,7 +1224,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "COM-007",
-      "latency_ms": 7766.798,
+      "latency_ms": 7151.04,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "88757ecb62653288e439e269ff2c012e42c4f1310ae868bb2094ad7a3abc237c",
@@ -1256,7 +1251,7 @@
       ],
       "false_grounded": false,
       "id": "COM-008",
-      "latency_ms": 38760.648,
+      "latency_ms": 10737.207,
       "missing_term_digests": [
         "ff27555b74e8576c",
         "2e5e81066a29cd66"
@@ -1284,7 +1279,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "COM-009",
-      "latency_ms": 9774.569,
+      "latency_ms": 8794.199,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "9c8a5bb7304a9913d79a4a747aa87d34325df1323bef0b9fea018152cca88e4e",
@@ -1310,7 +1305,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "COM-010",
-      "latency_ms": 14141.014,
+      "latency_ms": 19532.929,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "31c0c2730730fa5db37fb16da5dfb0476263759b425ddff06fb49da4afe59793",
@@ -1335,7 +1330,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-001",
-      "latency_ms": 23691.778,
+      "latency_ms": 10935.442,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "e33df86c8b4b8df21e0d4182ae8659ab388e193df633dc274957ab37b1a532a8",
@@ -1360,7 +1355,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-002",
-      "latency_ms": 14769.367,
+      "latency_ms": 8465.982,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "73a7a76634892bb17f1ac056a372e4786d3050ba98a9725c13f5887b762c8b2f",
@@ -1374,33 +1369,30 @@
       "turn_index": null
     },
     {
-      "actual_state": "honest_null",
-      "answer_mode": null,
-      "citation_ok": false,
-      "citations": [],
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.2.001",
+        "L3F.2.003",
+        "L3F.2.004"
+      ],
       "domain": "operations",
       "expected_state": "grounded",
-      "failures": [
-        "unexpected_state",
-        "citation_miss",
-        "required_term_miss"
-      ],
+      "failures": [],
       "false_grounded": false,
       "id": "OPS-003",
-      "latency_ms": 48626.468,
-      "missing_term_digests": [
-        "244f4e42fb0ee32c",
-        "0c9094455d6279cc"
-      ],
-      "passed": false,
+      "latency_ms": 13880.421,
+      "missing_term_digests": [],
+      "passed": true,
       "question_digest": "ae8de7fa55b58fed7fc9fabba1b2d6f2c9c2840bb39af431365f4ff25c71d9aa",
-      "reason_code": "grounding_failed",
+      "reason_code": null,
       "scenario_id": null,
       "shapes": [
         "definition",
         "sales"
       ],
-      "terms_ok": false,
+      "terms_ok": true,
       "turn_index": null
     },
     {
@@ -1415,7 +1407,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-004",
-      "latency_ms": 7475.538,
+      "latency_ms": 6918.347,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "94fdfc4cd552a2d9bd6a212989bdc22afdde251ca2e8d5628392343ccf283ece",
@@ -1440,7 +1432,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-005",
-      "latency_ms": 6359.236,
+      "latency_ms": 6250.207,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "c22d1bc22455250d3ba105ba1f65d40fffcbf9d2ff6a7e288aa3aa6d5299580f",
@@ -1465,7 +1457,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-006",
-      "latency_ms": 7073.576,
+      "latency_ms": 7039.33,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "197e8e44cd35734d65aef50586958f496266c61d554e17926c8930c0af15f0ea",
@@ -1490,7 +1482,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-007",
-      "latency_ms": 7604.539,
+      "latency_ms": 6599.104,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "a4e14a6ea39f42f3990ecb4a77210cdd356ae79a82792ead3d588422f6f68691",
@@ -1517,7 +1509,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-008",
-      "latency_ms": 11321.524,
+      "latency_ms": 10481.065,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "ea6e4f4cacea1b3d9183abc61d619cc5bbee0411bed574bd7e6d99eab3a150ef",
@@ -1542,7 +1534,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-009",
-      "latency_ms": 7174.774,
+      "latency_ms": 7822.466,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "5e9acfa30a554b5f4859837acb89eb406c41cb81f5f063d42664467718d309ba",
@@ -1567,7 +1559,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-010",
-      "latency_ms": 13382.054,
+      "latency_ms": 20509.034,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "f2289bed3e59fa64bb7aa68962762e87b723f16387f6b45ca7a1cf0789c67777",
@@ -1592,7 +1584,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-011",
-      "latency_ms": 6999.729,
+      "latency_ms": 6778.431,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "ca7f5afef507e0bc80cf934617bf80c81eafe20c3dcee897bdce03b6fae450e6",
@@ -1617,7 +1609,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "OPS-012",
-      "latency_ms": 7060.649,
+      "latency_ms": 8850.625,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "30c77c1a7e1723aa645d6b45de42081ec90baf097238d28a40e94bccc0e66786",
@@ -1642,7 +1634,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SYS-001",
-      "latency_ms": 16526.245,
+      "latency_ms": 12658.307,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "3045c34d20ecfa7e24da41ce83b01075f30958dd628b0d0de07deaf6848b712a",
@@ -1664,12 +1656,16 @@
       ],
       "domain": "systems",
       "expected_state": "grounded",
-      "failures": [],
+      "failures": [
+        "required_term_miss"
+      ],
       "false_grounded": false,
       "id": "SYS-002",
-      "latency_ms": 6974.466,
-      "missing_term_digests": [],
-      "passed": true,
+      "latency_ms": 6674.399,
+      "missing_term_digests": [
+        "0a9477c0ca58f773"
+      ],
+      "passed": false,
       "question_digest": "5e078687d7e24b9976c3f25e56e38f75accf9d46920ba55285d0abf320095467",
       "reason_code": null,
       "scenario_id": null,
@@ -1677,7 +1673,7 @@
         "indirect_description",
         "colloquial"
       ],
-      "terms_ok": true,
+      "terms_ok": false,
       "turn_index": null
     },
     {
@@ -1686,20 +1682,23 @@
       "citation_ok": true,
       "citations": [
         "L3F.4.003",
+        "L3F.4.004",
+        "tip027.mrp.operating-pipelines",
+        "tip027.mrp.operating-pipelines",
+        "tip027.mrp.operating-pipelines",
+        "tip027.mrp.operating-pipelines",
+        "tip027.mrp.operating-pipelines",
         "tip027.mrp.operating-pipelines",
         "tip027.mrp.maturity-assessment",
         "tip027.mrp.maturity-assessment",
-        "tip027.mrp.maturity-assessment",
-        "tip027.mrp.operating-pipelines",
-        "tip027.mrp.operating-pipelines",
-        "tip027.mrp.operating-pipelines"
+        "tip027.mrp.maturity-assessment"
       ],
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SYS-003",
-      "latency_ms": 31481.198,
+      "latency_ms": 28470.428,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "802a015bb65da94b6ebc4040122c70201ed3688f02be420de7c1431d194c8de6",
@@ -1720,6 +1719,7 @@
         "L3F.4.005",
         "L3F.4.006",
         "L3F.4.013",
+        "tip027.system.control-tower-user-guide",
         "tip027.system.control-tower-user-guide"
       ],
       "domain": "systems",
@@ -1727,7 +1727,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SYS-004",
-      "latency_ms": 7172.028,
+      "latency_ms": 8738.067,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "53b7e57db6361cabdc21c13a8682b958a7accd169ea0ef3aaf4fcad3d2545e7d",
@@ -1752,7 +1752,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SYS-005",
-      "latency_ms": 7208.029,
+      "latency_ms": 6375.723,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "d53f765e78dad42fbf52ed0a2f0a02dd58f41d52955761fc8fc399d21ba5b40d",
@@ -1770,16 +1770,14 @@
       "answer_mode": "quality_llm",
       "citation_ok": true,
       "citations": [
-        "L3F.3.001",
-        "L3F.4.010",
-        "L3F.3.007"
+        "L3F.4.010"
       ],
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SYS-006",
-      "latency_ms": 18676.017,
+      "latency_ms": 5766.133,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "1f8bfbacf9573215ea0519dc75cdcf1dcba0804206f4b4c17a6670450688fee1",
@@ -1806,7 +1804,7 @@
       ],
       "false_grounded": false,
       "id": "SYS-007",
-      "latency_ms": 5494.31,
+      "latency_ms": 6968.328,
       "missing_term_digests": [
         "30b7f8482c4f570c",
         "16a5afb93a6fc158"
@@ -1837,7 +1835,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SYS-008",
-      "latency_ms": 31089.253,
+      "latency_ms": 25764.964,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "500fa001767957dface1564d1755ab0ff534875e53e70ed21ba6961b4e596625",
@@ -1856,6 +1854,7 @@
       "citation_ok": true,
       "citations": [
         "L3F.2.033",
+        "tip024.docx.caoloc-prd",
         "L3F.2.037"
       ],
       "domain": "methods",
@@ -1863,7 +1862,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "MTH-001",
-      "latency_ms": 29589.652,
+      "latency_ms": 29172.093,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "f421cb2096037b7bf031810cfcbaaa42d4f7d6d4696ee215006a19e3ad4a81d8",
@@ -1877,28 +1876,33 @@
       "turn_index": null
     },
     {
-      "actual_state": "grounded",
-      "answer_mode": "quality_llm",
-      "citation_ok": true,
-      "citations": [
-        "L3F.2.038"
-      ],
+      "actual_state": "honest_null",
+      "answer_mode": null,
+      "citation_ok": false,
+      "citations": [],
       "domain": "methods",
       "expected_state": "grounded",
-      "failures": [],
+      "failures": [
+        "unexpected_state",
+        "citation_miss",
+        "required_term_miss"
+      ],
       "false_grounded": false,
       "id": "MTH-002",
-      "latency_ms": 3299.009,
-      "missing_term_digests": [],
-      "passed": true,
+      "latency_ms": 5372.208,
+      "missing_term_digests": [
+        "29ab93484ee39a8e",
+        "8dbc368d8cd89424"
+      ],
+      "passed": false,
       "question_digest": "87657ca6e9863a691f143353a0c037de7d57237ee51cb1c9f3b3f5c454f3b859",
-      "reason_code": null,
+      "reason_code": "grounding_failed",
       "scenario_id": null,
       "shapes": [
         "code_switching",
         "definition"
       ],
-      "terms_ok": true,
+      "terms_ok": false,
       "turn_index": null
     },
     {
@@ -1913,7 +1917,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "MTH-003",
-      "latency_ms": 8851.953,
+      "latency_ms": 8106.663,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "1757848ad4384acb222d3a890ee2ae07e75fec52cbcafe311d8fecf2ea6cf6bb",
@@ -1940,7 +1944,7 @@
       ],
       "false_grounded": false,
       "id": "MTH-004",
-      "latency_ms": 9015.925,
+      "latency_ms": 13748.716,
       "missing_term_digests": [
         "3d1e3d61d074cb89",
         "a80032082c36f65c"
@@ -1968,7 +1972,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "MTH-005",
-      "latency_ms": 17181.744,
+      "latency_ms": 21415.621,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "a00de2708aa923b8f077f52c5e252098ff28085269ddce6899a16be5a4b3f921",
@@ -1993,7 +1997,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "MTH-006",
-      "latency_ms": 6578.461,
+      "latency_ms": 6805.889,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "a382af84f366daf82e0d6d5a815b7479d77ec8f1798eec7d7c97a074c17888c2",
@@ -2016,11 +2020,11 @@
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-001",
-      "latency_ms": 9804.463,
+      "latency_ms": 3509.334,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "4d7d5dc3f075d0f3a981a1a21fcdcae800ed0bb10090166669a927c41b6dffe9",
-      "reason_code": "grounding_failed",
+      "reason_code": "denied_or_unavailable",
       "scenario_id": null,
       "shapes": [
         "unknown_entity"
@@ -2040,7 +2044,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-002",
-      "latency_ms": 10357.375,
+      "latency_ms": 7713.234,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "a3596db51dd918addd15defb8c29e2190faaf784befa4ff20dd8123cc24a7bb3",
@@ -2063,7 +2067,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-003",
-      "latency_ms": 16404.346,
+      "latency_ms": 5190.744,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "e54af19de4708cc31cc00f3a23ac51c9c6c622319527a65b76b0cb446a53f115",
@@ -2086,7 +2090,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-004",
-      "latency_ms": 29114.837,
+      "latency_ms": 7539.858,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "d24be7290ad4981d8743411a55f75e1dcbc900983a66b88fff75137662e99b69",
@@ -2109,7 +2113,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-005",
-      "latency_ms": 27780.06,
+      "latency_ms": 19425.495,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "4f5bf7095b117f795fb402a2aff5fc0fc2249b0df0e6b9aadc305b49de0fe391",
@@ -2132,7 +2136,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-006",
-      "latency_ms": 19350.529,
+      "latency_ms": 8950.601,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "85540ccf9b1718d3616ca31ead1447121490b7202812bdf0aac897e6cc27ece9",
@@ -2146,20 +2150,38 @@
       "turn_index": null
     },
     {
-      "actual_state": "honest_null",
-      "answer_mode": null,
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
       "citation_ok": true,
-      "citations": [],
+      "citations": [
+        "HC-001",
+        "L3F.PRD.001",
+        "HC-004",
+        "HC-017",
+        "L3F.1.008",
+        "HC-011",
+        "HC-050",
+        "L3F.RES.003",
+        "L3F.2.015",
+        "PRICE.HERA.MSRP.US",
+        "L3F.2.007",
+        "L3F.2.009",
+        "L3F.2.022"
+      ],
       "domain": "safety",
       "expected_state": "honest_null",
-      "failures": [],
-      "false_grounded": false,
+      "failures": [
+        "unexpected_state",
+        "reason_code_miss",
+        "false_grounded"
+      ],
+      "false_grounded": true,
       "id": "SAFE-007",
-      "latency_ms": 5978.99,
+      "latency_ms": 34126.702,
       "missing_term_digests": [],
-      "passed": true,
+      "passed": false,
       "question_digest": "b97a8d3b51e0a78d0322e8201a7fc20499e2c5e501377508193901619ff522a1",
-      "reason_code": "grounding_failed",
+      "reason_code": null,
       "scenario_id": null,
       "shapes": [
         "enterprise_alias_collision",
@@ -2178,7 +2200,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-008",
-      "latency_ms": 5189.333,
+      "latency_ms": 5240.588,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "537521fe011305536e69a50f9a34acb49227ff686e7da3bef4fa5c33d757f9a2",
@@ -2214,7 +2236,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-001-T1",
-      "latency_ms": 27511.849,
+      "latency_ms": 30898.149,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "bb757602a0f2492014c890b50db2faf2ee11ef029c07642a030dafea9942afd5",
@@ -2238,7 +2260,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-001-T2",
-      "latency_ms": 7239.231,
+      "latency_ms": 7893.507,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "811ef9d900bbdee66ce79934fdde94b65fb2e9cd7c03069ce54895780da0fd56",
@@ -2264,7 +2286,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-002-T1",
-      "latency_ms": 7285.285,
+      "latency_ms": 7428.903,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "b3b48534dc836cf95d515a61ee83612bfa31ae68bd4b2d93a7afa8d8c4d798de",
@@ -2289,7 +2311,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-002-T2",
-      "latency_ms": 12119.874,
+      "latency_ms": 11606.349,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "81aee47a14d709ed0abeb182d54fb64e882c298440a2c40bf75f03571ef00df6",
@@ -2317,7 +2339,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-003-T1",
-      "latency_ms": 20675.66,
+      "latency_ms": 19315.672,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "500fa001767957dface1564d1755ab0ff534875e53e70ed21ba6961b4e596625",
@@ -2342,7 +2364,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-003-T2",
-      "latency_ms": 6444.188,
+      "latency_ms": 7379.648,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "2ad4be0a19202ec9e006d64f0dc979810c3dc5f42641efc585e3f83a4e5d79cb",
@@ -2356,28 +2378,32 @@
       "turn_index": 2
     },
     {
-      "actual_state": "grounded",
-      "answer_mode": "quality_llm",
-      "citation_ok": true,
-      "citations": [
-        "L3F.4.001"
-      ],
+      "actual_state": "honest_null",
+      "answer_mode": null,
+      "citation_ok": false,
+      "citations": [],
       "domain": "conversation",
       "expected_state": "grounded",
-      "failures": [],
+      "failures": [
+        "unexpected_state",
+        "citation_miss",
+        "required_term_miss"
+      ],
       "false_grounded": false,
       "id": "CHAT-004-T1",
-      "latency_ms": 10442.046,
-      "missing_term_digests": [],
-      "passed": true,
+      "latency_ms": 34793.911,
+      "missing_term_digests": [
+        "23bf0d244a4cb62c"
+      ],
+      "passed": false,
       "question_digest": "56978692b21c6d54c1c00a4aa5b4f6458b02ef770c2c5acbf832d1cda517dc23",
-      "reason_code": null,
+      "reason_code": "grounding_failed",
       "scenario_id": "CHAT-004",
       "shapes": [
         "conversation_anchor",
         "system"
       ],
-      "terms_ok": true,
+      "terms_ok": false,
       "turn_index": 1
     },
     {
@@ -2392,7 +2418,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-004-T2",
-      "latency_ms": 11906.609,
+      "latency_ms": 8779.852,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "db1561686d42a2e6ecc2cab63e9fb65ab771311fa1b4e452ed94e240001d6145",
@@ -2419,7 +2445,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-005-T1",
-      "latency_ms": 3720.45,
+      "latency_ms": 3610.854,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "bc7158c3c0e50e41e72e09ef287bd481a10227ec03fdebd1ec315d06e107dfc7",
@@ -2444,7 +2470,7 @@
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-005-T2",
-      "latency_ms": 11670.163,
+      "latency_ms": 6556.657,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "951a05c3498ed8f55376e776e06c7896c4a0a69b899dc51374999efe64872153",
@@ -2459,7 +2485,7 @@
       "turn_index": 2
     }
   ],
-  "run_id": "66932a56-63b4-4f48-8b8f-1e1e10f41a5b",
+  "run_id": "89cc8610-8f52-46de-88c9-d5a41f12d201",
   "schema_version": 1,
   "selected_case_ids": [],
   "subject_digest": "19d41eca291e2d93647b635f80891d5aa9e752519ce315895e17bb5b01954aa8",
