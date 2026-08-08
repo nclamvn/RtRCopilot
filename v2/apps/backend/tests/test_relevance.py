@@ -452,3 +452,43 @@ def test_collection_anchor_is_ranked_and_every_item_is_required() -> None:
         ("Annual Leave Policy", "Travel Policy"),
         "Annual Leave Policy",
     )
+
+
+class TestMetaReplyRelevance:
+    """TIP-030: suggested-reply questions must not demand a canonical
+    entity restatement inside the suggested reply (COM-008 class)."""
+
+    QUESTION = "khách hỏi where are you guys from thì mình answer sao"
+
+    def test_natural_reply_with_question_overlap_passes(self):
+        from rtr_copilot.rag.relevance import answer_relevant
+        answer = (
+            "Bạn có thể trả lời khách: chúng tôi là công ty Việt Nam, "
+            "định hướng U.S.-aligned."
+        )
+        assert answer_relevant(
+            self.QUESTION, answer, entities=("Real-time Robotics",),
+        )
+
+    def test_reply_with_canonical_mention_passes(self):
+        from rtr_copilot.rag.relevance import answer_relevant
+        answer = "Real-time Robotics là công ty Việt Nam."
+        assert answer_relevant(
+            self.QUESTION, answer, entities=("Real-time Robotics",),
+        )
+
+    def test_unrelated_reply_is_still_rejected(self):
+        from rtr_copilot.rag.relevance import answer_relevant
+        answer = "Thời tiết hôm nay đẹp."
+        assert not answer_relevant(
+            self.QUESTION, answer, entities=("Real-time Robotics",),
+        )
+
+    def test_non_meta_question_keeps_strict_entity_rule(self):
+        from rtr_copilot.rag.relevance import answer_relevant
+        # Ordinary lookup: answer omitting the canonical entity still fails.
+        assert not answer_relevant(
+            "trụ sở công ty ở đâu",
+            "Toà nhà nằm tại quận 1.",
+            entities=("Real-time Robotics",),
+        )

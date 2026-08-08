@@ -1340,7 +1340,10 @@ class AnswerService:
                                 "available in the supplied evidence; do not turn "
                                 "partial attribute coverage into a total refusal. "
                                 "Do not emit uncited factual headings, lead-ins or "
-                                "standalone verdicts."
+                                "standalone verdicts. When the question "
+                                "asserts a specific figure or fact that the "
+                                "supplied evidence contradicts, refute it AND "
+                                "state the correct cited value explicitly."
                                 + (
                                     " Explicitly name each confirmed answer "
                                     "subject at least once using these canonical "
@@ -1364,14 +1367,19 @@ class AnswerService:
                             candidate,
                             presentation_labels=presentation_labels,
                         )
-                except Exception:
+                except Exception as provider_exc:
                     # Timeout or provider error: record latency + failure (AC-08).
                     PROVIDER_CALL_DURATION.labels(
                         breaker_name,
                         "error",
                     ).observe(time.monotonic() - call_started)
                     PROVIDER_CALL_FAILURES.labels(breaker_name).inc()
-                    grounding_error = "provider_error"
+                    # TIP-030: carry the exception class into the decision
+                    # label (a type name, never message content) so campaign
+                    # diagnostics can separate timeouts from API rejections.
+                    grounding_error = (
+                        f"provider_error_{type(provider_exc).__name__}"
+                    )
                     with contextlib.suppress(RedisError):
                         await breaker.record_failure()
                     # The second pass exists to repair a deterministic
