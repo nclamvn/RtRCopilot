@@ -1,0 +1,220 @@
+# TIP-029 full campaign · HEAD=4bbb3fa · exit=1 · 2026-08-08T03:15:43Z
+E2E spend mode: approved full enterprise campaign
+ Container rtr-copilot-v2-redis-1 Running 
+ Container rtr-copilot-v2-postgres-1 Running 
+ Container rtr-copilot-v2-minio-1 Running 
+ Container rtr-copilot-v2-minio-1 Waiting 
+ Container rtr-copilot-v2-minio-1 Healthy 
+ Container rtr-copilot-v2-minio-init-1 Starting 
+ Container rtr-copilot-v2-minio-init-1 Started 
+ Image rtr-copilot-v2-web Building 
+ Image rtr-copilot-v2-api Building 
+ Image rtr-copilot-v2-worker Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.51kB done
+#1 DONE 0.0s
+
+#2 [web internal] load build definition from web.Dockerfile
+#2 transferring dockerfile: 761B done
+#2 DONE 0.0s
+
+#3 [api internal] load build definition from backend.Dockerfile
+#3 transferring dockerfile: 4.24kB done
+#3 DONE 0.0s
+
+#4 [web internal] load metadata for docker.io/library/node:22.14.0-alpine
+#4 DONE 0.0s
+
+#5 [api internal] load metadata for docker.io/library/python:3.12.4-slim@sha256:a3e58f9399353be051735f09be0316bfdeab571a5c6a24fd78b92df85bcb2d85
+#5 DONE 0.0s
+
+#6 [web internal] load .dockerignore
+#6 transferring context: 358B done
+#6 DONE 0.0s
+
+#7 [api stage-2  7/10] ADD --checksum=sha256:a2a65bdf9b251beb3d658ae691889d71ce63c0290940c87ca60b449ceb0bdaee   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-BoldItalic.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-BoldItalic.ttf
+#7 DONE 0.0s
+
+#8 [api stage-2  6/10] ADD --checksum=sha256:a33ebb3f68e0e260a7d3874d64259ad309971a2daf969e7ce5f444d70bce535f   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-Italic.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-Italic.ttf
+#8 DONE 0.0s
+
+#9 [api stage-2  5/10] ADD --checksum=sha256:7f738fe5c43c8872807b20e2d30d42163618de8a4daf7f48a939adac32c16847   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-Bold.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-Bold.ttf
+#9 DONE 0.0s
+
+#10 [api stage-2  4/10] ADD --checksum=sha256:cd1ef6e9d7db28ad5cdb88a65ccbe693870e60d340b791f349d248342b4fe4c3   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-Regular.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-Regular.ttf
+#10 DONE 0.0s
+
+#11 [web deps 1/7] FROM docker.io/library/node:22.14.0-alpine@sha256:9bef0ef1e268f60627da9ba7d7605e8831d5b56ad07487d24d1aa386336d1944
+#11 resolve docker.io/library/node:22.14.0-alpine@sha256:9bef0ef1e268f60627da9ba7d7605e8831d5b56ad07487d24d1aa386336d1944 0.0s done
+#11 DONE 0.0s
+
+#12 [web internal] load build context
+#12 transferring context: 553.65kB 0.0s done
+#12 DONE 0.0s
+
+#13 [worker speech-model 1/2] FROM docker.io/library/python:3.12.4-slim@sha256:a3e58f9399353be051735f09be0316bfdeab571a5c6a24fd78b92df85bcb2d85
+#13 resolve docker.io/library/python:3.12.4-slim@sha256:a3e58f9399353be051735f09be0316bfdeab571a5c6a24fd78b92df85bcb2d85 0.0s done
+#13 DONE 0.0s
+
+#14 [api internal] load build context
+#14 transferring context: 850.95kB 0.0s done
+#14 DONE 0.0s
+
+#15 [web deps 4/7] COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+#15 CACHED
+
+#16 [web deps 2/7] WORKDIR /app
+#16 CACHED
+
+#17 [web stage-2 5/6] COPY --from=builder --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
+#17 CACHED
+
+#18 [web stage-2 3/6] RUN addgroup -S app -g 10001 && adduser -S app -u 10001 -G app
+#18 CACHED
+
+#19 [web deps 6/7] COPY apps/web/package.json apps/web/package.json
+#19 CACHED
+
+#20 [web stage-2 4/6] COPY --from=builder --chown=app:app /app/apps/web/.next/standalone ./
+#20 CACHED
+
+#21 [web deps 3/7] RUN corepack enable
+#21 CACHED
+
+#22 [web builder 1/2] COPY apps/web apps/web
+#22 CACHED
+
+#23 [web builder 2/2] RUN pnpm --filter @rtr/web build
+#23 CACHED
+
+#24 [web deps 5/7] COPY patches patches
+#24 CACHED
+
+#25 [web deps 7/7] RUN pnpm install --frozen-lockfile
+#25 CACHED
+
+#26 [web stage-2 6/6] COPY --chown=app:app infra/docker/web-guard.mjs ./web-guard.mjs
+#26 CACHED
+
+#27 [api builder 4/9] COPY apps/backend/pyproject.toml apps/backend/uv.lock ./
+#27 CACHED
+
+#28 [api builder 2/9] WORKDIR /app
+#28 CACHED
+
+#29 [api builder 3/9] RUN pip install --no-cache-dir uv==0.8.11
+#29 CACHED
+
+#30 [worker builder 5/9] RUN uv sync --frozen --no-dev
+#30 CACHED
+
+#31 [web] exporting to image
+#31 exporting layers done
+#31 exporting manifest sha256:10af3d92ecdfccc7652cbabaa70b02fa80ba5ef7299215980129e39a89aab870 done
+#31 exporting config sha256:3b9a78eec9e70aa6c5df09ff69b7b2c1b62e8f22d7a2961c1986b40620be3064 done
+#31 exporting attestation manifest sha256:4a41c3ce741b152199ea84491c1261aeb508447e8437823ff7e1a89583d6c007 0.0s done
+#31 exporting manifest list sha256:e468b8c536573c9deadc703cca2ab04d8a7c0e44311859a28d9730f87fb869e3 done
+#31 naming to docker.io/library/rtr-copilot-v2-web:latest done
+#31 unpacking to docker.io/library/rtr-copilot-v2-web:latest done
+#31 DONE 0.1s
+
+#32 [worker builder 6/9] COPY apps/backend/src ./src
+#32 DONE 0.1s
+
+#33 [worker builder 7/9] COPY apps/backend/alembic.ini ./alembic.ini
+#33 DONE 0.0s
+
+#34 [worker builder 8/9] COPY apps/backend/migrations ./migrations
+#34 DONE 0.0s
+
+#35 [web] resolving provenance for metadata file
+#35 DONE 0.0s
+
+#36 [api builder 9/9] RUN uv sync --frozen --no-dev
+#36 0.294    Building rtr-copilot-backend @ file:///app
+#36 43.79       Built rtr-copilot-backend @ file:///app
+#36 43.79 Prepared 1 package in 43.49s
+#36 43.79 Uninstalled 1 package in 3ms
+#36 43.79 Installed 1 package in 0.46ms
+#36 43.79  ~ rtr-copilot-backend==0.1.0 (from file:///app)
+#36 DONE 43.8s
+
+#37 [api stage-2  5/10] ADD --checksum=sha256:7f738fe5c43c8872807b20e2d30d42163618de8a4daf7f48a939adac32c16847   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-Bold.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-Bold.ttf
+#37 CACHED
+
+#38 [api stage-2  6/10] ADD --checksum=sha256:a33ebb3f68e0e260a7d3874d64259ad309971a2daf969e7ce5f444d70bce535f   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-Italic.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-Italic.ttf
+#38 CACHED
+
+#39 [api stage-2  7/10] ADD --checksum=sha256:a2a65bdf9b251beb3d658ae691889d71ce63c0290940c87ca60b449ceb0bdaee   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-BoldItalic.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-BoldItalic.ttf
+#39 CACHED
+
+#40 [api stage-2  4/10] ADD --checksum=sha256:cd1ef6e9d7db28ad5cdb88a65ccbe693870e60d340b791f349d248342b4fe4c3   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-Regular.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-Regular.ttf
+#40 CACHED
+
+#41 [api stage-2  3/10] RUN mkdir -p /usr/local/share/fonts/truetype/be-vietnam-pro
+#41 CACHED
+
+#42 [api speech-model 2/2] RUN MODEL_URL="https://github.com/BartekReterski/VoskModels/releases/download/v1/vosk-model-small-en-us-0.15.zip" MODEL_SHA256="30f26242c4eb449f948e42cb302dd7a686cb29a3423a8367f99ff41780942498" python - <<'PY'
+#42 CACHED
+
+#37 [worker stage-2  5/10] ADD --checksum=sha256:7f738fe5c43c8872807b20e2d30d42163618de8a4daf7f48a939adac32c16847   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-Bold.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-Bold.ttf
+#37 CACHED
+
+#38 [worker stage-2  6/10] ADD --checksum=sha256:a33ebb3f68e0e260a7d3874d64259ad309971a2daf969e7ce5f444d70bce535f   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-Italic.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-Italic.ttf
+#38 CACHED
+
+#39 [worker stage-2  7/10] ADD --checksum=sha256:a2a65bdf9b251beb3d658ae691889d71ce63c0290940c87ca60b449ceb0bdaee   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-BoldItalic.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-BoldItalic.ttf
+#39 CACHED
+
+#40 [worker stage-2  4/10] ADD --checksum=sha256:cd1ef6e9d7db28ad5cdb88a65ccbe693870e60d340b791f349d248342b4fe4c3   https://raw.githubusercontent.com/google/fonts/2796410152d4f9524b68ed46e69c1b60f8e0f7c3/ofl/bevietnampro/BeVietnamPro-Regular.ttf   /usr/local/share/fonts/truetype/be-vietnam-pro/BeVietnamPro-Regular.ttf
+#40 CACHED
+
+#41 [worker stage-2  3/10] RUN mkdir -p /usr/local/share/fonts/truetype/be-vietnam-pro
+#41 CACHED
+
+#43 [worker stage-2  8/10] RUN apt-get update     && apt-get install --no-install-recommends --yes       espeak-ng=1.51+dfsg-10+deb12u2       ffmpeg=7:5.1.9-0+deb12u1       fonts-dejavu-core=2.37-6       fonts-liberation=1:1.07.4-11       fonts-noto-core=20201225-1       libatomic1=12.2.0-14+deb12u1       libreoffice-impress=4:7.4.7-1+deb12u14       libreoffice-writer=4:7.4.7-1+deb12u14       libseccomp2=2.5.4-1+deb12u1       tesseract-ocr=5.3.0-2       tesseract-ocr-eng=1:4.1.0-2       tesseract-ocr-osd=1:4.1.0-2     && apt-get upgrade --yes     && fc-cache -f     && python -m pip uninstall --yes pip setuptools wheel     && rm -rf /var/lib/apt/lists/*     && useradd --create-home --uid 10001 app
+#43 CACHED
+
+#44 [worker stage-2  9/10] COPY --from=builder --chown=app:app /app /app
+#44 DONE 0.8s
+
+#45 [worker stage-2 10/10] COPY --from=speech-model --chown=app:app   /model/vosk-model-small-en-us-0.15   /opt/rtr/models/vosk-model-small-en-us-0.15
+#45 DONE 0.2s
+
+#46 [api] exporting to image
+#46 exporting layers
+#46 exporting layers 5.6s done
+#46 exporting manifest sha256:9bee35735cc666c339530b88837c4cb17ba4fa5a941a777740ace19e5361e36b 0.0s done
+#46 exporting config sha256:72330f4f72db445597e913a7bbeba355141074ec833156d7822561e7cea0342b done
+#46 exporting attestation manifest sha256:496a692430b60acc372a2e4712597c03d7cd1ad9a910afbe8c4ba24f9c95e130 0.0s done
+#46 exporting manifest list sha256:074265972ccd8d1e9801aef48c9fab9be7b7ddaec396ce3758f7ef71f1d969aa 0.0s done
+#46 naming to docker.io/library/rtr-copilot-v2-api:latest done
+#46 unpacking to docker.io/library/rtr-copilot-v2-api:latest
+#46 unpacking to docker.io/library/rtr-copilot-v2-api:latest 1.9s done
+#46 DONE 7.5s
+
+#47 [worker] exporting to image
+#47 exporting layers 5.6s done
+#47 exporting manifest sha256:15a2b7d724a89342148dec5113c709ff891e5a04cf16eda818dbc0039e4d90d9 0.0s done
+#47 exporting config sha256:9bed274e6490473a0ab89605889b5126303000c33db0aeb53297859f404942a7 0.0s done
+#47 exporting attestation manifest sha256:f57947b00efb64a36bf3c168ab25a69a1fd8672de96285acea5ca52e792d0f3a 0.0s done
+#47 exporting manifest list sha256:68e7a4bc8e2c471bb0610e9278c5196357c4a8486932742316897a220a53eb2c 0.0s done
+#47 naming to docker.io/library/rtr-copilot-v2-worker:latest done
+#47 unpacking to docker.io/library/rtr-copilot-v2-worker:latest 1.9s done
+#47 DONE 7.5s
+
+#48 [worker] resolving provenance for metadata file
+#48 DONE 0.0s
+
+#49 [api] resolving provenance for metadata file
+#49 DONE 0.0s
+ Image rtr-copilot-v2-worker Built 
+ Image rtr-copilot-v2-web Built 
+ Image rtr-copilot-v2-api Built 
+ Container rtr-e2e-worker-20260808031432_12592 Creating 
+ Container rtr-e2e-worker-20260808031432_12592 Created 
+ Container rtr-e2e-api-20260808031432_12592 Creating 
+ Container rtr-e2e-api-20260808031432_12592 Created 
+ Container rtr-e2e-web-20260808031432_12592 Creating 
+ Container rtr-e2e-web-20260808031432_12592 Created 
+./scripts/run-enterprise-e2e.sh: line 166: e2e_case_args[@]: unbound variable

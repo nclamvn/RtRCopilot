@@ -1,0 +1,433 @@
+{
+  "campaign": "TIP-026 real-world enterprise acceptance · HTTP E2E",
+  "case_limit": 12,
+  "computed_at": "2026-08-06T15:07:41.154403+00:00",
+  "database_digest": null,
+  "full_campaign_size": 77,
+  "gates": {
+    "citation_accuracy": true,
+    "false_grounded_count": true,
+    "follow_up_pass_rate": true,
+    "grounded_success_rate": true,
+    "honest_null_precision": true,
+    "minimum_domain_pass_rate": true,
+    "overall_pass_rate": true,
+    "p95_latency_ms": true
+  },
+  "metrics": {
+    "citation_accuracy": 1.0,
+    "domains": {
+      "product": {
+        "pass_rate": 1.0,
+        "passed": 12,
+        "total": 12
+      }
+    },
+    "failed": 0,
+    "false_grounded_count": 0,
+    "follow_up_pass_rate": 1.0,
+    "grounded_expected": 12,
+    "grounded_success_rate": 1.0,
+    "honest_null_expected": 0,
+    "honest_null_precision": 1.0,
+    "overall_pass_rate": 1.0,
+    "p50_latency_ms": 7936.592,
+    "p95_latency_ms": 32560.037,
+    "passed": 12,
+    "shapes": {
+      "abbreviation": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      },
+      "clean": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "colloquial": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "total": 4
+      },
+      "definition": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "total": 5
+      },
+      "filler": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "indirect_description": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "missing_diacritics": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "total": 3
+      },
+      "short": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "spacing_variant": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      },
+      "specification": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "typo": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      }
+    },
+    "total": 12
+  },
+  "ontology_digest": null,
+  "passed": true,
+  "provider": "http-runtime",
+  "results": [
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-001",
+        "L3F.PRD.001",
+        "HC-004",
+        "HC-017",
+        "L3F.1.008",
+        "HC-011",
+        "HC-050",
+        "L3F.RES.003",
+        "L3F.2.015",
+        "PRICE.HERA.MSRP.US",
+        "L3F.2.007",
+        "L3F.2.009",
+        "L3F.2.022"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-001",
+      "latency_ms": 32560.037,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "bb757602a0f2492014c890b50db2faf2ee11ef029c07642a030dafea9942afd5",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "clean",
+        "definition"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-001"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-002",
+      "latency_ms": 8512.602,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "216437c2d4c25f885f3997dbdc6e2ed17d5302be55dded9f6506af44e846afbd",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "colloquial",
+        "filler"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-002"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-003",
+      "latency_ms": 7076.295,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "730c2f3167b1f3773a118b51591ed5511f95511cc519ff105076b3fb248139ce",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "abbreviation",
+        "colloquial"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-002"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-004",
+      "latency_ms": 8770.172,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "24d2c9d968b56f1f5034d9c64449e394bbe3ece75d7001d3b92bf0bcccbec2a5",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "missing_diacritics"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-002"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-005",
+      "latency_ms": 7936.592,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "4857f0fd9d44e5a8c343c1ca3baa2d78b67cc8bcbde531c722216b533aaa224d",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "typo",
+        "missing_diacritics"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "tip027.project.quangninh-uav-ioc-v4",
+        "L3F.PRD.001"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-006",
+      "latency_ms": 11065.459,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "1d9c30bf681bf38e53ca0acf04f8c529610b06b73c40d618a09bef8aa014230a",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "typo",
+        "missing_diacritics",
+        "definition"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-013"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-007",
+      "latency_ms": 5726.674,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "972371baf9363354cdc039c007093bba36bd5079fe8cbc9d3a010d84916087da",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "spacing_variant",
+        "definition"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "tip027.project.quangninh-uav-ioc-v4",
+        "HC-013",
+        "tip027.project.haiphong-uav-ioc-v4",
+        "tip024.docx.rtr-factsheet"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-008",
+      "latency_ms": 11843.425,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "4ca8e94360685daf190649a5e102f2d2afe2ddccbbde461d6abc78f69e5ff2d6",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "indirect_description",
+        "colloquial"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-011"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-009",
+      "latency_ms": 8400.083,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "3f860e0435c0f59b6c020eaf3179e742e2a203ac7b684fa4bfcf65f2ff3c7874",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "abbreviation",
+        "colloquial"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-019"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-010",
+      "latency_ms": 6663.235,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "5c3624a5a48856a1d9f5e6e13c31d11f19886c1f4d2454a1aa5dad0239c31cfa",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "spacing_variant",
+        "specification"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "tip024.pptx.danang-uav",
+        "HC-016",
+        "L3R.1.018",
+        "tip024.docx.rtr-factsheet"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-011",
+      "latency_ms": 3227.619,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "c0f290819080e882701d4de7ee3013e2e8a24f17e50b68d9c114aebe690e301d",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "short",
+        "definition"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-014"
+      ],
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-012",
+      "latency_ms": 4515.096,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "5b53e45f6421e9253d7ee8bb4111b9faf73ad55ce885f9763114c69938fa84fd",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "definition"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    }
+  ],
+  "run_id": "6c993cb5-e8c7-4a5c-b452-b8423da66217",
+  "schema_version": 1,
+  "selected_case_ids": [],
+  "subject_digest": "19d41eca291e2d93647b635f80891d5aa9e752519ce315895e17bb5b01954aa8",
+  "thresholds": {
+    "citation_accuracy": 0.95,
+    "false_grounded_count": 0,
+    "follow_up_pass_rate": 0.8,
+    "grounded_success_rate": 0.9,
+    "honest_null_precision": 1.0,
+    "minimum_domain_pass_rate": 0.8,
+    "overall_pass_rate": 0.9,
+    "p95_latency_ms": 60000.0
+  }
+}
