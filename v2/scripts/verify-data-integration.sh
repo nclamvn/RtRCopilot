@@ -208,6 +208,7 @@ docker compose --profile tools run --rm --no-deps --build \
   -e POSTGRES_DSN="$runtime_dsn" \
   -e MIGRATION_DSN="$owner_dsn" \
   -e INTEGRATION_DATABASE_DSN="$runtime_dsn" \
+  -e RAG_BENCHMARK_P95_MS_MAX="${RAG_BENCHMARK_P95_MS_MAX:-500}" \
   -e REDIS_URL="$verify_redis_url" \
   -e S3_BUCKET="$verify_bucket" \
   -e PYTHONPATH=/workspace/src \

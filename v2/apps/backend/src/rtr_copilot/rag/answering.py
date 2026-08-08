@@ -1296,6 +1296,13 @@ class AnswerService:
             output: ProviderAnswer | None = None
             grounding_error = "grounding_failed"
             repair_instruction = ""
+            # TIP-029.1: a candidate that passed marker-level grounding and
+            # relevance but missed full governed-collection naming is an
+            # HONEST partial answer, not a hallucination. Keep the best such
+            # candidate; if the repair attempt cannot certify completeness we
+            # ship it with coverage_state="partial" (already computed and
+            # surfaced downstream) instead of refusing a truthful answer.
+            partial_candidate: ProviderAnswer | None = None
             for _ in range(2):
                 call_started = time.monotonic()
                 try:
@@ -1396,11 +1403,17 @@ class AnswerService:
                         raise GroundingError("answer_irrelevant")
                     if (
                         query_plan.completeness == "exhaustive"
+                        # TIP-029.1: certification needs a governed boundary.
+                        # With no planner-supplied items the old call refused
+                        # unconditionally (empty required_items => False);
+                        # completeness then reports "not_assessed" downstream.
+                        and query_plan.required_items
                         and not collection_items_covered(
                             query_plan.required_items,
                             candidate.answer,
                         )
                     ):
+                        partial_candidate = candidate
                         raise GroundingError("answer_collection_incomplete")
                     if not profile_facets_covered(
                         query_plan,
@@ -1414,6 +1427,14 @@ class AnswerService:
                     continue
                 output = candidate
                 break
+            if output is None and partial_candidate is not None:
+                # Both attempts grounded and relevant; only the exhaustive
+                # naming certification failed. Ship the honest partial list —
+                # coverage_state="partial" carries the incompleteness to the
+                # client; refusing here was TIP-029's RECALL-MISS on
+                # enumeration questions.
+                output = partial_candidate
+                grounding_error = "collection_certification_waived"
             provider_usage = request_provider_usage(self.provider, calls_before)
             if provider_usage.calls > 0:
                 await self._debit_budget(

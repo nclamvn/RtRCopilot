@@ -20,7 +20,7 @@ import hashlib
 from dataclasses import dataclass, field
 from typing import Literal, Protocol
 
-from rtr_copilot.rag.adapters import normalize_query
+from rtr_copilot.rag.adapters import QUERY_STOPWORDS, normalize_query
 from rtr_copilot.rag.ontology import (
     EnterpriseOntology,
     OntologyMatch,
@@ -177,12 +177,67 @@ def resolve_entities(
         # the old setdefault/first-match behavior.
         if any(len(items) > 1 for items in by_surface.values()):
             return []
-        return [match.canonical_name for match in exact]
+        # TIP-029.2: a weak alias ("hr" -> HERA) is trusted only when the
+        # question carries content beyond the alias itself. A bare identity
+        # question about the shorthand ("HR là gì?") stays unresolved here so
+        # the planner can require clarification instead of the runtime
+        # confidently defining the wrong thing (SAFE-007 false-grounded trap).
+        weak_surfaces = {
+            match.matched_surface
+            for match in exact
+            if match.match_kind == "weak"
+        }
+        if weak_surfaces and not _weak_alias_corroborated(
+            question,
+            weak_surfaces,
+        ):
+            exact = [
+                match for match in exact if match.match_kind != "weak"
+            ]
+        if exact:
+            return [match.canonical_name for match in exact]
     fuzzy = ontology.fuzzy_matches(
         question,
         threshold=FUZZY_THRESHOLD,
     )
     return [fuzzy[0].canonical_name] if len(fuzzy) == 1 else []
+
+
+def _weak_alias_corroborated(
+    question: str,
+    weak_surfaces: set[str],
+) -> bool:
+    """Whether *question* has content beyond the weak alias + function words."""
+    surface_tokens = {
+        token for surface in weak_surfaces for token in surface.split()
+    }
+    return any(
+        token not in surface_tokens
+        and token not in QUERY_STOPWORDS
+        and len(token) >= 3
+        for token in normalize_query(question).split()
+    )
+
+
+def uncorroborated_weak_surfaces(
+    question: str,
+    registry: EnterpriseOntology | None = None,
+) -> tuple[str, ...]:
+    """Weak-alias surfaces present in *question* without corroborating context.
+
+    Used by the planner as a governed ambiguity signal: the user typed a
+    curated shorthand whose everyday meaning differs, and nothing else in the
+    question disambiguates it.
+    """
+    ontology = registry or load_ontology()
+    weak = {
+        match.matched_surface
+        for match in ontology.exact_matches(question)
+        if match.match_kind == "weak"
+    }
+    if not weak or _weak_alias_corroborated(question, weak):
+        return ()
+    return tuple(sorted(weak))
 
 
 def validate_entities(
@@ -547,7 +602,14 @@ async def plan_query(
     # may legitimately mention HERA, HeraHub and HeraSight while the planner
     # resolves "nó" back to the HERA anchor.
     structural_ambiguity = bool(
-        not deterministic and len(structural_candidate_ids) > 1
+        not deterministic
+        and (
+            len(structural_candidate_ids) > 1
+            # TIP-029.2: a lone uncorroborated weak alias is governed
+            # ambiguity even with a single identity behind it — the everyday
+            # meaning of the shorthand ("hr") competes with the curated one.
+            or uncorroborated_weak_surfaces(question, ontology)
+        )
     )
     # Exact, unambiguous definitions and governed point attributes already
     # have a complete semantic contract in the ontology. Calling an external
