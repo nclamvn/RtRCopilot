@@ -1,0 +1,60 @@
+{
+  "description": "TIP-024.6 read-only adversarial retrieval gate for the active RtR SOT corpus.",
+  "cases": [
+    {
+      "id": "A01",
+      "question": "Vega là gì?",
+      "expected_top": ["HC-002"],
+      "forbidden": ["HC-001", "L3R.K.007", "L3F.RES.004"]
+    },
+    {
+      "id": "A02",
+      "question": "Hera là gì?",
+      "expected_top": ["HC-001"],
+      "forbidden": ["HC-002", "L3R.1.010", "L3F.RES.004"]
+    },
+    {
+      "id": "A03",
+      "question": "VegaHub là gì?",
+      "expected_top": ["HC-019"],
+      "forbidden": ["HC-017"]
+    },
+    {
+      "id": "A04",
+      "question": "HeraHub là gì?",
+      "expected_top": ["HC-017"],
+      "forbidden": ["HC-019"]
+    },
+    {
+      "id": "A05",
+      "question": "VegaSight là gì?",
+      "expected_top": ["HC-057"],
+      "forbidden": ["HC-010"]
+    },
+    {
+      "id": "A06",
+      "question": "HeraSight là gì?",
+      "expected_top": ["HC-010"],
+      "forbidden": ["HC-057"]
+    },
+    {
+      "id": "A07",
+      "question": "Tầm điều khiển VEGA là bao nhiêu?",
+      "expected_top": ["L3R.1.010", "HC-002"],
+      "forbidden": ["HC-001"]
+    },
+    {
+      "id": "A08",
+      "question": "Tầm điều khiển HERA là bao nhiêu?",
+      "expected_top": ["L3R.K.007", "HC-001"],
+      "forbidden": ["L3R.1.010", "HC-002"]
+    },
+    {
+      "id": "A09",
+      "question": "ORION là gì?",
+      "expected_empty": true,
+      "expected_top": [],
+      "forbidden": []
+    }
+  ]
+}

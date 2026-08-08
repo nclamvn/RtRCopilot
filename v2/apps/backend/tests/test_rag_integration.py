@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import time
 import uuid
@@ -16,15 +17,18 @@ from rtr_copilot.api.main import app
 from rtr_copilot.auth.models import Role, Subject
 from rtr_copilot.config import get_settings
 from rtr_copilot.rag.adapters import OfflineExtractiveAnswer
-from rtr_copilot.rag.answering import AnswerService
-from rtr_copilot.rag.api import rag_subject
+from rtr_copilot.rag.answering import AnswerService, GroundingError
+from rtr_copilot.rag.api import answer_service, rag_subject
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.rag.models import (
     ProviderAnswer,
     ProviderEvidence,
     SearchFilters,
 )
+from rtr_copilot.rag.ontology import EnterpriseOntology, OntologySpec
+from rtr_copilot.rag.query_understanding import RewriteResult, plan_query
 from rtr_copilot.rag.reindex import ReindexError, ReindexService
+from rtr_copilot.rag.relevance import collection_items_covered
 from rtr_copilot.rag.retrieval import RetrievalService
 from rtr_copilot.sot.service import SOTPublishService
 
@@ -41,6 +45,7 @@ class HangingAnswer:
 
     def __init__(self) -> None:
         self.calls = 0
+        self.system_policies: list[str] = []
 
     async def answer(
         self,
@@ -53,6 +58,215 @@ class HangingAnswer:
         self.calls += 1
         await asyncio.sleep(60)
         raise AssertionError("timeout failed")
+
+
+class ConfirmingPlanner:
+    external = True
+    calls = 0
+
+    async def rewrite(self, question: str) -> RewriteResult:
+        return RewriteResult(entities=["OmniSight"])
+
+
+class ContextPlanner:
+    external = True
+
+    def __init__(self) -> None:
+        self.calls = 0
+        self.inputs: list[str] = []
+
+    async def rewrite(self, question: str) -> RewriteResult:
+        self.calls += 1
+        self.inputs.append(question)
+        follow_up = "thế nó" in question or "con pin" in question
+        return RewriteResult(
+            entities=["HERA"],
+            intent="lookup" if follow_up else "definition",
+            completeness="point",
+            answer_shape="direct",
+            retrieval_queries=["HERA flight endurance 56 minutes"],
+            standalone_question=(
+                "HERA bay được bao lâu?" if follow_up else "HERA là gì?"
+            ),
+        )
+
+
+class CollectionPlanner:
+    external = True
+    calls = 0
+
+    async def rewrite(self, question: str) -> RewriteResult:
+        del question
+        self.calls += 1
+        return RewriteResult(
+            entities=["Real-time Robotics"],
+            collections=["Product catalog"],
+            intent="enumeration",
+            completeness="exhaustive",
+            answer_shape="list",
+            retrieval_queries=["current complete product catalog"],
+        )
+
+
+class CollectionAnswer:
+    name = "test-quality-llm"
+    model = "hermetic"
+
+    def __init__(self) -> None:
+        self.calls = 0
+        self.system_policies: list[str] = []
+
+    async def answer(
+        self,
+        question: str,
+        evidence: list[ProviderEvidence],
+        *,
+        system_policy: str,
+    ) -> ProviderAnswer:
+        del question
+        self.calls += 1
+        self.system_policies.append(system_policy)
+        anchor = next(item for item in evidence if "HERA, VEGA" in item.text)
+        hera_detail = next(item for item in evidence if "UAV đa nhiệm" in item.text)
+        return ProviderAnswer(
+            answer=(
+                f"1. HERA — nền tảng UAV đa nhiệm. [{hera_detail.marker}]\n"
+                f"2. VEGA — bằng chứng chỉ xác nhận tên trong danh mục; "
+                f"chưa có chi tiết tính năng. [{anchor.marker}]\n"
+                f"3. Dịch vụ — hàng dịch vụ trong danh mục. [{anchor.marker}]"
+            ),
+            used_markers=[anchor.marker, hera_detail.marker],
+        )
+
+
+class ProfilePlanner:
+    external = True
+    calls = 0
+
+    async def rewrite(self, question: str) -> RewriteResult:
+        del question
+        self.calls += 1
+        return RewriteResult(
+            entities=["HERA"],
+            intent="definition",
+            completeness="point",
+            answer_shape="direct",
+        )
+
+
+class PartialProfileAnswer:
+    name = "test-quality-llm"
+    model = "hermetic"
+
+    def __init__(self) -> None:
+        self.calls = 0
+        self.system_policies: list[str] = []
+
+    async def answer(
+        self,
+        question: str,
+        evidence: list[ProviderEvidence],
+        *,
+        system_policy: str,
+    ) -> ProviderAnswer:
+        del question
+        self.calls += 1
+        self.system_policies.append(system_policy)
+        core = next(item for item in evidence if item.record_key == "PROFILE.CORE.001")
+        return ProviderAnswer(
+            answer=(
+                "**Tổng quan**\n\n"
+                f"HERA là nền tảng UAV đa nhiệm của RtR. [{core.marker}]"
+            ),
+            used_markers=[core.marker],
+        )
+
+
+def partial_profile_ontology() -> EnterpriseOntology:
+    return EnterpriseOntology(OntologySpec.model_validate({
+        "schema_version": 1,
+        "registry_id": "test.partial-profile-ontology",
+        "owner": "curator:test",
+        "entities": [{
+            "entity_id": "test.product.hera-profile",
+            "canonical_name": "HERA",
+            "entity_type": "product",
+            "domain": "products",
+            "aliases": [],
+            "definition_record_keys": ["PROFILE.CORE.001"],
+            "profile_facets": [
+                {
+                    "facet_id": "overview",
+                    "label": "Overview",
+                    "presentation_labels": ["Overview", "Tổng quan"],
+                    "record_keys": ["PROFILE.CORE.001"],
+                },
+                {
+                    "facet_id": "roadmap",
+                    "label": "Roadmap",
+                    "presentation_labels": ["Roadmap", "Lộ trình"],
+                    "record_keys": ["PROFILE.ROADMAP.001"],
+                },
+            ],
+            "owner": "curator:test",
+            "provenance_level": "verified_primary",
+        }],
+    }))
+
+
+def collection_ontology() -> EnterpriseOntology:
+    return EnterpriseOntology(OntologySpec.model_validate({
+        "schema_version": 1,
+        "registry_id": "test.collection-ontology",
+        "owner": "curator:test",
+        "entities": [
+            {
+                "entity_id": "test.company.rtr",
+                "canonical_name": "Real-time Robotics",
+                "entity_type": "company",
+                "domain": "company",
+                "aliases": ["rtr"],
+                "owner": "curator:test",
+                "provenance_level": "verified_primary",
+            },
+            {
+                "entity_id": "test.product.hera",
+                "canonical_name": "HERA",
+                "entity_type": "product",
+                "domain": "products",
+                "aliases": [],
+                "definition_record_keys": ["HERA.DETAIL.001"],
+                "owner": "curator:test",
+                "provenance_level": "verified_primary",
+            },
+            {
+                "entity_id": "test.product.vega",
+                "canonical_name": "VEGA",
+                "entity_type": "product",
+                "domain": "products",
+                "aliases": [],
+                "owner": "curator:test",
+                "provenance_level": "verified_primary",
+            },
+        ],
+        "collections": [{
+            "collection_id": "test.catalog.products",
+            "canonical_name": "Product catalog",
+            "domain": "products",
+            "aliases": ["các sản phẩm của rtr"],
+            "subject_entity_ids": ["test.company.rtr"],
+            "members": [
+                {"name": "HERA", "kind": "product", "entity_id": "test.product.hera"},
+                {"name": "VEGA", "kind": "product", "entity_id": "test.product.vega"},
+                {"name": "Dịch vụ", "kind": "service"},
+            ],
+            "record_keys": ["CATALOG.PRODUCTS.001"],
+            "owner": "curator:test",
+            "provenance_level": "verified_primary",
+        }],
+    }))
+
+
 pytestmark = pytest.mark.skipif(
     not DATABASE_DSN,
     reason="integration database not configured",
@@ -292,6 +506,508 @@ async def test_tip014_alias_variants_ground_to_the_scoped_source(
     )
     assert unavailable.state == "honest_null"
     assert unavailable.citations == []
+
+
+@pytest.mark.asyncio
+async def test_tip0246_vega_definition_beats_live_like_distractors_and_fails_closed(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    source_key = f"tip0246.mixed.{uuid.uuid4().hex}"
+    vega_record = f"HC-002-{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key=vega_record,
+        text_value=(
+            "VEGA · Tactical heavy lifter: Multirotor tactical UAV · MTOW "
+            "37.4 kg · payload 20 kg · 60 minutes · 10 km."
+        ),
+        additional_records=[
+            (
+                f"L3R.K.007-{uuid.uuid4().hex}",
+                "Tầm điều khiển HERA là 15 km. Lưu ý VEGA có tầm 10 km.",
+            ),
+            (
+                f"L3R.2.005-{uuid.uuid4().hex}",
+                "Danh mục sản phẩm gồm HERA, VEGA, HeraHub, VegaHub và VegaSight.",
+            ),
+            (
+                f"L3F.RES.004-{uuid.uuid4().hex}",
+                "Người đứng đầu Real-time Robotics là nhà sáng lập kiêm CEO.",
+            ),
+        ],
+    )
+    tuned = settings(tmp_path)
+    retrieval = RetrievalService(tuned, factory=factory)
+    hits = await retrieval.search(
+        subject(owner),
+        "Vega là gì?",
+        filters=SearchFilters(source_key=source_key),
+        request_id="tip0246-retrieval",
+        top_k=12,
+    )
+    assert hits
+    assert hits[0].citation.record_key == vega_record
+    assert {item.citation.record_key for item in hits} == {vega_record}
+
+    grounded = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=retrieval,
+        provider=OfflineExtractiveAnswer(),
+    ).ask(
+        subject(owner),
+        "Vega là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0246-explicit-test-provider",
+    )
+    assert grounded.state == "grounded"
+    assert {item.record_key for item in grounded.citations} == {vega_record}
+    assert "CEO" not in grounded.answer and "HERA là 15 km" not in grounded.answer
+
+    required_mode = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+    ).ask(
+        subject(owner),
+        "Vega là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0246-required-no-key",
+    )
+    assert required_mode.state == "grounded"
+    assert {item.record_key for item in required_mode.citations} == {vega_record}
+    assert required_mode.gap_id is None
+    assert required_mode.reason_code is None
+    assert required_mode.answer_mode == "evidence_only"
+    async with factory() as session:
+        run = (await session.execute(text("""
+            SELECT provider_decision,reason_code FROM answer_runs
+            WHERE answer_run_id=:run_id
+        """), {"run_id": required_mode.answer_run_id})).mappings().one()
+        false_gap_count = await session.scalar(text("""
+            SELECT count(*) FROM gaps WHERE answer_run_id=:run_id
+        """), {"run_id": required_mode.answer_run_id})
+    assert run["provider_decision"] == "called_local"
+    assert run["reason_code"] is None
+    assert false_gap_count == 0
+
+    quality_required = tuned.model_copy(update={
+        "rag_provider_mode": "external",
+        "rag_external_classification_allowlist": "internal",
+        "openai_api_key": SecretStr(""),
+        "anthropic_api_key": SecretStr(""),
+    })
+    no_downgrade = await AnswerService(
+        quality_required,
+        factory=factory,
+        retrieval=RetrievalService(quality_required, factory=factory),
+    ).ask(
+        subject(owner),
+        "Vega là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0265-quality-mode-no-downgrade",
+    )
+    assert no_downgrade.state == "honest_null"
+    assert no_downgrade.reason_code == "answer_quality_configuration_required"
+    assert no_downgrade.citations == []
+    assert "không hạ cấp" in no_downgrade.answer
+
+
+@pytest.mark.asyncio
+async def test_tip0269_partial_profile_returns_permitted_evidence_instead_of_null(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    source_key = f"tip0269.partial-profile.{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key="PROFILE.CORE.001",
+        text_value="HERA là nền tảng UAV đa nhiệm của RtR.",
+    )
+    provider = PartialProfileAnswer()
+    service = AnswerService(
+        settings(tmp_path),
+        factory=factory,
+        retrieval=RetrievalService(settings(tmp_path), factory=factory),
+        provider=provider,
+        rewriter=ProfilePlanner(),
+        ontology=partial_profile_ontology(),
+    )
+
+    response = await service.ask(
+        subject(owner),
+        "hera là cái gì vậy?",
+        filters=SearchFilters(),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0269-partial-profile",
+    )
+
+    assert response.state == "grounded", (response.reason_code, response.answer)
+    assert response.coverage_state == "partial"
+    assert {item.record_key for item in response.citations} == {"PROFILE.CORE.001"}
+    assert provider.calls == 1
+    assert "best_effort" in provider.system_policies[0]
+    assert "Roadmap" not in provider.system_policies[0]
+
+
+@pytest.mark.asyncio
+async def test_tip0265_exhaustive_collection_requires_plan_anchor_and_synthesis(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    source_key = f"tip0265.catalog.{uuid.uuid4().hex}"
+    # Reproduce the live failure boundary: the authority record sorts after
+    # more ordinary chunks than the normal candidate budget can admit.  A
+    # source-scoped three-row fixture cannot prove corpus-scale reachability.
+    decoys = [
+        (
+            f"AAA.DECOY.{index:03d}",
+            f"Synthetic unrelated operating note number {index}.",
+        )
+        for index in range(205)
+    ]
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key="CATALOG.PRODUCTS.001",
+        text_value="Danh mục hiện hành đầy đủ gồm HERA, VEGA và Dịch vụ.",
+        additional_records=[
+            *decoys,
+            ("COMPANY.UNRELATED.001", "Real-time Robotics có nhà sáng lập và CEO."),
+            ("HERA.DETAIL.001", "HERA là nền tảng UAV đa nhiệm."),
+            (
+                "ZZZ.METHOD.SOT.001",
+                "RtR tổ chức SOT enterprise truth architecture theo four layers "
+                "và registry governance.",
+            ),
+            (
+                "ZZZ.SYSTEM.CRM.001",
+                "RtR CRM là nền tảng nội bộ quản lý contacts, companies, "
+                "pipeline deal, báo giá và đơn hàng.",
+            ),
+        ],
+    )
+    tuned = settings(tmp_path)
+    ontology = collection_ontology()
+    plan = await plan_query(
+        "RtR có các sản phẩm gì, tính năng ra sao?",
+        CollectionPlanner(),
+        registry=ontology,
+    )
+    retrieval = RetrievalService(tuned, factory=factory)
+    planned_hits = await retrieval.search(
+        subject(owner),
+        plan.retrieval_query,
+        filters=SearchFilters(source_key=source_key),
+        request_id="tip0265-retrieval",
+        query_entities=plan.retrieval_entities,
+        query_intent=plan.intent,
+        query_collection_record_keys=plan.collection_record_keys,
+    )
+    anchors = [
+        item.snippet
+        for item in planned_hits
+        if item.citation.record_key in plan.collection_record_keys
+    ]
+    assert anchors, [item.citation.record_key for item in planned_hits]
+    assert collection_items_covered(plan.required_items, " ".join(anchors)), (
+        plan.required_items,
+        anchors,
+    )
+    assert retrieval.trace.priority_metadata_rows == 1
+    assert retrieval.trace.priority_policy_allowed == 1
+    assert retrieval.trace.priority_selected == 1
+    assert retrieval.trace.policy_allowed == len(decoys) + 5
+    assert len(retrieval.trace.loaded_chunk_ids) <= (
+        tuned.rag_candidate_limit + retrieval.trace.priority_policy_allowed
+    )
+    generic_hits = await retrieval.search(
+        subject(owner),
+        "enterprise truth architecture four layers registry governance",
+        filters=SearchFilters(source_key=source_key),
+        request_id="tip0266-generic-beyond-candidate-window",
+        top_k=5,
+        query_intent="lookup",
+    )
+    assert "ZZZ.METHOD.SOT.001" in {
+        item.citation.record_key for item in generic_hits
+    }
+    assert retrieval.trace.priority_metadata_rows == 0
+    assert retrieval.trace.policy_allowed == len(decoys) + 5
+    assert len(retrieval.trace.loaded_chunk_ids) <= tuned.rag_candidate_limit
+    crm_hits = await retrieval.search(
+        subject(owner),
+        "công ty sử dụng hệ thống quản lý quan hệ khách hàng nội bộ",
+        ranking_query="cty có crm không",
+        support_queries=("quản lý quan hệ khách hàng",),
+        filters=SearchFilters(source_key=source_key),
+        request_id="tip0266-original-query-rank-crm",
+        top_k=5,
+        query_intent="lookup",
+    )
+    assert crm_hits[0].citation.record_key == "ZZZ.SYSTEM.CRM.001"
+    sot_hits = await retrieval.search(
+        subject(owner),
+        "source of truth enterprise architecture organization registry",
+        ranking_query="SOT bên mình tổ chức sao",
+        support_queries=("source of truth organization layers",),
+        filters=SearchFilters(source_key=source_key),
+        request_id="tip0266-original-query-rank-sot",
+        top_k=5,
+        query_intent="procedure",
+    )
+    assert sot_hits[0].citation.record_key == "ZZZ.METHOD.SOT.001"
+    provider = CollectionAnswer()
+    grounded = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=retrieval,
+        provider=provider,
+        rewriter=CollectionPlanner(),
+        ontology=ontology,
+    ).ask(
+        subject(owner),
+        "RtR có các sản phẩm gì, tính năng ra sao?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0265-complete",
+    )
+    assert grounded.state == "grounded", (
+        grounded.reason_code,
+        grounded.answer,
+        provider.calls,
+    )
+    assert provider.calls == 1
+    assert "partial attribute coverage" in provider.system_policies[0]
+    assert "label missing per-member detail" in provider.system_policies[0]
+    assert {item.record_key for item in grounded.citations} == {
+        "CATALOG.PRODUCTS.001",
+        "HERA.DETAIL.001",
+    }
+    assert "HERA" in grounded.answer and "VEGA" in grounded.answer
+    assert "chưa có chi tiết tính năng" in grounded.answer
+    assert "CEO" not in grounded.answer
+
+    blocked = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+        rewriter=CollectionPlanner(),
+        ontology=ontology,
+    ).ask(
+        subject(owner),
+        "các sản phẩm của RtR là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0265-no-synthesis",
+    )
+    assert blocked.state == "honest_null"
+    assert blocked.reason_code == "answer_quality_configuration_required"
+    assert "không dùng chế độ trích xuất" in blocked.answer
+
+
+@pytest.mark.asyncio
+async def test_priority_collection_anchor_still_fails_closed_under_acl(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    viewer = await actor(factory)
+    source_key = f"tip0266.denied-catalog.{uuid.uuid4().hex}"
+    record_key = "CATALOG.DENIED.001"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key=record_key,
+        text_value="Danh mục bí mật gồm HERA và VEGA.",
+        additional_records=[
+            ("VISIBLE.UNRELATED.001", "Ghi chú vận hành không liên quan."),
+        ],
+    )
+    async with factory() as session, session.begin():
+        row = (await session.execute(text("""
+            SELECT r.record_id,c.chunk_id
+            FROM records r JOIN chunks c ON c.record_id=r.record_id
+            JOIN active_search_generations ag
+              ON ag.generation_id=c.generation_id
+            WHERE r.source_key=:source_key AND r.record_key=:record_key
+              AND c.lifecycle='active'
+        """), {
+            "source_key": source_key,
+            "record_key": record_key,
+        })).mappings().one()
+        await session.execute(text("""
+            INSERT INTO acl_entries(
+              resource_id,principal_type,principal_id,action,effect,granted_by
+            ) VALUES (:record_id,'user',:viewer,'view','deny',:owner)
+        """), {
+            "record_id": row["record_id"],
+            "viewer": viewer,
+            "owner": owner,
+        })
+        denied_chunk_id = row["chunk_id"]
+
+    retrieval = RetrievalService(settings(tmp_path), factory=factory)
+    hits = await retrieval.search(
+        subject(viewer),
+        "Danh mục HERA VEGA",
+        filters=SearchFilters(source_key=source_key),
+        request_id="tip0266-priority-denied",
+        query_intent="enumeration",
+        query_collection_record_keys=(record_key,),
+    )
+    assert hits == []
+    assert retrieval.trace.priority_metadata_rows == 1
+    assert retrieval.trace.priority_policy_allowed == 0
+    assert retrieval.trace.priority_selected == 0
+    assert denied_chunk_id not in retrieval.trace.loaded_chunk_ids
+
+
+@pytest.mark.asyncio
+async def test_authority_contract_expands_beyond_ordinary_answer_budget(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    source_key = f"tip0275.authority-budget.{uuid.uuid4().hex}"
+    collection_key = "CATALOG.AUTHORITY.000"
+    definition_keys = tuple(
+        f"CATALOG.AUTHORITY.{index:03d}" for index in range(1, 14)
+    )
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key=collection_key,
+        text_value="Governed catalog anchor for the complete product portfolio.",
+        additional_records=[
+            (
+                record_key,
+                f"Governed product member {index} with approved capability detail.",
+            )
+            for index, record_key in enumerate(definition_keys, start=1)
+        ],
+    )
+    tuned = settings(tmp_path).model_copy(update={
+        "rag_answer_candidate_k": 12,
+        "rag_authority_candidate_k": 20,
+    })
+    retrieval = RetrievalService(tuned, factory=factory)
+
+    hits = await retrieval.search(
+        subject(owner),
+        "complete governed product portfolio capability detail",
+        filters=SearchFilters(source_key=source_key),
+        request_id="tip0275-authority-budget",
+        top_k=12,
+        query_intent="enumeration",
+        query_collection_record_keys=(collection_key,),
+        query_definition_record_keys=definition_keys,
+    )
+
+    assert [item.citation.record_key for item in hits] == [
+        collection_key,
+        *definition_keys,
+    ]
+    assert len(hits) == 14
+    assert retrieval.trace.priority_selected == 14
+
+
+@pytest.mark.asyncio
+async def test_tip0247_ambiguous_partial_name_fails_closed_then_plan_constrains_all_gates(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    source_key = f"tip0247.mixed.{uuid.uuid4().hex}"
+    direct_record = f"HC-013-{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key=direct_record,
+        text_value=(
+            "OmniSight 360° · Dual-pod gimbal: AI on-board with independent "
+            "pan and tilt for each sensor pod."
+        ),
+        additional_records=[(
+            f"HC-053-{uuid.uuid4().hex}",
+            "Tactical overwatch ISR uses HERA + OmniSight + LS1 + S1.",
+        )],
+    )
+    tuned = settings(tmp_path)
+    blocked_provider = OfflineExtractiveAnswer()
+    blocked = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+        provider=blocked_provider,
+    ).ask(
+        subject(owner),
+        "Omni là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0247-ambiguous",
+    )
+    assert blocked.state == "honest_null"
+    assert blocked_provider.calls == 0
+    assert "chưa đủ rõ" in blocked.answer
+    async with factory() as session:
+        blocked_run = (await session.execute(text("""
+            SELECT provider_decision,retrieval_config,selected_chunk_ids
+            FROM answer_runs WHERE answer_run_id=:run_id
+        """), {"run_id": blocked.answer_run_id})).mappings().one()
+    assert blocked_run["provider_decision"] == "not_called_query_ambiguous"
+    assert blocked_run["selected_chunk_ids"] == []
+    intelligence = blocked_run["retrieval_config"]["query_intelligence"]
+    assert intelligence["resolution_state"] == "clarification_required"
+    assert "Omni" not in json.dumps(intelligence)
+
+    grounded_provider = OfflineExtractiveAnswer()
+    grounded = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+        provider=grounded_provider,
+        rewriter=ConfirmingPlanner(),
+    ).ask(
+        subject(owner),
+        "Omni là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip0247-confirmed",
+    )
+    assert grounded.state == "grounded"
+    assert grounded_provider.calls == 1
+    assert {item.record_key for item in grounded.citations} == {direct_record}
+    assert "Tactical overwatch" not in grounded.answer
 
 
 @pytest.mark.asyncio
@@ -753,7 +1469,104 @@ async def test_secret_question_is_omitted_from_storage_gap_and_provider(
 
 
 @pytest.mark.asyncio
-async def test_hanging_provider_times_out_repairs_once_then_honest_null(
+async def test_conversation_context_resolves_follow_up_and_stays_owner_dlp_bounded(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    owner = await actor(factory)
+    other = await actor(factory)
+    source_key = f"context.{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key=f"CONTEXT.HERA.{uuid.uuid4().hex}",
+        text_value=(
+            "HERA là nền tảng UAV đa nhiệm của RtR và có thời gian bay "
+            "56 phút khi không tải."
+        ),
+    )
+    tuned = settings(tmp_path)
+    planner = ContextPlanner()
+    retrieval = RetrievalService(tuned, factory=factory)
+    service = AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=retrieval,
+        provider=OfflineExtractiveAnswer(),
+        rewriter=planner,
+    )
+    first = await service.ask(
+        subject(owner),
+        "HERA là gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="context-turn-1",
+    )
+    assert first.state == "grounded"
+    second = await service.ask(
+        subject(owner),
+        "thế nó bay được bao lâu?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=first.conversation_id,
+        request_id="context-turn-2",
+    )
+    assert second.state == "grounded"
+    assert "56" in second.answer
+    assert "<conversation_history>" in planner.inputs[0]
+    assert "HERA là gì?" in planner.inputs[0]
+    async with factory() as session:
+        metadata = await session.scalar(text("""
+            SELECT retrieval_config->'query_intelligence' FROM answer_runs
+            WHERE answer_run_id=:run_id
+        """), {"run_id": second.answer_run_id})
+    assert metadata["context_message_count"] == 2
+    assert "resolved_question_digest" in metadata
+    assert "HERA bay được bao lâu?" not in json.dumps(metadata)
+
+    with pytest.raises(GroundingError, match="conversation_not_found"):
+        await service.ask(
+            subject(other),
+            "nó bay bao lâu?",
+            filters=SearchFilters(source_key=source_key),
+            require_verified=True,
+            conversation_id=first.conversation_id,
+            request_id="context-other-owner",
+        )
+
+    secret = "api_key=CONTEXT-MUST-NOT-LEAVE"
+    async with factory() as session, session.begin():
+        await session.execute(text("""
+            INSERT INTO messages(
+              message_id,conversation_id,role,sanitized_content,
+              content_sha256,request_id
+            ) VALUES (:message_id,:conversation_id,'user',:content,:checksum,:request_id)
+        """), {
+            "message_id": uuid.uuid4(),
+            "conversation_id": first.conversation_id,
+            "content": secret,
+            "checksum": "a" * 64,
+            "request_id": "context-dlp-fixture",
+        })
+    third = await service.ask(
+        subject(owner),
+        "còn pin thì sao?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=first.conversation_id,
+        request_id="context-turn-3",
+    )
+    assert third.state == "grounded"
+    assert secret not in planner.inputs[-1]
+    assert "<conversation_history>" not in planner.inputs[-1]
+    assert "dlp.credential" in retrieval.trace.dlp_rule_ids
+
+
+@pytest.mark.asyncio
+async def test_hanging_provider_times_out_once_then_honest_null(
     tmp_path: Path,
     factory: async_sessionmaker[Any],
 ) -> None:
@@ -787,14 +1600,14 @@ async def test_hanging_provider_times_out_repairs_once_then_honest_null(
     )
     elapsed = time.perf_counter() - started
     assert response.state == "honest_null"
-    assert provider.calls == 2
+    assert provider.calls == 1
     assert elapsed < 1.0
     async with factory() as session:
         decision = await session.scalar(text("""
             SELECT provider_decision FROM answer_runs
             WHERE answer_run_id=:run_id
         """), {"run_id": response.answer_run_id})
-    assert decision == "called_grounding_failed"
+    assert decision == "called_provider_error"
 
 
 @pytest.mark.asyncio
@@ -817,6 +1630,11 @@ async def test_typed_http_api_and_conversation_rechecks_revoked_citations(
         return subject(owner)
 
     app.dependency_overrides[rag_subject] = authenticated
+    app.dependency_overrides[answer_service] = lambda: AnswerService(
+        settings(tmp_path),
+        factory=factory,
+        provider=OfflineExtractiveAnswer(),
+    )
     transport = httpx.ASGITransport(app=app)
     try:
         async with httpx.AsyncClient(
@@ -843,6 +1661,51 @@ async def test_typed_http_api_and_conversation_rechecks_revoked_citations(
             assert history.status_code == 200
             assert history.json()["messages"][-1]["citations"]
 
+            streamed = await client.post(
+                "/api/v1/ask",
+                headers={"accept": "text/event-stream"},
+                json={
+                    "question": "What supports grounded retrieval?",
+                    "filters": {"source_key": source_key},
+                },
+            )
+            assert streamed.status_code == 200
+            assert streamed.headers["content-type"].startswith(
+                "text/event-stream",
+            )
+            frames = [
+                frame for frame in streamed.text.split("\n\n") if frame.strip()
+            ]
+            progress_payloads = [
+                json.loads(next(
+                    line.removeprefix("data: ")
+                    for line in frame.splitlines()
+                    if line.startswith("data: ")
+                ))
+                for frame in frames
+                if frame.startswith("event: progress")
+            ]
+            stages = {item["stage"] for item in progress_payloads}
+            assert stages == {
+                "understanding",
+                "retrieving",
+                "verifying",
+                "synthesizing",
+                "grounding",
+            }
+            source_events = [
+                item for item in progress_payloads if item["sources"]
+            ]
+            assert source_events
+            assert set(source_events[0]["sources"][0]) == {
+                "marker",
+                "record_key",
+                "source_label",
+                "verification_state",
+                "freshness_state",
+            }
+            assert any(frame.startswith("event: result") for frame in frames)
+
             async with factory() as session, session.begin():
                 record_id = await session.scalar(text("""
                     SELECT record_id FROM records WHERE source_key=:source_key
@@ -861,6 +1724,7 @@ async def test_typed_http_api_and_conversation_rechecks_revoked_citations(
             assert assistant["content"] == "Evidence is no longer available."
     finally:
         app.dependency_overrides.pop(rag_subject, None)
+        app.dependency_overrides.pop(answer_service, None)
 
     async def anonymous() -> None:
         return None

@@ -8,7 +8,9 @@ const SAFE_SEGMENT = /^[A-Za-z0-9._~-]+$/;
  * enforces authorization, but the web edge still refuses to become a generic
  * relay into /api/v1 (files, auth and document paths have their own proxies).
  */
-const FAMILIES = new Set(["gaps", "governance", "research", "graduation", "admin"]);
+const FAMILIES = new Set([
+  "gaps", "governance", "research", "graduation", "admin", "enterprise",
+]);
 
 function valid(segment: string) {
   return SAFE_SEGMENT.test(segment) && segment !== "." && segment !== "..";

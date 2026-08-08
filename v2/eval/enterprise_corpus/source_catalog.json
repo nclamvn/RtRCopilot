@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-08-06",
+  "runtime_cleanliness": "mixed_development",
+  "measurement_note": "Discovery counts are inventory, not trusted records. Default Ask uses only active SOT chunks and current document versions whose source is enterprise_approved, whose viewer state is ready, and whose resource lineage passes ACL policy.",
+  "active_ask_rollup": {
+    "sot_chunks": 219,
+    "enterprise_documents": 43,
+    "enterprise_file_chunks": 3866,
+    "total_searchable_units": 4085,
+    "note": "Research is intentionally excluded from this rollup until federated Ask routing is released."
+  },
+  "active_corpus": [
+    {
+      "source_key": "rtr.company-kernel",
+      "zone": "sot",
+      "state": "active",
+      "trusted_records": 219,
+      "canonical_documents": 14,
+      "gate": "curator publish + SOT reindex"
+    },
+    {
+      "source_key": "rtr.company-files.tip024",
+      "zone": "private",
+      "state": "enterprise_approved",
+      "trusted_documents": 30,
+      "searchable_chunks": 3252,
+      "classification_counts": {
+        "internal_documents": 22,
+        "internal_chunks": 2096,
+        "restricted_documents": 8,
+        "restricted_chunks": 1156
+      },
+      "source_count": 2,
+      "manifest_fingerprint": "1579aee012284e9f536c9b5c757598bb6d865eeebc0354926de1c27e840174a7",
+      "access": {
+        "internal": ["staff", "leader", "curator", "admin"],
+        "restricted": ["leader", "curator"]
+      },
+      "gate": "30/30 checksum, current version, viewer-ready, classification, owner and ACL"
+    },
+    {
+      "source_key": "rtr.company-files.tip027",
+      "zone": "private",
+      "state": "enterprise_approved",
+      "trusted_documents": 13,
+      "searchable_chunks": 614,
+      "classification_counts": {
+        "internal_documents": 12,
+        "internal_chunks": 463,
+        "restricted_documents": 1,
+        "restricted_chunks": 151
+      },
+      "domain_counts": {
+        "projects": 3,
+        "project_control": 1,
+        "crm": 7,
+        "mrp": 2
+      },
+      "source_count": 2,
+      "manifest_fingerprint": "7c4afb6ebaa9908917408f367e2c7f7be5680f7232e7e0cd7d3160543c06cfed",
+      "access": {
+        "internal": ["staff", "leader", "curator", "admin"],
+        "restricted": ["leader", "curator"]
+      },
+      "gate": "13/13 checksum-bound current versions, viewer-ready renditions, classification, owner, ACL and explicit curator activation"
+    },
+    {
+      "source_key": "theskywatch.registry",
+      "zone": "research",
+      "state": "active",
+      "source_entities": 814,
+      "published_articles": 68,
+      "research_records": 1838,
+      "admitted_fields": 8162,
+      "excluded_null_fields": 27668,
+      "tier_counts": {"P": 550, "S": 390, "H": 91, "X": 807},
+      "corroboration_counts": {
+        "corroborated": 24,
+        "disputed": 1,
+        "uncorroborated": 1813
+      },
+      "fingerprint": "0c6c201e6b8b3d09f7bee3628696b1d517c231d398107282dd8ed2eed7494f73",
+      "gate": "Research label is mandatory; no silent promotion to SOT"
+    }
+  ],
+  "candidate_backlog": [
+    {
+      "source_key": "rtr.knowledgebase",
+      "documents_discovered": 952,
+      "structured_files_discovered": 5929,
+      "priority": 1,
+      "blocker": "owner, duplicate, current-version, classification and ACL manifests"
+    },
+    {
+      "source_key": "rtr.projects",
+      "documents_discovered": 140,
+      "structured_files_discovered": 50,
+      "admission_state": "partial_snapshot_active",
+      "approved_snapshot_documents": 3,
+      "priority": 1,
+      "blocker": "remaining projects still require per-project owner, current-version and project ACL manifests"
+    },
+    {
+      "source_key": "rtr.product-experience",
+      "documents_discovered": 236,
+      "structured_files_discovered": 17,
+      "priority": 2,
+      "blocker": "exclude build/test output and bind to product release versions"
+    },
+    {
+      "source_key": "rtr.crm",
+      "documents_discovered": 393,
+      "structured_files_discovered": 76,
+      "admission_state": "approved_document_snapshot_active",
+      "approved_snapshot_documents": 7,
+      "priority": 2,
+      "blocker": "live CRM state still requires a read-only API, row/field ACL, purpose limitation and deletion propagation"
+    },
+    {
+      "source_key": "rtr.mrp",
+      "documents_discovered": 408,
+      "structured_files_discovered": 88,
+      "admission_state": "approved_document_snapshot_active",
+      "approved_snapshot_documents": 2,
+      "priority": 2,
+      "blocker": "live MRP state still requires a read-only operational projection, field ACL and freshness SLA"
+    },
+    {
+      "source_key": "rtr.ip",
+      "documents_discovered": 33,
+      "structured_files_discovered": 69,
+      "priority": 3,
+      "blocker": "matter ACL, legal privilege and immutable audit"
+    },
+    {
+      "source_key": "rtr.hrm",
+      "documents_discovered": 0,
+      "structured_files_discovered": 0,
+      "priority": 3,
+      "blocker": "authoritative HRM repository and owner were not discovered"
+    },
+    {
+      "source_key": "research.policy-sector",
+      "documents_discovered": 13,
+      "structured_files_discovered": 1,
+      "priority": 4,
+      "blocker": "source date, authority, quote spans and supersession checks; scheduled after TheSkyWatch"
+    }
+  ]
+}

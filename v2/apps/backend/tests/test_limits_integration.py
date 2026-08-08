@@ -420,8 +420,8 @@ async def test_hanging_provider_is_timeout_bounded_then_breaker_opens_503(
             provider=provider,
         )
 
-    # Call 1: two hung attempts, each cut at the timeout -> honest_null. The
-    # timeout must bound wall time even with the breaker in the loop.
+    # Calls 1 and 2: each transport failure is attempted exactly once. The
+    # repair pass is reserved for deterministic grounding rejection.
     started = time.perf_counter()
     first = await build().ask(
         subject(owner),
@@ -434,9 +434,20 @@ async def test_hanging_provider_is_timeout_bounded_then_breaker_opens_503(
     elapsed = time.perf_counter() - started
     assert first.state == "honest_null"
     assert elapsed < 1.0
-    assert provider.calls == 2  # both attempts made before the breaker opened
+    assert provider.calls == 1
 
-    # Call 2: breaker is now open -> immediate typed 503, provider NOT called.
+    second = await build().ask(
+        subject(owner),
+        "What breaker evidence is current?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="breaker-2",
+    )
+    assert second.state == "honest_null"
+    assert provider.calls == 2
+
+    # Call 3: breaker is now open -> immediate typed 503, provider NOT called.
     with pytest.raises(ProviderUnavailable) as outage:
         await build().ask(
             subject(owner),
@@ -444,9 +455,9 @@ async def test_hanging_provider_is_timeout_bounded_then_breaker_opens_503(
             filters=SearchFilters(source_key=source_key),
             require_verified=True,
             conversation_id=None,
-            request_id="breaker-2",
+            request_id="breaker-3",
         )
-    assert provider.calls == 2  # unchanged: no call was made while open
+    assert provider.calls == 2
     assert outage.value.retry_after >= 1
 
 
@@ -492,6 +503,16 @@ async def test_failing_provider_opens_breaker_across_asks(
         request_id="fail-1",
     )
     assert result.state == "honest_null"
+    assert provider.calls == 1
+    second = await build().ask(
+        subject(owner),
+        "What failing evidence is current?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="fail-2",
+    )
+    assert second.state == "honest_null"
     assert provider.calls == 2
     with pytest.raises(ProviderUnavailable):
         await build().ask(
@@ -500,7 +521,7 @@ async def test_failing_provider_opens_breaker_across_asks(
             filters=SearchFilters(source_key=source_key),
             require_verified=True,
             conversation_id=None,
-            request_id="fail-2",
+            request_id="fail-3",
         )
 
 

@@ -7,7 +7,7 @@
  * (approval form lives in the Evidence Rail — focus order verified),
  * ops triage → assign → answer through the TIP-011 pickers, language
  * switch, and focus landing on the work surface after a route change.
- * Every flow uses ONLY the keyboard and asserts a visible focus indicator.
+ * Every flow uses ONLY the keyboard and asserts the quiet focus indicator.
  */
 
 import {expect, Locator, Page, test} from "@playwright/test";
@@ -29,13 +29,18 @@ async function tabUntilFocused(
   throw new Error(`tabUntilFocused: target never received focus (${key} ×${max})`);
 }
 
-/** The focused element must show the house focus outline (≥3px). */
+/** Focus stays visible without bringing back a surrounding focus frame. */
 async function expectVisibleFocus(page: Page) {
-  const outline = await page.evaluate(() => {
+  const focus = await page.evaluate(() => {
     const style = getComputedStyle(document.activeElement as Element);
-    return Number.parseFloat(style.outlineWidth);
+    return {
+      outline: Number.parseFloat(style.outlineWidth),
+      shadow: style.boxShadow,
+      decoration: style.textDecorationLine,
+    };
   });
-  expect(outline).toBeGreaterThanOrEqual(3);
+  expect(focus.outline).toBe(0);
+  expect(focus.shadow !== "none" || focus.decoration.includes("underline")).toBe(true);
 }
 
 test("keyboard-only: file open → deep locator (pager moves the rtr.locator.v1 position)", async ({page}) => {
@@ -59,7 +64,7 @@ test("keyboard-only: file open → deep locator (pager moves the rtr.locator.v1 
   await expectVisibleFocus(page);
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/page=2/);
-  await expect(page.locator(".locator-spine")).toContainText("P2");
+  await expect(page.locator(".pager output")).toContainText("2 / 4");
 });
 
 test("keyboard-only: documents template → bind → render → approve; approval form in the rail keeps a sane focus order", async ({page}) => {

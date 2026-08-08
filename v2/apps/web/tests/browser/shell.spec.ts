@@ -3,11 +3,11 @@ import {pilotReadiness} from "./support/mocks";
 
 const curatorId = "55555555-5555-4555-8555-555555555555";
 
-async function mockShell(page: Page, authenticated = true) {
+async function mockShell(page: Page, authenticated = true, roles = ["admin"]) {
   await page.route("**/api/auth/me", route => authenticated
     ? route.fulfill({json: {
-      user_id: curatorId, email: "curator@rtrobotics.com",
-      display_name: "RtR Curator", roles: ["curator"],
+      user_id: curatorId, email: `${roles[0]}@rtrobotics.com`,
+      display_name: roles[0] === "admin" ? "RtR Admin" : "RtR Staff", roles,
     }})
     : route.fulfill({status: 401, json: {
       error: {code: "authentication_required", message: ""}, request_id: "req-0",
@@ -48,7 +48,7 @@ test("shell shows one topbar, six nav areas, and active state follows navigation
   }
   await expect(nav.getByRole("link", {name: "Hỏi"}))
     .toHaveAttribute("aria-current", "page");
-  await expect(page.getByText("RtR Curator")).toBeVisible();
+  await expect(page.getByText("RtR Admin")).toBeVisible();
   await nav.getByRole("link", {name: "Quản trị"}).click();
   await expect(page).toHaveURL(/\/admin$/);
   await expect(page.getByRole("heading", {level: 1, name: "Quản trị"})).toBeVisible();
@@ -57,6 +57,32 @@ test("shell shows one topbar, six nav areas, and active state follows navigation
   await expect(nav.getByRole("link", {name: "Hỏi"}))
     .not.toHaveAttribute("aria-current", "page");
   await page.screenshot({path: "test-results/tip011-shell-desktop.png", fullPage: true});
+});
+
+test("desktop shell uses moderate compact density without shrinking body copy", async ({page}) => {
+  await mockShell(page);
+  await page.setViewportSize({width: 1280, height: 720});
+  await page.goto("/ask");
+  const density = await page.evaluate(() => {
+    const measure = (selector: string) => {
+      const node = document.querySelector(selector) as HTMLElement;
+      const rect = node.getBoundingClientRect();
+      return {width: rect.width, height: rect.height};
+    };
+    const main = getComputedStyle(document.querySelector(".pc-main") as HTMLElement);
+    return {
+      topbar: measure(".pc-topbar"),
+      pageHeader: measure(".page-head"),
+      heading: measure(".page-head h1"),
+      bodySize: Number.parseFloat(getComputedStyle(document.querySelector(".pc-main") as HTMLElement).fontSize),
+      mainPadding: Number.parseFloat(main.paddingLeft),
+    };
+  });
+  expect(density.topbar.height).toBe(56);
+  expect(density.pageHeader.height).toBeLessThanOrEqual(84);
+  expect(density.heading.height).toBeLessThanOrEqual(38);
+  expect(density.bodySize).toBeGreaterThanOrEqual(15);
+  expect(density.mainPadding).toBeLessThanOrEqual(32);
 });
 
 test("skip link is the first tab stop and moves focus to the work surface", async ({page}) => {
@@ -132,12 +158,35 @@ test("language switch persists across navigation and reload via cookie only", as
   expect(storage).toBe(0);
 });
 
-test("the legacy root URL redirects to the files workspace under the shell", async ({page}) => {
-  // TIP-011 Task 3 inverted the redirect: /files IS the workspace, "/" redirects.
+test("the root opens Ask while legacy root file locators stay compatible", async ({page}) => {
   await mockShell(page, false);
   await page.goto("/");
-  await expect(page).toHaveURL(/\/files$/);
-  await expect(page.getByRole("heading", {level: 1, name: "Tệp"})).toBeVisible();
+  await expect(page).toHaveURL(/\/ask$/);
+  await expect(page.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
+  await page.goto(`/?version=55555555-5555-4555-8555-555555555555&page=4`);
+  await expect(page).toHaveURL(/\/files\?/);
+  await expect(page).toHaveURL(/version=/);
+});
+
+test("staff navigation contains only usable workspace areas", async ({page}) => {
+  await mockShell(page, true, ["staff"]);
+  await page.goto("/ask");
+  const nav = page.getByRole("navigation", {name: "Điều hướng chính"});
+  await expect(nav.getByRole("link")).toHaveCount(3);
+  await expect(nav.getByRole("link", {name: "Hỏi"})).toBeVisible();
+  await expect(nav.getByRole("link", {name: "Tri thức"})).toHaveCount(0);
+  await expect(nav.getByRole("link", {name: "Quản trị"})).toHaveCount(0);
+});
+
+test("global palette turns a phrase into an Ask prefill", async ({page}) => {
+  await mockShell(page);
+  await page.goto("/files");
+  await page.getByRole("button", {name: "Hỏi hoặc tìm trong tri thức công ty"}).click();
+  const dialog = page.getByRole("dialog", {name: "Hỏi hoặc tìm trong tri thức công ty"});
+  await dialog.getByRole("textbox").fill("bảo hành robot");
+  await dialog.getByRole("link", {name: /Hỏi Copilot:.*bảo hành robot/}).click();
+  await expect(page).toHaveURL(/\/ask\?q=b%E1%BA%A3o%20h%C3%A0nh%20robot/);
+  await expect(page.getByLabel("Câu hỏi")).toHaveValue("bảo hành robot");
 });
 
 test("anonymous shell keeps placeholders public and offers company sign-in", async ({page}) => {
@@ -191,4 +240,61 @@ test("no-cookie visitor follows OS prefers-color-scheme; choosing a theme sets a
   const cookie = (await light.cookies()).find(item => item.name === "rtr_theme");
   expect(cookie?.value).toBe("dark");
   await light.close();
+});
+
+test("collapsed sidebar has collision-free identity and mobile restores full labels", async ({page}) => {
+  await mockShell(page, false);
+  await page.setViewportSize({width: 1280, height: 720});
+  await page.goto("/ask");
+  const shell = page.locator(".pc-shell");
+  const sidebar = page.locator(".pc-sidebar");
+  const workspace = page.getByRole("button", {name: "Mở bảng lệnh không gian làm việc"});
+  const collapse = page.getByRole("button", {name: "Thu gọn thanh bên"});
+  await expect(page.locator(".pc-topbar .pc-brand")).toHaveCount(0);
+  await expect(collapse).toHaveCSS("border-top-width", "0px");
+  await expect(page.getByRole("button", {name: "Chuyển sang giao diện sáng"}))
+    .toHaveCSS("border-top-width", "0px");
+  await expect(workspace).toContainText("Copilot");
+  await expect(workspace).not.toContainText("Real-time Robotics");
+  await expect(workspace).not.toContainText("Không gian nội bộ");
+  const searchBox = await page.locator(".pc-search").boundingBox();
+  const pageHeaderBox = await page.locator(".page-head").boundingBox();
+  expect(Math.abs((searchBox?.x ?? 0) - (pageHeaderBox?.x ?? 0)))
+    .toBeLessThanOrEqual(1);
+  const activeNav = sidebar.getByRole("link", {name: "Hỏi", exact: true});
+  await expect(activeNav).toHaveCSS("border-top-width", "0px");
+  await expect(activeNav).toHaveCSS("box-shadow", "none");
+  expect(await activeNav.evaluate(element => getComputedStyle(element, "::before").width)).toBe("2px");
+  await activeNav.hover();
+  await expect.poll(() => activeNav.evaluate(
+    element => getComputedStyle(element, "::before").width,
+  )).toBe("3px");
+
+  await collapse.click();
+  await expect(shell).toHaveAttribute("data-collapsed", "true");
+  const sideBox = await sidebar.boundingBox();
+  const workspaceBox = await workspace.boundingBox();
+  const collapseBox = await page.getByRole("button", {name: "Mở rộng thanh bên"}).boundingBox();
+  expect(sideBox?.width).toBe(64);
+  expect(Math.abs((workspaceBox?.x ?? 0) + (workspaceBox?.width ?? 0) / 2
+    - ((collapseBox?.x ?? 0) + (collapseBox?.width ?? 0) / 2))).toBeLessThanOrEqual(1);
+  expect((workspaceBox?.y ?? 0) + (workspaceBox?.height ?? 0))
+    .toBeLessThanOrEqual(collapseBox?.y ?? 0);
+  expect((workspaceBox?.x ?? 0) + (workspaceBox?.width ?? 0))
+    .toBeLessThanOrEqual((sideBox?.x ?? 0) + (sideBox?.width ?? 0));
+  await expect(page.locator(".pc-signin-label")).toBeHidden();
+  expect(await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )).toBeLessThanOrEqual(0);
+
+  await page.setViewportSize({width: 390, height: 844});
+  await page.getByRole("button", {name: "Điều hướng"}).click();
+  await expect(sidebar).toHaveClass(/open/);
+  await expect(page.locator(".pc-workspace-name")).toHaveText("Copilot");
+  await expect(page.locator(".pc-signin-label")).toBeVisible();
+  await expect(sidebar.getByRole("navigation", {name: "Điều hướng chính"})
+    .getByRole("link", {name: "Hỏi", exact: true})).toBeVisible();
+  expect(await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )).toBeLessThanOrEqual(0);
 });

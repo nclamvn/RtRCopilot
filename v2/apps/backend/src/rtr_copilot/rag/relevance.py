@@ -1,0 +1,362 @@
+"""Fail-closed question/evidence relevance controls for TIP-024.6.
+
+Grounding is a three-link chain: question -> evidence -> claim.  The original
+TIP-007 gate protected only the second link.  This module supplies deterministic
+entity, intent and meaningful-term checks for the first link, plus a final
+question/answer consistency check.  It never decides truth or bypasses policy.
+"""
+
+from __future__ import annotations
+
+import re
+from collections.abc import Sequence
+from dataclasses import dataclass
+
+from rtr_copilot.rag.adapters import QUERY_STOPWORDS, normalize_query
+from rtr_copilot.rag.models import ProviderEvidence
+from rtr_copilot.rag.query_understanding import (
+    QueryIntent,
+    classify_intent,
+    resolve_entities,
+)
+
+_RECORD_PREFIX = re.compile(r"^[A-Za-z0-9_.-]+:\s*")
+_RECORD_KEY_SEPARATOR = re.compile(r"[._-]+")
+_PROCEDURE_ROW = re.compile(r"^(?:b|buoc|step)\s*\d{1,3}\b")
+
+
+def _record_key_text(record_key: str) -> str:
+    """Expose governed identifier segments as ordinary semantic metadata.
+
+    Enterprise file logical names are deliberately stable identifiers such as
+    ``tip027.crm.service-request-process``.  Query normalization preserves
+    punctuation inside tokens, which is correct for user prose but previously
+    hid ``crm``, ``service`` and ``process`` from entity/relevance checks.  A
+    record key is trusted naming metadata, so expand only its structural
+    separators before matching; document content remains unchanged.
+    """
+    return _RECORD_KEY_SEPARATOR.sub(" ", record_key)
+
+
+def is_procedure_row(value: str) -> bool:
+    """Whether a text unit is an explicitly numbered workflow step."""
+    return bool(_PROCEDURE_ROW.match(normalize_query(value)))
+
+
+@dataclass(frozen=True)
+class QueryProfile:
+    normalized: str
+    terms: tuple[str, ...]
+    entities: tuple[str, ...]
+    intent: QueryIntent
+    definition_record_keys: tuple[str, ...]
+    profile_record_keys: tuple[str, ...]
+    collection_record_keys: tuple[str, ...]
+
+
+def meaningful_terms(value: str) -> tuple[str, ...]:
+    """Unique normalized content terms, preserving question order."""
+    seen: list[str] = []
+    for token in normalize_query(value).split():
+        if token not in QUERY_STOPWORDS and token not in seen:
+            seen.append(token)
+    return tuple(seen)
+
+
+def profile_query(
+    value: str,
+    *,
+    entities: tuple[str, ...] | list[str] | None = None,
+    intent: QueryIntent | None = None,
+    definition_record_keys: tuple[str, ...] | list[str] | None = None,
+    profile_record_keys: tuple[str, ...] | list[str] | None = None,
+    collection_record_keys: tuple[str, ...] | list[str] | None = None,
+) -> QueryProfile:
+    normalized = normalize_query(value)
+    return QueryProfile(
+        normalized=normalized,
+        terms=meaningful_terms(value),
+        entities=tuple(resolve_entities(value) if entities is None else entities),
+        intent=intent or classify_intent(value),
+        definition_record_keys=tuple(definition_record_keys or ()),
+        profile_record_keys=tuple(profile_record_keys or ()),
+        collection_record_keys=tuple(collection_record_keys or ()),
+    )
+
+
+def mentioned_entities(text: str, record_key: str = "") -> set[str]:
+    return set(resolve_entities(f"{_record_key_text(record_key)} {text}"))
+
+
+def primary_entities(text: str, record_key: str = "") -> set[str]:
+    """Entities presented as the record subject, not incidental mentions.
+
+    The record key is authoritative naming metadata.  Otherwise only the first
+    entity in the lead is treated as primary, so a HERA fact that says
+    "VEGA is different" cannot masquerade as a VEGA definition.
+    """
+    primary = set(resolve_entities(_record_key_text(record_key)))
+    lead = _RECORD_PREFIX.sub("", text, count=1)
+    lead_entities = resolve_entities(" ".join(normalize_query(lead).split()[:4]))
+    if lead_entities:
+        primary.add(lead_entities[0])
+    return primary
+
+
+def candidate_relevance_score(
+    profile: QueryProfile,
+    *,
+    text: str,
+    record_key: str,
+    base_score: float,
+    vector_score: float,
+    min_vector_score: float,
+    support_queries: Sequence[str] = (),
+    allow_unbound_definition: bool = False,
+) -> float | None:
+    """Return an adjusted rank, or ``None`` when evidence is ineligible.
+
+    The user's original wording is the ranking authority. LLM expansions and
+    focused retrieval queries may bridge colloquial language for recall, but
+    receive a deliberately smaller boost. Treating the concatenated rewrite as
+    the primary profile let generic terms such as ``company`` and ``system``
+    outrank the user's discriminative term such as ``CRM`` or ``SOT``.
+    """
+    definition_anchor = record_key in profile.definition_record_keys
+    profile_anchor = record_key in profile.profile_record_keys
+    if (
+        profile.intent == "definition"
+        and profile.definition_record_keys
+        and not definition_anchor
+        and not allow_unbound_definition
+    ):
+        return None
+    collection_anchor = record_key in profile.collection_record_keys
+    mentions = mentioned_entities(text, record_key)
+    primary = primary_entities(text, record_key)
+    targets = set(profile.entities)
+    record_terms = set(meaningful_terms(_record_key_text(record_key)))
+    text_terms = set(meaningful_terms(f"{_record_key_text(record_key)} {text}"))
+    original_matches = len(set(profile.terms) & text_terms)
+    term_overlap = (
+        original_matches / len(profile.terms)
+        if profile.terms else 0.0
+    )
+    support_profiles = [meaningful_terms(query) for query in support_queries]
+    support_overlap = max(
+        (
+            len(set(terms) & text_terms) / len(terms)
+            for terms in support_profiles
+            if terms
+        ),
+        default=0.0,
+    )
+
+    # Original intent dominates noisy offline-vector proximity. Rewrites can
+    # recover synonyms, but cannot take semantic authority from the question.
+    adjustment = term_overlap * 0.62 + min(original_matches, 3) * 0.04
+    adjustment += support_overlap * 0.18
+    if profile.intent == "procedure":
+        # Select the governing process/SOP before adjacent intake, quotation
+        # and survey forms when document admission is metadata-only. Forms are
+        # useful supporting evidence, but choosing one as the sole priority
+        # document prevents the complete numbered workflow from ever reaching
+        # sequence reconstruction.
+        if record_terms & {
+            "process", "procedure", "workflow", "protocol", "sop",
+        }:
+            adjustment += 0.35
+        # Structured workflow rows often carry an ordinal (B1, Step 2, Bước
+        # 3) while the question names only the process. Prefer those actionable
+        # rows over covers, purpose statements and adjacent forms after the
+        # document itself has passed entity and relevance gates.
+        if is_procedure_row(text):
+            adjustment += 0.50
+        elif text_terms & {
+            "deadline", "form", "owner", "responsibility", "sla",
+            "bieu", "mau", "thoi", "han", "trach", "nhiem",
+        }:
+            adjustment += 0.10
+    if targets:
+        matched = targets & mentions
+        if (
+            not matched
+            and not collection_anchor
+            and not profile_anchor
+            and not definition_anchor
+        ):
+            return None
+        # Definition evidence must make the requested entity its subject.
+        if (
+            profile.intent == "definition"
+            and len(targets) == 1
+            and not targets <= primary
+            and not profile_anchor
+            and not definition_anchor
+        ):
+            return None
+        coverage = len(matched) / len(targets)
+        adjustment += coverage * 0.24
+        if matched & primary:
+            adjustment += 0.38
+        if profile.intent == "definition":
+            definition_terms = {
+                "drone", "heavy", "lifter", "multirotor", "platform", "tactical", "uav",
+            }
+            if text_terms & definition_terms:
+                adjustment += 0.28
+            if record_key.upper().startswith("HC-"):
+                adjustment += 0.12
+        competing = len(mentions - targets)
+        adjustment -= min(0.20, competing * 0.04)
+    elif term_overlap == 0 and support_overlap == 0:
+        # Hash-vector proximity alone is not evidence relevance. External query
+        # planning may add a validated synonym, but at least one discriminative
+        # term must still match before content can reach answer generation.
+        return None
+
+    if collection_anchor:
+        # Exhaustive plans must not lose their governed set boundary to a
+        # semantically similar detail chunk.
+        adjustment += 1.0
+    if definition_anchor:
+        # A governed definition binding is the strongest ranking signal. An
+        # explicitly source-scoped search may also admit a primary-subject
+        # definition while its ontology binding is being curated; the normal
+        # company-wide path stays strictly authority-bound.
+        adjustment += 0.72
+    if profile_anchor:
+        # A curator explicitly linked this record to an entity-profile facet.
+        # That relationship is stronger subject metadata than the first words
+        # of cross-product records such as maintenance, warranty, controller
+        # or sensor facts. It never bypasses ACL/DLP; the reviewed registry
+        # link supplies the entity relationship when the record uses a distinct
+        # component name (for example HeraSight LR).
+        adjustment += 0.24
+    return base_score + adjustment
+
+
+def collection_items_covered(required_items: tuple[str, ...], text: str) -> bool:
+    """Whether normalized text explicitly contains every governed item name."""
+    if not required_items:
+        return False
+    haystack = re.findall(r"[a-z0-9]+", normalize_query(text))
+
+    def contains(item: str) -> bool:
+        needle = re.findall(r"[a-z0-9]+", normalize_query(item))
+        if not needle:
+            return False
+        width = len(needle)
+        return any(
+            haystack[index:index + width] == needle
+            for index in range(len(haystack) - width + 1)
+        )
+
+    return all(contains(item) for item in required_items)
+
+
+def evidence_relevant(
+    question: str,
+    evidence: list[ProviderEvidence],
+    *,
+    entities: tuple[str, ...] | list[str] | None = None,
+    intent: QueryIntent | None = None,
+    support_terms: tuple[str, ...] | list[str] | None = None,
+    definition_record_keys: tuple[str, ...] | list[str] | None = None,
+    profile_record_keys: tuple[str, ...] | list[str] | None = None,
+) -> bool:
+    """Question -> evidence gate; false means abstain before provider use.
+
+    ``support_terms`` are semantic bridges from an external query planner. They
+    are considered only when the original meaningful terms have no overlap and
+    never override a confirmed entity contract. The answer provider still sees
+    the original question and evidence, and its independent review remains
+    mandatory before grounding can pass.
+    """
+    if not evidence:
+        return False
+    profile = profile_query(question, entities=entities, intent=intent)
+    targets = set(profile.entities)
+    definition_bindings = set(definition_record_keys or ())
+    del profile_record_keys  # bindings already shaped candidate retrieval
+    combined = " ".join(item.text for item in evidence)
+    if targets:
+        # File logical names and SOT record keys are governed subject metadata.
+        # A workflow row naturally begins ``B6 | sửa chữa...`` and need not
+        # repeat ``RtR CRM`` in every cell. Ignoring the bound record key made
+        # a complete, authorized process look entity-irrelevant immediately
+        # before synthesis.
+        mentions = {
+            entity
+            for item in evidence
+            for entity in mentioned_entities(
+                item.text,
+                item.record_key or "",
+            )
+        }
+        has_definition_binding = any(
+            item.record_key in definition_bindings for item in evidence
+        )
+        if not targets <= mentions and not has_definition_binding:
+            return False
+        if profile.intent == "definition" and len(targets) == 1:
+            return has_definition_binding or any(
+                targets <= primary_entities(item.text, item.record_key or "")
+                for item in evidence
+            )
+        # Retrieval may include a low-ranked adjacent hit. Rejecting the whole
+        # authorized evidence set because of that padding made ordinary Ask
+        # turns fail before the LLM could ignore it. At least one correct
+        # primary/entity record is still mandatory above; final-answer entity
+        # consistency and marker-level grounding remain strict below.
+        return True
+    if not profile.terms:
+        return False
+    evidence_terms = set(meaningful_terms(combined))
+    if set(profile.terms) & evidence_terms:
+        return True
+    bridge_terms = set(meaningful_terms(" ".join(support_terms or ())))
+    return bool(bridge_terms & evidence_terms)
+
+
+def answer_relevant(
+    question: str,
+    answer: str,
+    *,
+    entities: tuple[str, ...] | list[str] | None = None,
+    intent: QueryIntent | None = None,
+    support_terms: tuple[str, ...] | list[str] | None = None,
+) -> bool:
+    """Final question -> answer consistency gate."""
+    profile = profile_query(question, entities=entities, intent=intent)
+    targets = set(profile.entities)
+    if targets:
+        answer_entities = mentioned_entities(answer)
+        if not targets <= answer_entities:
+            return False
+        if profile.intent == "definition" and len(targets) == 1:
+            # A correct answer may open with a short structural label before
+            # naming the entity. Requiring the canonical name within the first
+            # four words caused deterministic false negatives for The Sky
+            # Watch. Inspect the first entity-bearing clause instead: a short
+            # non-entity lead may be skipped, but an adjacent product named
+            # first still makes the answer irrelevant.
+            for clause in re.split(r"[\n;]+", answer)[:4]:
+                resolved_clause_entities = resolve_entities(clause)
+                clause_entities = set(resolved_clause_entities)
+                if clause_entities:
+                    return (
+                        targets <= clause_entities
+                        and resolved_clause_entities[0] in targets
+                    )
+                if len(meaningful_terms(clause)) > 6:
+                    return False
+            return False
+        return True
+    if not profile.terms:
+        return False
+    answer_terms = set(meaningful_terms(answer))
+    if set(profile.terms) & answer_terms:
+        return True
+    bridge_terms = set(meaningful_terms(" ".join(support_terms or ())))
+    return bool(bridge_terms & answer_terms)

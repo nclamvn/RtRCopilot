@@ -1,0 +1,495 @@
+/**
+ * TIP-024.5 — UX Recovery & Pilot Readiness.
+ *
+ * This layer is intentionally imported last. It fixes the shell-content
+ * geometry and moves proof rails on demand without rewriting the frozen
+ * legacy sheet. New work should use --pc-* tokens; delete matching legacy
+ * declarations when those workspaces are component-migrated.
+ */
+
+/* One product type system on every shell workspace. */
+.pc-main,
+.pc-main button,
+.pc-main input,
+.pc-main textarea,
+.pc-main select {
+  font-family: var(--pc-font-ui);
+}
+.pc-main .page-head h1,
+.pc-main h2,
+.pc-main h3,
+.pc-main h4,
+.pc-main .viewer-empty h2,
+.pc-main .evidence-rail .doc-note h3 {
+  font-family: var(--pc-font-ui);
+  letter-spacing: -0.015em;
+}
+.pc-main .page-head h1 {
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.08;
+  font-weight: 650;
+}
+.pc-main :where(.form-note, .surface-empty, .surface-loading, .grounding-note,
+  .hit-snippet, .message-meta, .ask-history, .picker, .picker-option,
+  .catalog-search, .file-list, .template-ledger, .ops-ledger, .rail-snippet,
+  .rail-facts, .doc-note, .fidelity) {
+  font-size: max(13px, 1em);
+  line-height: 1.5;
+}
+.pc-main :where(.eyebrow, legend, dt, .zone-chip, .file-kind) {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* Core shell controls are touch-safe at every density. */
+.pc-iconbtn,
+.pc-collapse,
+.pc-profile-action,
+.pc-locale button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.pc-search { min-height: 44px; }
+.pc-recent-item { min-height: 44px; }
+.pc-palette-item { text-decoration: none; }
+
+/* Ask: one readable conversation column; proof is an on-demand trail. */
+.ask-workspace {
+  width: min(100%, 960px);
+  margin-inline: auto;
+}
+.ask-workspace .ask-layout { display: block; }
+.ask-workspace .ask-surface {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-4);
+  min-height: 0;
+}
+.ask-workspace .ask-form {
+  order: 0;
+  position: relative;
+  bottom: auto;
+  z-index: auto;
+  border-color: var(--pc-border-strong);
+  box-shadow: none;
+}
+.ask-workspace .ask-history { order: 110; }
+.ask-workspace .ask-advanced {
+  border-top: 1px solid var(--pc-border);
+  padding-top: var(--pc-space-2);
+}
+.ask-workspace .ask-advanced > summary,
+.ask-workspace .ask-history > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  color: var(--pc-text-secondary);
+  cursor: pointer;
+  font-size: var(--pc-small-size);
+  font-weight: 600;
+  list-style-position: inside;
+}
+.ask-workspace .ask-advanced-body {
+  display: grid;
+  gap: var(--pc-space-3);
+  padding-top: var(--pc-space-2);
+}
+.ask-workspace .ask-history {
+  display: block;
+  padding-block: var(--pc-space-3);
+}
+.ask-workspace .ask-history > :not(summary) { margin-top: var(--pc-space-2); }
+.ask-workspace .ask-history button,
+.ask-workspace .ask-file-scope button,
+.ask-workspace .action-row button,
+.ask-workspace .ask-rail-toggle {
+  min-height: 44px;
+}
+.ask-workspace .ask-rail-toggle { display: inline-flex; align-items: center; }
+.ask-workspace .ask-rail-toggle:disabled { opacity: 0.45; cursor: default; }
+
+.ask-workspace .evidence-rail {
+  position: fixed;
+  inset: var(--pc-topbar-h) 0 0 auto;
+  width: min(420px, calc(100vw - 24px));
+  max-height: none;
+  border-radius: 0;
+  transform: translateX(104%);
+  transition: transform var(--pc-dur-drawer) var(--pc-ease);
+  z-index: var(--pc-z-drawer);
+  box-shadow: var(--pc-shadow-md);
+  pointer-events: none;
+}
+.ask-workspace .evidence-rail.open {
+  transform: none;
+  pointer-events: auto;
+}
+.ask-workspace .evidence-rail .close-mobile {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+.ask-workspace .ask-scrim,
+.ask-scrim {
+  display: block;
+  position: fixed;
+  inset: var(--pc-topbar-h) 0 0;
+  border: 0;
+  background: var(--pc-scrim);
+  z-index: var(--pc-z-scrim);
+}
+
+/* The shell removes 264 px before page breakpoints are evaluated. Collapse
+   three-column workspaces early enough for the 1280/1366 pilot laptops. */
+@media (max-width: 1365px) {
+  .files-layout { grid-template-columns: minmax(220px, 250px) minmax(0, 1fr); }
+  .doc-layout { grid-template-columns: 260px minmax(0, 1fr); }
+  .ops-layout { grid-template-columns: minmax(240px, 280px) minmax(0, 1fr); }
+  .ops-split { grid-template-columns: minmax(0, 1fr); }
+  .rail-sheet-toggle { display: inline-flex; align-items: center; min-height: 44px; }
+
+  .files-layout > .evidence-rail,
+  .doc-layout > .evidence-rail,
+  .ops-layout > .evidence-rail {
+    position: fixed;
+    inset: var(--pc-topbar-h) 0 0 auto;
+    width: min(420px, calc(100vw - 24px));
+    max-height: none;
+    border: 1px solid var(--pc-border);
+    transform: translateX(104%);
+    transition: transform var(--pc-dur-drawer) var(--pc-ease);
+    z-index: var(--pc-z-drawer);
+    box-shadow: var(--pc-shadow-md);
+  }
+  .files-layout > .evidence-rail.open,
+  .doc-layout > .evidence-rail.open,
+  .ops-layout > .evidence-rail.open { transform: none; }
+}
+
+@media (max-width: 760px) {
+  .pc-topbar { gap: var(--pc-space-2); }
+  .pc-iconbtn,
+  .pc-locale button,
+  .pc-search { min-width: 44px; min-height: 44px; }
+  .pc-locale button { padding-inline: 8px; }
+  .pc-main { padding-inline: var(--pc-space-4); }
+  .pc-dock { min-height: 64px; }
+  .pc-dock-item { min-width: 44px; min-height: 48px; }
+
+  .page-actions :where(button, a),
+  .files-layout :where(.type-filters button, .load-more),
+  .doc-layout :where(button, a),
+  .ops-layout :where(button, a) {
+    min-height: 44px;
+  }
+  .files-layout,
+  .doc-layout,
+  .ops-layout { grid-template-columns: minmax(0, 1fr); }
+  .files-layout .work-surface { grid-row: 1; }
+  .files-layout { height: calc(100vh - 196px); min-height: 480px; }
+  .ask-workspace .page-head { margin-bottom: var(--pc-space-4); }
+  .ask-workspace .ask-form {
+    margin-inline: calc(-1 * var(--pc-space-2));
+    padding: var(--pc-space-4);
+    bottom: auto;
+  }
+  .ask-workspace .ask-answer,
+  .ask-workspace .ask-research,
+  .ask-workspace .ask-conversation,
+  .ask-workspace .honest-null {
+    padding: var(--pc-space-4);
+  }
+  .ask-workspace .conversation-messages li[data-role="user"] { max-width: 92%; }
+  .ask-workspace .ask-history li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--pc-space-2);
+  }
+  .ask-workspace .ask-history li small { grid-column: 1; }
+  .ask-workspace .ask-history li button { grid-column: 2; grid-row: 1 / 3; }
+}
+
+@media (max-width: 420px) {
+  .pc-topbar-right { gap: 4px; }
+  .pc-help-btn { display: none; }
+  .pc-locale button:not([aria-pressed="true"]) { display: none; }
+}
+
+/* TIP-026.10 — use the desktop canvas for a truthful processing/evidence
+   ledger. This intentionally overrides the earlier 960px recovery measure;
+   the readable answer remains bounded by its own column, not by dead space. */
+.ask-workspace {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+.ask-workspace .ask-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 21vw, 360px);
+  gap: clamp(var(--pc-space-5), 2.2vw, var(--pc-space-8));
+  align-items: start;
+}
+.ask-workspace .processing-inspector {
+  position: sticky;
+  top: var(--pc-space-4);
+  min-width: 0;
+  max-height: calc(100vh - var(--pc-topbar-h) - var(--pc-space-8));
+  overflow: auto;
+  border-left: 1px solid var(--pc-border-strong);
+  padding: 2px 0 var(--pc-space-5) var(--pc-space-5);
+  color: var(--pc-text-primary);
+  scrollbar-width: thin;
+}
+.processing-inspector-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--pc-space-4);
+  padding-bottom: var(--pc-space-4);
+  border-bottom: 1px solid var(--pc-border);
+}
+.processing-inspector-head .eyebrow {
+  margin: 0 0 5px;
+  color: var(--pc-text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 650;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+.processing-inspector-head h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: -.015em;
+}
+.processing-inspector-head > code {
+  flex: none;
+  color: var(--pc-text-muted);
+  font: 500 11px/1.5 var(--pc-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.processing-ledger {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: var(--pc-space-3) 0 var(--pc-space-4);
+}
+.processing-ledger::before {
+  content: "";
+  position: absolute;
+  top: 28px;
+  bottom: 35px;
+  left: 4px;
+  width: 1px;
+  background: var(--pc-border);
+}
+.processing-ledger li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr) auto;
+  gap: var(--pc-space-3);
+  align-items: start;
+  min-height: 48px;
+  padding: 10px 0;
+}
+.processing-node {
+  position: relative;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  margin-top: 4px;
+  border: 1px solid var(--pc-border-strong);
+  border-radius: 50%;
+  background: var(--pc-bg-app);
+}
+.processing-ledger li[data-state="done"] .processing-node {
+  border-color: var(--pc-text-primary);
+  background: var(--pc-text-primary);
+}
+.processing-ledger li[data-state="active"] .processing-node {
+  border-color: var(--pc-text-primary);
+  background: var(--pc-text-primary);
+  animation: inspector-node-pulse 1.8s var(--pc-ease) infinite;
+}
+.processing-ledger strong {
+  display: block;
+  color: var(--pc-text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 560;
+}
+.processing-ledger li[data-state="done"] strong,
+.processing-ledger li[data-state="active"] strong { color: var(--pc-text-primary); }
+.processing-ledger small {
+  display: -webkit-box;
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--pc-text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.processing-state {
+  color: var(--pc-text-muted);
+  font: 500 10px/1.45 var(--pc-font-mono);
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+.processing-ledger li[data-state="active"] .processing-state {
+  width: fit-content;
+  color: transparent;
+  background: linear-gradient(100deg,
+    var(--pc-text-muted) 0 35%, var(--pc-text-primary) 48% 52%,
+    var(--pc-text-muted) 65% 100%);
+  background-size: 260% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: ask-progress-shimmer 2.2s ease-in-out infinite;
+}
+.source-ledger {
+  border-top: 1px solid var(--pc-border-strong);
+  padding-top: var(--pc-space-4);
+}
+.source-ledger > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--pc-space-3);
+  margin-bottom: var(--pc-space-2);
+}
+.source-ledger h3 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 650;
+}
+.source-ledger > header span {
+  color: var(--pc-text-muted);
+  font: 500 10px/1.4 var(--pc-font-mono);
+}
+.source-ledger-empty {
+  margin: 0;
+  padding: var(--pc-space-3) 0;
+  color: var(--pc-text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.source-ledger ol { list-style: none; margin: 0; padding: 0; }
+.source-ledger li { border-top: 1px solid var(--pc-border); padding: 0 0 9px; }
+.source-ledger li > button,
+.source-ledger li > div {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+  padding: 10px 0 5px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.source-ledger li > button { cursor: pointer; }
+.source-ledger li > button:hover .source-copy strong,
+.source-ledger li > button:focus-visible .source-copy strong {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.source-marker {
+  color: var(--pc-text-secondary);
+  font: 600 10px/1.5 var(--pc-font-mono);
+}
+.source-copy { min-width: 0; }
+.source-copy strong {
+  display: block;
+  overflow: hidden;
+  color: var(--pc-text-primary);
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.source-copy code {
+  display: block;
+  overflow: hidden;
+  color: var(--pc-text-muted);
+  font: 500 10px/1.5 var(--pc-font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.source-use {
+  color: var(--pc-text-muted);
+  font-size: 9px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.source-ledger li > small {
+  display: block;
+  padding-left: 37px;
+  color: var(--pc-text-muted);
+  font: 500 9px/1.45 var(--pc-font-mono);
+}
+.processing-disclosure {
+  margin: var(--pc-space-4) 0 0;
+  padding-top: var(--pc-space-3);
+  border-top: 1px solid var(--pc-border);
+  color: var(--pc-text-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+@keyframes inspector-node-pulse {
+  0%, 100% { opacity: .45; box-shadow: 0 0 0 0 transparent; }
+  48% { opacity: 1; box-shadow: 0 0 0 5px transparent; }
+}
+
+@media (max-width: 1365px) {
+  .ask-workspace .ask-layout { grid-template-columns: minmax(0, 1fr); }
+  .ask-workspace .processing-inspector {
+    position: static;
+    max-height: none;
+    margin-top: var(--pc-space-4);
+    border-top: 1px solid var(--pc-border-strong);
+    border-left: 0;
+    padding: var(--pc-space-5) 0 0;
+  }
+  .processing-ledger {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(110px, 1fr));
+    gap: var(--pc-space-2);
+  }
+  .processing-ledger::before { display: none; }
+  .processing-ledger li {
+    grid-template-columns: 9px minmax(0, 1fr);
+    border-top: 1px solid var(--pc-border);
+  }
+  .processing-state { grid-column: 2; }
+}
+
+@media (max-width: 760px) {
+  .processing-ledger { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .processing-ledger li {
+    grid-template-columns: 9px minmax(0, 1fr) auto;
+    min-height: 44px;
+  }
+  .processing-state { grid-column: auto; }
+  .source-ledger li > button,
+  .source-ledger li > div { grid-template-columns: auto minmax(0, 1fr); }
+  .source-use { grid-column: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .processing-ledger li[data-state="active"] .processing-node,
+  .processing-ledger li[data-state="active"] .processing-state {
+    animation: none;
+  }
+  .processing-ledger li[data-state="active"] .processing-state {
+    color: var(--pc-text-primary);
+    background: none;
+  }
+}

@@ -2,7 +2,9 @@ import hashlib
 import io
 import json
 import math
+import unicodedata
 import zipfile
+from collections import Counter
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
@@ -17,8 +19,6 @@ from openpyxl.utils import get_column_letter  # type: ignore[import-untyped]
 from PIL import Image
 from pptx import Presentation
 from pypdf import PdfReader
-from reportlab.lib.pagesizes import A4  # type: ignore[import-untyped]
-from reportlab.pdfgen import canvas  # type: ignore[import-untyped]
 
 from rtr_copilot.config import Settings
 from rtr_copilot.ingestion.errors import IngestionFailure
@@ -83,22 +83,6 @@ def _xlsx_cell_value(value: Any) -> str | int | float | bool | None:
     return str(value)
 
 
-def _text_pdf(lines: list[str]) -> bytes:
-    output = io.BytesIO()
-    pdf = canvas.Canvas(output, pagesize=A4, invariant=1, pageCompression=1)
-    text = pdf.beginText(40, A4[1] - 40)
-    for raw_line in lines or [""]:
-        for line in raw_line.splitlines() or [""]:
-            text.textLine(line[:160])
-            if text.getY() < 40:
-                pdf.drawText(text)
-                pdf.showPage()
-                text = pdf.beginText(40, A4[1] - 40)
-    pdf.drawText(text)
-    pdf.save()
-    return output.getvalue()
-
-
 def _pdf_thumbnail(payload: bytes) -> bytes:
     document = fitz.open(stream=payload, filetype="pdf")
     try:
@@ -108,6 +92,162 @@ def _pdf_thumbnail(payload: bytes) -> bytes:
         return bytes(pixmap.tobytes("png"))
     finally:
         document.close()
+
+
+def _normalized_office_pdf(payload: bytes, *, source_identity: str) -> bytes:
+    """Remove volatile producer metadata while preserving rendered geometry."""
+    document = fitz.open(stream=payload, filetype="pdf")
+    try:
+        document.set_metadata({
+            "title": "",
+            "author": "",
+            "subject": "",
+            "keywords": "",
+            "creator": "RtR Copilot",
+            "producer": "RtR Copilot Office Renderer",
+            "creationDate": "",
+            "modDate": "",
+            "trapped": "",
+        })
+        document.xref_set_key(
+            -1,
+            "ID",
+            f"[<{source_identity}><{source_identity}>]",
+        )
+        return bytes(document.tobytes(
+            garbage=4,
+            clean=True,
+            deflate=True,
+            no_new_id=True,
+        ))
+    finally:
+        document.close()
+
+
+def _resolve_pdf_font_xref(
+    resources: dict[str, int],
+    used_name: str,
+) -> int | None:
+    """Resolve PyMuPDF's sometimes-truncated span font name safely.
+
+    ``Page.get_text("dict")`` truncates some PostScript names (for example
+    ``LiberationSerif-BoldItalic`` becomes ``LiberationSerif-BoldItal``),
+    while ``Page.get_fonts`` keeps the complete resource name.  Exact matching
+    remains preferred; a prefix match is accepted only when it identifies one
+    unique embedded PDF resource.
+    """
+    exact = resources.get(used_name)
+    if exact is not None:
+        return exact
+    candidates = {
+        xref
+        for resource_name, xref in resources.items()
+        if resource_name.startswith(used_name)
+    }
+    if len(candidates) == 1:
+        return candidates.pop()
+    return None
+
+
+def _embedded_office_font_count(payload: bytes) -> int:
+    document = fitz.open(stream=payload, filetype="pdf")
+    try:
+        font_xrefs: set[int] = set()
+        unresolved_fonts: set[str] = set()
+        for page in document:
+            page_fonts = {
+                str(font[3]).split("+", 1)[-1]: int(font[0])
+                for font in page.get_fonts(full=True)
+                if int(font[0]) > 0
+            }
+            used_fonts = {
+                str(span["font"]).split("+", 1)[-1]
+                for block in page.get_text("dict")["blocks"]
+                if "lines" in block
+                for line in block["lines"]
+                for span in line["spans"]
+                if span.get("text")
+            }
+            for name in used_fonts:
+                xref = _resolve_pdf_font_xref(page_fonts, name)
+                if xref is None:
+                    unresolved_fonts.add(name)
+                else:
+                    font_xrefs.add(xref)
+        if unresolved_fonts:
+            raise IngestionFailure("office_font_resource_missing", stage="render")
+        unembedded = [
+            xref
+            for xref in sorted(font_xrefs)
+            if not document.extract_font(xref)[3]
+        ]
+        if unembedded:
+            raise IngestionFailure("office_font_not_embedded", stage="render")
+        return len(font_xrefs)
+    finally:
+        document.close()
+
+
+def _office_preview_pdf(
+    path: Path,
+    sandbox: ProcessSandbox,
+    *,
+    source_text: str,
+    expected_pages: int | None = None,
+) -> tuple[bytes, int, float, int]:
+    output = path.with_suffix(".pdf")
+    sandbox.run([
+        "soffice",
+        "--headless",
+        "--nologo",
+        "--nodefault",
+        "--nolockcheck",
+        "--norestore",
+        "--convert-to",
+        "pdf",
+        "--outdir",
+        str(path.parent.resolve()),
+        str(path.resolve()),
+    ], temp_root=path.parent)
+    if not output.is_file() or not output.stat().st_size:
+        raise IngestionFailure("office_preview_missing", stage="render")
+    source_identity = hashlib.sha256(path.read_bytes()).digest()[:16].hex()
+    payload = _normalized_office_pdf(
+        output.read_bytes(),
+        source_identity=source_identity,
+    )
+    reader = PdfReader(io.BytesIO(payload), strict=True)
+    page_count = len(reader.pages)
+    if page_count < 1:
+        raise IngestionFailure("office_preview_empty", stage="render")
+    if expected_pages is not None and page_count != expected_pages:
+        raise IngestionFailure("office_page_count_mismatch", stage="render")
+
+    expected = Counter(
+        character
+        for character in unicodedata.normalize("NFC", source_text)
+        if ord(character) > 127 and character.isalnum()
+    )
+    rendered_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    introduced_markers = {
+        marker
+        for marker in ("\x00", "\ufffd", "\u25a0")
+        if marker not in source_text and marker in rendered_text
+    }
+    if introduced_markers:
+        raise IngestionFailure("office_replacement_glyph", stage="render")
+    actual = Counter(
+        character
+        for character in unicodedata.normalize("NFC", rendered_text)
+        if ord(character) > 127 and character.isalnum()
+    )
+    expected_count = sum(expected.values())
+    matched_count = sum(min(count, actual[character]) for character, count in expected.items())
+    unicode_coverage = matched_count / max(expected_count, 1)
+    if expected_count and unicode_coverage < 0.98:
+        raise IngestionFailure("office_unicode_fidelity_failed", stage="render")
+    embedded_font_count = _embedded_office_font_count(payload)
+    return payload, page_count, unicode_coverage, embedded_font_count
 
 
 def _image_artifacts(path: Path) -> list[Artifact]:
@@ -194,7 +334,7 @@ def _pdf_artifacts(path: Path) -> list[Artifact]:
     ]
 
 
-def _docx_artifacts(path: Path) -> list[Artifact]:
+def _docx_artifacts(path: Path, sandbox: ProcessSandbox) -> list[Artifact]:
     document = Document(str(path))
     paragraphs: list[dict[str, Any]] = [
         {
@@ -204,16 +344,26 @@ def _docx_artifacts(path: Path) -> list[Artifact]:
         }
         for index, paragraph in enumerate(document.paragraphs)
     ]
-    tables: list[dict[str, Any]] = [
-        {
-            "table": table_index,
-            "rows": [
-                [cell.text for cell in row.cells]
-                for row in table.rows
-            ],
-        }
-        for table_index, table in enumerate(document.tables)
-    ]
+    tables: list[dict[str, Any]] = []
+    for table_index, table in enumerate(document.tables):
+        # Keep the XML cell objects themselves alive while traversing a table.
+        # Using ``id(cell._tc)`` let Python recycle object ids after a row's
+        # short-lived proxy objects were released, so unrelated cells in later
+        # rows were mistaken for vertically merged duplicates and their text
+        # disappeared from the searchable rendition.
+        seen_cells: set[object] = set()
+        rows: list[list[str]] = []
+        for row in table.rows:
+            values: list[str] = []
+            for cell in row.cells:
+                physical_cell = cell._tc
+                if physical_cell in seen_cells:
+                    values.append("")
+                else:
+                    seen_cells.add(physical_cell)
+                    values.append(cell.text)
+            rows.append(values)
+        tables.append({"table": table_index, "rows": rows})
     headers = [
         {
             "section": section_index,
@@ -261,7 +411,11 @@ def _docx_artifacts(path: Path) -> list[Artifact]:
     lines.extend(str(item["text"]) for item in headers)
     lines.extend(str(item["text"]) for item in footers)
     lines.extend(str(item["text"]) for item in footnotes)
-    pdf = _text_pdf(lines)
+    pdf, page_count, unicode_coverage, embedded_font_count = _office_preview_pdf(
+        path,
+        sandbox,
+        source_text="\n".join(lines),
+    )
     unit_count = (
         len(paragraphs)
         + len(tables)
@@ -275,6 +429,10 @@ def _docx_artifacts(path: Path) -> list[Artifact]:
         "native_coverage": 1.0,
         "failed_units": 0,
         "skipped_units": 0,
+        "render_engine": "libreoffice",
+        "rendered_pages": page_count,
+        "unicode_coverage": unicode_coverage,
+        "embedded_font_count": embedded_font_count,
     }
     return [
         Artifact(
@@ -403,18 +561,24 @@ def _xlsx_artifacts(path: Path, settings: Settings) -> list[Artifact]:
     ]
 
 
-def _pptx_artifacts(path: Path, settings: Settings) -> list[Artifact]:
+def _pptx_artifacts(
+    path: Path,
+    settings: Settings,
+    sandbox: ProcessSandbox,
+) -> list[Artifact]:
     presentation = Presentation(str(path))
     if len(presentation.slides) > settings.ingestion_max_slides:
         raise IngestionFailure("archive_budget_exceeded", stage="extract")
     slides = []
     lines = []
+    visible_lines: list[str] = []
     for slide_index, slide in enumerate(presentation.slides, start=1):
         shapes = []
         for shape_index, shape in enumerate(slide.shapes):
             text = str(getattr(shape, "text", ""))
             if text:
                 lines.append(text)
+                visible_lines.append(text)
             shapes.append({
                 "slide": slide_index,
                 "shape": shape_index,
@@ -432,13 +596,22 @@ def _pptx_artifacts(path: Path, settings: Settings) -> list[Artifact]:
             if notes:
                 lines.append(notes)
         slides.append({"slide": slide_index, "shapes": shapes, "notes": notes})
-    pdf = _text_pdf(lines)
+    pdf, page_count, unicode_coverage, embedded_font_count = _office_preview_pdf(
+        path,
+        sandbox,
+        source_text="\n".join(visible_lines),
+        expected_pages=len(slides),
+    )
     quality = {
         "expected_units": len(slides),
         "extracted_units": len(slides),
         "native_coverage": 1.0,
         "failed_units": 0,
         "skipped_units": 0,
+        "render_engine": "libreoffice",
+        "rendered_pages": page_count,
+        "unicode_coverage": unicode_coverage,
+        "embedded_font_count": embedded_font_count,
     }
     return [
         Artifact(
@@ -558,11 +731,11 @@ def extract_required(
     if mime == "application/pdf":
         return _pdf_artifacts(path)
     if mime.endswith("wordprocessingml.document"):
-        return _docx_artifacts(path)
+        return _docx_artifacts(path, sandbox)
     if mime.endswith("spreadsheetml.sheet"):
         return _xlsx_artifacts(path, settings)
     if mime.endswith("presentationml.presentation"):
-        return _pptx_artifacts(path, settings)
+        return _pptx_artifacts(path, settings, sandbox)
     return _media_artifacts(
         path,
         mime,

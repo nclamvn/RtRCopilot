@@ -501,6 +501,40 @@ async def test_research_search_is_scoped_labeled_and_dlp_guarded(
 
 
 @pytest.mark.asyncio
+async def test_public_internal_research_is_searchable_by_company_staff(
+    service: ResearchService,
+    factory: async_sessionmaker[Any],
+) -> None:
+    curator_id, staff_id = uuid.uuid4(), uuid.uuid4()
+    await insert_actor(factory, curator_id)
+    await insert_actor(factory, staff_id)
+    source = await create_source(
+        factory, curator_id, classification="public_internal",
+    )
+    token = f"wingcopter{uuid.uuid4().hex[:8]}"
+    record_key = f"TSW.{uuid.uuid4().hex[:12].upper()}"
+    await import_ok(
+        service,
+        factory,
+        curator_id,
+        source,
+        records=[research_record_row(
+            record_key=record_key,
+            tier="P",
+            text=f"{token} payload range telemetry",
+        )],
+    )
+    response = await service.search(
+        subject(Role.STAFF, staff_id),
+        f"{token} payload not-a-real-term",
+        request_id="public-internal-staff-search",
+        tiers=["P", "S"],
+    )
+    assert [hit.record_key for hit in response.results] == [record_key]
+    assert all(hit.zone_label == "research" for hit in response.results)
+
+
+@pytest.mark.asyncio
 async def test_masquerade_probes_research_never_appears_as_sot(
     roots: tuple[Path, Path],
     service: ResearchService,

@@ -1,0 +1,668 @@
+{
+  "schema_version": 1,
+  "registry_id": "rtr.enterprise-ontology",
+  "owner": "curator:sot",
+  "entities": [
+    {
+      "entity_id": "rtr.company.real-time-robotics",
+      "canonical_name": "Real-time Robotics",
+      "entity_type": "company",
+      "domain": "company",
+      "aliases": [
+        "rtr",
+        "rtrobotics",
+        "real time robotics",
+        "công ty",
+        "công ty mình",
+        "cty mình",
+        "bên mình",
+        "email cty",
+        "email công ty",
+        "mail công ty",
+        "company email",
+        "where are you guys from"
+      ],
+      "definition_record_keys": [
+        "L3F.ENT.001",
+        "L3F.ENT.002",
+        "L3F.BRD.002",
+        "L3F.1.019",
+        "L3F.1.020",
+        "L3F.1.023",
+        "L3F.RES.004",
+        "L3F.REC.001"
+      ],
+      "profile_facets": [
+        {"facet_id": "identity", "label": "company identity and legal name", "presentation_labels": ["Company identity", "Nhận diện công ty"], "query_aliases": ["tên pháp nhân", "pháp nhân đầy đủ", "legal name", "tên công ty", "làm mảng gì"], "record_keys": ["L3F.ENT.001", "L3F.ENT.002"]},
+        {"facet_id": "brand", "label": "brand mission, doctrine and spelling", "presentation_labels": ["Brand", "Thương hiệu"], "query_aliases": ["triết lý thương hiệu", "sứ mệnh", "brand", "real-time hay real-time", "brand viết"], "record_keys": ["L3F.BRD.002", "L3F.1.020"]},
+        {"facet_id": "contact", "label": "official contact channels", "presentation_labels": ["Contact", "Liên hệ"], "query_aliases": ["email cty", "email công ty", "mail công ty", "company email", "điện thoại công ty", "contact"], "record_keys": ["L3F.1.019"]},
+        {"facet_id": "positioning", "label": "approved external origin and positioning answer", "presentation_labels": ["External positioning", "Định vị đối ngoại"], "query_aliases": ["where are you guys from", "công ty từ đâu", "bên mình từ đâu", "answer sao"], "record_keys": ["L3F.1.023"]},
+        {"facet_id": "leadership", "label": "leadership and founder", "presentation_labels": ["Leadership", "Lãnh đạo"], "query_aliases": ["ceo", "sếp", "người sáng lập", "founder", "lãnh đạo"], "record_keys": ["L3F.RES.004"]},
+        {"facet_id": "recognition", "label": "public recognition and milestones", "presentation_labels": ["Recognition", "Dấu công nhận"], "query_aliases": ["thành tựu", "dấu công nhận", "giải thưởng", "cột mốc", "credentials", "recognition", "award"], "record_keys": ["L3F.REC.001"]}
+      ],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.hera",
+      "canonical_name": "HERA",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["hira", "heara", "hr"],
+      "definition_record_keys": ["HC-001"],
+      "profile_facets": [
+        {"facet_id": "overview", "label": "overview, role and uses", "presentation_labels": ["Overview", "Tổng quan"], "record_keys": ["L3F.PRD.001"]},
+        {"facet_id": "core_specs", "label": "core specifications and current configurations", "presentation_labels": ["Current specifications and configurations", "Thông số và cấu hình hiện hành"], "query_aliases": ["thông số", "spec", "specification", "cấu hình"], "record_keys": ["HC-001"]},
+        {"facet_id": "deployment", "label": "deployment and physical design", "presentation_labels": ["Deployment and physical design", "Triển khai cơ động"], "record_keys": ["HC-004"]},
+        {"facet_id": "control", "label": "command, control and naming", "presentation_labels": ["Command and control", "Điều khiển và liên kết"], "query_aliases": ["heralink", "herahub", "đổi tên", "tên mới", "giờ gọi là gì", "renamed to", "former name"], "record_keys": ["HC-017", "L3F.1.008"]},
+        {"facet_id": "sensing", "label": "sensor and payload ecosystem", "presentation_labels": ["Sensors and payloads", "Cảm biến"], "record_keys": ["HC-011"]},
+        {"facet_id": "applications", "label": "application space", "presentation_labels": ["Applications", "Ứng dụng"], "record_keys": ["HC-050"]},
+        {"facet_id": "compliance", "label": "current compliance and market status", "presentation_labels": ["Compliance and current status", "Tuân thủ và xác nhận"], "record_keys": ["L3F.RES.003"]},
+        {"facet_id": "battery", "label": "battery electrical specification", "presentation_labels": ["Battery", "Pin"], "query_aliases": ["pin", "điện áp pin", "battery", "battery voltage", "44.4v", "50.4v"], "record_keys": ["L3F.2.015"]},
+        {"facet_id": "commercial", "label": "current commercial price", "presentation_labels": ["Commercial", "Giá thương mại"], "query_aliases": ["giá", "giá list", "giá bán", "price", "list price", "msrp"], "record_keys": ["PRICE.HERA.MSRP.US"]},
+        {"facet_id": "maintenance", "label": "maintenance baseline", "presentation_labels": ["Maintenance", "Bảo trì"], "query_aliases": ["bảo dưỡng", "bảo trì", "maintenance", "service interval"], "record_keys": ["L3F.2.007"]},
+        {"facet_id": "warranty", "label": "warranty baseline", "presentation_labels": ["Warranty", "Bảo hành"], "query_aliases": ["bảo hành", "warranty"], "record_keys": ["L3F.2.009"]},
+        {"facet_id": "roadmap", "label": "product roadmap", "presentation_labels": ["Roadmap", "Lộ trình"], "record_keys": ["L3F.2.022"]}
+      ],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.vega",
+      "canonical_name": "VEGA",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["vga", "vaga"],
+      "definition_record_keys": ["HC-002", "L3F.1.011"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.herasight",
+      "canonical_name": "HeraSight",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["herasight", "hera sight", "hera-sight", "sight"],
+      "definition_record_keys": ["HC-010"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.herasight-lr",
+      "canonical_name": "HeraSight LR",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["herasight lr", "hera sight lr", "61t", "sight"],
+      "definition_record_keys": ["HC-011"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.dualsight",
+      "canonical_name": "DualSight",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["dualsight", "dual sight", "sight"],
+      "definition_record_keys": ["HC-012"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.omnisight",
+      "canonical_name": "OmniSight",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["omnisight", "omni sight", "sight"],
+      "definition_record_keys": ["HC-013"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.skywatch-360",
+      "canonical_name": "SkyWatch 360",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["skywatch", "sky watch", "skywatch 360"],
+      "definition_record_keys": ["HC-014"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.herahub",
+      "canonical_name": "HeraHub",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["herahub", "hera hub", "heralink"],
+      "definition_record_keys": ["HC-017", "L3F.1.008"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.vegahub",
+      "canonical_name": "VegaHub",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["vegahub", "vega hub"],
+      "definition_record_keys": ["HC-019"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.vegasight",
+      "canonical_name": "VegaSight",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["vegasight", "vega sight", "sight"],
+      "definition_record_keys": ["HC-057"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.aerotunnel",
+      "canonical_name": "AeroTunnel",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["aerotunnel", "aero tunnel"],
+      "definition_record_keys": ["HC-058"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.ls1",
+      "canonical_name": "LS1",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["ls1", "ls-1"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.product.s1",
+      "canonical_name": "S1",
+      "entity_type": "product",
+      "domain": "products",
+      "aliases": ["s1"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.project.cangio",
+      "canonical_name": "Dự án Cần Giờ",
+      "entity_type": "project",
+      "domain": "projects",
+      "aliases": ["cần giờ", "can gio", "bql rừng phòng hộ cần giờ", "cangio"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.project.vinatea-cncl",
+      "canonical_name": "Dự án Vinatea CNCL",
+      "entity_type": "project",
+      "domain": "projects",
+      "aliases": ["vinatea", "vinatea rtr fpt", "chè sầu riêng", "ho so cncl"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.project.evnnpt",
+      "canonical_name": "Dự án EVNNPT",
+      "entity_type": "project",
+      "domain": "projects",
+      "aliases": ["evnnpt", "điện lực", "dien luc"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.project.hbc-bkhcn",
+      "canonical_name": "Dự án HBC Bộ KH&CN",
+      "entity_type": "project",
+      "domain": "projects",
+      "aliases": ["hbc", "hbc bkhcn", "hbc bộ khoa học công nghệ"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.project.danang-uav-ioc",
+      "canonical_name": "Dự án Đà Nẵng UAV-IOC",
+      "entity_type": "project",
+      "domain": "projects",
+      "aliases": ["đà nẵng", "da nang", "danang uav", "uav ioc đà nẵng"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.project.haiphong-uav-ioc",
+      "canonical_name": "Dự án Hải Phòng UAV-IOC",
+      "entity_type": "project",
+      "domain": "projects",
+      "aliases": ["hải phòng", "hai phong", "haiphong", "uav ioc hải phòng"],
+      "definition_record_keys": ["tip027.project.haiphong-uav-ioc-v4"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.project.quangninh-uav-ioc",
+      "canonical_name": "Dự án Quảng Ninh UAV-IOC",
+      "entity_type": "project",
+      "domain": "projects",
+      "aliases": ["quảng ninh", "quang ninh", "quangninh", "uav ioc quảng ninh"],
+      "definition_record_keys": ["tip027.project.quangninh-uav-ioc-v4"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.project.bqp-vega",
+      "canonical_name": "Dự án BQP VEGA",
+      "entity_type": "project",
+      "domain": "projects",
+      "aliases": ["bqp vega", "project bqp vega"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.project.reviter",
+      "canonical_name": "Hợp tác RtR–Reviter",
+      "entity_type": "partnership",
+      "domain": "projects",
+      "aliases": ["reviter", "rtr reviter", "hợp tác reviter"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.project.caolocmatch",
+      "canonical_name": "CaoLocMatch",
+      "entity_type": "project",
+      "domain": "projects",
+      "aliases": ["cao loc match", "cao lộc match", "caoloc match"],
+      "lifecycle": "active",
+      "owner": "curator:projects",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.system.crm",
+      "canonical_name": "RtR CRM",
+      "entity_type": "enterprise_system",
+      "domain": "systems",
+      "aliases": [
+        "crm",
+        "quản trị khách hàng",
+        "quan tri khach hang",
+        "app quản lý khách hàng",
+        "hệ thống quản lý khách hàng"
+      ],
+      "definition_record_keys": [
+        "L3F.4.001",
+        "tip027.crm.service-request-process"
+      ],
+      "lifecycle": "active",
+      "owner": "owner:crm",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.system.mrp",
+      "canonical_name": "RtR MRP",
+      "entity_type": "enterprise_system",
+      "domain": "systems",
+      "aliases": [
+        "mrp",
+        "quản trị sản xuất vật tư",
+        "quan tri san xuat vat tu",
+        "app quản lý sản xuất",
+        "hoạch định sản xuất"
+      ],
+      "definition_record_keys": [
+        "L3F.4.003",
+        "L3F.4.004",
+        "tip027.mrp.operating-pipelines",
+        "tip027.mrp.maturity-assessment"
+      ],
+      "lifecycle": "active",
+      "owner": "owner:operations",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.system.ip",
+      "canonical_name": "RtR IP",
+      "entity_type": "enterprise_system",
+      "domain": "systems",
+      "aliases": [
+        "ip",
+        "ip management",
+        "ip filing assistant",
+        "quản trị tài sản trí tuệ",
+        "quan tri tai san tri tue",
+        "app quản lý sáng chế",
+        "quản lý sáng chế"
+      ],
+      "definition_record_keys": ["L3F.4.002"],
+      "lifecycle": "active",
+      "owner": "owner:ip-legal",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.standard.ingress-protection",
+      "canonical_name": "Ingress Protection",
+      "entity_type": "technical_standard",
+      "domain": "products",
+      "aliases": ["ip", "ip rating", "chuẩn ip", "chống bụi nước"],
+      "definition_record_keys": ["HC-001"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "entity_id": "rtr.system.control-tower",
+      "canonical_name": "RtR Control Tower",
+      "entity_type": "enterprise_system",
+      "domain": "systems",
+      "aliases": [
+        "control tower",
+        "rtr control tower",
+        "app quản lý dự án",
+        "hệ thống quản lý dự án"
+      ],
+      "definition_record_keys": [
+        "L3F.4.005",
+        "L3F.4.006",
+        "L3F.4.013",
+        "tip027.system.control-tower-user-guide"
+      ],
+      "lifecycle": "active",
+      "owner": "owner:operations",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.system.theskywatch",
+      "canonical_name": "The Sky Watch",
+      "entity_type": "knowledge_platform",
+      "domain": "systems",
+      "aliases": [
+        "the sky watch",
+        "theskywatch",
+        "theskywatch.com",
+        "nền tảng dữ liệu uav"
+      ],
+      "definition_record_keys": [
+        "L3F.3.001",
+        "L3F.3.006",
+        "L3F.4.010"
+      ],
+      "profile_facets": [
+        {"facet_id": "overview", "label": "platform overview", "presentation_labels": ["Overview", "Tổng quan"], "record_keys": ["L3F.3.001", "L3F.3.006", "L3F.4.010"]},
+        {"facet_id": "data_governance", "label": "data governance and deployment gates", "presentation_labels": ["Data governance", "Quản trị dữ liệu"], "query_aliases": ["gate", "teeth", "kiểm dữ liệu", "data governance", "trước deploy", "before deploy"], "record_keys": ["L3F.3.007"]}
+      ],
+      "lifecycle": "active",
+      "owner": "owner:theskywatch",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.system.sales-brief",
+      "canonical_name": "RtR Sales Brief",
+      "entity_type": "enterprise_system",
+      "domain": "operations",
+      "aliases": [
+        "sales brief",
+        "sales brief bên mình",
+        "hệ thống sales brief",
+        "workbook sales brief"
+      ],
+      "definition_record_keys": ["L3F.2.001"],
+      "profile_facets": [
+        {"facet_id": "file_naming", "label": "file naming convention", "presentation_labels": ["File naming", "Quy ước đặt tên"], "query_aliases": ["tên file", "đặt tên file", "file name", "filename"], "record_keys": ["L3F.2.003"]},
+        {"facet_id": "opportunity_score", "label": "opportunity score cells", "presentation_labels": ["Opportunity score", "Điểm cơ hội"], "query_aliases": ["chấm điểm", "điểm cơ hội", "ô nào", "cell", "c59"], "record_keys": ["L3F.2.004"]}
+      ],
+      "lifecycle": "active",
+      "owner": "owner:sales",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.method.sot-kernel",
+      "canonical_name": "SOT Kernel-in-a-Box",
+      "entity_type": "method",
+      "domain": "methods",
+      "aliases": [
+        "sot",
+        "sot bên mình",
+        "sot kernel",
+        "kernel registry",
+        "nguồn sự thật",
+        "source of truth"
+      ],
+      "definition_record_keys": ["L3F.2.033"],
+      "lifecycle": "active",
+      "owner": "curator:methodology",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.method.refinery",
+      "canonical_name": "RtR Refinery",
+      "entity_type": "method",
+      "domain": "methods",
+      "aliases": ["refinery", "cào lọc tinh chế", "cao loc tinh che"],
+      "definition_record_keys": ["L3F.2.037"],
+      "lifecycle": "active",
+      "owner": "curator:methodology",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.method.vibecode",
+      "canonical_name": "Vibecode",
+      "entity_type": "method",
+      "domain": "methods",
+      "aliases": ["vibecode", "vibe code", "phương pháp vibecode"],
+      "definition_record_keys": ["L3F.2.037"],
+      "lifecycle": "active",
+      "owner": "curator:methodology",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.method.adversarial-audit",
+      "canonical_name": "Adversarial Audit Checklist",
+      "entity_type": "method",
+      "domain": "methods",
+      "aliases": [
+        "audit trước meeting",
+        "audit meeting khách",
+        "adversarial audit",
+        "7 vai audit"
+      ],
+      "definition_record_keys": ["L3F.2.034"],
+      "lifecycle": "active",
+      "owner": "curator:methodology",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.method.transfer-package",
+      "canonical_name": "RtR Core Method Package",
+      "entity_type": "method_bundle",
+      "domain": "methods",
+      "aliases": [
+        "gói chuyển giao phương pháp lõi",
+        "gói phương pháp lõi",
+        "các phương pháp lõi",
+        "phương pháp lõi của team",
+        "core methods",
+        "core method package",
+        "method transfer package"
+      ],
+      "definition_record_keys": ["L3F.2.037"],
+      "lifecycle": "active",
+      "owner": "curator:methodology",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.method.fail-loud",
+      "canonical_name": "Fail-loud Doctrine",
+      "entity_type": "method",
+      "domain": "methods",
+      "aliases": ["fail loud", "fail-loud", "fail silent", "fail-silent"],
+      "definition_record_keys": ["L3F.2.038"],
+      "lifecycle": "active",
+      "owner": "curator:methodology",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.program.maintenance",
+      "canonical_name": "Chương trình bảo dưỡng RtR",
+      "entity_type": "business_program",
+      "domain": "operations",
+      "aliases": [
+        "chương trình bảo dưỡng",
+        "chương trình bảo trì",
+        "con số bảo dưỡng",
+        "mấy con số bảo dưỡng",
+        "chính sách bảo dưỡng",
+        "lộ trình bảo dưỡng",
+        "maintenance program",
+        "maintenance policy",
+        "maintenance roadmap"
+      ],
+      "definition_record_keys": [
+        "L3F.2.007",
+        "L3F.2.008",
+        "L3F.2.009",
+        "L3F.2.010",
+        "L3F.2.011"
+      ],
+      "lifecycle": "active",
+      "owner": "owner:service-quality",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.process.booth-lead-capture",
+      "canonical_name": "RtR Booth Lead Capture",
+      "entity_type": "business_process",
+      "domain": "operations",
+      "aliases": [
+        "quy trình thu lead",
+        "thu lead ở booth",
+        "thu lead tại booth",
+        "xử lý lead ở booth",
+        "xử lý lead tại booth",
+        "quy trình lead ở booth",
+        "quy trình lead tại booth",
+        "lead ở booth",
+        "lead tại booth"
+      ],
+      "definition_record_keys": ["L3F.1.029"],
+      "lifecycle": "active",
+      "owner": "owner:sales",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.process.booth-escalation",
+      "canonical_name": "RtR Booth Escalation",
+      "entity_type": "business_process",
+      "domain": "operations",
+      "aliases": [
+        "khách tier a ở booth",
+        "tier a ở booth",
+        "booth escalation"
+      ],
+      "definition_record_keys": ["L3F.1.031"],
+      "lifecycle": "active",
+      "owner": "owner:sales",
+      "provenance_level": "approved_internal"
+    },
+    {
+      "entity_id": "rtr.process.deck-readiness",
+      "canonical_name": "RtR Deck Readiness Scorecard",
+      "entity_type": "business_process",
+      "domain": "operations",
+      "aliases": [
+        "deck sẵn sàng trình",
+        "deck phải được bao nhiêu điểm",
+        "scorecard deck"
+      ],
+      "definition_record_keys": ["L3F.2.019"],
+      "lifecycle": "active",
+      "owner": "owner:brand",
+      "provenance_level": "approved_internal"
+    }
+  ],
+  "collections": [
+    {
+      "collection_id": "rtr.catalog.product-portfolio",
+      "canonical_name": "Danh mục sản phẩm RtR",
+      "domain": "products",
+      "aliases": [
+        "các sản phẩm của rtr",
+        "sản phẩm rtr",
+        "danh sách sản phẩm rtr",
+        "danh mục sản phẩm rtr",
+        "rtr products",
+        "rtr product portfolio",
+        "rtr product list"
+      ],
+      "subject_entity_ids": ["rtr.company.real-time-robotics"],
+      "members": [
+        {"name": "HERA", "kind": "product", "entity_id": "rtr.product.hera"},
+        {"name": "VEGA", "kind": "product", "entity_id": "rtr.product.vega"},
+        {"name": "HERA + VEGA", "kind": "bundle"},
+        {"name": "HeraHub", "kind": "product", "entity_id": "rtr.product.herahub"},
+        {"name": "VegaHub", "kind": "product", "entity_id": "rtr.product.vegahub"},
+        {"name": "HeraSight", "kind": "product", "entity_id": "rtr.product.herasight"},
+        {"name": "HeraSight LR", "kind": "product", "entity_id": "rtr.product.herasight-lr"},
+        {"name": "VegaSight", "kind": "product", "entity_id": "rtr.product.vegasight"},
+        {"name": "OmniSight", "kind": "product", "entity_id": "rtr.product.omnisight"},
+        {"name": "DualSight", "kind": "product", "entity_id": "rtr.product.dualsight"},
+        {"name": "SkyWatch 360", "kind": "product", "entity_id": "rtr.product.skywatch-360"},
+        {"name": "LiDAR", "kind": "product"},
+        {"name": "RAGAS", "kind": "product"},
+        {"name": "AeroTunnel", "kind": "product", "entity_id": "rtr.product.aerotunnel"},
+        {"name": "Dịch vụ", "kind": "service"},
+        {"name": "Chưa xác định", "kind": "placeholder"}
+      ],
+      "record_keys": ["L3R.2.005"],
+      "lifecycle": "active",
+      "owner": "curator:sot",
+      "provenance_level": "verified_primary"
+    },
+    {
+      "collection_id": "rtr.catalog.core-methods",
+      "canonical_name": "Danh mục phương pháp lõi RtR",
+      "domain": "methods",
+      "aliases": [
+        "gói chuyển giao phương pháp lõi",
+        "gói phương pháp lõi",
+        "các phương pháp lõi",
+        "core methods",
+        "core method package"
+      ],
+      "subject_entity_ids": ["rtr.method.transfer-package"],
+      "members": [
+        {"name": "SOT Kernel-in-a-Box", "kind": "method", "entity_id": "rtr.method.sot-kernel"},
+        {"name": "Refinery", "kind": "method", "entity_id": "rtr.method.refinery"},
+        {"name": "Vibecode Kit", "kind": "method", "entity_id": "rtr.method.vibecode"},
+        {"name": "Văn bản Nhà nước", "kind": "method"}
+      ],
+      "record_keys": ["L3F.2.037"],
+      "lifecycle": "active",
+      "owner": "curator:methodology",
+      "provenance_level": "approved_internal"
+    }
+  ]
+}

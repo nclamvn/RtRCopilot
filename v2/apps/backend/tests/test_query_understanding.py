@@ -13,6 +13,9 @@ from rtr_copilot.rag.query_understanding import (
     OfflineRewriter,
     RewriteResult,
     augment_query,
+    classify_intent,
+    plan_query,
+    requests_exhaustive,
     resolve_entities,
     understand,
     validate_entities,
@@ -25,9 +28,11 @@ class _StubRewriter:
     def __init__(self, result: RewriteResult) -> None:
         self._result = result
         self.calls = 0
+        self.questions: list[str] = []
 
     async def rewrite(self, question: str) -> RewriteResult:
         self.calls += 1
+        self.questions.append(question)
         return self._result
 
 
@@ -88,6 +93,11 @@ class TestAbbreviationAndVariant:
 
     def test_former_name_heralink(self) -> None:
         assert resolve_entities("heralink controller") == ["HeraHub"]
+
+
+class TestPointAttributeRequests:
+    def test_rename_question_is_not_exhaustive(self) -> None:
+        assert requests_exhaustive("HeraLink giờ gọi là gì rồi?") is False
 
 
 class TestFuzzyNetIsStrict:
@@ -157,6 +167,42 @@ class TestInvariants:
         assert augment_query("") == ""
         assert resolve_entities("???") == []
 
+    def test_colloquial_structure_question_requires_procedural_synthesis(self) -> None:
+        for question in (
+            "SOT bên mình tổ chức sao",
+            "quy trình này vận hành sao",
+            "hệ thống hoạt động như nào",
+        ):
+            assert classify_intent(question) == "procedure"
+
+    def test_full_legal_name_is_a_point_attribute_not_a_complete_set(self) -> None:
+        question = "cty mình tên pháp nhân đầy đủ là gì vậy?"
+        assert classify_intent(question) == "lookup"
+        assert requests_exhaustive(question) is False
+
+    def test_company_email_is_a_point_lookup(self) -> None:
+        assert classify_intent("email cty là gì?") == "lookup"
+
+    def test_brand_philosophy_is_a_point_lookup(self) -> None:
+        assert classify_intent("triết lý thương hiệu bên mình là gì") == "lookup"
+
+    def test_technical_stack_is_a_point_lookup(self) -> None:
+        assert classify_intent("nó dùng tech stack gì?") == "lookup"
+
+    def test_external_planner_cannot_promote_point_attribute_to_definition(self) -> None:
+        stub = _StubRewriter(RewriteResult(
+            entities=["Real-time Robotics"],
+            intent="definition",
+            answer_shape="direct",
+        ))
+        plan = asyncio.run(plan_query("triết lý thương hiệu bên mình là gì", stub))
+        assert plan.intent == "lookup"
+
+    def test_explicit_complete_product_list_remains_exhaustive(self) -> None:
+        question = "liệt kê đầy đủ các sản phẩm của RtR"
+        assert classify_intent(question) == "enumeration"
+        assert requests_exhaustive(question) is True
+
 
 class TestEntityGuard:
     def test_keeps_registered_drops_unknown(self) -> None:
@@ -224,3 +270,58 @@ class TestUnderstand:
         first = asyncio.run(understand("compare them", stub))
         second = asyncio.run(understand("compare them", stub))
         assert first == second
+
+
+class TestConversationPlanning:
+    def test_external_planner_receives_bounded_history_and_resolves_follow_up(
+        self,
+    ) -> None:
+        rewriter = _StubRewriter(RewriteResult(
+            entities=["HERA"],
+            intent="lookup",
+            completeness="point",
+            answer_shape="direct",
+            retrieval_queries=["HERA flight endurance"],
+            standalone_question="HERA bay được bao lâu?",
+        ))
+        plan = asyncio.run(plan_query(
+            "thế nó bay được bao lâu?",
+            rewriter,
+            conversation_context=(
+                "user: HERA là gì?",
+                (
+                    "assistant: HERA là nền tảng UAV đa nhiệm, dùng HeraHub "
+                    "và HeraSight LR. [C1]"
+                ),
+            ),
+        ))
+        assert "<conversation_history>" in rewriter.questions[0]
+        assert "<current_question>" in rewriter.questions[0]
+        assert plan.entities == ("HERA",)
+        assert plan.resolved_question == "HERA bay được bao lâu?"
+        assert plan.context_message_count == 2
+        assert plan.retrieval_query.startswith("thế nó bay được bao lâu?")
+        assert "HERA bay được bao lâu?" in plan.retrieval_query
+        audit = plan.audit_metadata()
+        assert audit["context_message_count"] == 2
+        assert "HERA bay được bao lâu?" not in repr(audit)
+
+    def test_offline_fallback_does_not_consume_conversation_history(self) -> None:
+        plan = asyncio.run(plan_query(
+            "thế nó bay được bao lâu?",
+            OfflineRewriter(),
+            conversation_context=("user: HERA là gì?",),
+        ))
+        assert plan.resolved_question == "thế nó bay được bao lâu?"
+        assert plan.context_message_count == 0
+        assert "HERA" not in plan.retrieval_query
+
+
+def test_exact_governed_definition_bypasses_external_planner_without_quality_loss() -> None:
+    rewriter = _StubRewriter(RewriteResult(entities=["VEGA"]))
+    plan = asyncio.run(plan_query("HERA là gì?", rewriter))
+    assert rewriter.calls == 0
+    assert plan.planner_source == "deterministic"
+    assert plan.entities == ("HERA",)
+    assert plan.resolution_state == "resolved"
+    assert plan.profile_facets

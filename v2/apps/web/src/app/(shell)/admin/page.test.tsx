@@ -57,7 +57,7 @@ test("pilot corpus panel renders live gates and the local-only boundary", async 
   vi.stubGlobal("fetch", vi.fn(responseFor)); render(<AdminPage/>);
   fireEvent.click(await screen.findByRole("button", {name: /Corpus pilot/}));
   expect(await screen.findByRole("heading", {name: "Corpus pilot và provenance"})).toBeInTheDocument();
-  expect(screen.getByText(/211 fact có caveat/)).toBeInTheDocument();
+  expect(await screen.findByText(/211 fact có caveat/)).toBeInTheDocument();
   expect(screen.getByText("caveated_named_owners")).toBeInTheDocument();
   expect(screen.getByText(/LOCAL \/ DEV ONLY/)).toBeInTheDocument();
 });

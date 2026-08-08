@@ -50,6 +50,13 @@ describe("ask answer contract", () => {
     expect(parsed.entries[0].zone).toBeNull();
     expect(parsed.conversationId).toBe(conversationId);
     expect(parsed.gapId).toBeNull();
+    expect(parsed.answerMode).toBeNull();
+    expect(parsed.coverageState).toBe("not_assessed");
+  });
+
+  test("grounded evidence-only mode is explicit at the client boundary", () => {
+    expect(parseAskAnswer({...grounded, answer_mode: "evidence_only"}).answerMode)
+      .toBe("evidence_only");
   });
 
   test("honest-null carries the recorded gap id and no citations", () => {
@@ -61,6 +68,17 @@ describe("ask answer contract", () => {
     expect(parsed.state).toBe("honest_null");
     expect(parsed.entries).toEqual([]);
     expect(parsed.gapId).toBe(gapId);
+  });
+
+  test("provider configuration abstention is typed and carries no false gap", () => {
+    const parsed = parseAskAnswer({
+      ...grounded, state: "honest_null", citations: [], gap_id: null,
+      reason_code: "answer_quality_configuration_required",
+      answer: "Đã tìm thấy bằng chứng phù hợp nhưng chưa thể tổng hợp.",
+    });
+    expect(parsed.state).toBe("honest_null");
+    expect(parsed.reasonCode).toBe("answer_quality_configuration_required");
+    expect(parsed.gapId).toBeNull();
   });
 
   test("a non-grounded answer may not smuggle citations", () => {
@@ -83,6 +101,15 @@ describe("ask answer contract", () => {
       .toThrow("invalid_ask_response");
   });
 
+  test("grounded partial coverage is typed without changing grounding", () => {
+    const parsed = parseAskAnswer({...grounded, coverage_state: "partial"});
+    expect(parsed.state).toBe("grounded");
+    expect(parsed.coverageState).toBe("partial");
+    expect(parsed.entries).toHaveLength(1);
+    expect(() => parseAskAnswer({...grounded, coverage_state: "mostly"}))
+      .toThrow("invalid_ask_response");
+  });
+
   test("a forged zone label inside a citation rejects the whole answer", () => {
     // TIP-011: the literal server "sot" is the legitimate label…
     const labeled = parseAskAnswer({
@@ -99,6 +126,8 @@ describe("ask answer contract", () => {
     {patch: {state: "speculative"}},
     {patch: {conversation_id: "nope"}},
     {patch: {gap_id: "nope"}},
+    {patch: {reason_code: "provider_made_this_up"}},
+    {patch: {answer_mode: "speculative"}},
     {patch: {citations: "none"}},
   ])("rejects malformed response $patch", ({patch}) => {
     expect(() => parseAskAnswer({...grounded, ...patch})).toThrow();

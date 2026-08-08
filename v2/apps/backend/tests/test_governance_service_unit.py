@@ -117,6 +117,8 @@ def test_setting_registry_is_typed_and_bounded() -> None:
         # TIP-012 Task 2 — cost budgets and job concurrency caps.
         "limits.budget.subject_daily_units",
         "limits.budget.global_daily_units",
+        "limits.budget.subject_daily_tokens",
+        "limits.budget.global_daily_tokens",
         "limits.jobs.ingestion_max_inflight",
         "limits.jobs.render_max_inflight",
         "limits.jobs.index_max_backlog",

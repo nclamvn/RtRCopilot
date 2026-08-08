@@ -1,0 +1,98 @@
+schema_version: 1
+campaign: TIP-027
+root_label: RtR company workspace
+owner_boundary: >-
+  Curated company projects, customer-service operations and manufacturing
+  operations. External web material is excluded from this admission batch.
+entries:
+  - manifest_key: project.haiphong-uav-ioc-v4
+    path: project_HaiPhong/_output/RtR_Hai_Phong_UAV-IOC_2026_VN_v4_final.pdf
+    sha256: cd9c0079f77afb3359a06080466b946da8ecc491e240cf739edd65c6d1426678
+    mime_type: application/pdf
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: project.quangninh-uav-ioc-v4
+    path: project_QuangNinh/_output/RtR-Quang-Ninh-2026_VN_v4_final.pdf
+    sha256: 8d44c09ed4c4cc6977e6167508d0b5f8dbfa23538304c93e28f604a4ced789a1
+    mime_type: application/pdf
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: project.hbc-survey-proposal
+    path: project_HBC_BKHCN/RtR-HoaBinh-Survey-Proposal (1).docx
+    sha256: 25f8bd761018a50fed3bf6d1edb96c4d4ce24fa5af667bfd2f03d6adb6c8fb60
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: system.control-tower-user-guide
+    path: rtr-quanlyduan/RtR-Control-Tower-UserGuide.docx
+    sha256: 51b0b0df437c954f671ef3ed1a5eca34478180cf6d8d5dbaa1725150fc84c387
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: crm.service-request-process
+    path: crm/docs/service/qt-cskh/QT-CSKH-01_Quy-trinh-tiep-nhan-xu-ly-yeu-cau-ky-thuat_v1_0.docx
+    sha256: 5fe9152630fd6f5186002cc1f4a57fc80a6c3a49454746b76d77813cbb8ec312
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: crm.service-request-intake-form
+    path: crm/docs/service/qt-cskh/BM-CSKH-01_Phieu-tiep-nhan-yeu-cau_v1_0.docx
+    sha256: 34f1c98b4e1eb12060224d66935ab3cdd2840e08b7af19d63530993a64451618
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: crm.equipment-handover-form
+    path: crm/docs/service/qt-cskh/BM-CSKH-02_Bien-ban-giao-nhan-thiet-bi_v1_0.docx
+    sha256: 0510416c3cc3ce5dce5d01ae364dbb2254681a1f090897361b35889965a66aab
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: crm.repair-assignment-form
+    path: crm/docs/service/qt-cskh/BM-CSKH-03_Phieu-danh-gia-phan-cong-sua-chua_v1_0.docx
+    sha256: 92875c4afd6cd4c791d87ea518fd80b73af119750a467bbedb3b630914dece95
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: crm.repair-acceptance-form
+    path: crm/docs/service/qt-cskh/BM-CSKH-04_Bien-ban-sua-chua-nghiem-thu_v1_0.docx
+    sha256: abc741f16cfbae6bc9acb1d4a94ea95950c262a6d93fefc390cd5be103fd7e3b
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: crm.repair-quotation-form
+    path: crm/docs/service/qt-cskh/BM-CSKH-05_Bao-gia-sua-chua_v1_0.docx
+    sha256: 5e94ac87984349a4569f5bd76ea1f737329ab1a3361055be03ee6ce633915869
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: crm.service-quality-form
+    path: crm/docs/service/qt-cskh/BM-CSKH-06_Phieu-danh-gia-chat-luong-dich-vu_v1_0.docx
+    sha256: ff42c2e54e850414ddc139bb8d2aba69bc0a0a51b913b1520541c1539083a9b8
+    mime_type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: mrp.operating-pipelines
+    path: rtr-mrp/PIPELINES_VAN_HANH.pdf
+    sha256: 3f687587377ebc52494824e714d669aac0245004030ff00964c3457ccc026f8a
+    mime_type: application/pdf
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: mrp.maturity-assessment
+    path: rtr-mrp/MATURITY_ASSESSMENT.pdf
+    sha256: 5ecdcdd75ff673c9642288abf9da962a896e66b3fd54d2a020c314d20c4c5877
+    mime_type: application/pdf
+    classification: internal
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7

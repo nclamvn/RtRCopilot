@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86400)
     session_cookie_name: str = "rtr_session"
     session_cookie_secure: bool | None = None
-    expected_schema_revision: str = "0011_ingestion_pub_deferred"
+    expected_schema_revision: str = "0012_enterprise_governance"
     sot_staging_root: Path = Path("/tmp/rtr-sot-staging")
     research_staging_root: Path = Path("/tmp/rtr-research-staging")
     sot_signing_secret: SecretStr = SecretStr(
@@ -90,24 +90,50 @@ class Settings(BaseSettings):
     rag_metadata_scan_limit: int = Field(default=5000, ge=1, le=20000)
     rag_retrieval_timeout_ms: int = Field(default=2000, ge=100, le=10000)
     rag_top_k: int = Field(default=5, ge=1, le=20)
+    rag_answer_candidate_k: int = Field(default=12, ge=1, le=20)
+    rag_authority_candidate_k: int = Field(default=20, ge=1, le=64)
     rag_min_vector_score: float = Field(default=0.15, ge=0.0, le=1.0)
     rag_evidence_max_bytes: int = Field(default=16000, ge=512, le=100000)
     rag_answer_max_chars: int = Field(default=12000, ge=256, le=50000)
-    rag_provider_timeout_seconds: float = Field(default=5.0, ge=0.05, le=30.0)
+    rag_provider_timeout_seconds: float = Field(default=120.0, ge=0.05, le=300.0)
     rag_provider_mode: Literal["local", "external"] = "local"
     rag_external_classification_allowlist: str = ""
     rag_external_endpoint_policy: str | None = None
     rag_external_credential_source: str | None = None
     rag_gap_routing_key: str = "curator:sot"
-    # TIP-014 Phase 2b — LLM query rewrite (Anthropic primary, OpenAI fallback).
-    # Disabled by default; keys come from the environment and are never
-    # committed. Enable with RAG_REWRITE_ENABLED=true and set the key(s).
-    rag_rewrite_enabled: bool = False
+    # TIP-014/TIP-024.6 — LLM query planning (OpenAI quality-primary, configured
+    # Anthropic fallback). It remains behind export policy
+    # and credentials; without either, deterministic registry planning remains.
+    rag_rewrite_enabled: bool = True
+    rag_ontology_path: Path | None = None
+    rag_query_candidate_limit: int = Field(default=16, ge=1, le=64)
     anthropic_api_key: SecretStr | None = None
     openai_api_key: SecretStr | None = None
     rag_rewrite_anthropic_model: str = "claude-3-5-haiku-latest"
-    rag_rewrite_openai_model: str = "gpt-4o-mini"
-    rag_rewrite_timeout_seconds: float = Field(default=4.0, ge=0.05, le=30.0)
+    rag_rewrite_openai_model: str = "gpt-5.6-sol"
+    rag_rewrite_timeout_seconds: float = Field(default=20.0, ge=0.05, le=60.0)
+    rag_rewrite_cache_ttl_seconds: int = Field(default=3600, ge=0, le=86400)
+    rag_rewrite_cache_max_entries: int = Field(default=2048, ge=0, le=100_000)
+    # TIP-024.6 quality-first grounded answering. Required mode never falls back
+    # to the local extractive adapter; provider/policy failure becomes honest-null.
+    rag_answer_llm_required: bool = True
+    rag_answer_openai_model: str = "gpt-5.6-sol"
+    rag_answer_anthropic_model: str | None = None
+    # Reviewer routing is deliberately independent. A compact binary evidence
+    # audit should not inherit the generator's output budget or reasoning cost.
+    # ``None`` preserves same-model review unless operators approve another
+    # model; deterministic grounding remains the final acceptance authority.
+    rag_review_openai_model: str | None = None
+    rag_answer_reasoning_effort: Literal[
+        "none", "low", "medium", "high", "xhigh", "max",
+    ] = "high"
+    rag_review_reasoning_effort: Literal[
+        "none", "low", "medium", "high", "xhigh", "max",
+    ] = "low"
+    rag_answer_timeout_seconds: float = Field(default=45.0, ge=1.0, le=120.0)
+    rag_answer_max_output_tokens: int = Field(default=4096, ge=256, le=32768)
+    rag_review_max_output_tokens: int = Field(default=256, ge=128, le=2048)
+    rag_prompt_cache_enabled: bool = True
     maintenance_mode: bool = False
     retention_policy_json: str | None = None
     backup_destination: str | None = None
@@ -185,10 +211,21 @@ class Settings(BaseSettings):
     def empty_session_cookie_secure_is_unset(cls, value: object) -> object:
         return None if value == "" else value
 
+    @field_validator("rag_ontology_path", mode="before")
+    @classmethod
+    def empty_ontology_path_is_unset(cls, value: object) -> object:
+        return None if value == "" else value
+
     @model_validator(mode="after")
     def production_identity_config(self) -> "Settings":
         if self.rag_metadata_scan_limit < self.rag_candidate_limit:
             raise ValueError("rag_metadata_scan_limit:below_candidate_limit")
+        if self.rag_answer_candidate_k < self.rag_top_k:
+            raise ValueError("rag_answer_candidate_k:below_rag_top_k")
+        if self.rag_authority_candidate_k < self.rag_answer_candidate_k:
+            raise ValueError(
+                "rag_authority_candidate_k:below_rag_answer_candidate_k",
+            )
         if self.rag_chunk_overlap_chars >= self.rag_chunk_max_chars:
             raise ValueError("rag_chunk_overlap_chars:must_be_below_chunk_max")
         if self.app_env != "production":

@@ -1,16 +1,24 @@
 import math
+import uuid
 
 import pytest
 
 from rtr_copilot.rag.adapters import OfflineHashEmbedding, normalize_query
 from rtr_copilot.rag.answering import (
     GroundingError,
+    existence_answer_instruction,
     needs_double_check,
     verify_grounding,
 )
 from rtr_copilot.rag.dlp import ProviderPolicy
-from rtr_copilot.rag.models import ProviderAnswer, ProviderEvidence
+from rtr_copilot.rag.models import (
+    Citation,
+    ProviderAnswer,
+    ProviderEvidence,
+    RetrievalHit,
+)
 from rtr_copilot.rag.reindex import stable_split
+from rtr_copilot.rag.retrieval import RetrievalService
 
 
 def cosine(left: list[float], right: list[float]) -> float:
@@ -28,6 +36,16 @@ def test_normalization_embedding_typo_camelcase_and_vietnamese() -> None:
     adapter = OfflineHashEmbedding()
     assert cosine(adapter.embed("autonomous drone"), adapter.embed("autonomus drone")) > 0.4
     assert adapter.embed("L3F.ENT.002") == adapter.embed("l3f.ent.002")
+
+
+def test_mixed_case_acronym_remains_one_normalized_token() -> None:
+    assert normalize_query("RtR là gì?") == "rtr la gi"
+
+
+def test_existence_questions_request_a_useful_capability_summary() -> None:
+    instruction = existence_answer_instruction("cty có crm không")
+    assert "core business capabilities" in instruction
+    assert existence_answer_instruction("CRM bên mình làm gì?") == ""
 
 
 def test_stable_chunking_is_bounded_and_deterministic() -> None:
@@ -71,6 +89,123 @@ def evidence(
         verification_state="verified",
         freshness_state=freshness,
     )
+
+
+def retrieval_hit(
+    snippet: str,
+    *,
+    record_key: str,
+    fusion: float,
+) -> RetrievalHit:
+    chunk_id = uuid.uuid4()
+    return RetrievalHit(
+        chunk_id=chunk_id,
+        chunk_key=f"chunk:{chunk_id}",
+        snippet=snippet,
+        lexical_score=0.2,
+        vector_score=0.3,
+        fusion_score=fusion,
+        classification="internal",
+        citation=Citation(
+            marker="C1",
+            chunk_id=chunk_id,
+            record_key=record_key,
+            evidence_key="structured_text_json",
+            record_checksum="a" * 64,
+            evidence_checksum="b" * 64,
+            source_key="unit-test",
+            source_revision=1,
+            provenance_level="approved_internal",
+            verification_state="approved",
+            freshness_state="current",
+            source_label="unit test",
+            locator={},
+        ),
+    )
+
+
+def test_enterprise_merge_preserves_complete_procedure_sequence() -> None:
+    authority = retrieval_hit(
+        "RtR CRM là hệ thống nội bộ.",
+        record_key="CRM.DEFINITION",
+        fusion=9.0,
+    )
+    workflow = [
+        retrieval_hit(
+            f"B{ordinal} | Bước nghiệp vụ {ordinal}",
+            record_key="crm.service-request-process",
+            # Deliberately make scalar ranking prefer later steps. The merge
+            # must retain the workflow order reconstructed by file retrieval.
+            fusion=float(ordinal),
+        )
+        for ordinal in range(1, 10)
+    ]
+    padding = retrieval_hit(
+        "Biểu mẫu liên quan có điểm rất cao.",
+        record_key="crm.service-form",
+        fusion=100.0,
+    )
+
+    merged = RetrievalService._merge_enterprise_hits(
+        [authority],
+        [*workflow, padding],
+        limit=10,
+        priority_record_keys=("CRM.DEFINITION",),
+        query_intent="procedure",
+    )
+
+    assert [item.snippet for item in merged] == [
+        authority.snippet,
+        *(item.snippet for item in workflow),
+    ]
+    assert [item.citation.marker for item in merged] == [
+        f"C{index}" for index in range(1, 11)
+    ]
+
+
+def test_enterprise_merge_uses_governed_binding_as_non_procedure_boundary() -> None:
+    authority = retrieval_hit(
+        "Fail-loud thay vì fail-silent.",
+        record_key="L3F.2.038",
+        fusion=1.0,
+    )
+    noisy_file = retrieval_hit(
+        "Một tệp khác có điểm vector cao nhưng không được ontology bind.",
+        record_key="unbound.file.chunk",
+        fusion=100.0,
+    )
+
+    merged = RetrievalService._merge_enterprise_hits(
+        [authority],
+        [noisy_file],
+        limit=10,
+        priority_record_keys=("L3F.2.038",),
+        query_intent="definition",
+    )
+
+    assert [item.citation.record_key for item in merged] == ["L3F.2.038"]
+    assert merged[0].citation.marker == "C1"
+
+
+def test_enterprise_merge_keeps_broad_recall_for_open_question() -> None:
+    sot = retrieval_hit("SOT related fact.", record_key="SOT.RELATED", fusion=1.0)
+    file_hit = retrieval_hit(
+        "Enterprise file related fact.",
+        record_key="enterprise.file",
+        fusion=2.0,
+    )
+
+    merged = RetrievalService._merge_enterprise_hits(
+        [sot],
+        [file_hit],
+        limit=10,
+        priority_record_keys=(),
+        query_intent="lookup",
+    )
+
+    assert [item.citation.record_key for item in merged] == [
+        "enterprise.file", "SOT.RELATED",
+    ]
 
 
 def test_grounding_accepts_supported_and_rejects_unknown_or_missing_markers() -> None:

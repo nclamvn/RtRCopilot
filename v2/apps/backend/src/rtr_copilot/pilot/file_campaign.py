@@ -103,13 +103,16 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def plan_files(manifest: PilotFileManifest, knowledge_root: Path) -> list[PlannedFile]:
+def plan_file_entries(
+    entries: list[PilotFileEntry],
+    knowledge_root: Path,
+) -> list[PlannedFile]:
     root = knowledge_root.resolve(strict=True)
     if not root.is_dir():
         raise ValueError("pilot_file_root_invalid")
     settings = get_settings()
     planned: list[PlannedFile] = []
-    for entry in manifest.entries:
+    for entry in entries:
         candidate = root.joinpath(*PurePosixPath(entry.path).parts)
         if candidate.is_symlink():
             raise ValueError(f"pilot_file_symlink:{entry.manifest_key}")
@@ -129,6 +132,10 @@ def plan_files(manifest: PilotFileManifest, knowledge_root: Path) -> list[Planne
     return planned
 
 
+def plan_files(manifest: PilotFileManifest, knowledge_root: Path) -> list[PlannedFile]:
+    return plan_file_entries(manifest.entries, knowledge_root)
+
+
 def manifest_fingerprint(manifest: PilotFileManifest) -> str:
     payload = json.dumps(
         manifest.model_dump(mode="json"), ensure_ascii=False,
@@ -144,16 +151,26 @@ async def _file_stream(path: Path) -> AsyncIterator[bytes]:
 
 
 class PilotFileCampaign:
-    def __init__(self, uow: UnitOfWork | None = None) -> None:
+    def __init__(
+        self,
+        uow: UnitOfWork | None = None,
+        *,
+        campaign_key: str = "tip024",
+        campaign_label: str = "TIP-024 Pilot Corpus",
+    ) -> None:
         self.uow = uow or UnitOfWork()
         self.service = IngestionService(uow=self.uow)
+        self.campaign_key = campaign_key
+        self.campaign_label = campaign_label
 
-    @staticmethod
-    def _source_id(classification: str, owner_id: uuid.UUID) -> uuid.UUID:
+    def _source_id(self, classification: str, owner_id: uuid.UUID) -> uuid.UUID:
         return uuid.uuid5(
             uuid.NAMESPACE_URL,
-            f"rtr:tip024:file-source:{classification}:{owner_id}",
+            f"rtr:{self.campaign_key}:file-source:{classification}:{owner_id}",
         )
+
+    def _logical_name(self, manifest_key: str) -> str:
+        return f"{self.campaign_key}.{manifest_key}"
 
     async def _ensure_source(self, entry: PilotFileEntry) -> ResourceRecord:
         source_id = self._source_id(entry.classification, entry.owner_subject_id)
@@ -179,9 +196,9 @@ class PilotFileCampaign:
                     VALUES (:source_id,'internal',:name,CAST(:metadata AS jsonb))
                 """), {
                     "source_id": source_id,
-                    "name": f"TIP-024 Pilot Corpus · {entry.classification}",
+                    "name": f"{self.campaign_label} · {entry.classification}",
                     "metadata": json.dumps({
-                        "campaign": "TIP-024",
+                        "campaign": self.campaign_label,
                         "production_boundary": "local_dev_only",
                     }),
                 })
@@ -191,8 +208,8 @@ class PilotFileCampaign:
                     actor_user_id=entry.owner_subject_id,
                     action="pilot.file_source.create",
                     result="success",
-                    reason_code="tip024_local_source_registered",
-                    request_id=f"tip024-source:{source_id}",
+                    reason_code=f"{self.campaign_key}_local_source_registered",
+                    request_id=f"{self.campaign_key}-source:{source_id}",
                     resource_id=source_id,
                     resource_type="source",
                     details={"classification": entry.classification},
@@ -223,7 +240,7 @@ class PilotFileCampaign:
                 ORDER BY dv.created_at DESC LIMIT 1
             """), {
                 "source_id": source_id,
-                "logical_name": f"tip024.{item.entry.manifest_key}",
+                "logical_name": self._logical_name(item.entry.manifest_key),
                 "sha256": item.entry.sha256,
             })
         return uuid.UUID(str(version_id)) if version_id is not None else None
@@ -279,7 +296,8 @@ class PilotFileCampaign:
             )
             if pending is not None:
                 processed = await self.service.process_job(
-                    pending["job_id"], worker_id=f"tip024-local-{attempt}",
+                    pending["job_id"],
+                    worker_id=f"{self.campaign_key}-local-{attempt}",
                 )
                 if not processed:
                     await asyncio.sleep(0.5)
@@ -312,14 +330,17 @@ class PilotFileCampaign:
                     "result": "idempotent",
                 })
                 continue
-            request_id = f"tip024-file:{item.entry.manifest_key}:{item.entry.sha256[:12]}"
+            request_id = (
+                f"{self.campaign_key}-file:{item.entry.manifest_key}:"
+                f"{item.entry.sha256[:12]}"
+            )
             resumed = await self._resume_upload(request_id)
             if resumed is None:
                 upload_id, _ = await self.service.receive(
                     _file_stream(item.resolved_path),
                     content_length=item.byte_size,
                     parent=parent,
-                    logical_name=f"tip024.{item.entry.manifest_key}",
+                    logical_name=self._logical_name(item.entry.manifest_key),
                     original_filename=item.resolved_path.name,
                     declared_mime=item.entry.mime_type,
                     declared_sha256=item.entry.sha256,
@@ -340,5 +361,5 @@ class PilotFileCampaign:
 
 __all__ = [
     "PilotFileCampaign", "PilotFileEntry", "PilotFileManifest", "PlannedFile",
-    "load_file_manifest", "manifest_fingerprint", "plan_files",
+    "load_file_manifest", "manifest_fingerprint", "plan_file_entries", "plan_files",
 ]

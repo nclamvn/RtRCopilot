@@ -1,21 +1,19 @@
-"""Hermetic tests for the OR lexical-query builder (honest-null retrieval fix).
+"""Hermetic tests for the discriminative OR lexical-query builder.
 
-The bug: plainto_tsquery ANDs every term, so a terse fact chunk containing
-"hera" but not "là"/"gì" scored 0 for the natural-language query "hera là gì"
-and was dropped -> honest-null. lexical_query builds an OR tsquery so any term
-contributes.
+OR search preserves recall for meaningful terms while Vietnamese/English
+function words are removed so they cannot manufacture relevance.
 """
 from rtr_copilot.rag.adapters import lexical_query, normalize_query
 
 
 def test_or_joins_terms() -> None:
-    assert lexical_query("hera la gi") == "hera | la | gi"
+    assert lexical_query("hera la gi") == "hera"
 
 
 def test_natural_language_question_end_to_end() -> None:
     # "Hera là gì?" -> normalized -> OR query that still contains "hera"
     built = lexical_query(normalize_query("Hera là gì?"))
-    assert built == "hera | la | gi"
+    assert built == "hera"
     assert "hera" in built.split(" | ")
 
 
@@ -29,6 +27,10 @@ def test_single_term() -> None:
 
 def test_empty_is_empty() -> None:
     assert lexical_query("") == ""
+
+
+def test_all_stopwords_is_empty() -> None:
+    assert lexical_query(normalize_query("là gì và ở đâu")) == ""
 
 
 def test_compound_token_is_split_into_lexemes() -> None:

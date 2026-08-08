@@ -1,8 +1,14 @@
+import asyncio
+import contextlib
+import json
+import logging
+import time
 import uuid
+from collections.abc import AsyncIterator
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import text
 
 from rtr_copilot.auth.api import current_subject
@@ -18,6 +24,7 @@ from rtr_copilot.limits.budget import BudgetExhausted
 from rtr_copilot.limits.errors import limit_response
 from rtr_copilot.rag.answering import AnswerService, GroundingError
 from rtr_copilot.rag.models import (
+    AskProgressEvent,
     AskRequest,
     AskResponse,
     Citation,
@@ -42,6 +49,8 @@ router = APIRouter(
     },
 )
 
+logger = logging.getLogger("rtr_copilot.rag.api")
+
 
 async def rag_subject(request: Request) -> Subject | None:
     settings = get_settings()
@@ -49,6 +58,11 @@ async def rag_subject(request: Request) -> Subject | None:
         request,
         request.cookies.get(settings.session_cookie_name),
     )
+
+
+def answer_service() -> AnswerService:
+    """Runtime answer service seam; tests inject only explicit test adapters."""
+    return AnswerService()
 
 
 def _error(request: Request, status: int, code: str) -> JSONResponse:
@@ -62,6 +76,86 @@ def _error(request: Request, status: int, code: str) -> JSONResponse:
             "request_id": str(request.state.request_id),
         },
     )
+
+
+def _sse(event: str, payload: dict[str, Any]) -> str:
+    return (
+        f"event: {event}\n"
+        f"data: {json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}\n\n"
+    )
+
+
+def _stream_error(code: str, request_id: str) -> dict[str, Any]:
+    return {
+        "error": {
+            "code": code,
+            "message": "Knowledge request could not be completed",
+        },
+        "request_id": request_id,
+    }
+
+
+async def _ask_stream(
+    body: AskRequest,
+    request: Request,
+    subject: Subject,
+    service: AnswerService,
+    request_id: str,
+) -> AsyncIterator[str]:
+    """Stream real Ask checkpoints; never prompts, snippets or chain-of-thought."""
+    queue: asyncio.Queue[AskProgressEvent] = asyncio.Queue(maxsize=32)
+    started = time.monotonic()
+
+    async def publish(event: AskProgressEvent) -> None:
+        await queue.put(event)
+
+    task = asyncio.create_task(service.ask(
+        subject,
+        body.question,
+        filters=body.filters,
+        require_verified=body.require_verified,
+        conversation_id=body.conversation_id,
+        request_id=request_id,
+        progress=publish,
+    ))
+    try:
+        while not task.done() or not queue.empty():
+            try:
+                event = await asyncio.wait_for(queue.get(), timeout=1.0)
+                yield _sse("progress", event.model_dump(mode="json"))
+            except TimeoutError:
+                if await request.is_disconnected():
+                    task.cancel()
+                    return
+                yield _sse("heartbeat", {
+                    "elapsed_ms": max(
+                        0,
+                        round((time.monotonic() - started) * 1000),
+                    ),
+                })
+        result = await task
+        yield _sse("result", {
+            "response": result.model_dump(mode="json"),
+        })
+    except RetrievalError as error:
+        yield _sse("error", _stream_error(error.code, request_id))
+    except BudgetExhausted:
+        yield _sse("error", _stream_error("budget_exhausted", request_id))
+    except ProviderUnavailable:
+        yield _sse("error", _stream_error("provider_unavailable", request_id))
+    except GroundingError:
+        yield _sse("error", _stream_error("conversation_not_found", request_id))
+    except asyncio.CancelledError:
+        task.cancel()
+        raise
+    except Exception:
+        logger.exception("ask_stream_failed", extra={"request_id": request_id})
+        yield _sse("error", _stream_error("ask_service_unavailable", request_id))
+    finally:
+        if not task.done():
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await task
 
 
 @router.post("/search", response_model=SearchResponse)
@@ -111,12 +205,22 @@ async def ask(
     body: AskRequest,
     request: Request,
     subject: Annotated[Subject | None, Depends(rag_subject)],
-) -> AskResponse | JSONResponse:
+    service: Annotated[AnswerService, Depends(answer_service)],
+) -> AskResponse | JSONResponse | StreamingResponse:
     if subject is None:
         return _error(request, 401, "authentication_required")
     request_id = str(request.state.request_id)
+    if "text/event-stream" in request.headers.get("accept", "").casefold():
+        return StreamingResponse(
+            _ask_stream(body, request, subject, service, request_id),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache, no-store, no-transform",
+                "X-Accel-Buffering": "no",
+            },
+        )
     try:
-        return await AnswerService().ask(
+        return await service.ask(
             subject,
             body.question,
             filters=body.filters,

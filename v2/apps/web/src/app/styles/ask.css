@@ -219,6 +219,23 @@
   font-weight: 500;
   margin: 0;
 }
+.ask-workspace .answer-header {
+  display: grid;
+  gap: var(--pc-space-2);
+}
+.ask-workspace .answer-content {
+  display: grid;
+  max-width: var(--pc-content-max);
+}
+.ask-workspace .answer-claim {
+  min-width: 0;
+  padding-block: var(--pc-space-4);
+}
+.ask-workspace .answer-claim + .answer-claim {
+  border-top: 1px solid var(--pc-border);
+}
+.ask-workspace .answer-claim:first-child { padding-top: 0; }
+.ask-workspace .answer-claim:last-child { padding-bottom: 0; }
 .ask-workspace .answer-text {
   font-size: var(--pc-body-lg-size);
   line-height: 1.72;
@@ -226,7 +243,89 @@
   max-width: var(--pc-content-max);
   margin: 0;
 }
-.ask-workspace .confidence-caveat {
+.ask-workspace .answer-markdown {
+  display: grid;
+  gap: var(--pc-space-3);
+}
+.ask-workspace .answer-markdown :where(p, ul, ol, blockquote, pre, h3, h4) {
+  margin: 0;
+}
+.ask-workspace .answer-markdown :where(h3, h4) {
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-ui);
+  font-size: 1em;
+  font-weight: 650;
+  line-height: 1.5;
+  letter-spacing: -.008em;
+}
+.ask-workspace .answer-markdown strong {
+  color: var(--pc-text-primary);
+  font-weight: 680;
+  letter-spacing: -.006em;
+}
+.ask-workspace .answer-markdown em {
+  color: var(--pc-text-secondary);
+  font-style: italic;
+}
+.ask-workspace .answer-markdown p > code,
+.ask-workspace .answer-markdown li > code {
+  padding: 2px 6px;
+  border: 1px solid var(--pc-border);
+  border-radius: 5px;
+  background: var(--pc-surface-subtle);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-mono);
+  font-size: .86em;
+}
+.ask-workspace .answer-markdown :where(ul, ol) {
+  display: grid;
+  gap: var(--pc-space-2);
+  padding-left: 1.35em;
+}
+.ask-workspace .answer-markdown li { padding-left: .2em; }
+.ask-workspace .answer-markdown li::marker {
+  color: var(--pc-text-muted);
+  font-family: var(--pc-font-mono);
+  font-size: .82em;
+}
+.ask-workspace .answer-markdown blockquote {
+  padding: var(--pc-space-2) 0 var(--pc-space-2) var(--pc-space-4);
+  border-left: 2px solid var(--pc-border-strong);
+  color: var(--pc-text-secondary);
+}
+.ask-workspace .answer-code-block {
+  min-width: 0;
+  display: grid;
+  gap: var(--pc-space-2);
+}
+.ask-workspace .answer-code-block pre {
+  max-width: 100%;
+  overflow: auto;
+  padding: var(--pc-space-4);
+  border: 1px solid var(--pc-border);
+  border-radius: var(--pc-radius-sm);
+  background: var(--pc-surface-subtle);
+}
+.ask-workspace .answer-code-block code {
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-mono);
+  font-size: var(--pc-small-size);
+  line-height: 1.6;
+}
+.ask-workspace .answer-link-label {
+  text-decoration: underline;
+  text-decoration-color: var(--pc-border-strong);
+  text-underline-offset: .16em;
+}
+.ask-workspace .answer-citations {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 7px;
+  white-space: nowrap;
+}
+.ask-workspace .confidence-caveat,
+.ask-workspace .coverage-caveat {
   border-left: 3px solid var(--pc-accent);
   background: var(--pc-accent-soft);
   color: var(--pc-text-primary);
@@ -234,6 +333,11 @@
   padding: var(--pc-space-3) var(--pc-space-4);
   font-size: var(--pc-small-size);
   line-height: 1.55;
+}
+.ask-workspace .coverage-caveat {
+  border-left-color: var(--pc-border-strong);
+  background: var(--pc-surface-subtle);
+  color: var(--pc-text-secondary);
 }
 .ask-workspace .citation-marker {
   display: inline-flex; align-items: center;
@@ -243,7 +347,7 @@
   border-radius: 6px;
   font-family: var(--pc-font-mono);
   font-size: 12px; font-weight: 600;
-  padding: 1px 6px; margin: 0 2px;
+  padding: 1px 6px; margin: 0;
   cursor: pointer; vertical-align: baseline;
   transition: background var(--pc-dur-hover) var(--pc-ease),
     border-color var(--pc-dur-hover) var(--pc-ease);
@@ -279,6 +383,77 @@
 .ask-workspace .form-note { color: var(--pc-text-muted); font-size: var(--pc-small-size); }
 .ask-workspace .surface-loading,
 .ask-workspace .surface-empty { color: var(--pc-text-muted); }
+
+/* The trust pipeline can legitimately take a minute. Keep it visibly alive
+   without introducing color or pretending a determinate completion percent. */
+.ask-workspace .ask-progress {
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--pc-space-3);
+  padding: var(--pc-space-3) var(--pc-space-1);
+  color: var(--pc-text-muted);
+}
+.ask-workspace .ask-progress-marker {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--pc-text-primary);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--pc-text-primary) 42%, transparent);
+  animation: ask-progress-pulse 1.8s var(--pc-ease) infinite;
+}
+.ask-workspace .ask-progress-message {
+  width: fit-content;
+  max-width: 100%;
+  color: transparent;
+  background: linear-gradient(100deg,
+    var(--pc-text-muted) 0%,
+    var(--pc-text-muted) 34%,
+    var(--pc-text-primary) 46%,
+    var(--pc-accent-hover) 50%,
+    var(--pc-text-primary) 54%,
+    var(--pc-text-muted) 66%,
+    var(--pc-text-muted) 100%);
+  background-size: 260% 100%;
+  background-position: 100% 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-size: var(--pc-body-size);
+  font-weight: 500;
+  line-height: 1.5;
+  animation: ask-progress-shimmer 2.2s ease-in-out infinite;
+}
+.ask-workspace .ask-progress-time {
+  color: var(--pc-text-muted);
+  font-family: var(--pc-font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+@keyframes ask-progress-shimmer {
+  0% { background-position: 100% 0; }
+  68%, 100% { background-position: -100% 0; }
+}
+@keyframes ask-progress-pulse {
+  0%, 100% { opacity: .45; box-shadow: 0 0 0 0 transparent; }
+  45% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--pc-text-primary) 32%, transparent);
+  }
+  75% {
+    opacity: .45;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--pc-text-primary) 0%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ask-workspace .ask-progress-marker { animation: none; opacity: 1; }
+  .ask-workspace .ask-progress-message {
+    animation: none;
+    color: var(--pc-text-primary);
+    background: none;
+  }
+}
 .ask-workspace .surface-denied {
   border: 1px solid var(--pc-warning);
   background: var(--pc-surface-subtle);
@@ -382,9 +557,9 @@
   gap: var(--pc-space-2);
   transition: background var(--pc-dur-highlight) var(--pc-ease);
 }
-/* PRD active citation = blue border. A neutral surface + 2px accent ring keeps
-   every 9px label at full contrast (an accent-soft fill drops muted dt to
-   ~4.2:1). The ring + left bar carry the "active" signal. */
+/* Active citation uses a neutral surface + keyline so every 9px label keeps
+   full contrast. The final premium layer sharpens this into the monochrome
+   provenance line grammar. */
 .ask-workspace .rail-entries article[aria-current="true"] {
   background: var(--pc-surface-subtle);
   box-shadow: inset 0 0 0 2px var(--pc-accent);

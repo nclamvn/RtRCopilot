@@ -21,6 +21,7 @@ from rtr_copilot.auth.policy import PolicyEngine
 from rtr_copilot.config import get_settings
 from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.ingestion.errors import IngestionFailure, safe_message
+from rtr_copilot.ingestion.jobs import RENDITION_GENERATOR_VERSION
 from rtr_copilot.ingestion.models import (
     ErrorEnvelope,
     FileCatalogItem,
@@ -56,6 +57,30 @@ ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
 }
 VIEWER_FILTERS = frozenset(VIEWER_KINDS.values())
 RANGE_PATTERN = re.compile(r"^bytes=(\d*)-(\d*)$")
+OFFICE_PREVIEW_MIMES = frozenset({
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+})
+VISUAL_RENDITION_KINDS = frozenset({
+    "preview_pdf",
+    "safe_image_preview",
+    "browser_audio",
+    "browser_video",
+    "workbook_manifest",
+})
+
+
+def _is_current_visual_rendition(
+    *,
+    mime: str,
+    kind: str,
+    generator_version: str,
+) -> bool:
+    return not (
+        mime in OFFICE_PREVIEW_MIMES
+        and kind == "preview_pdf"
+        and generator_version != RENDITION_GENERATOR_VERSION
+    )
 
 
 async def file_subject(request: Request) -> Subject | None:
@@ -206,6 +231,9 @@ def _encode_cursor(created_at: datetime, version_id: uuid.UUID) -> str:
 def _decode_cursor(value: str) -> tuple[datetime, uuid.UUID]:
     try:
         raw = base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+        canonical = base64.urlsafe_b64encode(raw).decode().rstrip("=")
+        if not hmac.compare_digest(canonical, value):
+            raise ValueError
         payload, signature = raw[:-32], raw[-32:]
         expected = hmac.new(_cursor_secret(), payload, hashlib.sha256).digest()
         if len(payload) == 0 or not hmac.compare_digest(signature, expected):
@@ -746,6 +774,7 @@ async def viewer_manifest(
     async with UnitOfWork().factory() as session:
         rows = (await session.execute(text("""
             SELECT r.rendition_id,r.kind,r.mime_type,r.quality_state,
+              r.generator_version,
               o.byte_size,o.sha256
             FROM renditions r JOIN object_blobs o ON o.object_id=r.object_id
             JOIN resources rr ON rr.resource_id=r.rendition_id
@@ -754,7 +783,16 @@ async def viewer_manifest(
             ORDER BY r.kind,r.rendition_id
         """), {"version_id": version_id})).mappings().all()
     renditions = []
+    mime = str(version["detected_mime"])
+    stale_office_preview = False
     for row in rows:
+        if not _is_current_visual_rendition(
+            mime=mime,
+            kind=str(row["kind"]),
+            generator_version=str(row["generator_version"]),
+        ):
+            stale_office_preview = True
+            continue
         rendition_authorization = await _authorized_resource(
             subject,
             row["rendition_id"],
@@ -783,8 +821,9 @@ async def viewer_manifest(
         }
         for item in renditions
     )
-    mime = str(version["detected_mime"])
     warnings: list[str] = []
+    if stale_office_preview:
+        warnings.append("office_preview_stale")
     if (
         (mime.startswith("image/") or mime == "application/pdf")
         and not any(item.kind == "ocr_json" for item in renditions)
@@ -812,7 +851,7 @@ async def viewer_manifest(
         viewer_kind=VIEWER_KINDS[mime],
         state=version["viewer_state"],
         capabilities=ViewerCapabilities(
-            preview=bool(renditions),
+            preview=any(item.kind in VISUAL_RENDITION_KINDS for item in renditions),
             text=text_ready,
             search_within_file=text_ready,
             deep_link=text_ready,

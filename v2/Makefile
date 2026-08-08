@@ -2,7 +2,7 @@ SHELL := /bin/bash
 RTR_BUILD_SHA ?= $(shell git rev-parse --short=12 HEAD 2>/dev/null || echo development)
 export RTR_BUILD_SHA
 
-.PHONY: dev verify migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
+.PHONY: dev verify e2e-enterprise answer-runtime-check answer-runtime-refresh migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
 
 # TIP-012 Task 1 — hardened profile (TLS ingress fronts everything, AC-01).
 # Requires the ingress hostname to resolve to 127.0.0.1 for probes/browsers:
@@ -20,6 +20,24 @@ dev:
 
 verify:
 	./scripts/verify-scaffold.sh
+
+e2e-enterprise:
+	./scripts/run-enterprise-e2e.sh
+
+# The local quality profile lives in .env.demo. `docker compose restart` does
+# not reload changed environment variables, and plain `docker compose up` reads
+# .env instead. Rebuild is intentional: a recreate from a stale image can pass
+# the environment check while still running old query/grounding code.
+# These targets make both code and configuration explicit without ever printing
+# a credential value.
+ANSWER_ENV_FILE ?= .env.demo
+
+answer-runtime-check:
+	ANSWER_ENV_FILE="$(ANSWER_ENV_FILE)" ./scripts/verify-answer-runtime.sh
+
+answer-runtime-refresh:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" up -d --build --force-recreate api worker web
+	$(MAKE) answer-runtime-check ANSWER_ENV_FILE="$(ANSWER_ENV_FILE)"
 
 migrate:
 	docker compose --profile tools run --rm migrate

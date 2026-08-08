@@ -1,83 +1,76 @@
 /**
- * PRD UI/UX v1.0 — colour themes. Light is the authored default (`:root`);
- * dark is `[data-theme="dark"]`. The document element carries data-theme,
- * resolved SSR from the rtr_theme cookie (default dark — the app's shipped
- * identity — while both themes are first-class for the in-scope surfaces).
+ * TIP-024.5 — monochrome product themes.
  *
- * Contrast: text-primary on surface ≈ 16:1 (light) / 15:1 (dark); every text
- * token pairs to AA (≥4.5:1) on its intended surface. Accent carries a
- * dedicated contrast token so button text never drops below AA on either
- * theme (white on light-accent, near-black on dark-accent).
+ * The interface intentionally uses only achromatic values. Meaning is not
+ * delegated to hue: hierarchy comes from luminance, provenance from line
+ * styles, and primary actions from black/white inversion. This keeps both
+ * themes quiet, precise and accessible without a decorative brand colour.
  */
 
 :root {
   color-scheme: light;
 
-  --pc-bg-app: #f6f7f9;
-  --pc-bg-sidebar: #f8f9fb;
+  --pc-bg-app: #f7f7f7;
+  --pc-bg-sidebar: #fafafa;
   --pc-surface: #ffffff;
-  --pc-surface-subtle: #f2f4f7;
-  --pc-surface-hover: #eef1f5;
+  --pc-surface-subtle: #f1f1f1;
+  --pc-surface-hover: #eaeaea;
 
-  --pc-text-primary: #111318;
-  --pc-text-secondary: #525966;
-  /* PRD muted is #7b8493 (≈3.6:1 on white) — nudged darker for WCAG AA on
-     small text against the light surfaces it sits on (≥5:1). */
-  --pc-text-muted: #616b7a;
+  --pc-text-primary: #151515;
+  --pc-text-secondary: #535353;
+  --pc-text-muted: #696969;
 
-  --pc-border: #e1e5eb;
-  --pc-border-strong: #ccd2dc;
+  --pc-border: #e3e3e3;
+  --pc-border-strong: #cfcfcf;
 
-  --pc-accent: #315efb;
-  --pc-accent-soft: #edf1ff;
-  --pc-accent-hover: #244ee5;
+  --pc-accent: #171717;
+  --pc-accent-soft: #eeeeee;
+  --pc-accent-hover: #000000;
   --pc-accent-contrast: #ffffff;
 
-  --pc-success: #0f7a45;
-  /* darkened from PRD #a56613 so 9px amber labels clear AA on light tints
-     (research zone chip sits on an orange-tinted background). */
-  --pc-warning: #8a5410;
-  --pc-danger: #c83d45;
-  --pc-danger-soft: #fdecec;
+  --pc-success: #2f2f2f;
+  --pc-warning: #555555;
+  --pc-danger: #171717;
+  --pc-danger-soft: #eeeeee;
 
-  --pc-focus: #315efb;
+  --pc-focus: #171717;
 
-  --pc-shadow-sm: 0 1px 2px rgba(17, 19, 24, 0.06),
-    0 1px 3px rgba(17, 19, 24, 0.05);
-  --pc-shadow-md: 0 2px 6px rgba(17, 19, 24, 0.06),
-    0 12px 28px rgba(17, 19, 24, 0.06);
+  --pc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04),
+    0 1px 4px rgba(0, 0, 0, 0.025);
+  --pc-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06),
+    0 20px 48px rgba(0, 0, 0, 0.08);
   --pc-shadow-active: inset 0 0 0 1px var(--pc-border),
-    0 1px 2px rgba(17, 19, 24, 0.05);
-  --pc-scrim: rgba(17, 19, 24, 0.42);
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  --pc-scrim: rgba(0, 0, 0, 0.48);
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --pc-bg-app: #0b0d10;
-  --pc-bg-sidebar: #101216;
-  --pc-surface: #15181d;
-  --pc-surface-subtle: #1a1e24;
-  --pc-surface-hover: #20252c;
+  --pc-bg-app: #0b0b0b;
+  --pc-bg-sidebar: #0f0f0f;
+  --pc-surface: #151515;
+  --pc-surface-subtle: #1a1a1a;
+  --pc-surface-hover: #222222;
 
-  --pc-text-primary: #f1f3f5;
-  --pc-text-secondary: #b3bac5;
-  --pc-text-muted: #858e9c;
+  --pc-text-primary: #f2f2f2;
+  --pc-text-secondary: #b8b8b8;
+  --pc-text-muted: #929292;
 
-  --pc-border: #292e36;
-  --pc-border-strong: #3a414c;
+  --pc-border: #2a2a2a;
+  --pc-border-strong: #3d3d3d;
 
-  --pc-accent: #6f8cff;
-  --pc-accent-soft: #202a50;
-  --pc-accent-hover: #86a0ff;
-  --pc-accent-contrast: #0b0d10;
+  --pc-accent: #f2f2f2;
+  --pc-accent-soft: #242424;
+  --pc-accent-hover: #ffffff;
+  --pc-accent-contrast: #0b0b0b;
 
-  --pc-success: #3fb27f;
-  --pc-warning: #d9a441;
-  --pc-danger: #ef6b73;
-  --pc-danger-soft: #2a1618;
+  --pc-success: #d8d8d8;
+  --pc-warning: #b5b5b5;
+  --pc-danger: #f2f2f2;
+  --pc-danger-soft: #202020;
 
-  --pc-focus: #86a0ff;
+  --pc-focus: #f2f2f2;
 
   --pc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --pc-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 16px 34px rgba(0, 0, 0, 0.4);
@@ -97,30 +90,30 @@ html[data-theme="dark"] { color-scheme: dark; }
   :root:not([data-theme="light"]):not([data-theme="dark"]) {
     color-scheme: dark;
 
-    --pc-bg-app: #0b0d10;
-    --pc-bg-sidebar: #101216;
-    --pc-surface: #15181d;
-    --pc-surface-subtle: #1a1e24;
-    --pc-surface-hover: #20252c;
+    --pc-bg-app: #0b0b0b;
+    --pc-bg-sidebar: #0f0f0f;
+    --pc-surface: #151515;
+    --pc-surface-subtle: #1a1a1a;
+    --pc-surface-hover: #222222;
 
-    --pc-text-primary: #f1f3f5;
-    --pc-text-secondary: #b3bac5;
-    --pc-text-muted: #858e9c;
+    --pc-text-primary: #f2f2f2;
+    --pc-text-secondary: #b8b8b8;
+    --pc-text-muted: #929292;
 
-    --pc-border: #292e36;
-    --pc-border-strong: #3a414c;
+    --pc-border: #2a2a2a;
+    --pc-border-strong: #3d3d3d;
 
-    --pc-accent: #6f8cff;
-    --pc-accent-soft: #202a50;
-    --pc-accent-hover: #86a0ff;
-    --pc-accent-contrast: #0b0d10;
+    --pc-accent: #f2f2f2;
+    --pc-accent-soft: #242424;
+    --pc-accent-hover: #ffffff;
+    --pc-accent-contrast: #0b0b0b;
 
-    --pc-success: #3fb27f;
-    --pc-warning: #d9a441;
-    --pc-danger: #ef6b73;
-    --pc-danger-soft: #2a1618;
+    --pc-success: #d8d8d8;
+    --pc-warning: #b5b5b5;
+    --pc-danger: #f2f2f2;
+    --pc-danger-soft: #202020;
 
-    --pc-focus: #86a0ff;
+    --pc-focus: #f2f2f2;
 
     --pc-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
     --pc-shadow-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 16px 34px rgba(0, 0, 0, 0.4);

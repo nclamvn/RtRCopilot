@@ -24,6 +24,7 @@ import Link from "next/link";
 import {usePathname, useRouter, useSearchParams} from "next/navigation";
 import {LOCALES, Locale, MessageKey} from "../i18n/messages";
 import {useI18n} from "../i18n/provider";
+import {formatDateTime} from "../i18n/format";
 import {
   askQuery,
   ConversationListPage,
@@ -47,6 +48,19 @@ export const NAV_AREAS: ReadonlyArray<{
   {area: "operations", href: "/knowledge-ops", labelKey: "shell.nav.operations", icon: "operations"},
   {area: "admin", href: "/admin", labelKey: "shell.nav.admin", icon: "admin"},
 ];
+
+/** Role-scoped information architecture. Unknown/no-role users get only the
+ * ordinary workspace; privileged surfaces never become dead-end navigation. */
+export function visibleAreas(identity: Identity | null): ReadonlyArray<(typeof NAV_AREAS)[number]> {
+  const roles = new Set(identity?.roles ?? []);
+  return NAV_AREAS.filter(item => {
+    if (item.area === "admin") return roles.has("admin");
+    if (item.area === "knowledge" || item.area === "operations") {
+      return roles.has("curator") || roles.has("admin");
+    }
+    return true;
+  });
+}
 
 const GROUPS: ReadonlyArray<{titleKey: MessageKey; areas: ShellArea[]}> = [
   {titleKey: "shell.group.workspace", areas: ["ask", "files", "documents"]},
@@ -86,18 +100,28 @@ function initials(source: string): string {
   return clean.slice(0, 2).toUpperCase();
 }
 
-type Command = {id: string; label: string; icon: IconName; hint?: string; run: () => void};
+type Command = {
+  id: string; label: string; icon: IconName; hint?: string;
+  href?: string; run: () => void;
+};
 
-function CommandPalette({commands, onClose, placeholder, emptyText}: {
-  commands: Command[]; onClose: () => void; placeholder: string; emptyText: string;
+function CommandPalette({commands, onClose, onAsk, askPrefix, placeholder, emptyText}: {
+  commands: Command[]; onClose: () => void; onAsk: (query: string) => void;
+  askPrefix: string; placeholder: string; emptyText: string;
 }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const filtered = useMemo(() => {
+  const filtered = useMemo<Command[]>(() => {
     const q = query.trim().toLowerCase();
-    return q ? commands.filter(c => c.label.toLowerCase().includes(q)) : commands;
-  }, [commands, query]);
+    const matching = q ? commands.filter(c => c.label.toLowerCase().includes(q)) : commands;
+    if (!q) return matching;
+    return [{
+      id: "ask-query", label: `${askPrefix}: “${query.trim()}”`, icon: "ask",
+      hint: "↵", href: `/ask?q=${encodeURIComponent(query.trim())}`,
+      run: () => onAsk(query.trim()),
+    }, ...matching];
+  }, [commands, query, askPrefix, onAsk]);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
@@ -128,16 +152,26 @@ function CommandPalette({commands, onClose, placeholder, emptyText}: {
       {filtered.length === 0
         ? <p className="pc-palette-empty">{emptyText}</p>
         : <ul className="pc-palette-list">
-            {filtered.map((command, index) => <li key={command.id}>
-              <button type="button" className="pc-palette-item"
-                data-active={index === active}
-                onMouseEnter={() => setActive(index)}
-                onClick={command.run}>
+            {filtered.map((command, index) => {
+              const content = <>
                 <span className="pc-nav-ico"><Icon name={command.icon}/></span>
                 <span>{command.label}</span>
                 {command.hint && <kbd className="pc-kbd pc-palette-hint">{command.hint}</kbd>}
-              </button>
-            </li>)}
+              </>;
+              return <li key={command.id}>
+                {command.href
+                  ? <a className="pc-palette-item" href={command.href}
+                      data-active={index === active}
+                      onMouseEnter={() => setActive(index)}>
+                      {content}
+                    </a>
+                  : <button type="button" className="pc-palette-item"
+                      data-active={index === active}
+                      onMouseEnter={() => setActive(index)} onClick={command.run}>
+                      {content}
+                    </button>}
+              </li>;
+            })}
           </ul>}
     </div>
   </div>;
@@ -200,7 +234,11 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
   const [helpOpen, setHelpOpen] = useState(false);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
   const [recent, setRecent] = useState<ConversationListPage["items"]>([]);
-  const [health, setHealth] = useState<{ok: boolean; status: string} | null>(null);
+  const [health, setHealth] = useState<{
+    ok: boolean;
+    status: string;
+    answerQuality: "ready" | "evidence_only" | "configuration_required";
+  } | null>(null);
   const [lastPathname, setLastPathname] = useState(pathname);
   const searchRef = useRef<HTMLButtonElement>(null);
 
@@ -217,9 +255,23 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
       .catch(() => setIdentity(null)).finally(() => setAuthReady(true));
     fetch("/api/status", {cache: "no-store"})
       .then(async response => {
-        const body = await response.json().catch(() => null) as {ok?: boolean; status?: string} | null;
-        setHealth(body ? {ok: body.ok === true, status: body.status ?? "unavailable"} : null);
-      }).catch(() => setHealth({ok: false, status: "unavailable"}));
+        const body = await response.json().catch(() => null) as {
+          ok?: boolean;
+          status?: string;
+          answer_quality?: string;
+        } | null;
+        setHealth(body ? {
+          ok: body.ok === true,
+          status: body.status ?? "unavailable",
+          answerQuality: body.answer_quality === "ready"
+            ? "ready"
+            : body.answer_quality === "evidence_only"
+              ? "evidence_only"
+              : "configuration_required",
+        } : null);
+      }).catch(() => setHealth({
+        ok: false, status: "unavailable", answerQuality: "configuration_required",
+      }));
   }, []);
 
   useEffect(() => {
@@ -337,7 +389,7 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
   }, []);
 
   const commands = useMemo<Command[]>(() => {
-    const nav: Command[] = NAV_AREAS.map((item, index) => ({
+    const nav: Command[] = visibleAreas(identity).map((item, index) => ({
       id: `nav-${item.area}`, label: t(item.labelKey), icon: item.icon,
       hint: index < 3 ? `⌘${index + 1}` : undefined,
       run: () => { setPaletteOpen(false); router.push(item.href); },
@@ -350,7 +402,12 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
       {id: "locale", label: t("shell.language"), icon: "languages",
         run: () => { cycleLocale(); setPaletteOpen(false); }},
     ];
-  }, [t, theme, router, goNewQuestion, toggleTheme, cycleLocale]);
+  }, [t, theme, router, goNewQuestion, toggleTheme, cycleLocale, identity]);
+
+  const askFromPalette = useCallback((query: string) => {
+    setPaletteOpen(false);
+    router.push(`/ask?q=${encodeURIComponent(query)}`);
+  }, [router]);
 
   const skipToMain = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -364,26 +421,31 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
 
   const integrity = health === null
     ? {state: "idle" as const, value: "—", width: "40%", sub: t("shell.integrity.checking")}
-    : health.ok
+    : health.ok && health.answerQuality === "ready"
       ? {state: "ok" as const, value: "100%", width: "100%", sub: t("shell.integrity.ready")}
-      : {state: "down" as const, value: "—", width: "28%", sub: t("shell.integrity.down")};
+      : health.ok && health.answerQuality === "evidence_only"
+        ? {state: "ok" as const, value: "SOT", width: "92%", sub: t("shell.integrity.evidenceOnly")}
+      : health.ok
+        ? {state: "warn" as const, value: "LLM", width: "72%", sub: t("shell.integrity.answerSetup")}
+        : {state: "down" as const, value: "—", width: "28%", sub: t("shell.integrity.down")};
 
   const displayName = identity?.display_name || identity?.email || "";
   const role = identity?.roles?.[0] ?? "";
+  const areas = visibleAreas(identity);
 
   return <div className="pc-shell" data-collapsed={collapsed}>
     <a className="pc-skip-link" href="#main" onClick={skipToMain}>{t("shell.skipToContent")}</a>
 
     <div className={`pc-sidebar ${navOpen ? "open" : ""}`} id="pc-sidebar">
-      <div style={{display: "flex", alignItems: "flex-start"}}>
+      <div className="pc-sidebar-head">
         <button className="pc-workspace" type="button" aria-haspopup="dialog"
-          aria-label={t("shell.workspace.aria")} onClick={() => setPaletteOpen(true)}>
+          aria-label={t("shell.workspace.aria")}
+          title={collapsed ? t("shell.workspace.name") : undefined}
+          onClick={() => setPaletteOpen(true)}>
           <span className="pc-mark">RtR</span>
           <span className="pc-workspace-meta">
             <span className="pc-workspace-name">{t("shell.workspace.name")}</span>
-            <span className="pc-workspace-sub">{t("shell.workspace.sub")}</span>
           </span>
-          <Icon name="chevrons" size={16} className="pc-chevrons"/>
         </button>
         <button className="pc-collapse" type="button" aria-pressed={collapsed}
           aria-label={t(collapsed ? "shell.expandNav" : "shell.collapseNav")}
@@ -401,10 +463,14 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
       <div className="pc-sidebar-scroll">
         <nav id="shell-nav" className="pc-nav" aria-label={t("shell.navLabel")}
           tabIndex={-1} data-shell-region>
-          {GROUPS.map(group => <div className="pc-navgroup" key={group.titleKey}>
-            <p className="pc-navgroup-title">{t(group.titleKey)}</p>
-            <ol>
-              {group.areas.map(area => {
+          {GROUPS.map(group => {
+            const groupAreas = group.areas.filter(area =>
+              areas.some(item => item.area === area));
+            if (groupAreas.length === 0) return null;
+            return <div className="pc-navgroup" key={group.titleKey}>
+              <p className="pc-navgroup-title">{t(group.titleKey)}</p>
+              <ol>
+              {groupAreas.map(area => {
                 const item = NAV_AREAS.find(entry => entry.area === area)!;
                 return <li key={area}>
                   <Link className="pc-nav-item" href={item.href}
@@ -416,8 +482,9 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
                   </Link>
                 </li>;
               })}
-            </ol>
-          </div>)}
+              </ol>
+            </div>;
+          })}
         </nav>
 
         {identity && recent.length > 0 && <section className="pc-recent" aria-label={t("shell.recent.title")}>
@@ -427,14 +494,17 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
               <Link className="pc-recent-item" href={`/ask?${askQuery(item.conversationId)}`}
                 onClick={() => setNavOpen(false)}>
                 <span className="pc-dot-tiny" aria-hidden/>
-                <span>{item.firstQuestionDigest
-                  ? `${item.firstQuestionDigest.slice(0, 22)}${item.firstQuestionDigest.length > 22 ? "…" : ""}`
-                  : item.conversationId.slice(0, 8)}</span>
+                <span>{t("shell.recent.conversation")} · {formatDateTime(item.lastActivityAt, locale, {
+                  day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+                })}</span>
               </Link>
             </li>)}
           </ul>
         </section>}
 
+      </div>
+
+      <div className="pc-sidebar-footer">
         <div className="pc-integrity" role="status" aria-label={t("shell.integrity.title")}>
           <div className="pc-integrity-head">
             <span className="pc-status-dot" data-state={integrity.state}/>
@@ -446,9 +516,6 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
           </div>
           <p className="pc-integrity-sub">{integrity.sub}</p>
         </div>
-      </div>
-
-      <div className="pc-sidebar-footer">
         <div className="pc-profile">
           {identity && <>
             <span className="pc-avatar" aria-hidden>{initials(displayName)}</span>
@@ -465,7 +532,8 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
             // OIDC requires a full navigation through the same-origin callback.
             // eslint-disable-next-line @next/next/no-html-link-for-pages
             && <a className="pc-signin" href="/api/auth/login">
-              <Icon name="arrowRight" size={16}/>{t("shell.login")}
+              <Icon name="arrowRight" size={16}/>
+              <span className="pc-signin-label">{t("shell.login")}</span>
             </a>}
           {!identity && !authReady
             && <span className="pc-profile-role" role="status">{t("shell.sessionChecking")}</span>}
@@ -480,10 +548,6 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
           onClick={() => setNavOpen(open => !open)}>
           <Icon name="panelLeft" size={18}/>
         </button>
-        <Link className="pc-brand" href="/">
-          <span className="pc-brand-mark">RtR</span>
-          <span className="pc-brand-name">{t("shell.brand")}</span>
-        </Link>
         <button className="pc-search" type="button" ref={searchRef}
           aria-haspopup="dialog" aria-label={t("shell.search")}
           onClick={() => setPaletteOpen(true)}>
@@ -507,7 +571,8 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
             onClick={() => setHelpOpen(true)}>?</button>
         </div>
       </header>
-      <main id="main" className="pc-main" tabIndex={-1} data-shell-region>
+      <main id="main" className="pc-main" tabIndex={-1} data-shell-region
+        data-active-area={active ?? undefined}>
         {children}
       </main>
     </div>
@@ -515,7 +580,7 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
     {/* PRD §13: mobile bottom dock — a second, distinctly-labelled nav shown
         only <760px (CSS). Icon links carry the six area names. */}
     <nav className="pc-dock" aria-label={t("shell.dockLabel")}>
-      {NAV_AREAS.map(item => <Link key={item.area} className="pc-dock-item"
+      {areas.map(item => <Link key={item.area} className="pc-dock-item"
         href={item.href} aria-label={t(item.labelKey)}
         aria-current={active === item.area ? "page" : undefined}
         onClick={() => setNavOpen(false)}>
@@ -526,6 +591,7 @@ export function AppShell({children, initialTheme = "dark", initialCollapsed = fa
     {navOpen && <button className="pc-scrim" type="button"
       aria-label={t("shell.closeNav")} onClick={() => setNavOpen(false)}/>}
     {paletteOpen && <CommandPalette commands={commands} onClose={closePalette}
+      onAsk={askFromPalette} askPrefix={t("shell.palette.askPrefix")}
       placeholder={t("shell.search")} emptyText={t("shell.palette.empty")}/>}
     {helpOpen && <HelpDialog t={t} onClose={closeHelp}/>}
   </div>;

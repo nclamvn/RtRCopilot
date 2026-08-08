@@ -92,6 +92,48 @@ class SearchResponse(StrictModel):
     request_id: str
 
 
+AskOutcomeReason = Literal[
+    "no_evidence",
+    "denied_or_unavailable",
+    "insufficient_confidence",
+    "stale_only",
+    "grounding_failed",
+    "manual_entry",
+    "answer_quality_configuration_required",
+]
+
+AnswerCoverageState = Literal["complete", "partial", "not_assessed"]
+
+AskProgressStage = Literal[
+    "understanding",
+    "retrieving",
+    "verifying",
+    "synthesizing",
+    "grounding",
+]
+
+
+class AskProgressSource(StrictModel):
+    """Content-free summary of one already-authorized retrieval candidate."""
+
+    marker: str = Field(pattern=r"^C\d{1,3}$", max_length=8)
+    record_key: str = Field(min_length=1, max_length=500)
+    source_label: str = Field(min_length=1, max_length=500)
+    verification_state: str = Field(min_length=1, max_length=100)
+    freshness_state: str = Field(min_length=1, max_length=100)
+
+
+class AskProgressEvent(StrictModel):
+    """Observable Ask checkpoint; never contains prompts, snippets or CoT."""
+
+    stage: AskProgressStage
+    status: Literal["started", "completed"]
+    elapsed_ms: int = Field(ge=0)
+    detail: str | None = Field(default=None, max_length=500)
+    source_count: int = Field(default=0, ge=0, le=20)
+    sources: list[AskProgressSource] = Field(default_factory=list, max_length=20)
+
+
 class AskResponse(StrictModel):
     state: Literal["grounded", "honest_null", "failed"]
     answer: str
@@ -99,17 +141,27 @@ class AskResponse(StrictModel):
     conversation_id: uuid.UUID
     answer_run_id: uuid.UUID
     gap_id: uuid.UUID | None = None
+    answer_mode: Literal["quality_llm", "evidence_only"] | None = None
+    # Honest-null is an abstention, not necessarily a knowledge gap.  This
+    # typed reason lets clients distinguish missing/unsafe evidence from an
+    # unavailable answer-quality provider without inferring from prose.
+    reason_code: AskOutcomeReason | None = None
     # TIP-013B AC-3: True iff the answer is grounded on at least one cited
     # record carrying the soft-tier ``needs_double_check`` marker (Part A).
     # Strict-only answers and honest-null answers stay False. Additive
     # response field only — no schema change, nothing stored.
     confidence_caveat: bool = False
+    # Utility-first coverage is separate from grounding: ``partial`` still
+    # means every rendered claim is cited, but not every configured facet or
+    # collection member was available in the authorized evidence set.
+    coverage_state: AnswerCoverageState = "not_assessed"
     request_id: str
 
 
 class ProviderEvidence(StrictModel):
     marker: str
     text: str
+    record_key: str | None = None
     provenance_level: str
     verification_state: str
     freshness_state: str
@@ -119,6 +171,13 @@ class ProviderAnswer(StrictModel):
     answer: str = Field(max_length=12000)
     used_markers: list[str] = Field(min_length=1, max_length=20)
     follow_ups: list[str] = Field(default_factory=list, max_length=3)
+    # Internal-only trust signal. It is never rendered or persisted as answer
+    # content. The reviewer is advisory because enterprise acceptance exposed
+    # false negatives on correct evidence-bound answers; deterministic
+    # grounding and coverage gates remain the final authority.
+    review_state: Literal[
+        "not_reviewed", "accepted", "advisory_rejected",
+    ] = "not_reviewed"
 
 
 class DLPDecision(StrictModel):
