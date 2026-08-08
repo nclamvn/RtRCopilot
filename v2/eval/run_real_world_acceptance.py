@@ -237,6 +237,7 @@ async def evaluate_http(
                     latency_ms=latency_ms,
                 )
                 row["answer_mode"] = body.get("answer_mode")
+                row["decision_diagnostic"] = body.get("decision_diagnostic")
                 issued_conversation = body.get("conversation_id")
                 return row, (
                     str(issued_conversation)

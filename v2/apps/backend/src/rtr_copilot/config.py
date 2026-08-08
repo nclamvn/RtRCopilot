@@ -95,6 +95,13 @@ class Settings(BaseSettings):
     rag_min_vector_score: float = Field(default=0.15, ge=0.0, le=1.0)
     rag_evidence_max_bytes: int = Field(default=16000, ge=512, le=100000)
     rag_answer_max_chars: int = Field(default=12000, ge=256, le=50000)
+    # TIP-030: when True, honest-null API responses carry the internal
+    # decision label (e.g. "called_answer_irrelevant") so acceptance
+    # campaigns can classify refusals without database access. The label is
+    # a fixed enum-like string — never evidence content. Default OFF: the
+    # production surface is unchanged unless an operator opts in (e2e sets
+    # RAG_EXPOSE_DECISION_DIAGNOSTICS=1 on the isolated stack only).
+    rag_expose_decision_diagnostics: bool = False
     rag_provider_timeout_seconds: float = Field(default=120.0, ge=0.05, le=300.0)
     rag_provider_mode: Literal["local", "external"] = "local"
     rag_external_classification_allowlist: str = ""

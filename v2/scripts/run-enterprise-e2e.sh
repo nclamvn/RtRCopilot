@@ -122,6 +122,7 @@ runtime_dsn="${POSTGRES_DSN%/*}/${clone_database}"
   -e REDIS_URL="redis://redis:6379/${redis_database}" \
   -e LIMITS_RATE_ASK_MAX=1000 \
   -e LIMITS_RATE_AUTH_MAX=1000 \
+  -e RAG_EXPOSE_DECISION_DIAGNOSTICS=1 \
   -e PUBLIC_BASE_URL="http://127.0.0.1:${web_port}" \
   -p "127.0.0.1:${api_port}:8000" api >/dev/null
 

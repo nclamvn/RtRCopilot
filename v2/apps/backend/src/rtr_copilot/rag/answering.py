@@ -843,6 +843,13 @@ class AnswerService:
         )
         answer_message_id = uuid.uuid4()
         outcome_reason: AskOutcomeReason = response_reason or reason
+        # Single source for the decision label used by persistence, audit and
+        # (when diagnostics are enabled) the API response below.
+        decision_label = provider_decision or (
+            "not_called_no_evidence"
+            if provider_calls == 0
+            else "called_grounding_failed"
+        )
         async with self.uow.transaction() as session:
             gap_id = (
                 await self._gap(
@@ -884,12 +891,7 @@ class AnswerService:
                 {
                     "message_id": answer_message_id,
                     "reason": outcome_reason,
-                    "provider_decision": provider_decision
-                    or (
-                        "not_called_no_evidence"
-                        if provider_calls == 0
-                        else "called_grounding_failed"
-                    ),
+                    "provider_decision": decision_label,
                     "latency": int((time.monotonic() - started) * 1000),
                     "run_id": run_id,
                 },
@@ -908,12 +910,7 @@ class AnswerService:
                     **({"gap_id": str(gap_id)} if gap_id is not None else {}),
                     "reason_category": outcome_reason,
                     "provider_calls": provider_calls,
-                    "provider_decision": provider_decision
-                    or (
-                        "not_called_no_evidence"
-                        if provider_calls == 0
-                        else "called_grounding_failed"
-                    ),
+                    "provider_decision": decision_label,
                 },
             )
         return AskResponse(
@@ -925,6 +922,13 @@ class AnswerService:
             gap_id=gap_id,
             reason_code=outcome_reason,
             request_id=request_id,
+            # TIP-030: opt-in refusal classification for acceptance campaigns;
+            # a fixed label, never evidence. None on production surfaces.
+            decision_diagnostic=(
+                decision_label
+                if self.settings.rag_expose_decision_diagnostics
+                else None
+            ),
         )
 
     async def _citations_current(self, hits: list[RetrievalHit]) -> bool:
