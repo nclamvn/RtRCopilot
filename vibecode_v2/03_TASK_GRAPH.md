@@ -81,6 +81,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-027 ✅ | Enterprise knowledge fabric foundation: source catalog, deterministic TheSkyWatch adapter, giữ kernel 219-chunk | 006,026 | VERIFIED: HTTP campaign 71/77 (92.2%) grounded; 5/5 live browser; field provenance + honest-null giữ nguyên |
 | TIP-027.5 ✅ | Quality-first cost governance: deterministic exact path, router 1-generation-0-review, staged E2E spend guard | 027 | VERIFIED · **GO FOR BOUNDED INTERNAL PILOT**: vitest 182/182; live HTTP 12/12 + browser 5/5; citation accuracy 100%; false-grounded 0; full 77+ live campaign CHỜ duyệt chi phí (không ngầm hiểu là đã duyệt) |
 | TIP-028 ✅ | Ledger recovery: bổ sung 21 hàng task-graph 024.6→027.5, phát hiện + đánh dấu 2 audit-gap (025.1, 026.4) | — | docs-only; đối chiếu từng hàng với VERIFY report gốc; không đụng code |
+| TIP-029 ◐ | Approved full live campaign 77 case (spend 08/08): 70/77, gate 7/8 — **p95 đã đóng 60.5s→38.8s**, false-grounded 0, honest-null 100% | 027.5 | **NO-GO nâng verdict**: citation_accuracy 0.90<0.95 do 7 case honest-null-quá-tay (RECALL-MISS-COLLOQUIAL, oracle có thật trong corpus). Verdict giữ BOUNDED. Kèm 2 fix hạ tầng: bash-3.2 e2e array, stale-summary guard. Kế tiếp: TIP-029.1 colloquial recall recovery → re-run chốt |
 
 ## Audit trail rule
 
