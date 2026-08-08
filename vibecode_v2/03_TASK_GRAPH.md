@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** TIP-022→027.5 VERIFIED · **GO FOR BOUNDED INTERNAL PILOT** (TIP-027.5) · `main` đang dừng ở TIP-024 — chờ PR #7 merge · audit-gap 025.1/026.4 ĐÃ ĐÓNG bằng retro Completion+Verify (08/08/2026)
+**Trạng thái:** TIP-022→029.2 VERIFIED · **GO FOR COMPANY-WIDE INTERNAL PILOT** (TIP-029 run 3: 8/8 gate, false-grounded 0) · chờ PR nhánh `tip-029-full-campaign` → `main` (08/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -81,7 +81,9 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-027 ✅ | Enterprise knowledge fabric foundation: source catalog, deterministic TheSkyWatch adapter, giữ kernel 219-chunk | 006,026 | VERIFIED: HTTP campaign 71/77 (92.2%) grounded; 5/5 live browser; field provenance + honest-null giữ nguyên |
 | TIP-027.5 ✅ | Quality-first cost governance: deterministic exact path, router 1-generation-0-review, staged E2E spend guard | 027 | VERIFIED · **GO FOR BOUNDED INTERNAL PILOT**: vitest 182/182; live HTTP 12/12 + browser 5/5; citation accuracy 100%; false-grounded 0; full 77+ live campaign CHỜ duyệt chi phí (không ngầm hiểu là đã duyệt) |
 | TIP-028 ✅ | Ledger recovery: bổ sung 21 hàng task-graph 024.6→027.5, phát hiện + đánh dấu 2 audit-gap (025.1, 026.4) | — | docs-only; đối chiếu từng hàng với VERIFY report gốc; không đụng code |
-| TIP-029 ◐ | Approved full live campaign 77 case (spend 08/08): 70/77, gate 7/8 — **p95 đã đóng 60.5s→38.8s**, false-grounded 0, honest-null 100% | 027.5 | **NO-GO nâng verdict**: citation_accuracy 0.90<0.95 do 7 case honest-null-quá-tay (RECALL-MISS-COLLOQUIAL, oracle có thật trong corpus). Verdict giữ BOUNDED. Kèm 2 fix hạ tầng: bash-3.2 e2e array, stale-summary guard. Kế tiếp: TIP-029.1 colloquial recall recovery → re-run chốt |
+| TIP-029 ✅ | Approved full live campaign ×3 run (spend 08/08): run 3 **8/8 gate — 73/77 (94.8%), citation 95.7%, false-grounded 0, honest-null 100%, p95 35.8s, browser 5/5** | 027.5 | **VERIFIED · VERDICT NÂNG: GO FOR COMPANY-WIDE INTERNAL PILOT.** Kèm 2 fix hạ tầng (bash-3.2 e2e array, stale-summary guard). Đuôi 4 case = backlog chất lượng, không phải nợ an toàn |
+| TIP-029.1 ✅ | Colloquial recall recovery: tokenizer edge-punctuation (normalize_query strip mép token, giữ next.js/L3R.2.005) + exhaustive partial-over-refusal (coverage_state=partial thay honest-null) | 029 | VERIFIED: 4/7 case gốc phục hồi live; 572/127/0 hermetic; ruff/mypy 0; browser exhaustive-catalog 5/5 |
+| TIP-029.2 ✅ | Weak-alias ambiguity guard: tầng `weak_aliases` (hr→HERA chỉ khi có ngữ cảnh; bare → clarification_required, chặn trước provider, đóng cả đường LLM-confirmation) | 029.1 | VERIFIED: SAFE-007 deterministic (run 3 safety 8/8, false-grounded 0); 579/127/0 hermetic; 1 contract TIP-014 phân xử spec-mới-thắng; data diff 2 dòng |
 
 ## Audit trail rule
 
