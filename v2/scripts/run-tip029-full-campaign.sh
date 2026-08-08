@@ -38,6 +38,7 @@ echo "PREFLIGHT OK · runtime sẽ chứng nhận tại HEAD=$head_sha · env=$e
 # ---- Run the approved full campaign (harness gates itself) ------------------
 log="/tmp/tip029_full_campaign_$(date -u +%Y%m%d%H%M%S).log"
 echo "Log đầy đủ: $log"
+run_marker="$(mktemp /tmp/tip029_marker.XXXXXX)"   # mọi file cũ hơn marker = stale
 set +e
 E2E_APPROVE_FULL=1 \
 E2E_SKIP_BUILD="${E2E_SKIP_BUILD:-0}" \
@@ -50,11 +51,14 @@ set -e
 summary="eval/real_world/latest_http_summary.json"
 out_summary="eval/real_world/tip029_full_campaign_summary.json"
 out_tail="eval/real_world/tip029_run_tail.log"
-if [[ -f "$summary" ]]; then
+# Chỉ nhận summary SINH RA TRONG lần chạy này (mới hơn marker). File cũ từ lần
+# chạy trước là bằng chứng giả — ghi error JSON trung thực thay vì copy nhầm.
+if [[ -f "$summary" && "$summary" -nt "$run_marker" ]]; then
   cp "$summary" "$out_summary"
 else
-  echo '{"error":"latest_http_summary.json not produced","exit":'"$status"'}' > "$out_summary"
+  echo '{"error":"campaign did not produce a fresh summary this run (stale or missing)","exit":'"$status"'}' > "$out_summary"
 fi
+rm -f "$run_marker"
 {
   echo "# TIP-029 full campaign · HEAD=$head_sha · exit=$status · $(date -u +%FT%TZ)"
   tail -c 300000 "$log"
@@ -63,7 +67,12 @@ fi
 # ---- Commit + push for independent verify (PASS or FAIL — both are evidence) -
 cd "$repo_root"
 branch="tip-029-full-campaign"
-git checkout -B "$branch" main
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+if [[ "$current_branch" != "$branch" ]]; then
+  # Tạo/chuyển nhánh TỪ HEAD HIỆN TẠI — không reset về main, để giữ nguyên
+  # các commit fix đã nằm trên nhánh (chạy lại không phá paper trail).
+  git checkout -B "$branch"
+fi
 git add "v2/$out_summary" "v2/$out_tail" \
   v2/scripts/run-tip029-full-campaign.sh \
   vibecode_v2/TIP-029_FULL_LIVE_CAMPAIGN.md

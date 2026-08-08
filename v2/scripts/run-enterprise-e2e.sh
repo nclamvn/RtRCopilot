@@ -167,7 +167,7 @@ if [[ "${E2E_SKIP_HTTP:-0}" != "1" ]]; then
       --base-url "http://127.0.0.1:${web_port}" \
       --concurrency "${E2E_CONCURRENCY:-3}" \
       --request-timeout "${E2E_REQUEST_TIMEOUT:-150}" \
-      "${e2e_case_args[@]}" \
+      ${e2e_case_args[@]+"${e2e_case_args[@]}"} \
     >"$http_report"
   campaign_status=$?
   set -e
