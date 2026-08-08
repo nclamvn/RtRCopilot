@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from rtr_copilot.db.engine import session_factory
 from rtr_copilot.rag.adapters import normalize_query
 
-MatchKind = Literal["exact", "fuzzy", "partial", "candidate"]
+MatchKind = Literal["exact", "weak", "fuzzy", "partial", "candidate"]
 
 # A partial-name signal must come from an identifying token, not a generic
 # domain noun. Without this boundary, a registered alias such as "Da Nang
@@ -87,6 +87,12 @@ class OntologyEntity(BaseModel):
     entity_type: str = Field(pattern=r"^[a-z][a-z0-9_-]{1,63}$")
     domain: str = Field(pattern=r"^[a-z][a-z0-9_-]{1,63}$")
     aliases: tuple[str, ...] = ()
+    # TIP-029.2: a weak alias is curated shorthand whose surface collides with
+    # a common outside meaning (e.g. "hr" -> HERA vs human resources). It
+    # resolves ONLY when the question carries corroborating content beyond the
+    # alias itself; a bare definition question about the alias must ask for
+    # clarification instead of confidently answering (SAFE-007 trap).
+    weak_aliases: tuple[str, ...] = ()
     definition_record_keys: tuple[str, ...] = ()
     profile_facets: tuple[OntologyProfileFacet, ...] = ()
     lifecycle: Literal["active", "retired"] = "active"
@@ -97,6 +103,12 @@ class OntologyEntity(BaseModel):
     def aliases_are_meaningful(self) -> OntologyEntity:
         if any(not normalize_query(alias) for alias in self.aliases):
             raise ValueError("ontology_alias_empty_after_normalization")
+        if any(not normalize_query(alias) for alias in self.weak_aliases):
+            raise ValueError("ontology_weak_alias_empty_after_normalization")
+        strong = {normalize_query(alias) for alias in self.aliases}
+        strong.add(normalize_query(self.canonical_name))
+        if any(normalize_query(alias) in strong for alias in self.weak_aliases):
+            raise ValueError("ontology_weak_alias_shadows_strong_surface")
         if any(
             not record_key.strip() or len(record_key) > 160
             for record_key in self.definition_record_keys
@@ -226,6 +238,7 @@ class EnterpriseOntology:
         self._surface_index: dict[str, list[OntologyEntity]] = defaultdict(list)
         self._surfaces: list[tuple[str, OntologyEntity]] = []
         self._max_tokens = 1
+        self._weak_surfaces: set[str] = set()
         for entity in self.entities:
             self.by_canonical[entity.canonical_name].append(entity)
             seen: set[str] = set()
@@ -236,6 +249,15 @@ class EnterpriseOntology:
                 seen.add(normalized)
                 self._surface_index[normalized].append(entity)
                 self._surfaces.append((normalized, entity))
+                self._max_tokens = max(self._max_tokens, len(normalized.split()))
+            for surface in entity.weak_aliases:
+                normalized = normalize_query(surface)
+                if not normalized or normalized in seen:
+                    continue
+                seen.add(normalized)
+                self._surface_index[normalized].append(entity)
+                self._surfaces.append((normalized, entity))
+                self._weak_surfaces.add(normalized)
                 self._max_tokens = max(self._max_tokens, len(normalized.split()))
         canonical = json.dumps(
             spec.model_dump(mode="json"),
@@ -270,7 +292,7 @@ class EnterpriseOntology:
 
     @staticmethod
     def _dedupe(matches: list[OntologyMatch]) -> list[OntologyMatch]:
-        kind_rank = {"candidate": 0, "partial": 1, "fuzzy": 2, "exact": 3}
+        kind_rank = {"candidate": 0, "partial": 1, "fuzzy": 2, "weak": 3, "exact": 4}
         best: dict[str, OntologyMatch] = {}
         for match in matches:
             existing = best.get(match.entity_id)
@@ -301,7 +323,11 @@ class EnterpriseOntology:
                     self._match(
                         entity,
                         surface=surface,
-                        kind="exact",
+                        kind=(
+                            "weak"
+                            if surface in self._weak_surfaces
+                            else "exact"
+                        ),
                         confidence=1.0,
                     )
                     for entity in entities

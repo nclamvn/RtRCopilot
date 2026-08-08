@@ -260,10 +260,21 @@ class TestUnderstand:
             entities=["HERA"],
             expansions=["payload", "  ", "x" * 999, "endurance"],
         ))
-        out = asyncio.run(understand("hr", stub))
+        # TIP-029.2: bare "hr" is now a weak alias (governed ambiguity), so
+        # this contract keeps its original purpose — expansion bounding and
+        # additivity — on corroborated shorthand instead.
+        out = asyncio.run(understand("hr mtow", stub))
         assert "HERA" in out and "payload" in out and "endurance" in out
         assert "x" * 999 not in out  # over-length expansion dropped
-        assert out.startswith("hr")
+        assert out.startswith("hr mtow")
+
+    def test_bare_weak_alias_rejects_llm_entity_confirmation(self) -> None:
+        # TIP-029.2: the SAFE-007 leak also ran through the LLM-confirmation
+        # route — a planner proposing HERA for bare "hr" must be refused just
+        # like the deterministic resolver refuses it.
+        stub = _StubRewriter(RewriteResult(entities=["HERA"]))
+        out = asyncio.run(understand("hr", stub))
+        assert "HERA" not in out
 
     def test_deterministic(self) -> None:
         stub = _StubRewriter(RewriteResult(entities=["HERA", "VEGA"]))
@@ -355,3 +366,57 @@ class TestTokenBoundaryPunctuation:
         from rtr_copilot.rag.adapters import normalize_query
         assert normalize_query("(Nguồn: Real-time Robotics.)") == \
             normalize_query("Nguồn: Real-time Robotics")
+
+
+class TestWeakAliasAmbiguityGuard:
+    """TIP-029.2: curated shorthand with a common outside meaning ("hr").
+
+    SAFE-007 trap: "HR là gì?" must never be confidently answered as HERA —
+    run 1 refused it only by LLM luck, run 2 answered (false-grounded). The
+    weak-alias guard makes the refusal deterministic and pre-provider while
+    preserving every TIP-014 contextual-alias contract.
+    """
+
+    def test_bare_weak_alias_identity_question_does_not_resolve(self):
+        assert resolve_entities("HR là gì?") == []
+
+    def test_bare_weak_alias_is_reported_as_governed_ambiguity(self):
+        from rtr_copilot.rag.query_understanding import (
+            uncorroborated_weak_surfaces,
+        )
+        assert uncorroborated_weak_surfaces("HR là gì?") == ("hr",)
+        assert uncorroborated_weak_surfaces("hr payload capacity") == ()
+
+    def test_bare_weak_alias_plan_requires_clarification(self):
+        plan = asyncio.run(plan_query("HR là gì?", OfflineRewriter()))
+        assert plan.resolution_state == "clarification_required"
+
+    def test_corroborated_weak_alias_still_resolves_hera(self):
+        # TIP-014 contracts: shorthand with product context keeps working.
+        assert resolve_entities("hr payload capacity") == ["HERA"]
+        assert resolve_entities("pin hr bao nhiêu vôn") == ["HERA"]
+        plan = asyncio.run(plan_query("hr payload capacity", OfflineRewriter()))
+        assert plan.resolution_state == "resolved"
+
+    def test_strong_short_aliases_are_untouched(self):
+        assert resolve_entities("VGA là gì") == ["VEGA"]
+        assert resolve_entities("CRM bên mình làm gì?") == [
+            "RtR CRM", "Real-time Robotics",
+        ]
+        assert resolve_entities("HERA là gì") == ["HERA"]
+
+    def test_weak_alias_may_not_shadow_a_strong_surface(self):
+        import pytest
+
+        from rtr_copilot.rag.ontology import OntologyEntity
+        with pytest.raises(Exception, match="shadows_strong_surface"):
+            OntologyEntity(
+                entity_id="rtr.test.dup",
+                canonical_name="Dup",
+                entity_type="product",
+                domain="products",
+                aliases=["dup-alias"],
+                weak_aliases=["dup-alias"],
+                owner="test",
+                provenance_level="approved_internal",
+            )
