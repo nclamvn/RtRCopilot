@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** TIP-022 + TIP-018 + TIP-023 + TIP-024 + TIP-024.5 VERIFIED · TIP-014 SAFE CORE VERIFIED / REAL EMBEDDING PENDING (04/08/2026)
+**Trạng thái:** TIP-022→027.5 VERIFIED · **GO FOR BOUNDED INTERNAL PILOT** (TIP-027.5) · `main` đang dừng ở TIP-024 — chờ PR #7 merge · audit-gap 025.1/026.4 ĐÃ ĐÓNG bằng retro Completion+Verify (08/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -59,6 +59,28 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-023 ✅ | Admin Workspace: operator-safe identities, research sources, governance settings, gap priority and job health UI | 010,011,022 | VERIFIED: 9/9 AC; Web 162/162; Playwright 92/92; axe 0 critical/serious; full `make verify` PASS; GitHub 8/8; PR #5 merged |
 | TIP-024 ✅ | Pilot corpus & provenance: representative Files, internal templates, Research package, readiness truth and role-labelled evaluation set | 006,008,009,010,013B,018,023 | VERIFIED READY-with-deferred: 11/11 AC; 30 real files/5 families; 4 templates; 70 research records; 32 questions; checksum/zone findings 0; 211 caveated owner assignments deferred to humans |
 | TIP-024.5 ✅ | UX Recovery & Pilot Readiness: Ask-first entry, universal ask palette, conversation-first/proof-on-demand, role IA, responsive recovery, graphite monochrome premium system | 011,018,023,024 | VERIFIED: 9/9 AC; Web 166/166; Playwright 104/104; axe 0 critical/serious; 390/1280/1365 recovery + achromatic/quiet-focus/collapse-geometry contracts; production build and local visual audit PASS |
+| TIP-024.6 ✅ | Answer reliability recovery | 024.5 | VERIFIED READY FOR MERGE: 8/8 acceptance scenarios; adversarial active-corpus 9/9; production answering giữ configuration-gated |
+| TIP-024.7 ✅ | Enterprise query intelligence | 024.6 | VERIFIED READY FOR MERGE: 10/10 AC; live query gate 37/37; enterprise ontology population deferred |
+| TIP-025 ✅ | Enterprise corpus onboarding | 024 | VERIFIED: backend hermetic 449 passed/119 skipped; data integration 61 passed |
+| TIP-025.1 ✅ | Operational grounded evidence mode (`quality_llm`/`evidence_only` tách bạch, verbatim-only, certification không tính evidence-only là quality-configured) | 025 | VERIFIED (retro 08/08): backend full hermetic 568/127; focused 25/22; vitest 182/182; Playwright ask/files/shell 58/58; live inheritance qua 026.8 (HERA 1/1) + 027 (71/77) + 027.5 (12/12, citation 100%) |
+| TIP-026 ✅ | Real-world enterprise acceptance campaign | 024,025 | Campaign PASS · **Product verdict trung thực: NOT READY** cho pilot toàn công ty (answer trust dưới ngưỡng — sinh ra chuỗi 026.x); backend 455 passed/119 skipped |
+| TIP-026.1 ✅ | RtR company identity recovery | 026 | VERIFIED READY: 6/6 AC (100%); regression 41/41 + live corpus 9/9 |
+| TIP-026.2 ✅ | Multiformat viewer fidelity recovery | 026 | VERIFIED: 458 passed/120 skipped; Office Vietnamese/layout/determinism probes PASS |
+| TIP-026.3 ✅ | Corpus-wide Office glyph recovery | 026.2 | VERIFIED: 11/11 active previews trên generator 3; checksum/PDF/page/font audit toàn bộ PASS |
+| TIP-026.4 ✅ | Application compact density (instrument-panel: topbar 56px, gutter 32px, canvas 470→538px, hit-area ≥44px giữ nguyên) | 024.5,026.3 | VERIFIED (retro 08/08): assertion hình học trong files/shell spec chạy PASS trong 58/58 trên production build; build EXIT 0; downstream 123/123 + 125/125 kế thừa |
+| TIP-026.5 ✅ | LLM query planning + coverage-gated answers | 026 | VERIFIED: 469 passed/122 skipped; focused suite 55 passed; đóng đường false-ready khi credential trống |
+| TIP-026.6 ✅ | Core answer utility recovery | 026.5 | VERIFIED: backend 485/123; integration 65 passed |
+| TIP-026.7 ✅ | Pipeline consolidation + enterprise E2E | 026.6 | VERIFIED: backend 492/124; integration 66 passed |
+| TIP-026.8 ✅ | Governed entity profile answers | 026.7 | VERIFIED: backend 499/124; HERA live browser journey (kèm follow-up cùng hội thoại) 1/1 |
+| TIP-026.9 ✅ | Utility-first grounded copilot | 026.8 | VERIFIED READY cho authenticated internal testing: REQ 8/8; backend 500/125 |
+| TIP-026.10 ✅ | Live processing + evidence inspector | 026.9 | VERIFIED: backend 501/125; data integration 67/67; SSE checkpoint verify trên production browser surface |
+| TIP-026.11 ✅ | Conversational workspace + related-context rail | 026.10 | VERIFIED: web 181/181; browser + a11y + responsive 119/119; source tabs chỉ render metadata đã authorized |
+| TIP-026.12 ✅ | Conversational UI + runtime integrity | 026.11 | VERIFIED: web 181/181; backend 500/125 |
+| TIP-026.13 ✅ | Minimalist workspace + viewport contract | 026.12 | VERIFIED: web 181/181; Playwright 123/123; `grounded_answering=ready` |
+| TIP-026.14 ✅ | Composer lifecycle + conversation isolation | 026.13 | VERIFIED: web 182/182; Playwright 125/125 |
+| TIP-027 ✅ | Enterprise knowledge fabric foundation: source catalog, deterministic TheSkyWatch adapter, giữ kernel 219-chunk | 006,026 | VERIFIED: HTTP campaign 71/77 (92.2%) grounded; 5/5 live browser; field provenance + honest-null giữ nguyên |
+| TIP-027.5 ✅ | Quality-first cost governance: deterministic exact path, router 1-generation-0-review, staged E2E spend guard | 027 | VERIFIED · **GO FOR BOUNDED INTERNAL PILOT**: vitest 182/182; live HTTP 12/12 + browser 5/5; citation accuracy 100%; false-grounded 0; full 77+ live campaign CHỜ duyệt chi phí (không ngầm hiểu là đã duyệt) |
+| TIP-028 ✅ | Ledger recovery: bổ sung 21 hàng task-graph 024.6→027.5, phát hiện + đánh dấu 2 audit-gap (025.1, 026.4) | — | docs-only; đối chiếu từng hàng với VERIFY report gốc; không đụng code |
 
 ## Audit trail rule
 
