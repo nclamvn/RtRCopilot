@@ -35,7 +35,7 @@ from rtr_copilot.observability.metrics import (
     PROVIDER_REASONING_TOKENS,
 )
 from rtr_copilot.rag.adapters import AnswerAdapter, normalize_query
-from rtr_copilot.rag.answer_llm import build_answer_provider
+from rtr_copilot.rag.answer_llm import InsufficientEvidence, build_answer_provider
 from rtr_copilot.rag.models import (
     AnswerCoverageState,
     AskOutcomeReason,
@@ -1249,6 +1249,7 @@ class AnswerService:
         run_id: uuid.UUID,
         calls_before: int,
         budget_limits: ProviderBudgetLimits,
+        user_question: str | None = None,
     ) -> tuple[ProviderAnswer | None, str]:
         """Provider call wrapped by the circuit breaker + cost-budget debit.
 
@@ -1367,6 +1368,23 @@ class AnswerService:
                             candidate,
                             presentation_labels=presentation_labels,
                         )
+                except InsufficientEvidence as declined:
+                    # TIP-030: the generation model itself judged the supplied
+                    # evidence unanswerable. This is a DOMAIN verdict, not a
+                    # provider failure — it must not trip the breaker or the
+                    # failure counters, and the label carries a bounded slug
+                    # of the model's reason for campaign classification.
+                    PROVIDER_CALL_DURATION.labels(
+                        breaker_name,
+                        "declined",
+                    ).observe(time.monotonic() - call_started)
+                    with contextlib.suppress(RedisError):
+                        await breaker.record_success()
+                    reason_slug = re.sub(
+                        r"[^a-z0-9]+", "_", str(declined).lower(),
+                    ).strip("_")[:48] or "unspecified"
+                    grounding_error = f"llm_declined_{reason_slug}"
+                    break
                 except Exception as provider_exc:
                     # Timeout or provider error: record latency + failure (AC-08).
                     PROVIDER_CALL_DURATION.labels(
@@ -1403,7 +1421,13 @@ class AnswerService:
                         presentation_labels=presentation_labels,
                     )
                     if not answer_relevant(
-                        question,
+                        # TIP-030: the final consistency gate judges against
+                        # the USER'S question — the contract — not the planner
+                        # rewrite. A rewrite ("RtR đến từ đâu") erases meta
+                        # markers ("khách hỏi ... answer sao") and demanded an
+                        # entity restatement the natural reply never contains
+                        # (COM-008 deterministic false refusal).
+                        user_question or question,
                         candidate.answer,
                         entities=query_plan.answer_entities,
                         intent=query_plan.intent,
@@ -1931,6 +1955,7 @@ class AnswerService:
         output, grounding_error = await self._guarded_generate(
             subject,
             question=resolved_question,
+            user_question=question,
             query_plan=query_plan,
             evidence=evidence,
             request_id=request_id,
