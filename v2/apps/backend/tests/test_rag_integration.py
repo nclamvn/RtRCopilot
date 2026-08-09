@@ -1615,7 +1615,10 @@ async def test_hanging_provider_times_out_once_then_honest_null(
             SELECT provider_decision FROM answer_runs
             WHERE answer_run_id=:run_id
         """), {"run_id": response.answer_run_id})
-    assert decision == "called_provider_error"
+    # TIP-030: the decision label carries the exception class (a type name,
+    # never message content) so diagnostics separate timeouts from API
+    # rejections. The hanging-provider path times out deterministically.
+    assert decision == "called_provider_error_TimeoutError"
 
 
 @pytest.mark.asyncio

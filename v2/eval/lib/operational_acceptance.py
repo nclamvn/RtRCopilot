@@ -41,7 +41,12 @@ def term_present(term: str, answer: str) -> bool:
     # or locale punctuation (``50.4V`` vs ``50,4 V``, ``61MP`` vs ``61 MP``).
     # When the oracle contains both a number and a unit, compare an alphanumeric
     # compact form so presentation does not become a factual failure.
-    if any(char.isdigit() for char in term) and any(char.isalpha() for char in term):
+    # TIP-030: the same locale tolerance applies to alphabetic oracles —
+    # "Vietnam" must match the Vietnamese spaced form "Việt Nam" (folded:
+    # "viet nam") and "U.S.-aligned" any punctuation variant. Compact-compare
+    # any oracle whose alphanumeric core is >= 4 chars; short tokens stay
+    # strict so trivial collisions cannot manufacture a pass.
+    if len(re.sub(r"[^a-z0-9]", "", normalized_term)) >= 4:
         compact_term = re.sub(r"[^a-z0-9]", "", normalized_term)
         compact_answer = re.sub(r"[^a-z0-9]", "", normalized_answer)
         if compact_term and compact_term in compact_answer:

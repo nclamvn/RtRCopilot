@@ -308,3 +308,19 @@ def test_claim_or_stale_cannot_be_presented_as_verified() -> None:
             [evidence(freshness="stale")],
             max_chars=1000,
         )
+
+
+def test_ask_response_decision_diagnostic_defaults_none() -> None:
+    """TIP-030: additive response field; absent unless diagnostics enabled."""
+    import uuid
+
+    from rtr_copilot.rag.models import AskResponse
+    response = AskResponse(
+        state="honest_null",
+        answer="x",
+        citations=[],
+        conversation_id=uuid.uuid4(),
+        answer_run_id=uuid.uuid4(),
+        request_id="test-req",
+    )
+    assert response.decision_diagnostic is None

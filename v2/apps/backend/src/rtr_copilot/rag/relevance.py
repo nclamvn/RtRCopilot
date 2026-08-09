@@ -319,6 +319,26 @@ def evidence_relevant(
     return bool(bridge_terms & evidence_terms)
 
 
+_META_REPLY_RE_ASK = re.compile(r"\b(khach|khach hang|customer|client|nguoi ta|ai do)\s+hoi\b")
+_META_REPLY_RE_HOW = re.compile(
+    r"\b(answer|tra loi|noi|phan hoi|reply)\b.{0,30}\b(sao|the nao|nhu nao|gi)\b",
+)
+
+
+def _is_meta_reply_question(normalized: str) -> bool:
+    """TIP-030: "khách hỏi X thì mình answer sao" asks for a SUGGESTED REPLY.
+
+    The natural answer is reply prose ("chúng tôi ...") that legitimately may
+    not restate the canonical entity name, so the strict entity-mention rule
+    produced deterministic false refusals (COM-008: called_answer_irrelevant
+    across every campaign run). Detection is deliberately narrow: an explicit
+    ask-verb about how to answer/reply."""
+    return bool(
+        _META_REPLY_RE_ASK.search(normalized)
+        and _META_REPLY_RE_HOW.search(normalized)
+    )
+
+
 def answer_relevant(
     question: str,
     answer: str,
@@ -330,6 +350,17 @@ def answer_relevant(
     """Final question -> answer consistency gate."""
     profile = profile_query(question, entities=entities, intent=intent)
     targets = set(profile.entities)
+    if targets and _is_meta_reply_question(profile.normalized):
+        # Suggested-reply mode: accept a canonical mention OR lexical overlap
+        # with the question/support vocabulary. Marker-level grounding stays
+        # mandatory upstream, so nothing uncited can pass through here.
+        answer_terms = set(meaningful_terms(answer))
+        bridge_terms = set(meaningful_terms(" ".join(support_terms or ())))
+        return bool(
+            (targets & mentioned_entities(answer))
+            or (set(profile.terms) & answer_terms)
+            or (bridge_terms & answer_terms)
+        )
     if targets:
         answer_entities = mentioned_entities(answer)
         if not targets <= answer_entities:

@@ -35,7 +35,7 @@ from rtr_copilot.observability.metrics import (
     PROVIDER_REASONING_TOKENS,
 )
 from rtr_copilot.rag.adapters import AnswerAdapter, normalize_query
-from rtr_copilot.rag.answer_llm import build_answer_provider
+from rtr_copilot.rag.answer_llm import InsufficientEvidence, build_answer_provider
 from rtr_copilot.rag.models import (
     AnswerCoverageState,
     AskOutcomeReason,
@@ -843,6 +843,13 @@ class AnswerService:
         )
         answer_message_id = uuid.uuid4()
         outcome_reason: AskOutcomeReason = response_reason or reason
+        # Single source for the decision label used by persistence, audit and
+        # (when diagnostics are enabled) the API response below.
+        decision_label = provider_decision or (
+            "not_called_no_evidence"
+            if provider_calls == 0
+            else "called_grounding_failed"
+        )
         async with self.uow.transaction() as session:
             gap_id = (
                 await self._gap(
@@ -884,12 +891,7 @@ class AnswerService:
                 {
                     "message_id": answer_message_id,
                     "reason": outcome_reason,
-                    "provider_decision": provider_decision
-                    or (
-                        "not_called_no_evidence"
-                        if provider_calls == 0
-                        else "called_grounding_failed"
-                    ),
+                    "provider_decision": decision_label,
                     "latency": int((time.monotonic() - started) * 1000),
                     "run_id": run_id,
                 },
@@ -908,12 +910,7 @@ class AnswerService:
                     **({"gap_id": str(gap_id)} if gap_id is not None else {}),
                     "reason_category": outcome_reason,
                     "provider_calls": provider_calls,
-                    "provider_decision": provider_decision
-                    or (
-                        "not_called_no_evidence"
-                        if provider_calls == 0
-                        else "called_grounding_failed"
-                    ),
+                    "provider_decision": decision_label,
                 },
             )
         return AskResponse(
@@ -925,6 +922,13 @@ class AnswerService:
             gap_id=gap_id,
             reason_code=outcome_reason,
             request_id=request_id,
+            # TIP-030: opt-in refusal classification for acceptance campaigns;
+            # a fixed label, never evidence. None on production surfaces.
+            decision_diagnostic=(
+                decision_label
+                if self.settings.rag_expose_decision_diagnostics
+                else None
+            ),
         )
 
     async def _citations_current(self, hits: list[RetrievalHit]) -> bool:
@@ -1245,6 +1249,7 @@ class AnswerService:
         run_id: uuid.UUID,
         calls_before: int,
         budget_limits: ProviderBudgetLimits,
+        user_question: str | None = None,
     ) -> tuple[ProviderAnswer | None, str]:
         """Provider call wrapped by the circuit breaker + cost-budget debit.
 
@@ -1336,7 +1341,10 @@ class AnswerService:
                                 "available in the supplied evidence; do not turn "
                                 "partial attribute coverage into a total refusal. "
                                 "Do not emit uncited factual headings, lead-ins or "
-                                "standalone verdicts."
+                                "standalone verdicts. When the question "
+                                "asserts a specific figure or fact that the "
+                                "supplied evidence contradicts, refute it AND "
+                                "state the correct cited value explicitly."
                                 + (
                                     " Explicitly name each confirmed answer "
                                     "subject at least once using these canonical "
@@ -1360,14 +1368,36 @@ class AnswerService:
                             candidate,
                             presentation_labels=presentation_labels,
                         )
-                except Exception:
+                except InsufficientEvidence as declined:
+                    # TIP-030: the generation model itself judged the supplied
+                    # evidence unanswerable. This is a DOMAIN verdict, not a
+                    # provider failure — it must not trip the breaker or the
+                    # failure counters, and the label carries a bounded slug
+                    # of the model's reason for campaign classification.
+                    PROVIDER_CALL_DURATION.labels(
+                        breaker_name,
+                        "declined",
+                    ).observe(time.monotonic() - call_started)
+                    with contextlib.suppress(RedisError):
+                        await breaker.record_success()
+                    reason_slug = re.sub(
+                        r"[^a-z0-9]+", "_", str(declined).lower(),
+                    ).strip("_")[:48] or "unspecified"
+                    grounding_error = f"llm_declined_{reason_slug}"
+                    break
+                except Exception as provider_exc:
                     # Timeout or provider error: record latency + failure (AC-08).
                     PROVIDER_CALL_DURATION.labels(
                         breaker_name,
                         "error",
                     ).observe(time.monotonic() - call_started)
                     PROVIDER_CALL_FAILURES.labels(breaker_name).inc()
-                    grounding_error = "provider_error"
+                    # TIP-030: carry the exception class into the decision
+                    # label (a type name, never message content) so campaign
+                    # diagnostics can separate timeouts from API rejections.
+                    grounding_error = (
+                        f"provider_error_{type(provider_exc).__name__}"
+                    )
                     with contextlib.suppress(RedisError):
                         await breaker.record_failure()
                     # The second pass exists to repair a deterministic
@@ -1391,7 +1421,13 @@ class AnswerService:
                         presentation_labels=presentation_labels,
                     )
                     if not answer_relevant(
-                        question,
+                        # TIP-030: the final consistency gate judges against
+                        # the USER'S question — the contract — not the planner
+                        # rewrite. A rewrite ("RtR đến từ đâu") erases meta
+                        # markers ("khách hỏi ... answer sao") and demanded an
+                        # entity restatement the natural reply never contains
+                        # (COM-008 deterministic false refusal).
+                        user_question or question,
                         candidate.answer,
                         entities=query_plan.answer_entities,
                         intent=query_plan.intent,
@@ -1919,6 +1955,7 @@ class AnswerService:
         output, grounding_error = await self._guarded_generate(
             subject,
             question=resolved_question,
+            user_question=question,
             query_plan=query_plan,
             evidence=evidence,
             request_id=request_id,

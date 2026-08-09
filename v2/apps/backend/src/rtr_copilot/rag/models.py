@@ -155,6 +155,10 @@ class AskResponse(StrictModel):
     # means every rendered claim is cited, but not every configured facet or
     # collection member was available in the authorized evidence set.
     coverage_state: AnswerCoverageState = "not_assessed"
+    # TIP-030: internal refusal decision label, populated on honest-null ONLY
+    # when rag_expose_decision_diagnostics is enabled (isolated e2e stacks).
+    # A fixed label such as "called_answer_irrelevant" — never evidence.
+    decision_diagnostic: str | None = None
     request_id: str
 
 

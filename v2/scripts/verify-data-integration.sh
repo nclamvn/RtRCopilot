@@ -61,7 +61,21 @@ trap cleanup EXIT
 # already declared in compose.yaml (postgres: pg_isready, retries 20×3s). Without
 # it, the next `compose exec … psql` races the postmaster and fails with
 # "connection to server on socket … .s.PGSQL.5432: No such file or directory".
-docker compose up -d --wait postgres minio redis
+# On failure the gate must surface evidence (TIP-030 PR #9: postgres reported
+# unhealthy on 2/3 cold CI runners and no logs survived to diagnose why) —
+# dump container state, the health-probe history and postgres logs, then fail.
+if ! docker compose up -d --wait postgres minio redis; then
+  echo "verify-data-integration: compose up --wait failed; startup evidence follows" >&2
+  docker compose ps -a >&2 || true
+  postgres_cid="$(docker compose ps -aq postgres 2>/dev/null || true)"
+  if [ -n "$postgres_cid" ]; then
+    docker inspect --format \
+      '{{.Name}} status={{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}} health={{json .State.Health}}' \
+      "$postgres_cid" >&2 || true
+  fi
+  docker compose logs --no-color --tail 200 postgres >&2 || true
+  exit 1
+fi
 # Breakers, budgets and rate limits are durable runtime state.  The integration
 # gate must never inherit them from the developer stack or another prior run.
 docker compose exec -T redis redis-cli -n "$verify_redis_database" FLUSHDB \

@@ -248,3 +248,11 @@ def test_production_boot_guard_fails_closed_without_echoing_secret_values() -> N
         "changeme",
     ]:
         assert secret_value not in output
+
+
+def test_decision_diagnostics_default_off() -> None:
+    """TIP-030: the refusal-diagnostic channel must be opt-in only —
+    production honest-null responses stay unchanged unless an operator
+    explicitly enables it (isolated e2e stacks)."""
+    from rtr_copilot.config import Settings
+    assert Settings().rag_expose_decision_diagnostics is False
