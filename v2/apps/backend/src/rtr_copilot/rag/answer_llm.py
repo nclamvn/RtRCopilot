@@ -520,6 +520,7 @@ class QualityLLMAnswer:
     ) -> ProviderAnswer:
         if not self.clients:
             raise InsufficientEvidence("provider_unavailable")
+        generator_failures: list[str] = []
         for index, generator in enumerate(self.clients):
             try:
                 self._record_call()
@@ -528,8 +529,17 @@ class QualityLLMAnswer:
                     evidence,
                     system_policy=system_policy,
                 )
-            except Exception:  # noqa: BLE001 — try configured provider fallback
+            except InsufficientEvidence:
+                # TIP-030: the model answered "not answerable" — a domain
+                # verdict, not a transport failure. Trying another generator
+                # on identical evidence is legitimate; record the verdict so
+                # exhaustion reports it distinctly from provider errors.
                 self._record_tokens(generator)
+                generator_failures.append("declined")
+                continue
+            except Exception as failure:  # noqa: BLE001 — provider fallback
+                self._record_tokens(generator)
+                generator_failures.append(type(failure).__name__)
                 continue
             self._record_tokens(generator)
             # Point/direct answers still pass deterministic citation, evidence
@@ -573,8 +583,10 @@ class QualityLLMAnswer:
         # Every configured generator failed before a candidate existed. This is
         # a provider failure, not an advisory-review outcome; AnswerService must
         # not spend its grounding-repair attempt by calling the same failed
-        # route again.
-        raise InsufficientEvidence("provider_unavailable")
+        # route again. TIP-030: name the per-generator failure classes so
+        # campaign diagnostics can separate payload rejections from declines.
+        detail = "_".join(generator_failures) or "no_generators"
+        raise InsufficientEvidence(f"provider_unavailable_{detail}")
 
 
 class UnavailableLLMAnswer:
