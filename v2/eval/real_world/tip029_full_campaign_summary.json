@@ -1,7 +1,7 @@
 {
   "campaign": "TIP-026 real-world enterprise acceptance · HTTP E2E",
   "case_limit": null,
-  "computed_at": "2026-08-08T06:41:51.533116+00:00",
+  "computed_at": "2026-08-09T02:41:17.512535+00:00",
   "database_digest": null,
   "full_campaign_size": 77,
   "gates": {
@@ -18,8 +18,8 @@
     "citation_accuracy": 0.9571428571428572,
     "domains": {
       "company": {
-        "pass_rate": 0.9,
-        "passed": 9,
+        "pass_rate": 1.0,
+        "passed": 10,
         "total": 10
       },
       "conversation": {
@@ -33,13 +33,13 @@
         "total": 6
       },
       "operations": {
-        "pass_rate": 1.0,
-        "passed": 12,
+        "pass_rate": 0.9166666666666666,
+        "passed": 11,
         "total": 12
       },
       "product": {
-        "pass_rate": 0.9565217391304348,
-        "passed": 22,
+        "pass_rate": 1.0,
+        "passed": 23,
         "total": 23
       },
       "safety": {
@@ -53,17 +53,17 @@
         "total": 8
       }
     },
-    "failed": 4,
+    "failed": 3,
     "false_grounded_count": 0,
     "follow_up_pass_rate": 1.0,
     "grounded_expected": 70,
-    "grounded_success_rate": 0.9428571428571428,
+    "grounded_success_rate": 0.9571428571428572,
     "honest_null_expected": 7,
     "honest_null_precision": 1.0,
-    "overall_pass_rate": 0.948051948051948,
-    "p50_latency_ms": 8157.51,
-    "p95_latency_ms": 35834.032,
-    "passed": 73,
+    "overall_pass_rate": 0.961038961038961,
+    "p50_latency_ms": 8188.062,
+    "p95_latency_ms": 32214.251,
+    "passed": 74,
     "shapes": {
       "abbreviation": {
         "pass_rate": 1.0,
@@ -106,8 +106,8 @@
         "total": 2
       },
       "code_switching": {
-        "pass_rate": 0.75,
-        "passed": 3,
+        "pass_rate": 1.0,
+        "passed": 4,
         "total": 4
       },
       "colloquial": {
@@ -176,8 +176,8 @@
         "total": 4
       },
       "event": {
-        "pass_rate": 1.0,
-        "passed": 2,
+        "pass_rate": 0.5,
+        "passed": 1,
         "total": 2
       },
       "exhaustive": {
@@ -196,8 +196,8 @@
         "total": 1
       },
       "false_premise": {
-        "pass_rate": 0.5,
-        "passed": 1,
+        "pass_rate": 1.0,
+        "passed": 2,
         "total": 2
       },
       "features": {
@@ -336,8 +336,8 @@
         "total": 1
       },
       "sales": {
-        "pass_rate": 0.5,
-        "passed": 1,
+        "pass_rate": 1.0,
+        "passed": 2,
         "total": 2
       },
       "short": {
@@ -351,8 +351,8 @@
         "total": 3
       },
       "specific": {
-        "pass_rate": 1.0,
-        "passed": 4,
+        "pass_rate": 0.75,
+        "passed": 3,
         "total": 4
       },
       "specification": {
@@ -366,8 +366,8 @@
         "total": 1
       },
       "stale_conflict": {
-        "pass_rate": 0.0,
-        "passed": 0,
+        "pass_rate": 1.0,
+        "passed": 1,
         "total": 1
       },
       "system": {
@@ -431,12 +431,13 @@
         "L3F.2.009",
         "L3F.2.022"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-001",
-      "latency_ms": 32223.752,
+      "latency_ms": 32214.251,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "bb757602a0f2492014c890b50db2faf2ee11ef029c07642a030dafea9942afd5",
@@ -456,12 +457,13 @@
       "citations": [
         "HC-001"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-002",
-      "latency_ms": 7417.761,
+      "latency_ms": 7176.6,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "216437c2d4c25f885f3997dbdc6e2ed17d5302be55dded9f6506af44e846afbd",
@@ -481,12 +483,13 @@
       "citations": [
         "HC-002"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-003",
-      "latency_ms": 7546.071,
+      "latency_ms": 6339.204,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "730c2f3167b1f3773a118b51591ed5511f95511cc519ff105076b3fb248139ce",
@@ -506,12 +509,13 @@
       "citations": [
         "HC-002"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-004",
-      "latency_ms": 8405.435,
+      "latency_ms": 8072.674,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "24d2c9d968b56f1f5034d9c64449e394bbe3ece75d7001d3b92bf0bcccbec2a5",
@@ -530,12 +534,13 @@
       "citations": [
         "HC-002"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-005",
-      "latency_ms": 9369.668,
+      "latency_ms": 7227.927,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "4857f0fd9d44e5a8c343c1ca3baa2d78b67cc8bcbde531c722216b533aaa224d",
@@ -553,14 +558,18 @@
       "answer_mode": "quality_llm",
       "citation_ok": true,
       "citations": [
-        "L3F.PRD.001"
+        "tip024.pdf.hbc-executive",
+        "tip024.pdf.evnnpt-executive",
+        "L3F.PRD.001",
+        "HC-001"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-006",
-      "latency_ms": 14379.971,
+      "latency_ms": 10600.74,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "1d9c30bf681bf38e53ca0acf04f8c529610b06b73c40d618a09bef8aa014230a",
@@ -581,12 +590,13 @@
       "citations": [
         "HC-013"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-007",
-      "latency_ms": 4744.949,
+      "latency_ms": 2328.701,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "972371baf9363354cdc039c007093bba36bd5079fe8cbc9d3a010d84916087da",
@@ -609,12 +619,13 @@
         "HC-013",
         "tip024.docx.rtr-factsheet"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-008",
-      "latency_ms": 11260.371,
+      "latency_ms": 13496.407,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "4ca8e94360685daf190649a5e102f2d2afe2ddccbbde461d6abc78f69e5ff2d6",
@@ -634,12 +645,13 @@
       "citations": [
         "HC-011"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-009",
-      "latency_ms": 7962.569,
+      "latency_ms": 10181.831,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "3f860e0435c0f59b6c020eaf3179e742e2a203ac7b684fa4bfcf65f2ff3c7874",
@@ -659,12 +671,13 @@
       "citations": [
         "HC-019"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-010",
-      "latency_ms": 8165.806,
+      "latency_ms": 6157.275,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "5c3624a5a48856a1d9f5e6e13c31d11f19886c1f4d2454a1aa5dad0239c31cfa",
@@ -687,12 +700,13 @@
         "L3R.1.018",
         "tip024.docx.rtr-factsheet"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-011",
-      "latency_ms": 4360.162,
+      "latency_ms": 3253.626,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "c0f290819080e882701d4de7ee3013e2e8a24f17e50b68d9c114aebe690e301d",
@@ -712,12 +726,13 @@
       "citations": [
         "HC-014"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-012",
-      "latency_ms": 5456.008,
+      "latency_ms": 2741.501,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "5b53e45f6421e9253d7ee8bb4111b9faf73ad55ce885f9763114c69938fa84fd",
@@ -737,12 +752,13 @@
         "HC-001",
         "HC-002"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-013",
-      "latency_ms": 15602.787,
+      "latency_ms": 15741.907,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "2c002e35b8842139a06dfe5c25a56ae5dd1ad03e3cf8b41c700f584c5c2a9fea",
@@ -762,12 +778,13 @@
       "citations": [
         "PRICE.HERA.MSRP.US"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-014",
-      "latency_ms": 11363.447,
+      "latency_ms": 7706.99,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "f30b0a79b2813d1205df291d6167d6ccfa583699045cf6d8c15c74202d7e24fe",
@@ -787,12 +804,13 @@
       "citations": [
         "HC-001"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-015",
-      "latency_ms": 11048.728,
+      "latency_ms": 12952.671,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "89d157d1e5cf0472ba534e8a7c846855966de6685eb21284a39a1aa238ffd663",
@@ -812,18 +830,15 @@
       "citations": [
         "HC-017"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
-      "failures": [
-        "required_term_miss"
-      ],
+      "failures": [],
       "false_grounded": false,
       "id": "PRD-016",
-      "latency_ms": 7362.361,
-      "missing_term_digests": [
-        "e49ec846db7527df"
-      ],
-      "passed": false,
+      "latency_ms": 8659.482,
+      "missing_term_digests": [],
+      "passed": true,
       "question_digest": "a159f3eee06fb8eefee7d7c8a666c3238975c30271b11a05cb3314f854511b6d",
       "reason_code": null,
       "scenario_id": null,
@@ -831,7 +846,7 @@
         "false_premise",
         "stale_conflict"
       ],
-      "terms_ok": false,
+      "terms_ok": true,
       "turn_index": null
     },
     {
@@ -841,12 +856,13 @@
       "citations": [
         "L3F.2.015"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-017",
-      "latency_ms": 7056.352,
+      "latency_ms": 10730.173,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "b7ee8cf61a8388d7d3d5bd307a424f92fe29a389351135a62beb5d98269e590a",
@@ -866,12 +882,13 @@
       "citations": [
         "L3F.1.011"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-018",
-      "latency_ms": 6880.796,
+      "latency_ms": 7589.096,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "4d5e09b37cf413e97bbac91a37ae27e0de5399bf5935134fbde469b49ddee604",
@@ -889,15 +906,15 @@
       "answer_mode": "quality_llm",
       "citation_ok": true,
       "citations": [
-        "HC-017",
         "L3F.1.008"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-019",
-      "latency_ms": 3169.816,
+      "latency_ms": 2533.331,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "f9ba999bf505504c6b5279321adab6d7b9803e1b91f03f0b4e90b262b922cc78",
@@ -928,12 +945,13 @@
         "HC-014",
         "HC-058"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-020",
-      "latency_ms": 33655.695,
+      "latency_ms": 30885.079,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "228d031b765dfbe05afadde8d072a50b0c4ef8c2e8f0b0ec819f679cbf5936a8",
@@ -953,14 +971,25 @@
       "citation_ok": true,
       "citations": [
         "L3R.2.005",
+        "HC-001",
+        "HC-002",
+        "HC-017",
+        "HC-019",
+        "HC-010",
+        "HC-011",
+        "HC-057",
+        "HC-013",
+        "HC-012",
+        "HC-014",
         "HC-058"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-021",
-      "latency_ms": 28513.64,
+      "latency_ms": 37643.865,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "9f18140be49c859e9fc0292703b2a72382bd4a81c952483b9fdd6864abbdf422",
@@ -993,12 +1022,13 @@
         "HC-014",
         "HC-058"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-022",
-      "latency_ms": 40829.434,
+      "latency_ms": 41128.647,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "040de3f713b8ace050a78433aa3374333c092bc8f799e3f11ce08ec6414eda0a",
@@ -1032,12 +1062,13 @@
         "HC-014",
         "HC-058"
       ],
+      "decision_diagnostic": null,
       "domain": "product",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "PRD-023",
-      "latency_ms": 38654.057,
+      "latency_ms": 37192.673,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "675bfd26979b4a27cd4b5d06ef880be0feecab5e544bf1d0f5083e21fcd10e31",
@@ -1059,12 +1090,13 @@
       "citations": [
         "L3F.ENT.001"
       ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "COM-001",
-      "latency_ms": 3808.023,
+      "latency_ms": 2517.925,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "36ba01dbaabf5ff55eae6654afc89152463839ab687a80dbd2a5e4c8f9ca02f0",
@@ -1084,12 +1116,13 @@
       "citations": [
         "L3F.ENT.002"
       ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "COM-002",
-      "latency_ms": 10674.715,
+      "latency_ms": 8273.067,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "f6b0b9f13e94d3dcf07b0440efe6dc81726818ba001897c5c8cfa1982013b371",
@@ -1109,12 +1142,13 @@
       "citations": [
         "L3F.RES.004"
       ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "COM-003",
-      "latency_ms": 8186.22,
+      "latency_ms": 6263.732,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "b3b48534dc836cf95d515a61ee83612bfa31ae68bd4b2d93a7afa8d8c4d798de",
@@ -1134,15 +1168,15 @@
       "citations": [
         "tip024.docx.rtr-factsheet",
         "L3F.RES.004",
-        "L3R.2.027",
         "L3F.RES.002"
       ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "COM-004",
-      "latency_ms": 8157.51,
+      "latency_ms": 8707.236,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "2cb22f11f88cbdcbb297277173f382cd1bff4cddc9d0b8088ef3c26ccc4be573",
@@ -1162,12 +1196,13 @@
       "citations": [
         "L3F.BRD.002"
       ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "COM-005",
-      "latency_ms": 2992.889,
+      "latency_ms": 2712.619,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "efa3b534bebde7d7b1d598c9a0b7161d80c261d12626cddcfe55f44ccffe0825",
@@ -1187,12 +1222,13 @@
       "citations": [
         "L3F.1.019"
       ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "COM-006",
-      "latency_ms": 2642.543,
+      "latency_ms": 2271.716,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "d0a6a6ecdd9fc0577a2cf59f7cf8590363ff459ea27aaef029a9cc4fa809b20f",
@@ -1212,12 +1248,13 @@
       "citations": [
         "L3F.1.020"
       ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "COM-007",
-      "latency_ms": 5911.669,
+      "latency_ms": 6292.96,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "88757ecb62653288e439e269ff2c012e42c4f1310ae868bb2094ad7a3abc237c",
@@ -1231,33 +1268,29 @@
       "turn_index": null
     },
     {
-      "actual_state": "honest_null",
-      "answer_mode": null,
-      "citation_ok": false,
-      "citations": [],
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.1.023"
+      ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
-      "failures": [
-        "unexpected_state",
-        "citation_miss",
-        "required_term_miss"
-      ],
+      "failures": [],
       "false_grounded": false,
       "id": "COM-008",
-      "latency_ms": 19810.162,
-      "missing_term_digests": [
-        "ff27555b74e8576c",
-        "2e5e81066a29cd66"
-      ],
-      "passed": false,
+      "latency_ms": 8832.537,
+      "missing_term_digests": [],
+      "passed": true,
       "question_digest": "8d628d5101b82e38dd501fb287b2a121b1a0a6a038f9915152d86edc59b8aec9",
-      "reason_code": "grounding_failed",
+      "reason_code": null,
       "scenario_id": null,
       "shapes": [
         "code_switching",
         "sales"
       ],
-      "terms_ok": false,
+      "terms_ok": true,
       "turn_index": null
     },
     {
@@ -1267,12 +1300,13 @@
       "citations": [
         "L3F.RES.004"
       ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "COM-009",
-      "latency_ms": 10029.064,
+      "latency_ms": 9203.563,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "9c8a5bb7304a9913d79a4a747aa87d34325df1323bef0b9fea018152cca88e4e",
@@ -1293,12 +1327,13 @@
       "citations": [
         "L3F.REC.001"
       ],
+      "decision_diagnostic": null,
       "domain": "company",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "COM-010",
-      "latency_ms": 10302.38,
+      "latency_ms": 8524.154,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "31c0c2730730fa5db37fb16da5dfb0476263759b425ddff06fb49da4afe59793",
@@ -1318,12 +1353,13 @@
       "citations": [
         "L3F.1.029"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-001",
-      "latency_ms": 9472.643,
+      "latency_ms": 9817.639,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "e33df86c8b4b8df21e0d4182ae8659ab388e193df633dc274957ab37b1a532a8",
@@ -1343,12 +1379,13 @@
       "citations": [
         "L3F.1.031"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-002",
-      "latency_ms": 8748.312,
+      "latency_ms": 5862.91,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "73a7a76634892bb17f1ac056a372e4786d3050ba98a9725c13f5887b762c8b2f",
@@ -1370,12 +1407,13 @@
         "L3F.2.003",
         "L3F.2.004"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-003",
-      "latency_ms": 22317.044,
+      "latency_ms": 18244.365,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "ae8de7fa55b58fed7fc9fabba1b2d6f2c9c2840bb39af431365f4ff25c71d9aa",
@@ -1395,12 +1433,13 @@
       "citations": [
         "L3F.2.003"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-004",
-      "latency_ms": 7302.716,
+      "latency_ms": 7796.538,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "94fdfc4cd552a2d9bd6a212989bdc22afdde251ca2e8d5628392343ccf283ece",
@@ -1420,12 +1459,13 @@
       "citations": [
         "L3F.2.004"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-005",
-      "latency_ms": 5097.787,
+      "latency_ms": 5130.526,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "c22d1bc22455250d3ba105ba1f65d40fffcbf9d2ff6a7e288aa3aa6d5299580f",
@@ -1445,12 +1485,13 @@
       "citations": [
         "L3F.2.007"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-006",
-      "latency_ms": 8036.317,
+      "latency_ms": 10881.893,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "197e8e44cd35734d65aef50586958f496266c61d554e17926c8930c0af15f0ea",
@@ -1470,12 +1511,13 @@
       "citations": [
         "L3F.2.009"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-007",
-      "latency_ms": 6093.321,
+      "latency_ms": 11856.51,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "a4e14a6ea39f42f3990ecb4a77210cdd356ae79a82792ead3d588422f6f68691",
@@ -1497,12 +1539,13 @@
         "L3F.2.008",
         "L3F.2.010"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-008",
-      "latency_ms": 11808.015,
+      "latency_ms": 12534.714,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "ea6e4f4cacea1b3d9183abc61d619cc5bbee0411bed574bd7e6d99eab3a150ef",
@@ -1522,12 +1565,13 @@
       "citations": [
         "L3F.2.011"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-009",
-      "latency_ms": 6409.392,
+      "latency_ms": 7910.31,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "5e9acfa30a554b5f4859837acb89eb406c41cb81f5f063d42664467718d309ba",
@@ -1541,28 +1585,34 @@
       "turn_index": null
     },
     {
-      "actual_state": "grounded",
-      "answer_mode": "quality_llm",
-      "citation_ok": true,
-      "citations": [
-        "L3F.1.027"
-      ],
+      "actual_state": "honest_null",
+      "answer_mode": null,
+      "citation_ok": false,
+      "citations": [],
+      "decision_diagnostic": "not_called_semantic_planner_required",
       "domain": "operations",
       "expected_state": "grounded",
-      "failures": [],
+      "failures": [
+        "unexpected_state",
+        "citation_miss",
+        "required_term_miss"
+      ],
       "false_grounded": false,
       "id": "OPS-010",
-      "latency_ms": 14178.183,
-      "missing_term_digests": [],
-      "passed": true,
+      "latency_ms": 20067.913,
+      "missing_term_digests": [
+        "e1ef7a1e3c15bd88",
+        "3efdc9dc584c5f26"
+      ],
+      "passed": false,
       "question_digest": "f2289bed3e59fa64bb7aa68962762e87b723f16387f6b45ca7a1cf0789c67777",
-      "reason_code": null,
+      "reason_code": "answer_quality_configuration_required",
       "scenario_id": null,
       "shapes": [
         "event",
         "specific"
       ],
-      "terms_ok": true,
+      "terms_ok": false,
       "turn_index": null
     },
     {
@@ -1572,12 +1622,13 @@
       "citations": [
         "L3F.1.028"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-011",
-      "latency_ms": 7809.183,
+      "latency_ms": 7999.623,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "ca7f5afef507e0bc80cf934617bf80c81eafe20c3dcee897bdce03b6fae450e6",
@@ -1597,12 +1648,13 @@
       "citations": [
         "L3F.2.019"
       ],
+      "decision_diagnostic": null,
       "domain": "operations",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "OPS-012",
-      "latency_ms": 6879.103,
+      "latency_ms": 7008.619,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "30c77c1a7e1723aa645d6b45de42081ec90baf097238d28a40e94bccc0e66786",
@@ -1622,12 +1674,13 @@
       "citations": [
         "L3F.4.001"
       ],
+      "decision_diagnostic": null,
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SYS-001",
-      "latency_ms": 7684.141,
+      "latency_ms": 11121.866,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "3045c34d20ecfa7e24da41ce83b01075f30958dd628b0d0de07deaf6848b712a",
@@ -1647,12 +1700,13 @@
       "citations": [
         "L3F.4.002"
       ],
+      "decision_diagnostic": null,
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SYS-002",
-      "latency_ms": 6596.024,
+      "latency_ms": 6576.262,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "5e078687d7e24b9976c3f25e56e38f75accf9d46920ba55285d0abf320095467",
@@ -1671,8 +1725,7 @@
       "citation_ok": true,
       "citations": [
         "L3F.4.003",
-        "tip027.mrp.operating-pipelines",
-        "tip027.mrp.operating-pipelines",
+        "L3F.4.004",
         "tip027.mrp.operating-pipelines",
         "tip027.mrp.operating-pipelines",
         "tip027.mrp.operating-pipelines",
@@ -1680,12 +1733,13 @@
         "tip027.mrp.maturity-assessment",
         "tip027.mrp.maturity-assessment"
       ],
+      "decision_diagnostic": null,
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SYS-003",
-      "latency_ms": 43944.787,
+      "latency_ms": 29171.813,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "802a015bb65da94b6ebc4040122c70201ed3688f02be420de7c1431d194c8de6",
@@ -1709,12 +1763,13 @@
         "tip027.system.control-tower-user-guide",
         "tip027.system.control-tower-user-guide"
       ],
+      "decision_diagnostic": null,
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SYS-004",
-      "latency_ms": 7977.161,
+      "latency_ms": 7995.622,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "53b7e57db6361cabdc21c13a8682b958a7accd169ea0ef3aaf4fcad3d2545e7d",
@@ -1734,12 +1789,13 @@
       "citations": [
         "L3F.3.006"
       ],
+      "decision_diagnostic": null,
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SYS-005",
-      "latency_ms": 5771.644,
+      "latency_ms": 5552.4,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "d53f765e78dad42fbf52ed0a2f0a02dd58f41d52955761fc8fc399d21ba5b40d",
@@ -1759,12 +1815,13 @@
       "citations": [
         "L3F.4.010"
       ],
+      "decision_diagnostic": null,
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SYS-006",
-      "latency_ms": 6740.535,
+      "latency_ms": 7581.748,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "1f8bfbacf9573215ea0519dc75cdcf1dcba0804206f4b4c17a6670450688fee1",
@@ -1782,6 +1839,7 @@
       "answer_mode": null,
       "citation_ok": false,
       "citations": [],
+      "decision_diagnostic": "called_llm_declined_provider_unavailable_declined",
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [
@@ -1791,7 +1849,7 @@
       ],
       "false_grounded": false,
       "id": "SYS-007",
-      "latency_ms": 4542.727,
+      "latency_ms": 6039.327,
       "missing_term_digests": [
         "30b7f8482c4f570c",
         "16a5afb93a6fc158"
@@ -1817,12 +1875,13 @@
         "L3F.4.010",
         "L3F.3.007"
       ],
+      "decision_diagnostic": null,
       "domain": "systems",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SYS-008",
-      "latency_ms": 28897.503,
+      "latency_ms": 22122.138,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "500fa001767957dface1564d1755ab0ff534875e53e70ed21ba6961b4e596625",
@@ -1841,14 +1900,16 @@
       "citation_ok": true,
       "citations": [
         "L3F.2.033",
+        "tip024.docx.caoloc-prd",
         "L3F.2.037"
       ],
+      "decision_diagnostic": null,
       "domain": "methods",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "MTH-001",
-      "latency_ms": 19252.062,
+      "latency_ms": 24800.014,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "f421cb2096037b7bf031810cfcbaaa42d4f7d6d4696ee215006a19e3ad4a81d8",
@@ -1868,12 +1929,13 @@
       "citations": [
         "L3F.2.038"
       ],
+      "decision_diagnostic": null,
       "domain": "methods",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "MTH-002",
-      "latency_ms": 3194.565,
+      "latency_ms": 7525.096,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "87657ca6e9863a691f143353a0c037de7d57237ee51cb1c9f3b3f5c454f3b859",
@@ -1893,12 +1955,13 @@
       "citations": [
         "L3F.2.034"
       ],
+      "decision_diagnostic": null,
       "domain": "methods",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "MTH-003",
-      "latency_ms": 7270.335,
+      "latency_ms": 6885.605,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "1757848ad4384acb222d3a890ee2ae07e75fec52cbcafe311d8fecf2ea6cf6bb",
@@ -1916,6 +1979,7 @@
       "answer_mode": null,
       "citation_ok": false,
       "citations": [],
+      "decision_diagnostic": "called_llm_declined_provider_unavailable_declined",
       "domain": "methods",
       "expected_state": "grounded",
       "failures": [
@@ -1925,7 +1989,7 @@
       ],
       "false_grounded": false,
       "id": "MTH-004",
-      "latency_ms": 14807.881,
+      "latency_ms": 13232.925,
       "missing_term_digests": [
         "3d1e3d61d074cb89",
         "a80032082c36f65c"
@@ -1948,12 +2012,13 @@
       "citations": [
         "L3F.2.037"
       ],
+      "decision_diagnostic": null,
       "domain": "methods",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "MTH-005",
-      "latency_ms": 13120.92,
+      "latency_ms": 18610.874,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "a00de2708aa923b8f077f52c5e252098ff28085269ddce6899a16be5a4b3f921",
@@ -1973,12 +2038,13 @@
       "citations": [
         "L3F.3.007"
       ],
+      "decision_diagnostic": null,
       "domain": "methods",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "MTH-006",
-      "latency_ms": 5841.828,
+      "latency_ms": 5632.791,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "a382af84f366daf82e0d6d5a815b7479d77ec8f1798eec7d7c97a074c17888c2",
@@ -1996,12 +2062,13 @@
       "answer_mode": null,
       "citation_ok": true,
       "citations": [],
+      "decision_diagnostic": "called_llm_declined_provider_unavailable_declined",
       "domain": "safety",
       "expected_state": "honest_null",
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-001",
-      "latency_ms": 15769.779,
+      "latency_ms": 8188.062,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "4d7d5dc3f075d0f3a981a1a21fcdcae800ed0bb10090166669a927c41b6dffe9",
@@ -2020,12 +2087,13 @@
       "citations": [
         "HC-013"
       ],
+      "decision_diagnostic": null,
       "domain": "safety",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-002",
-      "latency_ms": 7325.318,
+      "latency_ms": 6005.132,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "a3596db51dd918addd15defb8c29e2190faaf784befa4ff20dd8123cc24a7bb3",
@@ -2043,12 +2111,13 @@
       "answer_mode": null,
       "citation_ok": true,
       "citations": [],
+      "decision_diagnostic": "not_called_query_ambiguous",
       "domain": "safety",
       "expected_state": "honest_null",
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-003",
-      "latency_ms": 3463.999,
+      "latency_ms": 4969.801,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "e54af19de4708cc31cc00f3a23ac51c9c6c622319527a65b76b0cb446a53f115",
@@ -2066,12 +2135,13 @@
       "answer_mode": null,
       "citation_ok": true,
       "citations": [],
+      "decision_diagnostic": "called_llm_declined_provider_unavailable_declined",
       "domain": "safety",
       "expected_state": "honest_null",
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-004",
-      "latency_ms": 9515.845,
+      "latency_ms": 8322.263,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "d24be7290ad4981d8743411a55f75e1dcbc900983a66b88fff75137662e99b69",
@@ -2089,12 +2159,13 @@
       "answer_mode": null,
       "citation_ok": true,
       "citations": [],
+      "decision_diagnostic": "called_llm_declined_provider_unavailable_declined",
       "domain": "safety",
       "expected_state": "honest_null",
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-005",
-      "latency_ms": 14650.482,
+      "latency_ms": 13192.031,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "4f5bf7095b117f795fb402a2aff5fc0fc2249b0df0e6b9aadc305b49de0fe391",
@@ -2112,12 +2183,13 @@
       "answer_mode": null,
       "citation_ok": true,
       "citations": [],
+      "decision_diagnostic": "called_llm_declined_provider_unavailable_declined",
       "domain": "safety",
       "expected_state": "honest_null",
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-006",
-      "latency_ms": 8238.026,
+      "latency_ms": 10582.809,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "85540ccf9b1718d3616ca31ead1447121490b7202812bdf0aac897e6cc27ece9",
@@ -2135,12 +2207,13 @@
       "answer_mode": null,
       "citation_ok": true,
       "citations": [],
+      "decision_diagnostic": "not_called_query_ambiguous",
       "domain": "safety",
       "expected_state": "honest_null",
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-007",
-      "latency_ms": 3564.927,
+      "latency_ms": 3601.147,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "b97a8d3b51e0a78d0322e8201a7fc20499e2c5e501377508193901619ff522a1",
@@ -2158,12 +2231,13 @@
       "answer_mode": null,
       "citation_ok": true,
       "citations": [],
+      "decision_diagnostic": "not_called_query_ambiguous",
       "domain": "safety",
       "expected_state": "honest_null",
       "failures": [],
       "false_grounded": false,
       "id": "SAFE-008",
-      "latency_ms": 4006.924,
+      "latency_ms": 4534.919,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "537521fe011305536e69a50f9a34acb49227ff686e7da3bef4fa5c33d757f9a2",
@@ -2194,12 +2268,13 @@
         "L3F.2.009",
         "L3F.2.022"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-001-T1",
-      "latency_ms": 35834.032,
+      "latency_ms": 22651.939,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "bb757602a0f2492014c890b50db2faf2ee11ef029c07642a030dafea9942afd5",
@@ -2218,12 +2293,13 @@
       "citations": [
         "HC-001"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-001-T2",
-      "latency_ms": 6756.683,
+      "latency_ms": 6524.681,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "811ef9d900bbdee66ce79934fdde94b65fb2e9cd7c03069ce54895780da0fd56",
@@ -2244,12 +2320,13 @@
       "citations": [
         "L3F.RES.004"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-002-T1",
-      "latency_ms": 6218.04,
+      "latency_ms": 8207.9,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "b3b48534dc836cf95d515a61ee83612bfa31ae68bd4b2d93a7afa8d8c4d798de",
@@ -2269,12 +2346,13 @@
       "citations": [
         "L3F.RES.004"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-002-T2",
-      "latency_ms": 9477.342,
+      "latency_ms": 8093.341,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "81aee47a14d709ed0abeb182d54fb64e882c298440a2c40bf75f03571ef00df6",
@@ -2297,12 +2375,13 @@
         "L3F.4.010",
         "L3F.3.007"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-003-T1",
-      "latency_ms": 26529.06,
+      "latency_ms": 21245.148,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "500fa001767957dface1564d1755ab0ff534875e53e70ed21ba6961b4e596625",
@@ -2322,12 +2401,13 @@
       "citations": [
         "L3F.3.006"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-003-T2",
-      "latency_ms": 6882.224,
+      "latency_ms": 6641.178,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "2ad4be0a19202ec9e006d64f0dc979810c3dc5f42641efc585e3f83a4e5d79cb",
@@ -2347,12 +2427,13 @@
       "citations": [
         "L3F.4.001"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-004-T1",
-      "latency_ms": 12389.191,
+      "latency_ms": 13508.134,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "56978692b21c6d54c1c00a4aa5b4f6458b02ef770c2c5acbf832d1cda517dc23",
@@ -2372,12 +2453,13 @@
       "citations": [
         "L3F.4.001"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-004-T2",
-      "latency_ms": 10234.695,
+      "latency_ms": 9114.382,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "db1561686d42a2e6ecc2cab63e9fb65ab771311fa1b4e452ed94e240001d6145",
@@ -2399,12 +2481,13 @@
         "HC-002",
         "L3F.1.011"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-005-T1",
-      "latency_ms": 3532.655,
+      "latency_ms": 3290.475,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "bc7158c3c0e50e41e72e09ef287bd481a10227ec03fdebd1ec315d06e107dfc7",
@@ -2424,12 +2507,13 @@
       "citations": [
         "L3F.1.011"
       ],
+      "decision_diagnostic": null,
       "domain": "conversation",
       "expected_state": "grounded",
       "failures": [],
       "false_grounded": false,
       "id": "CHAT-005-T2",
-      "latency_ms": 12837.191,
+      "latency_ms": 8605.922,
       "missing_term_digests": [],
       "passed": true,
       "question_digest": "951a05c3498ed8f55376e776e06c7896c4a0a69b899dc51374999efe64872153",
@@ -2444,7 +2528,7 @@
       "turn_index": 2
     }
   ],
-  "run_id": "3aa1263f-a010-4db6-81cc-a49398343442",
+  "run_id": "3579adb0-e44f-453c-b1e6-6d8d2978b35d",
   "schema_version": 1,
   "selected_case_ids": [],
   "subject_digest": "19d41eca291e2d93647b635f80891d5aa9e752519ce315895e17bb5b01954aa8",
