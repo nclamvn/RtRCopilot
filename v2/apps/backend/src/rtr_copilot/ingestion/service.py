@@ -44,7 +44,7 @@ from rtr_copilot.ingestion.validators import (
     validate_content,
 )
 from rtr_copilot.observability.worker import log_job_request_id
-from rtr_copilot.rag.adapters import OfflineHashEmbedding
+from rtr_copilot.rag.adapters import build_embedding_adapter
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.resources import ResourceRecord, ResourceRepository
 from rtr_copilot.storage.s3 import S3ObjectStorage, StoredObject
@@ -874,9 +874,7 @@ class IngestionService:
                     rendition_id=item["rendition_id"],
                     source_sha256=claim.input_sha256,
                     artifact=artifact,
-                    embedding=OfflineHashEmbedding(
-                        self.settings.rag_embedding_dimension,
-                    ),
+                    embedding=build_embedding_adapter(self.settings),
                 )
                 await AuditRepository().append(
                     session,

@@ -10,7 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from rtr_copilot.ingestion.extractors import Artifact
-from rtr_copilot.rag.adapters import OfflineHashEmbedding, normalize_query
+from rtr_copilot.rag.adapters import EmbeddingAdapter, normalize_query
 
 
 def _item(value: Any, locator: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
@@ -70,7 +70,7 @@ async def index_artifact(
     rendition_id: uuid.UUID,
     source_sha256: str,
     artifact: Artifact,
-    embedding: OfflineHashEmbedding,
+    embedding: EmbeddingAdapter,
 ) -> int:
     units: Iterable[tuple[str, dict[str, Any]]] = searchable_units(artifact)
     count = 0

@@ -13,8 +13,11 @@ from rtr_copilot.auth.models import PolicyContext, ResourceAttributes, Subject
 from rtr_copilot.auth.policy import PolicyEngine
 from rtr_copilot.config import Settings, get_settings
 from rtr_copilot.db.uow import UnitOfWork
+from rtr_copilot.observability.metrics import EMBEDDING_QUERY_DEGRADED
 from rtr_copilot.rag.adapters import (
-    OfflineHashEmbedding,
+    EmbeddingProviderError,
+    OpenAIEmbedding,
+    build_embedding_adapter,
     lexical_query,
     normalize_query,
 )
@@ -58,6 +61,9 @@ class RetrievalTrace:
     enterprise_file_versions: int = 0
     enterprise_file_policy_allowed: int = 0
     enterprise_file_loaded_chunk_ids: list[uuid.UUID] = field(default_factory=list)
+    # TIP-014RE: True when a provider embedding failure degraded this request
+    # to lexical-only ranking (observable, never fails the question).
+    embedding_degraded: bool = False
 
 
 class RetrievalService:
@@ -71,7 +77,7 @@ class RetrievalService:
         self.settings = settings or get_settings()
         self.uow = UnitOfWork(factory)
         self.policy = PolicyEngine(StructuredAuditSink())
-        self.embedding = OfflineHashEmbedding(self.settings.rag_embedding_dimension)
+        self.embedding = build_embedding_adapter(self.settings)
         allowlist = frozenset(
             item.strip()
             for item in self.settings.rag_external_classification_allowlist.split(",")
@@ -82,6 +88,26 @@ class RetrievalService:
             external_allowlist=allowlist,
         )
         self.trace = RetrievalTrace()
+
+    async def _query_vector(self, terms_text: str) -> list[float] | None:
+        """Vectorize the recall terms with the configured adapter.
+
+        TIP-014RE degrade law: a provider embedding failure must never fail
+        the question. Returning ``None`` sends SQL ``CAST(NULL AS vector)``;
+        ``greatest(0, 1-NULL)`` collapses every vector_score to 0, so ranking
+        and the candidate filter degrade to the lexical arm exactly. Falling
+        back to the offline hash is deliberately NOT done — hash vectors live
+        in a different space from provider-indexed chunks and would produce
+        garbage similarity instead of an honest degrade.
+        """
+        if isinstance(self.embedding, OpenAIEmbedding):
+            try:
+                return await self.embedding.aembed(terms_text)
+            except EmbeddingProviderError:
+                EMBEDDING_QUERY_DEGRADED.labels(self.embedding.model).inc()
+                self.trace.embedding_degraded = True
+                return None
+        return self.embedding.embed(terms_text)
 
     async def _file_authorized(
         self,
@@ -199,7 +225,7 @@ class RetrievalService:
         # Use the expanded query for recall. The original question remains the
         # final ranking authority in ``candidate_relevance_score`` below.
         recall_profile = profile_query(query)
-        query_vector = self.embedding.embed(" ".join(recall_profile.terms))
+        query_vector = await self._query_vector(" ".join(recall_profile.terms))
         self.trace.content_queries = 1
         async with self.uow.factory() as session:
             rows = (await session.execute(text("""
@@ -218,7 +244,10 @@ class RetrievalService:
                 LIMIT :candidate_limit
             """), {
                 "lexquery": lexquery,
-                "embedding": json.dumps(query_vector),
+                "embedding": (
+                    json.dumps(query_vector) if query_vector is not None
+                    else None
+                ),
                 "version_id": filters.version_id,
                 "candidate_limit": self.settings.rag_candidate_limit,
             })).mappings().all()
@@ -407,7 +436,7 @@ class RetrievalService:
             )[:priority_document_limit]
         ]
         recall_profile = profile_query(query)
-        query_vector = self.embedding.embed(" ".join(recall_profile.terms))
+        query_vector = await self._query_vector(" ".join(recall_profile.terms))
         self.trace.content_queries += 1
         async with self.uow.factory() as session:
             rows = (await session.execute(text("""
@@ -454,7 +483,10 @@ class RetrievalService:
                 LIMIT :candidate_limit
             """), {
                 "lexquery": lexquery,
-                "embedding": json.dumps(query_vector),
+                "embedding": (
+                    json.dumps(query_vector) if query_vector is not None
+                    else None
+                ),
                 "version_ids": list(authorized),
                 "candidate_limit": self.settings.rag_candidate_limit,
                 "document_candidate_limit": document_candidate_limit,
@@ -957,7 +989,7 @@ class RetrievalService:
             ),
         )
         recall_profile = profile_query(query)
-        query_vector = self.embedding.embed(" ".join(recall_profile.terms))
+        query_vector = await self._query_vector(" ".join(recall_profile.terms))
         self.trace.content_queries += 1
         async with self.uow.factory() as session:
             rows = (await session.execute(text("""
@@ -1013,7 +1045,10 @@ class RetrievalService:
                 SELECT * FROM selected ORDER BY chunk_key
             """), {
                 "lexquery": lexquery,
-                "embedding": json.dumps(query_vector),
+                "embedding": (
+                    json.dumps(query_vector) if query_vector is not None
+                    else None
+                ),
                 "allowed_ids": allowed_ids,
                 "priority_ids": list(priority_allowed_ids),
                 "min_vector_score": self.settings.rag_min_vector_score,

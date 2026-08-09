@@ -61,6 +61,14 @@ PROVIDER_CALL_FAILURES = Counter(
     "AI provider calls that raised or timed out, by provider.",
     ("provider",),
 )
+# TIP-014RE: query-path embedding failures degrade retrieval to lexical-only
+# instead of failing the question; the degrade must stay observable.
+EMBEDDING_QUERY_DEGRADED = Counter(
+    "rtr_embedding_query_degraded_total",
+    "Ask/search requests that fell back to lexical-only retrieval because "
+    "the provider embedding call failed or timed out, by embedding model.",
+    ("model",),
+)
 PROVIDER_BUDGET_DEBIT_UNITS = Counter(
     "rtr_provider_budget_debit_units_total",
     "Provider cost-budget units debited across all subjects.",

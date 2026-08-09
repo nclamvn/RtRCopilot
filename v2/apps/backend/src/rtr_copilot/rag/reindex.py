@@ -2,7 +2,7 @@ import hashlib
 import json
 import re
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from sqlalchemy import text
@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from rtr_copilot.config import Settings, get_settings
 from rtr_copilot.db.uow import UnitOfWork
-from rtr_copilot.rag.adapters import OfflineHashEmbedding, normalize_query
+from rtr_copilot.rag.adapters import build_embedding_adapter, normalize_query
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.sot.package import canonical_json, sha256_bytes
 
@@ -95,7 +95,7 @@ class ReindexService:
     ) -> None:
         self.settings = settings or get_settings()
         self.uow = UnitOfWork(factory)
-        self.embedding = OfflineHashEmbedding(self.settings.rag_embedding_dimension)
+        self.embedding = build_embedding_adapter(self.settings)
         self.index_dlp = ProviderPolicy(mode="local")
 
     async def pending_outbox_id(self) -> uuid.UUID | None:
@@ -154,6 +154,11 @@ class ReindexService:
         rows: list[dict[str, Any]],
     ) -> list[ChunkCandidate]:
         candidates: list[ChunkCandidate] = []
+        # TIP-014RE: chunk texts are embedded in one batched pass AFTER the
+        # loop (provider adapters page requests; the offline hash embeds
+        # per-text). Candidates are built with an empty vector and completed
+        # below — a length mismatch is a hard error, never a silent skip.
+        part_texts: list[str] = []
         for row in rows:
             base = str(row["evidence_text"] or row["searchable_text"]).strip()
             if not base:
@@ -219,9 +224,14 @@ class ReindexService:
                     ),
                     ordinal=ordinal,
                     chunking_fingerprint=chunking_fingerprint,
-                    embedding=self.embedding.embed(part),
+                    embedding=[],
                 ))
-        return candidates
+                part_texts.append(part)
+        vectors = self.embedding.embed_batch(part_texts)
+        return [
+            replace(candidate, embedding=vector)
+            for candidate, vector in zip(candidates, vectors, strict=True)
+        ]
 
     async def process(
         self,

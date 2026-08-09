@@ -62,7 +62,7 @@ async def seed_file(
     chunk_id = uuid.uuid4()
     sha = hashlib.sha256(token.encode()).hexdigest()
     normalized = normalize_query(token)
-    vector = OfflineHashEmbedding(64).embed(normalized)
+    vector = OfflineHashEmbedding(1536).embed(normalized)
     async with factory() as session, session.begin():
         await session.execute(text("""
             INSERT INTO subjects(user_id,issuer,provider_sub,email,canonical_domain)
@@ -141,7 +141,7 @@ async def seed_file(
             "filler_locator": json.dumps({"page": 1}),
             "sha": sha,
             "filler_embedding": json.dumps(
-                OfflineHashEmbedding(64).embed("generic filler"),
+                OfflineHashEmbedding(1536).embed("generic filler"),
             ),
         })
         target_ordinal = leading_fillers + 1
