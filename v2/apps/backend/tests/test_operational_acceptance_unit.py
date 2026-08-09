@@ -273,3 +273,11 @@ def test_summary_gate_has_teeth() -> None:
     failed = summarize([good, bad], thresholds)
     assert failed["passed"] is False
     assert failed["metrics"]["false_grounded_count"] == 1
+
+
+def test_alpha_term_matches_locale_spaced_variant() -> None:
+    """TIP-030: 'Vietnam' oracle must accept 'Việt Nam' prose (COM-008)."""
+    assert term_present("Vietnam", "Chúng tôi là công ty Việt Nam.")
+    assert term_present("U.S.-aligned", "Định hướng U.S. aligned từ đầu.")
+    # Short tokens stay strict — no compact rescue.
+    assert not term_present("AI", "Chúng tôi làm robot.")
