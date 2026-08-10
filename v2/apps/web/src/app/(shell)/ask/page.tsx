@@ -564,6 +564,7 @@ export default function AskPage() {
   const [relatedOpen, setRelatedOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const questionRef = useRef<HTMLTextAreaElement>(null);
+  const threadEndRef = useRef<HTMLDivElement>(null);
   const lastPrefill = useRef(initialPrefill);
   const composingRef = useRef(false);
   const submittingRef = useRef(false);
@@ -801,6 +802,13 @@ export default function AskPage() {
     }, 0);
     return () => { active = false; clearTimeout(timer); };
   }, [identity, requestedConversation, answer, loseAccess]);
+
+  // Keep the newest turn in view: whenever a question is submitted, the answer
+  // surface changes, or the persisted transcript grows, scroll the sentinel at
+  // the bottom of the thread into view (chat-client behaviour).
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({behavior: "smooth", block: "end"});
+  }, [lastQuestion, answer, asking, conversation]);
 
   // Best-effort gap detail after honest-null (state shown when readable).
   const loadGap = useCallback((gapId: string) => {
@@ -1167,7 +1175,36 @@ export default function AskPage() {
             <h2>{t("ask.thread.emptyTitle")}</h2>
             <p>{t("ask.thread.emptyBody")}</p>
           </section>}
-        {lastQuestion && conversation.state !== "ready" && <article
+        {/* Persisted transcript renders FIRST (oldest→newest, top→bottom) so the
+            live turn below is the newest content at the bottom — matching the
+            reading order of ChatGPT/Claude rather than newest-on-top. */}
+        {conversation.state === "loading"
+          && <p role="status" className="surface-loading">{t("surface.loading")}</p>}
+        {conversation.state === "denied" && <div role="alert" className="surface-denied">
+          {t("surface.denied")} · {errorText(conversation.error)}</div>}
+        {conversation.state === "error" && <div role="alert" className="surface-error">
+          {t("ask.blocked")} · {errorText(conversation.error)}</div>}
+        {conversation.state === "ready" && <section className="ask-conversation"
+          aria-label={t("ask.conversation.title")}>
+          <h2>{t("ask.conversation.title")}</h2>
+          <p className="form-note"><code>{conversation.data.conversationId}</code></p>
+          <ol className="conversation-messages">
+            {conversation.data.messages.map(message => <li key={message.messageId}
+              data-role={message.role}>
+              <p className="message-meta">
+                <strong>{message.role === "user"
+                  ? t("ask.conversation.you") : t("ask.conversation.assistant")}</strong>
+                {message.answerState && <code>{message.answerState}</code>}
+                <small>{formatDateTime(message.createdAt, locale)}</small>
+              </p>
+              <AnswerText text={message.content} onCitation={openCitation}/>
+            </li>)}
+          </ol>
+        </section>}
+        {/* Live user bubble: shown as soon as the user submits (asking) or any
+            answer surface is active — including follow-ups inside an existing
+            conversation (previously hidden by `conversation.state !== "ready"`). */}
+        {lastQuestion && (asking || answer.state !== "idle") && <article
           className="ask-turn ask-turn-user" aria-label={t("ask.conversation.you")}>
           <p>{lastQuestion}</p>
         </article>}
@@ -1257,30 +1294,10 @@ export default function AskPage() {
               </ol>}
         </section>}
 
-        {conversation.state === "loading"
-          && <p role="status" className="surface-loading">{t("surface.loading")}</p>}
-        {conversation.state === "denied" && <div role="alert" className="surface-denied">
-          {t("surface.denied")} · {errorText(conversation.error)}</div>}
-        {conversation.state === "error" && <div role="alert" className="surface-error">
-          {t("ask.blocked")} · {errorText(conversation.error)}</div>}
-        {conversation.state === "ready" && <section className="ask-conversation"
-          aria-label={t("ask.conversation.title")}>
-          <h2>{t("ask.conversation.title")}</h2>
-          <p className="form-note"><code>{conversation.data.conversationId}</code></p>
-          <ol className="conversation-messages">
-            {conversation.data.messages.map(message => <li key={message.messageId}
-              data-role={message.role}>
-              <p className="message-meta">
-                <strong>{message.role === "user"
-                  ? t("ask.conversation.you") : t("ask.conversation.assistant")}</strong>
-                {message.answerState && <code>{message.answerState}</code>}
-                <small>{formatDateTime(message.createdAt, locale)}</small>
-              </p>
-              <AnswerText text={message.content} onCitation={openCitation}/>
-            </li>)}
-          </ol>
-        </section>}
-
+        {/* Auto-scroll sentinel: the thread scrolls this into view whenever a new
+            question is asked or an answer arrives, keeping the newest turn visible
+            like a chat client. */}
+        <div ref={threadEndRef} aria-hidden="true"/>
         </div></div>
       </section>
 
