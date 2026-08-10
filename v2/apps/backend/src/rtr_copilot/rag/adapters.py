@@ -3,9 +3,14 @@ import math
 import re
 import unicodedata
 from collections.abc import Sequence
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
+
+import httpx
 
 from rtr_copilot.rag.models import ProviderAnswer, ProviderEvidence
+
+if TYPE_CHECKING:
+    from rtr_copilot.config import Settings
 
 TOKEN_RE = re.compile(r"[a-z0-9][a-z0-9._-]*")
 # Split conventional CamelCase only when the uppercase character starts a
@@ -101,7 +106,10 @@ class OfflineHashEmbedding:
     model = "rtr-offline-hash-embedding"
     version = "1"
 
-    def __init__(self, dimension: int = 64) -> None:
+    def __init__(self, dimension: int = 1536) -> None:
+        # Default tracks the schema dimension (TIP-014RE migration 0013);
+        # callers normally pass Settings.rag_embedding_dimension explicitly
+        # via build_embedding_adapter.
         self.dimension = dimension
 
     def embed(self, text: str) -> list[float]:
@@ -120,6 +128,153 @@ class OfflineHashEmbedding:
             vector[index] += 1.0 if digest[4] % 2 else -1.0
         norm = math.sqrt(sum(value * value for value in vector))
         return [value / norm for value in vector] if norm else vector
+
+    def embed_batch(self, texts: Sequence[str]) -> list[list[float]]:
+        return [self.embed(text) for text in texts]
+
+
+OPENAI_EMBEDDINGS_URL = "https://api.openai.com/v1/embeddings"
+# One HTTP request may carry many inputs; OpenAI accepts up to 2048 but a
+# conservative page keeps request bodies small and retries cheap.
+EMBEDDING_BATCH_SIZE = 128
+
+
+class EmbeddingProviderError(RuntimeError):
+    """Provider embedding failed; callers degrade to lexical-only retrieval."""
+
+
+class OpenAIEmbedding:
+    """Real semantic embeddings (TIP-014RE, closes TIP-014 AC-2).
+
+    Trust surface: constructing this adapter is gated by
+    ``Settings.rag_embedding_provider`` + the external-export policy validator
+    (key AND ``internal`` in the classification allowlist) — the same
+    fail-closed doctrine as the LLM rewrite path, because indexing sends
+    corpus text and querying sends the user question to the provider.
+
+    Vectors are L2-normalized on receipt so pgvector cosine scores are
+    comparable regardless of provider-side conventions.
+    """
+
+    version = "1"
+
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        model: str,
+        dimension: int,
+        timeout_seconds: float,
+        transport: httpx.MockTransport | None = None,
+    ) -> None:
+        self.model = model
+        self.dimension = dimension
+        self._api_key = api_key
+        self._timeout = timeout_seconds
+        # Test seam only: MockTransport serves both sync and async clients.
+        self._transport = transport
+
+    def _payload(self, texts: Sequence[str]) -> dict[str, object]:
+        return {
+            "model": self.model,
+            "input": list(texts),
+            "dimensions": self.dimension,
+            "encoding_format": "float",
+        }
+
+    def _headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self._api_key}"}
+
+    def _vectors(self, body: dict[str, object], expected: int) -> list[list[float]]:
+        data = body.get("data")
+        if not isinstance(data, list) or len(data) != expected:
+            raise EmbeddingProviderError("embedding_response_shape")
+        rows = sorted(data, key=lambda item: int(item.get("index", 0)))
+        vectors: list[list[float]] = []
+        for row in rows:
+            values = row.get("embedding")
+            if not isinstance(values, list) or len(values) != self.dimension:
+                raise EmbeddingProviderError("embedding_dimension_mismatch")
+            vector = [float(value) for value in values]
+            norm = math.sqrt(sum(value * value for value in vector))
+            vectors.append(
+                [value / norm for value in vector] if norm else vector,
+            )
+        return vectors
+
+    def embed_batch(self, texts: Sequence[str]) -> list[list[float]]:
+        """Synchronous batch embedding for the reindex/backfill path."""
+        if not texts:
+            return []
+        vectors: list[list[float]] = []
+        with httpx.Client(
+            timeout=self._timeout, transport=self._transport,
+        ) as client:
+            for start in range(0, len(texts), EMBEDDING_BATCH_SIZE):
+                page = list(texts[start:start + EMBEDDING_BATCH_SIZE])
+                try:
+                    response = client.post(
+                        OPENAI_EMBEDDINGS_URL,
+                        headers=self._headers(),
+                        json=self._payload(page),
+                    )
+                    response.raise_for_status()
+                except httpx.HTTPError as exc:
+                    raise EmbeddingProviderError(
+                        f"embedding_http_{type(exc).__name__}",
+                    ) from exc
+                vectors.extend(self._vectors(response.json(), len(page)))
+        return vectors
+
+    def embed(self, text: str) -> list[float]:
+        return self.embed_batch([text])[0]
+
+    async def aembed(self, text: str) -> list[float]:
+        """Async single-text embedding for the query path (own timeout)."""
+        async with httpx.AsyncClient(
+            timeout=self._timeout, transport=self._transport,
+        ) as client:
+            try:
+                response = await client.post(
+                    OPENAI_EMBEDDINGS_URL,
+                    headers=self._headers(),
+                    json=self._payload([text]),
+                )
+                response.raise_for_status()
+            except httpx.HTTPError as exc:
+                raise EmbeddingProviderError(
+                    f"embedding_http_{type(exc).__name__}",
+                ) from exc
+        return self._vectors(response.json(), 1)[0]
+
+
+def build_embedding_adapter(
+    settings: "Settings",
+) -> "OfflineHashEmbedding | OpenAIEmbedding":
+    """Resolve the configured embedding adapter, fail-closed.
+
+    The Settings validator already rejects ``rag_embedding_provider="openai"``
+    without a key + ``internal`` allowlist, so reaching the provider branch
+    here means policy was explicitly satisfied. The guard is repeated anyway:
+    an adapter must never be buildable from a Settings object that bypassed
+    validation (e.g. ``model_construct`` in tests).
+    """
+    if settings.rag_embedding_provider == "offline":
+        return OfflineHashEmbedding(settings.rag_embedding_dimension)
+    api_key = settings.openai_api_key
+    allowlist = {
+        item.strip().lower()
+        for item in settings.rag_external_classification_allowlist.split(",")
+        if item.strip()
+    }
+    if api_key is None or "internal" not in allowlist:
+        raise ValueError("rag_embedding_provider:policy_required")
+    return OpenAIEmbedding(
+        api_key=api_key.get_secret_value(),
+        model=settings.rag_embedding_openai_model,
+        dimension=settings.rag_embedding_dimension,
+        timeout_seconds=settings.rag_embedding_timeout_seconds,
+    )
 
 
 # Sentence split matching verify_grounding's factual-unit boundary, so every

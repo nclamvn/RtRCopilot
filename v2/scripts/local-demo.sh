@@ -86,7 +86,7 @@ if [[ ! -f .env.demo ]]; then
     echo "APP_ENV=development"
     echo "DEV_OIDC_ENABLED=true"
     echo "SESSION_COOKIE_SECURE=false"
-    echo "EXPECTED_SCHEMA_REVISION=0012_enterprise_governance"
+    echo "EXPECTED_SCHEMA_REVISION=0013_real_embedding_dim"
     echo "SOT_SIGNING_SECRET=${SECRET}"
     echo "SOT_STAGING_ROOT=/tmp/rtr-sot-staging"
     echo "RAG_PROVIDER_MODE=local"

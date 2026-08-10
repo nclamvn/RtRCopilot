@@ -73,16 +73,25 @@ class Settings(BaseSettings):
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86400)
     session_cookie_name: str = "rtr_session"
     session_cookie_secure: bool | None = None
-    expected_schema_revision: str = "0012_enterprise_governance"
+    expected_schema_revision: str = "0013_real_embedding_dim"
     sot_staging_root: Path = Path("/tmp/rtr-sot-staging")
     research_staging_root: Path = Path("/tmp/rtr-research-staging")
     sot_signing_secret: SecretStr = SecretStr(
         "development-only-sot-signing-secret-32bytes",
     )
     sot_allow_claim_as_approved: bool = False
-    rag_embedding_dimension: int = Field(default=64, ge=64, le=64)
+    # TIP-014RE — real semantic embeddings. The provider default is "offline"
+    # (deterministic hash stub): enabling "openai" is an explicit operator
+    # decision because indexing sends corpus text and querying sends the user
+    # question to the external provider. It therefore rides the SAME
+    # external-export policy gate as the LLM rewrite path (key + "internal"
+    # in the classification allowlist), enforced by the validator below.
+    rag_embedding_provider: Literal["offline", "openai"] = "offline"
+    rag_embedding_dimension: int = Field(default=1536, ge=64, le=3072)
     rag_embedding_model: str = "rtr-offline-hash-embedding"
     rag_embedding_version: str = "1"
+    rag_embedding_openai_model: str = "text-embedding-3-small"
+    rag_embedding_timeout_seconds: float = Field(default=8.0, ge=0.05, le=60.0)
     rag_chunk_max_chars: int = Field(default=1200, ge=128, le=8000)
     rag_chunk_overlap_chars: int = Field(default=120, ge=0, le=1000)
     rag_query_max_bytes: int = Field(default=4096, ge=64, le=32768)
@@ -93,6 +102,13 @@ class Settings(BaseSettings):
     rag_answer_candidate_k: int = Field(default=12, ge=1, le=20)
     rag_authority_candidate_k: int = Field(default=20, ge=1, le=64)
     rag_min_vector_score: float = Field(default=0.15, ge=0.0, le=1.0)
+    # TIP-014RE: cosine floor above which a REAL provider embedding match is
+    # accepted as relevance evidence for candidates sharing zero tokens with
+    # the question. Chosen from the calibration harness distribution BEFORE
+    # the confirming run (oracle scores of the semantic acceptance cases
+    # 0.52/0.56 vs distractor median 0.46). Never applies to the offline
+    # hash stub or degraded queries.
+    rag_semantic_relevance_floor: float = Field(default=0.48, ge=0.0, le=1.0)
     rag_evidence_max_bytes: int = Field(default=16000, ge=512, le=100000)
     rag_answer_max_chars: int = Field(default=12000, ge=256, le=50000)
     # TIP-030: when True, honest-null API responses carry the internal
@@ -235,6 +251,21 @@ class Settings(BaseSettings):
             )
         if self.rag_chunk_overlap_chars >= self.rag_chunk_max_chars:
             raise ValueError("rag_chunk_overlap_chars:must_be_below_chunk_max")
+        if self.rag_embedding_provider != "offline":
+            # TIP-014RE: embeddings export corpus/query text, in EVERY
+            # environment. Fail loudly at construction instead of silently
+            # downgrading to the offline stub — a half-configured operator
+            # intent must never look like a working semantic index.
+            embedding_allowlist = {
+                item.strip().lower()
+                for item in self.rag_external_classification_allowlist.split(",")
+                if item.strip()
+            }
+            if (
+                self.openai_api_key is None
+                or "internal" not in embedding_allowlist
+            ):
+                raise ValueError("rag_embedding_provider:policy_required")
         if self.app_env != "production":
             return self
         required = {

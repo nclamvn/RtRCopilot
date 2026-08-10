@@ -2,7 +2,7 @@ import hashlib
 import json
 import re
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from sqlalchemy import text
@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from rtr_copilot.config import Settings, get_settings
 from rtr_copilot.db.uow import UnitOfWork
-from rtr_copilot.rag.adapters import OfflineHashEmbedding, normalize_query
+from rtr_copilot.rag.adapters import build_embedding_adapter, normalize_query
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.sot.package import canonical_json, sha256_bytes
 
@@ -95,7 +95,7 @@ class ReindexService:
     ) -> None:
         self.settings = settings or get_settings()
         self.uow = UnitOfWork(factory)
-        self.embedding = OfflineHashEmbedding(self.settings.rag_embedding_dimension)
+        self.embedding = build_embedding_adapter(self.settings)
         self.index_dlp = ProviderPolicy(mode="local")
 
     async def pending_outbox_id(self) -> uuid.UUID | None:
@@ -154,6 +154,27 @@ class ReindexService:
         rows: list[dict[str, Any]],
     ) -> list[ChunkCandidate]:
         candidates: list[ChunkCandidate] = []
+        # TIP-014RE: chunk texts are embedded in one batched pass AFTER the
+        # loop (provider adapters page requests; the offline hash embeds
+        # per-text). Candidates are built with an empty vector and completed
+        # below — a length mismatch is a hard error, never a silent skip.
+        part_texts: list[str] = []
+        # TIP-014RE: chunk identity must be generation-space distinct. Before
+        # real embeddings, a source revision was only ever indexed once, so
+        # (revision × chunking_fingerprint) sufficed. Re-embedding the SAME
+        # revision under a different adapter creates a NEW generation whose
+        # candidates would otherwise collide with the retained old-generation
+        # rows on the global UNIQUE(chunk_key) / chunk_id — ON CONFLICT DO
+        # NOTHING would skip every insert and the generation_count_mismatch
+        # integrity gate fires (observed live, 09/08). Suffixing a digest of
+        # the embedding identity keeps identical-adapter reruns idempotent
+        # (same key → same generation → early no-op) while distinct adapters
+        # produce disjoint chunk rows.
+        embedding_fp = sha256_bytes(canonical_json({
+            "model": self.embedding.model,
+            "version": self.embedding.version,
+            "dimension": self.embedding.dimension,
+        }))[:12]
         for row in rows:
             base = str(row["evidence_text"] or row["searchable_text"]).strip()
             if not base:
@@ -185,7 +206,7 @@ class ReindexService:
                 chunking_fingerprint = sha256_bytes(canonical_json(identity))
                 chunk_key = (
                     f"{outbox['source_key']}:{outbox['revision']}:"
-                    f"{row['record_key']}:{chunking_fingerprint}"
+                    f"{row['record_key']}:{chunking_fingerprint}:{embedding_fp}"
                 )
                 chunk_id = uuid.uuid5(uuid.NAMESPACE_URL, f"rtr-chunk:{chunk_key}")
                 candidates.append(ChunkCandidate(
@@ -219,9 +240,14 @@ class ReindexService:
                     ),
                     ordinal=ordinal,
                     chunking_fingerprint=chunking_fingerprint,
-                    embedding=self.embedding.embed(part),
+                    embedding=[],
                 ))
-        return candidates
+                part_texts.append(part)
+        vectors = self.embedding.embed_batch(part_texts)
+        return [
+            replace(candidate, embedding=vector)
+            for candidate, vector in zip(candidates, vectors, strict=True)
+        ]
 
     async def process(
         self,

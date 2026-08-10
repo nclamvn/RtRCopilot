@@ -199,6 +199,21 @@ owner_sql "SELECT to_regclass('public.enterprise_domains') IS NULL" | grep -q "t
 run_migration downgrade 0009_governance_research
 owner_sql "SELECT to_regclass('public.file_chunks') IS NULL" | grep -q "t"
 run_migration upgrade 0012_enterprise_governance
+# TIP-014RE: 0013 widens both embedding columns for real semantic vectors and
+# relaxes the generation-dimension CHECK. Probe the up/down round-trip
+# explicitly — the column type is the contract the retrieval SQL depends on.
+run_migration upgrade 0013_real_embedding_dim
+owner_sql "SELECT format_type(atttypid, atttypmod) FROM pg_attribute
+  WHERE attrelid='chunks'::regclass AND attname='embedding'" \
+  | grep -q "vector(1536)"
+owner_sql "SELECT format_type(atttypid, atttypmod) FROM pg_attribute
+  WHERE attrelid='file_chunks'::regclass AND attname='embedding'" \
+  | grep -q "vector(1536)"
+run_migration downgrade 0012_enterprise_governance
+owner_sql "SELECT format_type(atttypid, atttypmod) FROM pg_attribute
+  WHERE attrelid='chunks'::regclass AND attname='embedding'" \
+  | grep -q "vector(64)"
+run_migration upgrade 0013_real_embedding_dim
 run_migration downgrade 0004_append_only_audit
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NULL" | grep -q "t"
 run_migration upgrade 0005_ingestion_renditions

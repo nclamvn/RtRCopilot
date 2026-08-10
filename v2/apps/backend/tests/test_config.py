@@ -256,3 +256,30 @@ def test_decision_diagnostics_default_off() -> None:
     explicitly enables it (isolated e2e stacks)."""
     from rtr_copilot.config import Settings
     assert Settings().rag_expose_decision_diagnostics is False
+
+
+def test_embedding_provider_defaults_offline() -> None:
+    """TIP-014RE trust surface: the embedding provider must default to the
+    deterministic offline stub — sending corpus/query text to an external
+    provider is an explicit operator opt-in, never a default."""
+    settings = Settings()
+    assert settings.rag_embedding_provider == "offline"
+    assert settings.rag_embedding_dimension == 1536
+
+
+def test_embedding_provider_openai_requires_key_and_allowlist() -> None:
+    """TIP-014RE: half-configured intent must fail loudly at construction,
+    in EVERY environment — never silently downgrade to the offline stub."""
+    with pytest.raises(ValidationError, match="policy_required"):
+        Settings(rag_embedding_provider="openai")
+    with pytest.raises(ValidationError, match="policy_required"):
+        Settings(
+            rag_embedding_provider="openai",
+            openai_api_key="sk-test",  # allowlist still missing
+        )
+    settings = Settings(
+        rag_embedding_provider="openai",
+        openai_api_key="sk-test",
+        rag_external_classification_allowlist="internal",
+    )
+    assert settings.rag_embedding_provider == "openai"
