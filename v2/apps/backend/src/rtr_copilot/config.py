@@ -102,6 +102,13 @@ class Settings(BaseSettings):
     rag_answer_candidate_k: int = Field(default=12, ge=1, le=20)
     rag_authority_candidate_k: int = Field(default=20, ge=1, le=64)
     rag_min_vector_score: float = Field(default=0.15, ge=0.0, le=1.0)
+    # TIP-014RE: cosine floor above which a REAL provider embedding match is
+    # accepted as relevance evidence for candidates sharing zero tokens with
+    # the question. Chosen from the calibration harness distribution BEFORE
+    # the confirming run (oracle scores of the semantic acceptance cases
+    # 0.52/0.56 vs distractor median 0.46). Never applies to the offline
+    # hash stub or degraded queries.
+    rag_semantic_relevance_floor: float = Field(default=0.48, ge=0.0, le=1.0)
     rag_evidence_max_bytes: int = Field(default=16000, ge=512, le=100000)
     rag_answer_max_chars: int = Field(default=12000, ge=256, le=50000)
     # TIP-030: when True, honest-null API responses carry the internal

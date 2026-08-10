@@ -160,3 +160,131 @@ class TestOfflineStubAtSchemaDimension:
         assert adapter.embed_batch(["a", "b"]) == [
             adapter.embed("a"), adapter.embed("b"),
         ]
+
+
+class TestSemanticRelevanceFloor:
+    """TIP-014RE: high provider-cosine admits zero-overlap candidates; the
+    hash-era hard exclusions stay intact whenever the floor is absent."""
+
+    def _score(self, *, vector_score: float, floor: float | None):
+        from rtr_copilot.rag.relevance import (
+            candidate_relevance_score,
+            profile_query,
+        )
+        # "tech stack" question vs a technology record sharing zero tokens.
+        profile = profile_query("cong ty dung tech stack gi")
+        return candidate_relevance_score(
+            profile,
+            text="Next.js FastAPI pgvector Redis MinIO",
+            record_key="L3F.4.011",
+            base_score=0.03,
+            vector_score=vector_score,
+            min_vector_score=0.15,
+            semantic_floor=floor,
+        )
+
+    def test_semantic_bridge_admits_above_floor(self) -> None:
+        assert self._score(vector_score=0.52, floor=0.48) is not None
+
+    def test_below_floor_stays_excluded(self) -> None:
+        assert self._score(vector_score=0.40, floor=0.48) is None
+
+    def test_no_floor_preserves_hash_era_exclusion(self) -> None:
+        assert self._score(vector_score=0.99, floor=None) is None
+
+    def test_degraded_query_zero_vector_never_bridges(self) -> None:
+        assert self._score(vector_score=0.0, floor=0.48) is None
+
+    def test_retrieval_floor_only_for_provider_adapter(self) -> None:
+        offline = RetrievalService(Settings())
+        assert offline._semantic_floor is None
+        provider = RetrievalService(Settings())
+        provider.embedding = OpenAIEmbedding(
+            api_key="sk-test",
+            model="text-embedding-3-small",
+            dimension=1536,
+            timeout_seconds=5.0,
+        )
+        assert provider._semantic_floor == pytest.approx(0.48)
+
+
+class TestMergeEnterpriseHitsSemanticBoundary:
+    """TIP-014RE: a resolved entity dossier (reserved) must not discard the
+    non-reserved record that actually answers a specific-attribute question,
+    yet must keep the strict boundary for exact definition questions and for
+    offline/degraded runs (floor None)."""
+
+    @staticmethod
+    def _hit(record_key: str, *, vector_score: float, fusion: float) -> object:
+        import uuid as _uuid
+
+        from rtr_copilot.rag.models import Citation, RetrievalHit
+        cid = _uuid.uuid4()
+        return RetrievalHit(
+            chunk_id=cid,
+            chunk_key=f"k:{record_key}",
+            snippet=f"text of {record_key}",
+            lexical_score=0.0,
+            vector_score=vector_score,
+            fusion_score=fusion,
+            classification="internal",
+            citation=Citation(
+                marker="C1", chunk_id=cid, record_key=record_key,
+                record_version_id=None, evidence_key=None,
+                record_checksum="0" * 64, evidence_checksum=None,
+                source_key="rtr.l3_facts", source_revision=1,
+                provenance_level="verified_primary", verification_state="verified",
+                freshness_state="current", source_label=record_key, locator={},
+            ),
+        )
+
+    def _merge(self, sot, files, *, intent, floor):
+        return RetrievalService._merge_enterprise_hits(
+            sot, files, limit=12,
+            priority_record_keys=("L3F.ENT.001", "L3F.ENT.002"),
+            query_intent=intent, semantic_floor=floor,
+        )
+
+    def _keys(self, hits):
+        return [h.citation.record_key for h in hits]
+
+    def test_lookup_admits_semantic_answer_above_floor(self) -> None:
+        sot = [
+            self._hit("L3F.ENT.001", vector_score=0.29, fusion=1.5),
+            self._hit("L3F.ENT.002", vector_score=0.29, fusion=1.6),
+            self._hit("L3F.4.011", vector_score=0.52, fusion=1.29),  # the answer
+        ]
+        keys = self._keys(self._merge(sot, [], intent="lookup", floor=0.48))
+        assert "L3F.4.011" in keys
+
+    def test_lookup_below_floor_still_excluded(self) -> None:
+        sot = [
+            self._hit("L3F.ENT.001", vector_score=0.29, fusion=1.5),
+            self._hit("L3F.9.999", vector_score=0.30, fusion=1.1),  # noise
+        ]
+        keys = self._keys(self._merge(sot, [], intent="lookup", floor=0.48))
+        assert keys == ["L3F.ENT.001"]
+
+    def test_definition_keeps_strict_dossier_boundary(self) -> None:
+        sot = [
+            self._hit("L3F.ENT.001", vector_score=0.29, fusion=1.5),
+            self._hit("L3F.4.011", vector_score=0.52, fusion=1.29),
+        ]
+        keys = self._keys(self._merge(sot, [], intent="definition", floor=0.48))
+        assert keys == ["L3F.ENT.001"]
+
+    def test_offline_floor_none_preserves_old_boundary(self) -> None:
+        sot = [
+            self._hit("L3F.ENT.001", vector_score=0.99, fusion=1.5),
+            self._hit("L3F.4.011", vector_score=0.99, fusion=1.29),
+        ]
+        keys = self._keys(self._merge(sot, [], intent="lookup", floor=None))
+        assert keys == ["L3F.ENT.001"]
+
+    def test_open_question_no_reserved_unchanged(self) -> None:
+        sot = [
+            self._hit("L3F.4.011", vector_score=0.20, fusion=1.29),
+            self._hit("L3F.5.010", vector_score=0.20, fusion=1.10),
+        ]
+        keys = self._keys(self._merge(sot, [], intent="lookup", floor=0.48))
+        assert set(keys) == {"L3F.4.011", "L3F.5.010"}

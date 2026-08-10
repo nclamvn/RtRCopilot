@@ -159,6 +159,22 @@ class ReindexService:
         # per-text). Candidates are built with an empty vector and completed
         # below — a length mismatch is a hard error, never a silent skip.
         part_texts: list[str] = []
+        # TIP-014RE: chunk identity must be generation-space distinct. Before
+        # real embeddings, a source revision was only ever indexed once, so
+        # (revision × chunking_fingerprint) sufficed. Re-embedding the SAME
+        # revision under a different adapter creates a NEW generation whose
+        # candidates would otherwise collide with the retained old-generation
+        # rows on the global UNIQUE(chunk_key) / chunk_id — ON CONFLICT DO
+        # NOTHING would skip every insert and the generation_count_mismatch
+        # integrity gate fires (observed live, 09/08). Suffixing a digest of
+        # the embedding identity keeps identical-adapter reruns idempotent
+        # (same key → same generation → early no-op) while distinct adapters
+        # produce disjoint chunk rows.
+        embedding_fp = sha256_bytes(canonical_json({
+            "model": self.embedding.model,
+            "version": self.embedding.version,
+            "dimension": self.embedding.dimension,
+        }))[:12]
         for row in rows:
             base = str(row["evidence_text"] or row["searchable_text"]).strip()
             if not base:
@@ -190,7 +206,7 @@ class ReindexService:
                 chunking_fingerprint = sha256_bytes(canonical_json(identity))
                 chunk_key = (
                     f"{outbox['source_key']}:{outbox['revision']}:"
-                    f"{row['record_key']}:{chunking_fingerprint}"
+                    f"{row['record_key']}:{chunking_fingerprint}:{embedding_fp}"
                 )
                 chunk_id = uuid.uuid5(uuid.NAMESPACE_URL, f"rtr-chunk:{chunk_key}")
                 candidates.append(ChunkCandidate(

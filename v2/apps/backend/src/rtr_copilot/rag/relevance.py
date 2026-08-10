@@ -113,6 +113,7 @@ def candidate_relevance_score(
     min_vector_score: float,
     support_queries: Sequence[str] = (),
     allow_unbound_definition: bool = False,
+    semantic_floor: float | None = None,
 ) -> float | None:
     """Return an adjusted rank, or ``None`` when evidence is ineligible.
 
@@ -121,7 +122,20 @@ def candidate_relevance_score(
     receive a deliberately smaller boost. Treating the concatenated rewrite as
     the primary profile let generic terms such as ``company`` and ``system``
     outrank the user's discriminative term such as ``CRM`` or ``SOT``.
+
+    ``semantic_floor`` (TIP-014RE): with REAL provider embeddings a high
+    cosine score IS relevance evidence — "tech stack" must be able to reach a
+    technology record that shares zero tokens with the question. Retrieval
+    passes the configured floor ONLY when the provider adapter is active
+    (never for the offline hash stub, never on a degraded query where
+    vector_score collapsed to 0), and a candidate admitted purely on
+    semantics still faces the unchanged downstream gates: evidence
+    relevance, provider review, deterministic grounding and final answer
+    relevance. ``None`` preserves the hash-era hard exclusions exactly.
     """
+    semantically_bridged = (
+        semantic_floor is not None and vector_score >= semantic_floor
+    )
     definition_anchor = record_key in profile.definition_record_keys
     profile_anchor = record_key in profile.profile_record_keys
     if (
@@ -184,6 +198,7 @@ def candidate_relevance_score(
             and not collection_anchor
             and not profile_anchor
             and not definition_anchor
+            and not semantically_bridged
         ):
             return None
         # Definition evidence must make the requested entity its subject.
@@ -210,10 +225,13 @@ def candidate_relevance_score(
         competing = len(mentions - targets)
         adjustment -= min(0.20, competing * 0.04)
     elif term_overlap == 0 and support_overlap == 0:
-        # Hash-vector proximity alone is not evidence relevance. External query
-        # planning may add a validated synonym, but at least one discriminative
-        # term must still match before content can reach answer generation.
-        return None
+        # Hash-era rule: hash-vector proximity alone was noise, so at least
+        # one discriminative term had to match. With a real provider adapter
+        # a score above ``semantic_floor`` is legitimate relevance evidence
+        # (TIP-014RE adjudication: the newer approved spec wins); anything
+        # below the floor keeps the original hard exclusion.
+        if not semantically_bridged:
+            return None
 
     if collection_anchor:
         # Exhaustive plans must not lose their governed set boundary to a

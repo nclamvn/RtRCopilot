@@ -24,7 +24,7 @@ import sys
 
 from sqlalchemy import text
 
-from rtr_copilot.rag.reindex import ReindexService
+from rtr_copilot.rag.reindex import ReindexError, ReindexService
 
 
 async def _run() -> int:
@@ -64,14 +64,46 @@ async def _run() -> int:
             )
         return 2
     processed = 0
+    skipped = 0
     for _ in range(1000):
-        outbox_id = await service.process_next()
+        outbox_id = await service.pending_outbox_id()
         if outbox_id is None:
             break
+        try:
+            await service.process(outbox_id)
+        except ReindexError as error:
+            if str(error) != "outbox_not_current_active_revision":
+                raise
+            # Legacy debris: a pending row whose revision has since been
+            # superseded or retired (integration-test sources accumulate
+            # these in the demo database). Its work is obsolete by
+            # definition — mark it dispatched so the drain terminates, and
+            # say so out loud (observed live 09/08: the drain crashed on
+            # such a row after 34 healthy sources).
+            async with service.uow.transaction() as session:
+                await session.execute(text("""
+                    UPDATE sot_reindex_outbox
+                    SET status='dispatched', dispatched_at=now()
+                    WHERE outbox_id=:outbox_id
+                """), {"outbox_id": outbox_id})
+            skipped += 1
+            print(f"skipped obsolete outbox {outbox_id} (revision no longer active)")
+            continue
+        # ``process`` marks the row dispatched on the full-build path, but
+        # its idempotent early-return (fingerprint unchanged → generation
+        # already active) leaves the requeued row pending — the drain would
+        # spin on it forever. Mark dispatched unconditionally.
+        async with service.uow.transaction() as session:
+            await session.execute(text("""
+                UPDATE sot_reindex_outbox
+                SET status='dispatched', dispatched_at=now()
+                WHERE outbox_id=:outbox_id AND status <> 'dispatched'
+            """), {"outbox_id": outbox_id})
         processed += 1
         print(f"reembedded outbox {outbox_id}")
     print(
-        f"reembed complete: requeued={len(requeued)} processed={processed}",
+        f"reembed complete: requeued={len(requeued)} "
+        f"processed={processed} skipped_obsolete={skipped}",
     )
     return 0
 

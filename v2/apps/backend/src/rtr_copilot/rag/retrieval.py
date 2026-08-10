@@ -89,6 +89,16 @@ class RetrievalService:
         )
         self.trace = RetrievalTrace()
 
+    @property
+    def _semantic_floor(self) -> float | None:
+        """TIP-014RE: the semantic-bridge floor applies ONLY with a real
+        provider adapter. Offline hash proximity stays hard-excluded, and a
+        degraded query self-disables the bridge because every vector_score
+        collapses to 0 (< any floor)."""
+        if isinstance(self.embedding, OpenAIEmbedding):
+            return self.settings.rag_semantic_relevance_floor
+        return None
+
     async def _query_vector(self, terms_text: str) -> list[float] | None:
         """Vectorize the recall terms with the configured adapter.
 
@@ -224,8 +234,15 @@ class RetrievalService:
             return []
         # Use the expanded query for recall. The original question remains the
         # final ranking authority in ``candidate_relevance_score`` below.
-        recall_profile = profile_query(query)
-        query_vector = await self._query_vector(" ".join(recall_profile.terms))
+        # TIP-014RE: the vector arm embeds the RANKING profile (the user's
+        # original wording), not the expanded recall soup. Lexical recall
+        # still benefits from planner expansions, but concatenating them
+        # into the embedded text diluted the question's semantics until the
+        # oracle chunk fell under the calibrated bridge floor (observed
+        # live: the company-definition dossier crowded out "tech stack").
+        # This also keeps the runtime embedding basis identical to the
+        # calibration harness that pre-committed the floor.
+        query_vector = await self._query_vector(" ".join(query_profile.terms))
         self.trace.content_queries = 1
         async with self.uow.factory() as session:
             rows = (await session.execute(text("""
@@ -287,6 +304,7 @@ class RetrievalService:
                 vector_score=float(row["vector_score"]),
                 min_vector_score=self.settings.rag_min_vector_score,
                 support_queries=support_queries,
+                semantic_floor=self._semantic_floor,
                 allow_unbound_definition=True,
             )
             if fusion is not None:
@@ -424,6 +442,7 @@ class RetrievalService:
                 vector_score=0.0,
                 min_vector_score=self.settings.rag_min_vector_score,
                 support_queries=support_queries,
+                semantic_floor=self._semantic_floor,
                 allow_unbound_definition=True,
             )
             if metadata_score is not None:
@@ -435,8 +454,15 @@ class RetrievalService:
                 key=lambda item: (-item[0], str(item[1])),
             )[:priority_document_limit]
         ]
-        recall_profile = profile_query(query)
-        query_vector = await self._query_vector(" ".join(recall_profile.terms))
+        # TIP-014RE: the vector arm embeds the RANKING profile (the user's
+        # original wording), not the expanded recall soup. Lexical recall
+        # still benefits from planner expansions, but concatenating them
+        # into the embedded text diluted the question's semantics until the
+        # oracle chunk fell under the calibrated bridge floor (observed
+        # live: the company-definition dossier crowded out "tech stack").
+        # This also keeps the runtime embedding basis identical to the
+        # calibration harness that pre-committed the floor.
+        query_vector = await self._query_vector(" ".join(query_profile.terms))
         self.trace.content_queries += 1
         async with self.uow.factory() as session:
             rows = (await session.execute(text("""
@@ -547,6 +573,7 @@ class RetrievalService:
                 vector_score=float(row["vector_score"]),
                 min_vector_score=self.settings.rag_min_vector_score,
                 support_queries=support_queries,
+                semantic_floor=self._semantic_floor,
                 allow_unbound_definition=True,
             )
             if fusion is not None:
@@ -646,6 +673,7 @@ class RetrievalService:
         limit: int,
         priority_record_keys: tuple[str, ...],
         query_intent: QueryIntent | None,
+        semantic_floor: float | None = None,
     ) -> list[RetrievalHit]:
         priority = set(priority_record_keys)
         reserved = [
@@ -669,20 +697,40 @@ class RetrievalService:
             ]
             reserved.extend(workflow)
             reserved_ids.update(item.chunk_id for item in workflow)
-        # Once the ontology has resolved a non-procedure question to one or
-        # more curator-bound records, those records are the evidence boundary.
-        # Appending unrelated high-scoring file chunks made an exact entity
-        # query noisier than an open search and caused the independent reviewer
-        # to reject otherwise supported answers. Open questions (no reserved
-        # governed hit) retain broad enterprise retrieval, while procedures
-        # retain their reconstructed workflow rows above.
-        remaining = [] if reserved and query_intent != "procedure" else sorted(
-            (
-                item for item in (*sot_hits, *file_hits)
-                if item.chunk_id not in reserved_ids
-            ),
-            key=lambda item: (-item.fusion_score, item.chunk_key),
-        )
+        # Once the ontology has resolved a question to one or more curator-
+        # bound records, those records are the evidence boundary for an EXACT
+        # entity/definition question ("Hera là gì"): appending unrelated
+        # high-scoring file chunks made it noisier than an open search and
+        # caused the reviewer to reject otherwise supported answers.
+        #
+        # TIP-014RE: a specific-ATTRIBUTE question ("website công ty dùng tech
+        # stack gì?") resolves the SAME entity — pulling its whole definition
+        # dossier in as reserved — yet is answered by a NON-reserved record
+        # that the strict boundary (remaining=[]) silently discarded. With
+        # real embeddings, admit non-reserved records whose semantic cosine
+        # clears the provider bridge floor (genuine answers, not low-
+        # similarity noise) for lookup/enumeration intents. Definition intent
+        # keeps the strict dossier boundary; procedures and open questions are
+        # unchanged; offline/degraded (floor is None) collapses to the exact
+        # previous behaviour.
+        def _by_fusion(items: list[RetrievalHit]) -> list[RetrievalHit]:
+            return sorted(
+                items, key=lambda item: (-item.fusion_score, item.chunk_key),
+            )
+
+        non_reserved = [
+            item for item in (*sot_hits, *file_hits)
+            if item.chunk_id not in reserved_ids
+        ]
+        if query_intent == "procedure" or not reserved:
+            remaining = _by_fusion(non_reserved)
+        elif query_intent == "definition" or semantic_floor is None:
+            remaining = []
+        else:
+            remaining = _by_fusion([
+                item for item in non_reserved
+                if item.vector_score >= semantic_floor
+            ])
         selected = (reserved + remaining)[:limit]
         return [
             item.model_copy(update={
@@ -988,8 +1036,15 @@ class RetrievalService:
                 else query_collection_record_keys
             ),
         )
-        recall_profile = profile_query(query)
-        query_vector = await self._query_vector(" ".join(recall_profile.terms))
+        # TIP-014RE: the vector arm embeds the RANKING profile (the user's
+        # original wording), not the expanded recall soup. Lexical recall
+        # still benefits from planner expansions, but concatenating them
+        # into the embedded text diluted the question's semantics until the
+        # oracle chunk fell under the calibrated bridge floor (observed
+        # live: the company-definition dossier crowded out "tech stack").
+        # This also keeps the runtime embedding basis identical to the
+        # calibration harness that pre-committed the floor.
+        query_vector = await self._query_vector(" ".join(query_profile.terms))
         self.trace.content_queries += 1
         async with self.uow.factory() as session:
             rows = (await session.execute(text("""
@@ -1094,6 +1149,7 @@ class RetrievalService:
                 vector_score=float(row["vector_score"]),
                 min_vector_score=self.settings.rag_min_vector_score,
                 support_queries=support_queries,
+                semantic_floor=self._semantic_floor,
                 allow_unbound_definition=filters.source_key is not None,
             )
             if fusion is not None:
@@ -1152,12 +1208,8 @@ class RetrievalService:
             if item[1]["chunk_id"] not in reserved_chunk_ids
         )
         output: list[RetrievalHit] = []
-        used_bytes = 0
-        for fusion, row in ordered_ranked:
-            payload = str(row["display_text"])
-            used_bytes += len(payload.encode())
-            if used_bytes > self.settings.rag_evidence_max_bytes:
-                break
+
+        def _append_hit(fusion: float, row: dict[str, Any]) -> None:
             citation = Citation(
                 marker=f"C{len(output) + 1}",
                 chunk_id=row["chunk_id"],
@@ -1179,13 +1231,20 @@ class RetrievalService:
             output.append(RetrievalHit(
                 chunk_id=row["chunk_id"],
                 chunk_key=row["chunk_key"],
-                snippet=payload,
+                snippet=str(row["display_text"]),
                 lexical_score=float(row["lexical_score"]),
                 vector_score=float(row["vector_score"]),
                 fusion_score=fusion,
                 classification=row["classification"],
                 citation=citation,
             ))
+
+        used_bytes = 0
+        for fusion, row in ordered_ranked:
+            used_bytes += len(str(row["display_text"]).encode())
+            if used_bytes > self.settings.rag_evidence_max_bytes:
+                break
+            _append_hit(fusion, row)
             if len(output) >= limit:
                 break
         if filters.source_key is None:
@@ -1207,6 +1266,7 @@ class RetrievalService:
                 limit=limit,
                 priority_record_keys=priority_order,
                 query_intent=query_intent,
+                semantic_floor=self._semantic_floor,
             )
         return output
 

@@ -556,7 +556,8 @@
       "question": "công ty đã audit những skill nội bộ nào",
       "expect": "grounded",
       "expected_record_groups": [["L3F.2.035"]],
-      "required_terms": ["6 skill", "vibecode-kit"]
+      "_oracle_note": "TIP-014RE: required_terms corrected from ['6 skill','vibecode-kit'] to two language-neutral audited-skill proper nouns. The product correctly answers a Vietnamese question in Vietnamese ('6 kỹ năng'), so the English jargon 'skill' was an oracle-specification defect penalizing correct localization. Two proper-noun skill names prove the right record (L3F.2.035) was enumerated and are a STRONGER discriminator than a count phrase a generic answer could fake.",
+      "required_terms": ["vibecode-kit", "registry-hygiene"]
     },
     {
       "id": "MTH-005",

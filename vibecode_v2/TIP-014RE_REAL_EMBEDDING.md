@@ -48,3 +48,27 @@ Thay `OfflineHashEmbedding` (băm SHA256, không hiểu nghĩa) bằng embedding
 - Harness `eval/embedding/calibrate_min_vector_score.py`: đo oracle-best vs distractor-best cho mọi case grounded, in percentile + đề xuất floor (advisory, pre-commit trước campaign).
 - compose.yaml: EXPECTED_SCHEMA_REVISION→0013, pass-through 4 env embedding mới; .env.example/.env.demo.example ghi rõ nghi thức bật.
 - **Hermetic cloud: 599 passed / 88 skipped / 0 fail · ruff 0 · mypy 0** (integration DB-bound chạy ở stack CI + máy Homeowner).
+
+**RE-3 XONG — bật provider thật + đóng 3 acceptance case (Thợ+Homeowner, 09/08/2026, máy Homeowner):**
+
+Homeowner bật `RAG_EMBEDDING_PROVIDER=openai` trong `.env.demo`, migrate 0013, re-embed toàn corpus (34/34 generation active = `text-embedding-3-small/1536`). Chuỗi 5 bug thật lộ ra qua probe/instrumentation (đặt trước — không đoán mù), mỗi bug là một van có răng:
+
+1. **`generation_count_mismatch` khi re-embed** — `chunk_key`/`chunk_id` không mang danh tính embedding; re-embed cùng revision sinh generation mới trùng chunk_id cũ → `ON CONFLICT DO NOTHING` bỏ qua → van integrity nổ đúng. Fix: đóng dấu digest (model,version,dim) vào `chunk_key` (adapter trùng → idempotent; adapter khác → bộ chunk riêng, citations cũ nguyên vẹn).
+2. **Harness đo ra số rác (oracle 0.00–0.12)** — so query OpenAI với chunk còn vector băm pad-0. Fix: harness **từ chối đo** khi generation active lệch adapter (gate mới). Sau fix: oracle p50 0.458, SYS-007 0.52 / MTH-004 0.56 > distractor median 0.46.
+3. **Sàn ngữ nghĩa `rag_semantic_relevance_floor=0.48`** (chọn từ phân bố harness TRƯỚC vòng xác nhận, không hậu nghiệm) — cho record non-overlap đạt cosine cao vào bảng, gated `_semantic_floor` (offline/degraded = None → luật hash-era nguyên vẹn).
+4. **Cơ sở embed lệch harness** — nhánh vector từng embed query mở rộng (soup) rồi relevance_question; sửa để embed **ranking profile câu gốc**, khớp đúng cơ sở harness đã hiệu chỉnh sàn.
+5. **VAN GỐC — biên giới merge nuốt câu trả lời** (`_merge_enterprise_hits`): entity "công ty"→RtR kéo trọn dossier 8 record làm `reserved`; luật `remaining=[]` (khi reserved non-empty & intent≠procedure) coi dossier là "biên giới evidence" và **ném sạch record non-reserved kể cả oracle** — dù oracle đã vào SOT output và chấm cao nhất theo nghĩa. Luật đó ĐÚNG cho câu định nghĩa ("Hera là gì"), SAI cho câu thuộc tính. Fix gated intent+floor: giữ biên giới cho `definition`/offline; với `lookup`/`enumeration` + embedding thật, cho record non-reserved đạt sàn đi qua. 5 test hermetic khoá.
+
+**Phân xử oracle (Homeowner duyệt):** MTH-004 required_terms `['6 skill','vibecode-kit']` → `['vibecode-kit','registry-hygiene']`. Sản phẩm trả lời tiếng Việt đúng ("6 kỹ năng") nên cụm tiếng Anh "skill" là lỗi đặc tả oracle phạt localization đúng; hai proper-noun trung tính là discriminator MẠNH hơn (câu chung chung không fake được).
+
+**Kết quả targeted 3 case ×2 vòng liên tiếp — ĐẠT:**
+
+| Case | Câu hỏi | Oracle | Kết cục |
+|---|---|---|---|
+| SYS-007 | "website công ty dùng tech stack gì?" | L3F.4.011 | ✅ grounded, cite đúng (Next.js/Sanity tìm bằng nghĩa) |
+| MTH-004 | "công ty đã audit những skill nội bộ nào" | L3F.2.035 | ✅ grounded, liệt kê đúng 6 skill |
+| OPS-010 | "XPONENTIAL 2026 ngày nào booth mấy?" | L3F.1.027 | ✅ grounded, cite đúng |
+
+Vòng 1: 3/3, 8/8 gate. Vòng 2: 3/3, 8/8 gate. false-grounded **0**, honest-null precision **1.0**, p95 ~13s cả hai vòng. Hermetic cloud sau tất cả fix: **604 passed / 88 skipped / 0 fail · ruff 0 · mypy 0** (thêm test adapter, semantic-floor, merge-boundary).
+
+**Còn lại:** RE-4 full campaign re-cert 77 case (chờ Homeowner duyệt chi) → PR #10. Kỳ vọng ≥76/77 (2 case trước-treo nay thông; SYS-007/MTH-004 rời khỏi cột "classified→TIP-014").

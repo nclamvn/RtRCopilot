@@ -57,6 +57,31 @@ async def _run() -> int:
         if _oracle_keys(case) and case.get("expect") == "grounded"
     ]
     uow = UnitOfWork(None)
+    # Gate with teeth: comparing provider query vectors against chunks that
+    # were embedded by a DIFFERENT adapter (e.g. padded hash-era vectors)
+    # produces near-orthogonal noise that looks like a measurement. Refuse
+    # to calibrate until every ACTIVE generation matches the adapter.
+    async with uow.factory() as session:
+        mismatched = (await session.execute(text("""
+            SELECT g.source_key, sg.embedding_model, sg.embedding_dimension
+            FROM active_search_generations g
+            JOIN search_generations sg ON sg.generation_id = g.generation_id
+            WHERE sg.embedding_model <> :model
+               OR sg.embedding_dimension <> :dimension
+        """), {
+            "model": adapter.model,
+            "dimension": adapter.dimension,
+        })).all()
+    if mismatched:
+        for source_key, model, dimension in mismatched:
+            print(
+                f"ERROR: active generation for {source_key} is embedded with "
+                f"{model}/{dimension}, adapter is "
+                f"{adapter.model}/{adapter.dimension} — run "
+                f"rtr_copilot.commands.reembed_corpus first",
+                file=sys.stderr,
+            )
+        return 2
     oracle_bests: list[float] = []
     distractor_bests: list[float] = []
     rows_out: list[dict] = []
