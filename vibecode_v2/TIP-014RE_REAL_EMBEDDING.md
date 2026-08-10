@@ -72,3 +72,11 @@ Homeowner bật `RAG_EMBEDDING_PROVIDER=openai` trong `.env.demo`, migrate 0013,
 Vòng 1: 3/3, 8/8 gate. Vòng 2: 3/3, 8/8 gate. false-grounded **0**, honest-null precision **1.0**, p95 ~13s cả hai vòng. Hermetic cloud sau tất cả fix: **604 passed / 88 skipped / 0 fail · ruff 0 · mypy 0** (thêm test adapter, semantic-floor, merge-boundary).
 
 **Còn lại:** RE-4 full campaign re-cert 77 case (chờ Homeowner duyệt chi) → PR #10. Kỳ vọng ≥76/77 (2 case trước-treo nay thông; SYS-007/MTH-004 rời khỏi cột "classified→TIP-014").
+
+**RE-4 XONG — full campaign re-cert embedding thật (spend duyệt 10/08/2026):**
+
+**8/8 GATE PASS · 76/77 (98.7%)** — vượt baseline 74/77 (+2). grounded 98.57% · citation 98.57% · honest-null precision **1.0** · false-grounded **0** · follow-up 1.0 · p95 34.1s · browser live 5/5 · isolation PASS. Domain: **methods 100%, systems 100%** (SYS-007+MTH-004 rời cột classified→TIP-014), product/company/operations/safety 100%.
+
+**Điểm trừ duy nhất — CHAT-004-T1** (conversation, "CRM bên mình làm gì?"): trước pass, nay honest_null `called_answer_irrelevant`. Cùng họ dossier-noise — "CRM" resolve entity kéo dossier, nhiễu làm gate answer_relevant cuối chấm câu trả lời lạc đề. **Abstention AN TOÀN** (honest_null, KHÔNG false-grounded; honest-null precision vẫn 1.0), nằm trong dung sai gate (grounded 98.57% ≥ 90%). Homeowner phán: ship 76/77 (đạt luật verdict khoá-trước 8/8+≥75/77), CHAT-004-T1 ghi sổ **follow-up TIP-014RE.1** (tinh chỉnh nhiễu dossier cho conversation-anchor: cân nhắc cap số record semantic-bridge, hoặc trừ điểm dossier khi intent là conversation anchor).
+
+**Phán quyết Thầu: TIP-014 AC-2 ĐÓNG. Verdict GO FOR COMPANY-WIDE INTERNAL PILOT nâng lên 98.7% (embedding thật).** Kết quả: `eval/real_world/tip014re_full_campaign_summary.json`.

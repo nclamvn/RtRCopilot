@@ -1,6 +1,6 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái:** TIP-022→030 VERIFIED · **GO FOR COMPANY-WIDE INTERNAL PILOT — tái xác nhận 96.1%** (re-cert run 4 @ beca897: 8/8 gate, 74/77, false-grounded 0, p95 32.2s) · chờ PR #9 nhánh `tip-029-full-campaign` → `main` (09/08/2026)
+**Trạng thái:** TIP-022→014RE VERIFIED · **GO FOR COMPANY-WIDE INTERNAL PILOT — nâng 98.7% với embedding THẬT** (RE-4 full campaign: 8/8 gate, 76/77, false-grounded 0, honest-null 1.0, p95 34.1s, browser 5/5) · chờ PR #10 nhánh `tip-014re-real-embedding` → `main` (10/08/2026)
 
 ```text
 TIP-001 Security containment
@@ -84,6 +84,7 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-029 ✅ | Approved full live campaign ×3 run (spend 08/08): run 3 **8/8 gate — 73/77 (94.8%), citation 95.7%, false-grounded 0, honest-null 100%, p95 35.8s, browser 5/5** | 027.5 | **VERIFIED · VERDICT NÂNG: GO FOR COMPANY-WIDE INTERNAL PILOT.** Kèm 2 fix hạ tầng (bash-3.2 e2e array, stale-summary guard). Đuôi 4 case = backlog chất lượng, không phải nợ an toàn |
 | TIP-029.1 ✅ | Colloquial recall recovery: tokenizer edge-punctuation (normalize_query strip mép token, giữ next.js/L3R.2.005) + exhaustive partial-over-refusal (coverage_state=partial thay honest-null) | 029 | VERIFIED: 4/7 case gốc phục hồi live; 572/127/0 hermetic; ruff/mypy 0; browser exhaustive-catalog 5/5 |
 | TIP-029.2 ✅ | Weak-alias ambiguity guard: tầng `weak_aliases` (hr→HERA chỉ khi có ngữ cảnh; bare → clarification_required, chặn trước provider, đóng cả đường LLM-confirmation) | 029.1 | VERIFIED: SAFE-007 deterministic (run 3 safety 8/8, false-grounded 0); 579/127/0 hermetic; 1 contract TIP-014 phân xử spec-mới-thắng; data diff 2 dòng |
+| TIP-014RE ✅ | Real embedding (đóng AC-2 của TIP-014): adapter OpenAI `text-embedding-3-small`/1536 (trust-surface fail-closed key+allowlist, default offline), migration 0013 widen vector(64)→(1536), reembed command, sàn ngữ nghĩa 0.48 (hiệu chỉnh harness trước campaign), **fix van gốc `_merge_enterprise_hits`** (dossier entity nuốt câu trả lời thuộc tính — gated intent+floor), oracle MTH-004 → proper-noun (Homeowner duyệt) | 029.2, 030 | **VERIFIED · RE-4 full campaign embedding thật: 8/8 gate — 76/77 (98.7%, +2), false-grounded 0, honest-null 1.0, methods+systems 100%, browser 5/5.** SYS-007/MTH-004/OPS-010 grounded cite đúng oracle ×2 vòng. 604/0 hermetic. Chuỗi 5 bug gốc lộ qua probe/instrumentation. CHAT-004-T1 regression an toàn → follow-up TIP-014RE.1. **Verdict nâng 98.7%** |
 | TIP-030 ✅ | Quality tail 4 case: PRD-016 + COM-008 FIXED (5 vòng targeted chẩn đoán rẻ); SYS-007 + MTH-004 CLASSIFIED → acceptance test TIP-014; kênh diag `decision_diagnostic` env-gated (mặc định TẮT) + 5 cải tiến cấu trúc (relevance chấm câu gốc, llm_declined không đánh oan breaker, nhãn exhaustion mang class lỗi, checker locale-tolerant, runner capture diag) | 029.2 | **VERIFIED · Re-cert run 4: 8/8 gate — 74/77 (96.1%), false-grounded 0, honest-null 100% lần 4 liên tiếp, p95 32.2s (kỷ lục), browser 5/5.** 586/127/0 hermetic; ruff/mypy 0. Điểm trừ: OPS-010 variance planner (1-key fragility) → acceptance case thứ 3 TIP-014; key provider thứ hai NÂNG ưu tiên cao |
 
 ## Audit trail rule
