@@ -1,0 +1,19 @@
+{
+  "checksum": "305b88ae990724980b76d9f44008dce8406f71002546726139b9bd5c892c103a",
+  "generated_file_id": "713e7d40-51a5-48b8-b299-5d28c26acde4",
+  "proof_key": "tip031-document-lifecycle-v1",
+  "render_job_id": "158fe141-30f5-42e9-8db9-21b4959c9e2e",
+  "schema_version": 1,
+  "state": {
+    "approvals": 1,
+    "issuances": 1,
+    "issue_audits": 1,
+    "lifecycle": "revoked",
+    "render_audits": 1,
+    "revocations": 1,
+    "revoke_audits": 1
+  },
+  "template_key": "pilot.factsheet",
+  "verdict": "passed",
+  "version_id": "c54a0459-185d-4ebc-b4d5-da74ac005d0a"
+}

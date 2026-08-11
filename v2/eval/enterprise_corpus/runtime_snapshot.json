@@ -1,0 +1,125 @@
+{
+  "captured_at": "2026-08-11T14:30:42.176120+00:00",
+  "digest_scope": [
+    "active_sot_index_profiles",
+    "canonical_sot",
+    "database_cleanliness",
+    "enterprise_files",
+    "governance",
+    "research"
+  ],
+  "measurements": {
+    "active_sot_index_profiles": [
+      {
+        "dimension": 1536,
+        "model": "text-embedding-3-small"
+      }
+    ],
+    "canonical_sot": {
+      "active_chunks": 219,
+      "active_records": 219,
+      "records_by_source": {
+        "rtr.boms": 3,
+        "rtr.capabilities": 76,
+        "rtr.derived_costs": 1,
+        "rtr.l3_facts": 116,
+        "rtr.prices": 13,
+        "rtr.specs": 10
+      },
+      "source_keys": [
+        "rtr.boms",
+        "rtr.capabilities",
+        "rtr.derived_costs",
+        "rtr.l3_facts",
+        "rtr.prices",
+        "rtr.specs"
+      ]
+    },
+    "database_cleanliness": {
+      "noncanonical_active_records": 74,
+      "state": "mixed_development"
+    },
+    "document_os": {
+      "approvals": 1,
+      "approved_templates": 8,
+      "generated_files": 1,
+      "issuances": 1,
+      "render_jobs": 1,
+      "revocations": 1
+    },
+    "enterprise_files": {
+      "approved_documents": 43,
+      "documents_by_extension": {
+        "docx": 16,
+        "jpg": 3,
+        "pdf": 10,
+        "png": 1,
+        "pptx": 4,
+        "webp": 2,
+        "xlsx": 7
+      },
+      "searchable_chunks": 9046,
+      "sources": [
+        {
+          "chunks": 5723,
+          "classification": "internal",
+          "documents": 22,
+          "name": "TIP-024 Pilot Corpus · internal"
+        },
+        {
+          "chunks": 2272,
+          "classification": "restricted",
+          "documents": 8,
+          "name": "TIP-024 Pilot Corpus · restricted"
+        },
+        {
+          "chunks": 765,
+          "classification": "internal",
+          "documents": 12,
+          "name": "TIP-027 Company Corpus · internal"
+        },
+        {
+          "chunks": 286,
+          "classification": "restricted",
+          "documents": 1,
+          "name": "TIP-027 Company Corpus · restricted"
+        }
+      ]
+    },
+    "governance": {
+      "active_domains": 5,
+      "active_manifests": 5,
+      "active_ontology_revisions": 1,
+      "active_release_attestations": 1
+    },
+    "open_knowledge_gaps": 73,
+    "research": {
+      "active_records_by_source": {
+        "refinery.347cb0585e9b4ce1b0a1e43262eded37": 1,
+        "refinery.3f432c85f77d4852addb0a4f0d90f14b": 1,
+        "refinery.602d1065ae114070abbfbb8c5794b887": 1,
+        "refinery.64ca92bf0cef4386b5b920e886750031": 3,
+        "refinery.8e27c6b3afc34562a36c3fe37f6ea731": 1,
+        "refinery.9504e43cb1044355b6ca68621d351ce0": 2,
+        "refinery.9b95e1c191be4c199a7bd71de1c35989": 2,
+        "refinery.c0020b8629fd4efd89c1bf2e7c11b5fd": 1,
+        "refinery.cd7bdde73061447cbdc7282fd9ec9ad4": 1,
+        "refinery.d326ca564d2643038c47054d9ef91657": 1,
+        "refinery.dash.2b75340819aa": 2,
+        "refinery.e60d94df11b14806a1a42624afed4820": 2,
+        "refinery.ecc9ceda3c2c487b9949d3960296d76c": 1,
+        "refinery.tip013.e7": 1,
+        "refinery.vn-strategic-technology": 70,
+        "theskywatch.registry": 1838
+      },
+      "tier_counts": {
+        "H": 92,
+        "P": 635,
+        "S": 392,
+        "X": 809
+      }
+    }
+  },
+  "schema_version": 1,
+  "snapshot_digest": "e14d045079a40f22003a1348358c1c81abdb0d403d2b48a5322309c46bc86274"
+}

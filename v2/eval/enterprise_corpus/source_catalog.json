@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "snapshot_date": "2026-08-06",
+  "snapshot_date": "2026-08-11",
   "runtime_cleanliness": "mixed_development",
   "measurement_note": "Discovery counts are inventory, not trusted records. Default Ask uses only active SOT chunks and current document versions whose source is enterprise_approved, whose viewer state is ready, and whose resource lineage passes ACL policy.",
   "active_ask_rollup": {
     "sot_chunks": 219,
     "enterprise_documents": 43,
-    "enterprise_file_chunks": 3866,
-    "total_searchable_units": 4085,
+    "enterprise_file_chunks": 9046,
+    "total_searchable_units": 9265,
     "note": "Research is intentionally excluded from this rollup until federated Ask routing is released."
   },
   "active_corpus": [
@@ -24,12 +24,12 @@
       "zone": "private",
       "state": "enterprise_approved",
       "trusted_documents": 30,
-      "searchable_chunks": 3252,
+      "searchable_chunks": 7995,
       "classification_counts": {
         "internal_documents": 22,
-        "internal_chunks": 2096,
+        "internal_chunks": 5723,
         "restricted_documents": 8,
-        "restricted_chunks": 1156
+        "restricted_chunks": 2272
       },
       "source_count": 2,
       "manifest_fingerprint": "1579aee012284e9f536c9b5c757598bb6d865eeebc0354926de1c27e840174a7",
@@ -44,12 +44,12 @@
       "zone": "private",
       "state": "enterprise_approved",
       "trusted_documents": 13,
-      "searchable_chunks": 614,
+      "searchable_chunks": 1051,
       "classification_counts": {
         "internal_documents": 12,
-        "internal_chunks": 463,
+        "internal_chunks": 765,
         "restricted_documents": 1,
-        "restricted_chunks": 151
+        "restricted_chunks": 286
       },
       "domain_counts": {
         "projects": 3,

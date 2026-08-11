@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "release_key": "tip031.company-knowledge",
+  "domains": [
+    {
+      "domain_key": "company",
+      "display_name": "Company Identity",
+      "description": "Legal identity, positioning, leadership and company contact facts.",
+      "classification": "internal",
+      "minimum_eval_cases": 3,
+      "sot_sources": ["rtr.l3_facts"]
+    },
+    {
+      "domain_key": "products",
+      "display_name": "Products & Capabilities",
+      "description": "Approved product portfolio, specifications, pricing, BOM and capabilities.",
+      "classification": "internal",
+      "minimum_eval_cases": 3,
+      "sot_sources": ["rtr.boms", "rtr.capabilities", "rtr.l3_facts", "rtr.prices", "rtr.specs"]
+    },
+    {
+      "domain_key": "methods",
+      "display_name": "Methods & Knowledge Practice",
+      "description": "SOT, Refinery, Vibecode and adversarial audit methods.",
+      "classification": "internal",
+      "minimum_eval_cases": 3,
+      "sot_sources": ["rtr.l3_facts"]
+    },
+    {
+      "domain_key": "systems",
+      "display_name": "Internal Systems",
+      "description": "Approved facts about CRM, MRP, IP, Control Tower and TheSkyWatch.",
+      "classification": "internal",
+      "minimum_eval_cases": 3,
+      "sot_sources": ["rtr.capabilities", "rtr.l3_facts"]
+    },
+    {
+      "domain_key": "operations",
+      "display_name": "Operating Practice",
+      "description": "Sales brief, lead capture, maintenance, warranty and readiness operations.",
+      "classification": "internal",
+      "minimum_eval_cases": 3,
+      "sot_sources": ["rtr.l3_facts"]
+    }
+  ],
+  "suite": {
+    "schema_version": 1,
+    "suite_key": "tip031.company-knowledge.release",
+    "cases": [
+      {
+        "case_id": "company.query.email",
+        "domain_key": "company",
+        "risk_class": "critical",
+        "kind": "query",
+        "question": "email cty là gì",
+        "expectation": {"resolution_state": "resolved", "entity_ids": ["rtr.company.real-time-robotics"]}
+      },
+      {
+        "case_id": "company.retrieval.email",
+        "domain_key": "company",
+        "risk_class": "high",
+        "kind": "retrieval",
+        "question": "email cty là gì",
+        "expectation": {"required_record_keys": ["L3F.1.019"]}
+      },
+      {
+        "case_id": "company.answer.identity",
+        "domain_key": "company",
+        "risk_class": "high",
+        "kind": "answer",
+        "question": "cty mình tên pháp nhân đầy đủ là gì vậy",
+        "expectation": {"answer_state": "grounded", "required_record_keys": ["L3F.ENT.001"], "required_terms": ["REAL-TIME ROBOTICS VIỆT NAM"]}
+      },
+      {
+        "case_id": "products.query.vega",
+        "domain_key": "products",
+        "risk_class": "critical",
+        "kind": "query",
+        "question": "vega tải đc bn kg",
+        "expectation": {"resolution_state": "resolved", "entity_ids": ["rtr.product.vega"]}
+      },
+      {
+        "case_id": "products.retrieval.vega",
+        "domain_key": "products",
+        "risk_class": "high",
+        "kind": "retrieval",
+        "question": "vega tải đc bn kg",
+        "expectation": {"required_record_keys": ["HC-002"]}
+      },
+      {
+        "case_id": "products.answer.portfolio",
+        "domain_key": "products",
+        "risk_class": "high",
+        "kind": "answer",
+        "question": "Các sản phẩm của RtR là gì?",
+        "expectation": {"answer_state": "grounded", "required_record_keys": ["L3R.2.005"], "required_terms": ["HERA", "VEGA", "OmniSight"]}
+      },
+      {
+        "case_id": "products.query.sight-ambiguity",
+        "domain_key": "products",
+        "risk_class": "critical",
+        "kind": "query",
+        "question": "Sight là gì?",
+        "expectation": {"resolution_state": "clarification_required"}
+      },
+      {
+        "case_id": "methods.query.audit",
+        "domain_key": "methods",
+        "risk_class": "critical",
+        "kind": "query",
+        "question": "audit trước meeting khách lớn có mấy vai",
+        "expectation": {"resolution_state": "resolved", "entity_ids": ["rtr.method.adversarial-audit"]}
+      },
+      {
+        "case_id": "methods.retrieval.audit",
+        "domain_key": "methods",
+        "risk_class": "high",
+        "kind": "retrieval",
+        "question": "audit trước meeting khách lớn có mấy vai",
+        "expectation": {"required_record_keys": ["L3F.2.034"]}
+      },
+      {
+        "case_id": "methods.answer.sot",
+        "domain_key": "methods",
+        "risk_class": "high",
+        "kind": "answer",
+        "question": "SOT bên mình tổ chức sao",
+        "expectation": {"answer_state": "grounded", "required_record_keys": ["L3F.2.033"], "required_terms": ["L1", "L2", "L3"]}
+      },
+      {
+        "case_id": "systems.query.crm",
+        "domain_key": "systems",
+        "risk_class": "critical",
+        "kind": "query",
+        "question": "cty có crm không",
+        "expectation": {"resolution_state": "resolved", "entity_ids": ["rtr.system.crm"]}
+      },
+      {
+        "case_id": "systems.retrieval.crm",
+        "domain_key": "systems",
+        "risk_class": "high",
+        "kind": "retrieval",
+        "question": "cty có crm không",
+        "expectation": {"required_record_keys": ["L3F.4.001"]}
+      },
+      {
+        "case_id": "systems.answer.mrp",
+        "domain_key": "systems",
+        "risk_class": "high",
+        "kind": "answer",
+        "question": "MRP làm được gì",
+        "expectation": {"answer_state": "grounded", "required_record_keys": ["L3F.4.003"], "required_terms": ["hoạch định"]}
+      },
+      {
+        "case_id": "systems.query.ip-ambiguity",
+        "domain_key": "systems",
+        "risk_class": "critical",
+        "kind": "query",
+        "question": "IP là gì?",
+        "expectation": {"resolution_state": "clarification_required"}
+      },
+      {
+        "case_id": "operations.query.sales-brief",
+        "domain_key": "operations",
+        "risk_class": "critical",
+        "kind": "query",
+        "question": "Sales Brief bên mình là hệ thống gì?",
+        "expectation": {"resolution_state": "resolved", "entity_ids": ["rtr.system.sales-brief"]}
+      },
+      {
+        "case_id": "operations.retrieval.sales-brief",
+        "domain_key": "operations",
+        "risk_class": "high",
+        "kind": "retrieval",
+        "question": "Sales Brief bên mình là hệ thống gì?",
+        "expectation": {"required_record_keys": ["L3F.2.001"]}
+      },
+      {
+        "case_id": "operations.answer.warranty",
+        "domain_key": "operations",
+        "risk_class": "high",
+        "kind": "answer",
+        "question": "bảo hành HERA mấy tháng",
+        "expectation": {"answer_state": "grounded", "required_record_keys": ["L3F.2.009"], "required_terms": ["24 tháng"]}
+      }
+    ]
+  }
+}

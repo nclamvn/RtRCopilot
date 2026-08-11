@@ -13,7 +13,7 @@ from rtr_copilot.enterprise.models import (
     EvaluationSuiteSpec,
 )
 from rtr_copilot.enterprise.service import EnterpriseService
-from rtr_copilot.rag.ontology import OntologyEntity, OntologySpec
+from rtr_copilot.rag.ontology import EnterpriseOntology, OntologyEntity, OntologySpec
 
 
 def sha(value: str) -> str:
@@ -161,3 +161,45 @@ async def test_full_active_ontology_payload_requires_a_governance_role() -> None
     )
     with pytest.raises(PermissionError, match="governance_role_required"):
         await EnterpriseService().active_ontology(staff, request_id="tip025-role-gate")
+
+
+def test_release_answers_use_the_product_quality_planner(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+    sentinel = object()
+
+    def fake_answer_service(**kwargs: object) -> object:
+        captured.update(kwargs)
+        return sentinel
+
+    monkeypatch.setattr(
+        "rtr_copilot.enterprise.service.AnswerService",
+        fake_answer_service,
+    )
+    ontology = EnterpriseOntology(OntologySpec(
+        schema_version=1,
+        registry_id="enterprise.release-test",
+        owner="Enterprise Architecture",
+        entities=(
+            OntologyEntity(
+                entity_id="company.release-test",
+                canonical_name="Release Test",
+                entity_type="company",
+                domain="company",
+                owner="Enterprise Architecture",
+                provenance_level="approved_internal",
+            ),
+        ),
+    ))
+    retrieval = object()
+
+    built = EnterpriseService()._release_answer_service(  # noqa: SLF001
+        retrieval,  # type: ignore[arg-type]
+        ontology,
+    )
+
+    assert built is sentinel
+    assert captured["ontology"] is ontology
+    assert captured["retrieval"] is retrieval
+    assert "rewriter" not in captured

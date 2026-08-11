@@ -55,6 +55,18 @@ class EnterpriseService:
         self.repository = repository or EnterpriseRepository()
         self.factory = factory
 
+    def _release_answer_service(
+        self,
+        retrieval: RetrievalService,
+        ontology: EnterpriseOntology,
+    ) -> AnswerService:
+        """Build the release evaluator with the product's quality planner."""
+        return AnswerService(
+            factory=self.factory,
+            retrieval=retrieval,
+            ontology=ontology,
+        )
+
     @staticmethod
     def _actor(subject: Subject) -> uuid.UUID:
         return uuid.UUID(subject.user_id)
@@ -492,6 +504,8 @@ class EnterpriseService:
             request_id=request_id,
         )
         cited_keys = [item.record_key for item in response.citations]
+        if response.reason_code == "answer_quality_configuration_required":
+            return False, "answer_quality_configuration_required", cited_keys
         normalized_answer = normalize_query(response.answer)
         passed = (
             response.state == expected.answer_state
@@ -535,12 +549,13 @@ class EnterpriseService:
 
         ontology = EnterpriseOntology(revision.payload)
         retrieval = RetrievalService(factory=self.factory)
-        answer = AnswerService(
-            factory=self.factory,
-            retrieval=retrieval,
-            rewriter=OfflineRewriter(),
-            ontology=ontology,
-        )
+        answer = self._release_answer_service(retrieval, ontology)
+        # Query and retrieval contracts above intentionally exercise the
+        # deterministic ontology path. Answer contracts must exercise the same
+        # quality planner used by the product: forcing OfflineRewriter here
+        # made synthesis questions fail before retrieval whenever external LLM
+        # planning was required, even though the production runtime was fully
+        # configured.
         # Evidence-only mode keeps day-to-day Ask usable, but it must never
         # masquerade as the independently generated/reviewed LLM path required
         # for enterprise release certification.

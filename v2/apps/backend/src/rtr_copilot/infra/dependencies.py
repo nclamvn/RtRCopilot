@@ -10,6 +10,16 @@ from rtr_copilot.config import Settings
 
 Probe = Callable[[], Awaitable[None]]
 
+REQUIRED_SCHEMA_RELATIONS: tuple[str, ...] = (
+    "subjects",
+    "resources",
+    "records",
+    "file_chunks",
+    "render_jobs",
+    "document_publication_outbox",
+    "enterprise_domains",
+)
+
 
 class DatabaseSchemaOutdated(RuntimeError):
     pass
@@ -28,6 +38,15 @@ async def _postgres(settings: Settings) -> None:
             "SELECT version_num FROM alembic_version LIMIT 1",
         )
         if revision != settings.expected_schema_revision:
+            raise DatabaseSchemaOutdated
+        missing = await conn.fetchval(
+            """
+            SELECT count(*) FROM unnest($1::text[]) AS required(name)
+            WHERE to_regclass('public.' || required.name) IS NULL
+            """,
+            list(REQUIRED_SCHEMA_RELATIONS),
+        )
+        if missing:
             raise DatabaseSchemaOutdated
     finally:
         await conn.close()

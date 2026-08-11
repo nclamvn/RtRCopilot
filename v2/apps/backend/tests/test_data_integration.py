@@ -125,7 +125,7 @@ async def test_schema_extensions_revision_and_identity_adapter_parity(
         extensions = set((await session.execute(text(
             "SELECT extname FROM pg_extension WHERE extname IN ('pgcrypto','vector')",
         ))).scalars())
-    assert revision == "0013_real_embedding_dim"
+    assert revision == "0014_document_outbox_repair"
     assert extensions == {"pgcrypto", "vector"}
 
     repository = PostgresSubjectRepository(factory)
@@ -165,7 +165,7 @@ async def test_schema_extensions_revision_and_identity_adapter_parity(
         await _postgres(settings)
     async with owner_factory_from_dsn() as session, session.begin():
         await session.execute(text(
-            "UPDATE alembic_version SET version_num='0013_real_embedding_dim'",
+            "UPDATE alembic_version SET version_num='0014_document_outbox_repair'",
         ))
 
 

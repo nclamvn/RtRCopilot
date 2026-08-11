@@ -1,0 +1,98 @@
+{
+  "captured_at": "2026-08-11T14:30:45.550668+00:00",
+  "connectors": [
+    {
+      "credential_configured": false,
+      "endpoint_configured": false,
+      "readiness": "contract_ready",
+      "reasons": [
+        "approved_read_only_endpoint_not_configured",
+        "connector_credential_not_configured"
+      ],
+      "repository_discovered": true,
+      "stable_key": "rtr.crm"
+    },
+    {
+      "credential_configured": false,
+      "endpoint_configured": false,
+      "readiness": "contract_ready",
+      "reasons": [
+        "approved_read_only_endpoint_not_configured",
+        "connector_credential_not_configured"
+      ],
+      "repository_discovered": true,
+      "stable_key": "rtr.mrp"
+    },
+    {
+      "credential_configured": false,
+      "endpoint_configured": false,
+      "readiness": "contract_ready",
+      "reasons": [
+        "approved_read_only_endpoint_not_configured",
+        "connector_credential_not_configured"
+      ],
+      "repository_discovered": true,
+      "stable_key": "rtr.ip"
+    },
+    {
+      "credential_configured": false,
+      "endpoint_configured": false,
+      "readiness": "blocked",
+      "reasons": [
+        "authoritative_repository_not_discovered",
+        "Authoritative HRM repository, owner and export contract are not yet confirmed.",
+        "approved_read_only_endpoint_not_configured",
+        "connector_credential_not_configured"
+      ],
+      "repository_discovered": false,
+      "stable_key": "rtr.hrm"
+    }
+  ],
+  "counts": {
+    "active": 0,
+    "blocked": 1,
+    "contract_ready": 3
+  },
+  "federation_plans": {
+    "company": {
+      "answer_contract": "company_grounded",
+      "company_hit_budget": 12,
+      "preserve_zone_labels": true,
+      "research_hit_budget": 0,
+      "research_never_promotes_to_sot": true,
+      "scope": "company",
+      "zones": [
+        "sot",
+        "private"
+      ]
+    },
+    "federated": {
+      "answer_contract": "federated_segmented",
+      "company_hit_budget": 12,
+      "preserve_zone_labels": true,
+      "research_hit_budget": 4,
+      "research_never_promotes_to_sot": true,
+      "scope": "federated",
+      "zones": [
+        "sot",
+        "private",
+        "research"
+      ]
+    },
+    "research": {
+      "answer_contract": "research_supported",
+      "company_hit_budget": 0,
+      "preserve_zone_labels": true,
+      "research_hit_budget": 8,
+      "research_never_promotes_to_sot": true,
+      "scope": "research",
+      "zones": [
+        "research"
+      ]
+    }
+  },
+  "production_ready": false,
+  "registry_digest": "1125b7936ccbf461218716b844ac7c0dbb821b96224deb9b64b8a7a4c8049471",
+  "schema_version": 1,
+  "verdict": "contract_ready_not_connected"
+}

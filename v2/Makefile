@@ -1,8 +1,8 @@
 SHELL := /bin/bash
-RTR_BUILD_SHA ?= $(shell git rev-parse --short=12 HEAD 2>/dev/null || echo development)
+RTR_BUILD_SHA ?= $(shell ./scripts/build-identity.sh)
 export RTR_BUILD_SHA
 
-.PHONY: dev verify e2e-enterprise answer-runtime-check answer-runtime-refresh migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
+.PHONY: dev verify e2e-enterprise answer-runtime-check answer-runtime-refresh pilot-up pilot-check pilot-down enterprise-release inventory-snapshot inventory-check document-lifecycle-proof connector-readiness migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
 
 # TIP-012 Task 1 — hardened profile (TLS ingress fronts everything, AC-01).
 # Requires the ingress hostname to resolve to 127.0.0.1 for probes/browsers:
@@ -38,6 +38,52 @@ answer-runtime-check:
 answer-runtime-refresh:
 	docker compose --env-file "$(ANSWER_ENV_FILE)" up -d --build --force-recreate api worker web
 	$(MAKE) answer-runtime-check ANSWER_ENV_FILE="$(ANSWER_ENV_FILE)"
+
+PILOT_KERNEL_ROOT ?= $(abspath ../../_Architecture)
+
+pilot-up:
+	./scripts/local-demo.sh --kernel-root "$(PILOT_KERNEL_ROOT)"
+	$(MAKE) pilot-check
+
+pilot-check:
+	./scripts/verify-pilot-database.sh
+
+pilot-down:
+	./scripts/local-demo.sh --down
+
+enterprise-release:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" exec -T api \
+		python -m rtr_copilot.commands.bootstrap_enterprise_release --approve
+
+INVENTORY_OUTPUT ?= /app/eval/enterprise_corpus/runtime_snapshot.json
+
+inventory-snapshot:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \
+		-v "$(CURDIR)/eval:/app/eval" api \
+		python -m rtr_copilot.commands.snapshot_enterprise_inventory \
+		--output "$(INVENTORY_OUTPUT)"
+
+inventory-check:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \
+		-v "$(CURDIR)/eval:/app/eval:ro" api \
+		python -m rtr_copilot.commands.snapshot_enterprise_inventory \
+		--output "$(INVENTORY_OUTPUT)" --check
+
+document-lifecycle-proof:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \
+		-v "$(CURDIR)/eval:/app/eval" api \
+		python -m rtr_copilot.commands.prove_document_lifecycle --approve \
+		--report /app/eval/document_os/runtime_lifecycle_proof.json
+
+RTR_ECOSYSTEM_ROOT ?= $(abspath ../../..)
+
+connector-readiness:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \
+		-v "$(RTR_ECOSYSTEM_ROOT):/ecosystem:ro" \
+		-v "$(CURDIR)/eval:/app/eval" api \
+		python -m rtr_copilot.commands.snapshot_connector_readiness \
+		--rtr-root /ecosystem \
+		--output /app/eval/enterprise_corpus/connector_readiness.json
 
 migrate:
 	docker compose --profile tools run --rm migrate

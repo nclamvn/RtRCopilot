@@ -807,7 +807,10 @@ export default function AskPage() {
   // surface changes, or the persisted transcript grows, scroll the sentinel at
   // the bottom of the thread into view (chat-client behaviour).
   useEffect(() => {
-    threadEndRef.current?.scrollIntoView({behavior: "smooth", block: "end"});
+    const sentinel = threadEndRef.current;
+    if (typeof sentinel?.scrollIntoView === "function") {
+      sentinel.scrollIntoView({behavior: "smooth", block: "end"});
+    }
   }, [lastQuestion, answer, asking, conversation]);
 
   // Best-effort gap detail after honest-null (state shown when readable).

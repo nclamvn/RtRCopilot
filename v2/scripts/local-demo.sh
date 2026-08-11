@@ -2,7 +2,8 @@
 # =============================================================================
 # TIP-013B · LOCAL/dev one-command demo runner  (NOT production)
 # =============================================================================
-# Brings up the RtR Copilot v2 stack on the Homeowner's own machine, activates
+# Brings up an ISOLATED RtR Copilot pilot stack on the Homeowner's own machine,
+# activates
 # the curated real-kernel batch (219 facts) through the REAL curator-gated
 # publish gate, indexes it for RAG, and serves a reachable browser UI at
 # http://localhost:3000.
@@ -10,7 +11,7 @@
 # Everything here is LOCAL/dev:
 #   * identity  = dev-OIDC (no corporate IdP; a click-through login)
 #   * signing   = a random SOT_SIGNING_SECRET generated on first run and reused
-#   * database  = a throwaway compose Postgres volume
+#   * database  = a dedicated compose project/volume, never the dev database
 # It fabricates NO production credentials and claims NO production readiness.
 #
 # Requirements on the Homeowner's machine:
@@ -30,6 +31,9 @@ set -euo pipefail
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$project_root"
 
+PILOT_PROJECT_NAME="${PILOT_PROJECT_NAME:-rtr-copilot-pilot}"
+PILOT_ENV_FILE="${PILOT_ENV_FILE:-.env.pilot}"
+
 # ---- args -------------------------------------------------------------------
 KERNEL_ROOT="${KERNEL_ROOT:-}"
 ACTION="up"
@@ -42,12 +46,14 @@ for ((i = 1; i <= $#; i++)); do
   esac
 done
 
-compose() { docker compose --env-file .env.demo "$@"; }
+compose() {
+  docker compose -p "$PILOT_PROJECT_NAME" --env-file "$PILOT_ENV_FILE" "$@"
+}
 
 if [[ "$ACTION" == "down" ]]; then
-  echo "==> Tearing down the LOCAL demo stack (volumes removed)…"
+  echo "==> Tearing down isolated pilot '$PILOT_PROJECT_NAME' (pilot volumes only)…"
   compose down -v || true
-  echo "Done. (kept .env.demo so the signing secret is stable on next run)"
+  echo "Done. (kept $PILOT_ENV_FILE so the signing secret is stable on next run)"
   exit 0
 fi
 
@@ -68,39 +74,45 @@ echo "==> kernel snapshot: $KERNEL_ROOT (read-only)"
 # ---- preflight --------------------------------------------------------------
 command -v docker >/dev/null || { echo "ERROR: docker not found" >&2; exit 1; }
 docker compose version >/dev/null 2>&1 || { echo "ERROR: docker compose v2 required" >&2; exit 1; }
-export RTR_BUILD_SHA="${RTR_BUILD_SHA:-$(git rev-parse --short=12 HEAD 2>/dev/null || echo development)}"
+export RTR_BUILD_SHA="${RTR_BUILD_SHA:-$(./scripts/build-identity.sh)}"
 
-# ---- build the demo env (compose reads .env.demo) --------------------------
+# ---- build the pilot env (compose reads the isolated env file) -------------
 # Reuse the base .env values (internal compose hostnames) and OVERLAY the LOCAL
 # demo bits: dev-OIDC on, a freshly generated signing secret (persisted so the
 # stack is stable across restarts), and a fresh demo database name.
-if [[ ! -f .env.demo ]]; then
-  echo "==> Generating .env.demo (first run) with a random SOT_SIGNING_SECRET…"
+if [[ ! -f "$PILOT_ENV_FILE" ]]; then
+  echo "==> Generating $PILOT_ENV_FILE with a random SOT_SIGNING_SECRET…"
   SECRET="$(docker run --rm python:3.12-alpine python -c 'import secrets;print(secrets.token_hex(32))' 2>/dev/null \
             || python3 -c 'import secrets;print(secrets.token_hex(32))')"
-  # start from the committed .env (base infra wiring), then override.
-  cp .env .env.demo
+  # Reuse the approved quality configuration when available. The copied file
+  # is ignored by Git and the pilot gets a separate compose namespace/volumes.
+  source_env=".env"
+  [[ -f .env.demo ]] && source_env=".env.demo"
+  cp "$source_env" "$PILOT_ENV_FILE"
   {
     echo ""
     echo "# ---- TIP-013B LOCAL demo overlay (generated $(date -u +%FT%TZ)) ----"
     echo "APP_ENV=development"
     echo "DEV_OIDC_ENABLED=true"
     echo "SESSION_COOKIE_SECURE=false"
-    echo "EXPECTED_SCHEMA_REVISION=0013_real_embedding_dim"
+    echo "EXPECTED_SCHEMA_REVISION=0014_document_outbox_repair"
     echo "SOT_SIGNING_SECRET=${SECRET}"
     echo "SOT_STAGING_ROOT=/tmp/rtr-sot-staging"
-    echo "RAG_PROVIDER_MODE=local"
-  } >> .env.demo
+    echo "API_PORT=18100"
+    echo "WEB_PORT=3100"
+    echo "MINIO_CONSOLE_PORT=9101"
+    echo "PUBLIC_BASE_URL=http://127.0.0.1:3100"
+  } >> "$PILOT_ENV_FILE"
 else
-  echo "==> Reusing existing .env.demo (stable signing secret)."
+  echo "==> Reusing $PILOT_ENV_FILE (stable pilot identity and volumes)."
 fi
 
 # ---- 1) infra: postgres + redis + minio (+ bucket) --------------------------
-echo "==> [1/6] Building images and starting infra (postgres, redis, minio)…"
+echo "==> [1/6] Building images and starting isolated infra…"
 if [[ "${RTR_REBUILD:-}" == "1" ]]; then compose build --no-cache api web; else compose build api web; fi
-compose up -d postgres redis minio minio-init
+compose up -d postgres redis minio minio-init clamav
 echo "    waiting for infra health…"
-compose up -d --wait postgres redis minio || true
+compose up -d --wait postgres redis minio clamav
 
 # ---- 2) migrate to head -----------------------------------------------------
 echo "==> [2/6] Migrating database to head (alembic upgrade head)…"
@@ -138,7 +150,7 @@ echo "==> [6/6] Starting api + worker + web…"
 echo "    runtime build: $RTR_BUILD_SHA"
 compose up -d --wait --build --force-recreate api worker web || compose up -d --build --force-recreate api worker web
 
-WEB_PORT="$(grep -E '^WEB_PORT=' .env.demo | tail -1 | cut -d= -f2 || echo 3000)"
+WEB_PORT="$(grep -E '^WEB_PORT=' "$PILOT_ENV_FILE" | tail -1 | cut -d= -f2 || echo 3100)"
 WEB_PORT="${WEB_PORT:-3000}"
 
 cat <<EOF
@@ -146,7 +158,8 @@ cat <<EOF
 =============================================================================
   LOCAL demo is UP  —  open:  http://localhost:${WEB_PORT}
 =============================================================================
-  * This is a LOCAL/dev stack (dev-OIDC, locally-generated signing secret).
+  * Isolated project: ${PILOT_PROJECT_NAME} (never shares dev volumes).
+  * This is a LOCAL/pilot stack (dev-OIDC, locally-generated signing secret).
   * Login: click "Sign in" — dev-OIDC logs you in as staff@rtrobotics.com
     (role: staff) with NO password. It is NOT a corporate account.
   * 219 real kernel facts are live and answerable with citations + the
@@ -154,7 +167,7 @@ cat <<EOF
         - "Maximum payload capacity"   (HERA payload — grounded)
         - "HERA MTOW"                  (HC-001 — grounded + caveat)
         - "VEGA giá bao nhiêu"         (VEGA price — grounded + caveat)
-  * API:   http://localhost:$(grep -E '^API_PORT=' .env.demo | tail -1 | cut -d= -f2 || echo 8000)
+  * API:   http://localhost:$(grep -E '^API_PORT=' "$PILOT_ENV_FILE" | tail -1 | cut -d= -f2 || echo 18100)
   * Tear down:  scripts/local-demo.sh --down
 =============================================================================
 EOF

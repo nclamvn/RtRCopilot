@@ -13,7 +13,7 @@ from rtr_copilot.config import get_settings
 from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.ingestion.extractors import Artifact
 from rtr_copilot.ingestion.file_index import index_artifact
-from rtr_copilot.rag.adapters import OfflineHashEmbedding
+from rtr_copilot.rag.adapters import build_embedding_adapter
 from rtr_copilot.storage.s3 import S3ObjectStorage
 
 
@@ -40,7 +40,11 @@ async def backfill(*, limit: int | None = None) -> dict[str, int]:
             LIMIT :limit
         """), {"limit": limit})).mappings().all()
     indexed_renditions = indexed_chunks = skipped = 0
-    embedding = OfflineHashEmbedding(settings.rag_embedding_dimension)
+    # Backfills must share the exact semantic space used by ingestion and
+    # query retrieval. Constructing the offline adapter directly here used to
+    # create numerically compatible but semantically incompatible vectors when
+    # the runtime was configured for OpenAI embeddings.
+    embedding = build_embedding_adapter(settings)
     for row in rows:
         target = io.BytesIO()
         await storage.download_to(str(row["object_key"]), target)

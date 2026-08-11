@@ -162,11 +162,14 @@ def build_inventory(rtr_root: Path, knowledge_root: Path) -> EcosystemInventory:
             root=str(rtr_root / "crm"),
             owner_boundary="Sales / account owner",
             classification="restricted by account and field",
-            adapter=None,
+            adapter="enterprise-readonly-connector-v1 (contract only)",
             record_count=None,
             document_count=_document_count(rtr_root / "crm"),
             structured_file_count=_structured_count(rtr_root / "crm"),
-            gate="Read-only API, row/field ACL, purpose limitation, deletion propagation",
+            gate=(
+                "Contract ready; approved endpoint, service credential and "
+                "owner sign-off required"
+            ),
         ),
         SourceInventoryItem(
             source_key="rtr.mrp",
@@ -176,11 +179,14 @@ def build_inventory(rtr_root: Path, knowledge_root: Path) -> EcosystemInventory:
             root=str(rtr_root / "rtr-mrp"),
             owner_boundary="Operations / finance / quality",
             classification="restricted by function and field",
-            adapter=None,
+            adapter="enterprise-readonly-connector-v1 (contract only)",
             record_count=None,
             document_count=_document_count(rtr_root / "rtr-mrp"),
             structured_file_count=_structured_count(rtr_root / "rtr-mrp"),
-            gate="Read-only projection, field ACL and transactional freshness SLA",
+            gate=(
+                "Contract ready; approved endpoint, service credential and "
+                "owner sign-off required"
+            ),
         ),
         SourceInventoryItem(
             source_key="rtr.ip",
@@ -190,11 +196,14 @@ def build_inventory(rtr_root: Path, knowledge_root: Path) -> EcosystemInventory:
             root=str(rtr_root / "ip"),
             owner_boundary="IP/legal owner",
             classification="restricted to highly_restricted",
-            adapter=None,
+            adapter="enterprise-readonly-connector-v1 (contract only)",
             record_count=None,
             document_count=_document_count(rtr_root / "ip"),
             structured_file_count=_structured_count(rtr_root / "ip"),
-            gate="Matter-level ACL, privilege label and immutable audit trail",
+            gate=(
+                "Contract ready; privilege-preserving endpoint, credential and "
+                "legal sign-off required"
+            ),
         ),
         SourceInventoryItem(
             source_key="rtr.hrm",

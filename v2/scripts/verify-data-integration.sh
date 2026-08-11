@@ -214,6 +214,9 @@ owner_sql "SELECT format_type(atttypid, atttypmod) FROM pg_attribute
   WHERE attrelid='chunks'::regclass AND attname='embedding'" \
   | grep -q "vector(64)"
 run_migration upgrade 0013_real_embedding_dim
+run_migration upgrade 0014_document_outbox_repair
+owner_sql "SELECT to_regclass('public.document_publication_outbox') IS NOT NULL" \
+  | grep -q "t"
 run_migration downgrade 0004_append_only_audit
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NULL" | grep -q "t"
 run_migration upgrade 0005_ingestion_renditions
