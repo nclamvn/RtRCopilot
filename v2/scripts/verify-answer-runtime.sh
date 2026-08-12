@@ -5,6 +5,7 @@ project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$project_root"
 
 env_file="${ANSWER_ENV_FILE:-.env.demo}"
+compose_project="${ANSWER_COMPOSE_PROJECT_NAME:-}"
 if [[ ! -f "$env_file" ]]; then
   echo "ANSWER RUNTIME FAIL · env file not found: $env_file" >&2
   exit 2
@@ -26,14 +27,24 @@ desired_embedding_dimension="$(read_env RAG_EMBEDDING_DIMENSION)"
 desired_embedding_dimension="${desired_embedding_dimension:-1536}"
 desired_embedding_model="$(read_env RAG_EMBEDDING_OPENAI_MODEL)"
 desired_embedding_model="${desired_embedding_model:-text-embedding-3-small}"
+desired_review_mode="$(read_env RAG_REVIEW_MODE)"
+desired_review_mode="${desired_review_mode:-on_demand}"
+desired_metadata_page_size="$(read_env RAG_METADATA_PAGE_SIZE)"
+desired_metadata_page_size="${desired_metadata_page_size:-1000}"
 desired_openai="$(read_env OPENAI_API_KEY)"
 desired_anthropic="$(read_env ANTHROPIC_API_KEY)"
 # The Makefile exports the checkout SHA and therefore intentionally overrides
 # a stale value in an operator env file. Direct script callers get the same
 # immutable default instead of silently publishing `development`.
-desired_build_sha="${RTR_BUILD_SHA:-$(git rev-parse --short=12 HEAD)}"
+desired_build_sha="${RTR_BUILD_SHA:-$(./scripts/build-identity.sh)}"
 
-api_id="$(docker compose --env-file "$env_file" ps -q api)"
+compose=(docker compose)
+if [[ -n "$compose_project" ]]; then
+  compose+=(-p "$compose_project")
+fi
+compose+=(--env-file "$env_file")
+
+api_id="$("${compose[@]}" ps -q api)"
 if [[ -z "$api_id" ]]; then
   echo "ANSWER RUNTIME FAIL · api container is not running" >&2
   exit 1
@@ -41,7 +52,7 @@ fi
 
 container_env() {
   local key="$1"
-  docker compose --env-file "$env_file" exec -T api printenv "$key" 2>/dev/null || true
+  "${compose[@]}" exec -T api printenv "$key" 2>/dev/null || true
 }
 
 actual_provider="$(container_env RAG_PROVIDER_MODE)"
@@ -51,6 +62,8 @@ actual_source="$(container_env RAG_EXTERNAL_CREDENTIAL_SOURCE)"
 actual_embedding_provider="$(container_env RAG_EMBEDDING_PROVIDER)"
 actual_embedding_dimension="$(container_env RAG_EMBEDDING_DIMENSION)"
 actual_embedding_model="$(container_env RAG_EMBEDDING_OPENAI_MODEL)"
+actual_review_mode="$(container_env RAG_REVIEW_MODE)"
+actual_metadata_page_size="$(container_env RAG_METADATA_PAGE_SIZE)"
 actual_build_sha="$(container_env RTR_BUILD_SHA)"
 
 failures=()
@@ -68,12 +81,14 @@ compare_value RAG_EXTERNAL_CREDENTIAL_SOURCE "$desired_source" "$actual_source"
 compare_value RAG_EMBEDDING_PROVIDER "$desired_embedding_provider" "$actual_embedding_provider"
 compare_value RAG_EMBEDDING_DIMENSION "$desired_embedding_dimension" "$actual_embedding_dimension"
 compare_value RAG_EMBEDDING_OPENAI_MODEL "$desired_embedding_model" "$actual_embedding_model"
+compare_value RAG_REVIEW_MODE "$desired_review_mode" "$actual_review_mode"
+compare_value RAG_METADATA_PAGE_SIZE "$desired_metadata_page_size" "$actual_metadata_page_size"
 compare_value RTR_BUILD_SHA "$desired_build_sha" "$actual_build_sha"
 
 desired_has_credential=false
 actual_has_credential=false
 [[ -n "$desired_openai" || -n "$desired_anthropic" ]] && desired_has_credential=true
-if docker compose --env-file "$env_file" exec -T api sh -lc \
+if "${compose[@]}" exec -T api sh -lc \
   'test -n "${OPENAI_API_KEY:-}" || test -n "${ANTHROPIC_API_KEY:-}"'; then
   actual_has_credential=true
 fi
@@ -102,7 +117,7 @@ fi
 # vector is still invalid when produced by a different model, so compare both.
 # file_chunks did not originally persist a model id; its dimensionality is
 # checked here and model provenance is closed by TIP-031 P1 migration/tooling.
-index_profiles="$(docker compose --env-file "$env_file" exec -T postgres sh -lc \
+index_profiles="$("${compose[@]}" exec -T postgres sh -lc \
   'exec psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At' <<'SQL'
 SELECT DISTINCT sg.embedding_model || ':' || sg.embedding_dimension::text
 FROM search_generations sg
@@ -116,7 +131,7 @@ if [[ "$index_profiles" != "$expected_index_profile" ]]; then
   failures+=("active SOT index profile is '$index_profiles', expected '$expected_index_profile'")
 fi
 
-file_dimensions="$(docker compose --env-file "$env_file" exec -T postgres sh -lc \
+file_dimensions="$("${compose[@]}" exec -T postgres sh -lc \
   'exec psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At' <<'SQL'
 SELECT DISTINCT vector_dims(embedding)::text
 FROM file_chunks

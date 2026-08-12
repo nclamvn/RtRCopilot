@@ -97,6 +97,10 @@ class Settings(BaseSettings):
     rag_query_max_bytes: int = Field(default=4096, ge=64, le=32768)
     rag_candidate_limit: int = Field(default=200, ge=1, le=1000)
     rag_metadata_scan_limit: int = Field(default=5000, ge=1, le=20000)
+    # Metadata carries authorization attributes, not answer content. Read it in
+    # larger bounded pages than the final semantic candidate set to remove DB
+    # round trips without expanding what can reach the provider.
+    rag_metadata_page_size: int = Field(default=1000, ge=1, le=5000)
     rag_retrieval_timeout_ms: int = Field(default=2000, ge=100, le=10000)
     rag_top_k: int = Field(default=5, ge=1, le=20)
     rag_answer_candidate_k: int = Field(default=12, ge=1, le=20)
@@ -153,6 +157,10 @@ class Settings(BaseSettings):
     rag_review_reasoning_effort: Literal[
         "none", "low", "medium", "high", "xhigh", "max",
     ] = "low"
+    # ``on_demand`` lets deterministic grounding prove ordinary candidates
+    # first and spends a semantic reviewer call only for non-lexical support.
+    # ``always`` is the explicit operational rollback mode.
+    rag_review_mode: Literal["always", "on_demand"] = "on_demand"
     rag_answer_timeout_seconds: float = Field(default=45.0, ge=1.0, le=120.0)
     rag_answer_max_output_tokens: int = Field(default=4096, ge=256, le=32768)
     rag_review_max_output_tokens: int = Field(default=256, ge=128, le=2048)

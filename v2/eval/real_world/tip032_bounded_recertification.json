@@ -1,0 +1,298 @@
+{
+  "campaign": "TIP-026 real-world enterprise acceptance · HTTP E2E",
+  "case_limit": null,
+  "computed_at": "2026-08-12T02:14:42.710286+00:00",
+  "database_digest": null,
+  "full_campaign_size": 77,
+  "gates": {
+    "citation_accuracy": true,
+    "false_grounded_count": true,
+    "follow_up_pass_rate": true,
+    "grounded_success_rate": true,
+    "honest_null_precision": true,
+    "minimum_domain_pass_rate": true,
+    "overall_pass_rate": true,
+    "p95_latency_ms": true
+  },
+  "metrics": {
+    "citation_accuracy": 1.0,
+    "domains": {
+      "methods": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "operations": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "product": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      },
+      "systems": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      }
+    },
+    "failed": 0,
+    "false_grounded_count": 0,
+    "follow_up_pass_rate": 1.0,
+    "grounded_expected": 5,
+    "grounded_success_rate": 1.0,
+    "honest_null_expected": 0,
+    "honest_null_precision": 1.0,
+    "overall_pass_rate": 1.0,
+    "p50_latency_ms": 15176.542,
+    "p95_latency_ms": 45085.794,
+    "passed": 5,
+    "shapes": {
+      "audit": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "broad": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "clean": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "definition": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "enumeration": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "event": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "exhaustive": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "features": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "multi_intent": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "short": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "specific": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "technical": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      }
+    },
+    "total": 5
+  },
+  "ontology_digest": null,
+  "passed": true,
+  "provider": "http-runtime",
+  "results": [
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.1.027"
+      ],
+      "decision_diagnostic": null,
+      "domain": "operations",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "OPS-010",
+      "latency_ms": 15176.542,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "f2289bed3e59fa64bb7aa68962762e87b723f16387f6b45ca7a1cf0789c67777",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "event",
+        "specific"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.4.011"
+      ],
+      "decision_diagnostic": null,
+      "domain": "systems",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "SYS-007",
+      "latency_ms": 5485.595,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "8e48984621835045548b6d085a0c2d8af4e7db60842b00deb4d0c97a279dc7c6",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "technical",
+        "short"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.2.035"
+      ],
+      "decision_diagnostic": null,
+      "domain": "methods",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "MTH-004",
+      "latency_ms": 12706.726,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "defb2dc6ad2aa78fbea13a6effb56ad7e638847add2eeccc3944d74f0289b37b",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "broad",
+        "audit"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-001",
+        "L3F.PRD.001",
+        "HC-004",
+        "HC-017",
+        "L3F.1.008",
+        "HC-011",
+        "HC-050",
+        "L3F.RES.003",
+        "L3F.2.015",
+        "PRICE.HERA.MSRP.US",
+        "L3F.2.007",
+        "L3F.2.009",
+        "L3F.2.022"
+      ],
+      "decision_diagnostic": null,
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-001",
+      "latency_ms": 45085.794,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "bb757602a0f2492014c890b50db2faf2ee11ef029c07642a030dafea9942afd5",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "clean",
+        "definition"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3R.2.005",
+        "HC-001",
+        "HC-002",
+        "L3F.1.011",
+        "HC-017",
+        "L3F.1.008",
+        "HC-019",
+        "HC-010",
+        "HC-011",
+        "HC-057",
+        "HC-013",
+        "HC-012",
+        "HC-014",
+        "HC-058"
+      ],
+      "decision_diagnostic": null,
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-023",
+      "latency_ms": 44419.15,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "675bfd26979b4a27cd4b5d06ef880be0feecab5e544bf1d0f5083e21fcd10e31",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "enumeration",
+        "exhaustive",
+        "multi_intent",
+        "features"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    }
+  ],
+  "run_id": "12093a3e-2689-40dd-a0d8-24d2524058f1",
+  "schema_version": 1,
+  "selected_case_ids": [
+    "OPS-010",
+    "SYS-007",
+    "MTH-004",
+    "PRD-001",
+    "PRD-023"
+  ],
+  "subject_digest": "19d41eca291e2d93647b635f80891d5aa9e752519ce315895e17bb5b01954aa8",
+  "thresholds": {
+    "citation_accuracy": 0.95,
+    "false_grounded_count": 0,
+    "follow_up_pass_rate": 0.8,
+    "grounded_success_rate": 0.9,
+    "honest_null_precision": 1.0,
+    "minimum_domain_pass_rate": 0.8,
+    "overall_pass_rate": 0.9,
+    "p95_latency_ms": 60000.0
+  }
+}

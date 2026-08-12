@@ -1,0 +1,14 @@
+{
+  "captured_at": "2026-08-12T01:48:55.899777+00:00",
+  "contract_digest": "eaec09848c152353907c4fdb846bc8dea0dda2aa8856df825a61fd9863054d7e",
+  "direct_database_access": false,
+  "read_only": true,
+  "readiness": "contract_ready",
+  "reasons": [
+    "approved_read_only_endpoint_not_configured",
+    "connector_credential_not_configured"
+  ],
+  "schema_version": 1,
+  "stable_key": "rtr.crm",
+  "verdict": "blocked_not_connected"
+}

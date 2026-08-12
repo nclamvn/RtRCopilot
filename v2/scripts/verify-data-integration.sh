@@ -246,7 +246,7 @@ docker compose --profile tools run --rm --no-deps --build \
   -e PYTHONPATH=/workspace/src \
   migrate sh -ec '
     /app/.venv/bin/python -m ensurepip >/dev/null
-    /app/.venv/bin/python -m pip install --quiet \
+    /app/.venv/bin/python -m pip install --quiet --retries 5 --timeout 180 \
       pytest==8.4.1 pytest-asyncio==1.1.0
     /app/.venv/bin/python -m pytest -q \
       -o asyncio_default_test_loop_scope=session \

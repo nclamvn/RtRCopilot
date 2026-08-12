@@ -9,12 +9,15 @@ Covers the four laws of the lane:
 4. Offline stub keeps working at the new schema dimension.
 """
 
+import asyncio
 import json
 import math
+import uuid
 
 import httpx
 import pytest
 
+from rtr_copilot.auth.models import Subject
 from rtr_copilot.config import Settings
 from rtr_copilot.rag.adapters import (
     EMBEDDING_BATCH_SIZE,
@@ -23,6 +26,7 @@ from rtr_copilot.rag.adapters import (
     OpenAIEmbedding,
     build_embedding_adapter,
 )
+from rtr_copilot.rag.models import SearchFilters
 from rtr_copilot.rag.retrieval import RetrievalService
 
 
@@ -147,6 +151,41 @@ class TestQueryPathDegrade:
         assert vector is not None
         assert len(vector) == 1536
         assert service.trace.embedding_degraded is False
+
+    @pytest.mark.asyncio
+    async def test_embedding_starts_before_metadata_authorization_scan(self) -> None:
+        started = asyncio.Event()
+        release = asyncio.Event()
+
+        class OverlapRetrieval(RetrievalService):
+            async def _query_vector(self, terms_text: str) -> list[float] | None:
+                del terms_text
+                started.set()
+                await release.wait()
+                return [0.0] * 1536
+
+            async def _metadata(self, *args: object, **kwargs: object) -> list[dict]:
+                del args, kwargs
+                await asyncio.wait_for(started.wait(), timeout=0.5)
+                release.set()
+                return []
+
+        service = OverlapRetrieval(Settings())
+        subject = Subject(
+            user_id=str(uuid.uuid4()),
+            issuer="https://issuer.test",
+            sub="overlap-test",
+            email="staff@rtrobotics.com",
+            canonical_domain="rtrobotics.com",
+        )
+        hits = await service.search(
+            subject,
+            "HERA là gì?",
+            filters=SearchFilters(source_key="test.source"),
+            request_id="overlap-test",
+        )
+        assert hits == []
+        assert started.is_set()
 
 
 class TestOfflineStubAtSchemaDimension:

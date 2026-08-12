@@ -57,4 +57,19 @@ if [[ "$canonical_records" -lt 219 ]]; then
   exit 1
 fi
 
-echo "PILOT DATABASE PASS · project=$pilot_project · schema=$schema_revision · canonical_records=$canonical_records · unexpected_sources=0"
+# Certify the answer-quality runtime inside the same isolated Compose project;
+# checking the default dev stack here would create a false pilot PASS.
+ANSWER_ENV_FILE="$pilot_env" \
+ANSWER_COMPOSE_PROJECT_NAME="$pilot_project" \
+  ./scripts/verify-answer-runtime.sh
+
+active_connectors="$("${compose[@]}" run --rm -T \
+  -v "${RTR_ECOSYSTEM_ROOT:-$(cd ../../.. && pwd)}:/ecosystem:ro" api \
+  python -m rtr_copilot.commands.snapshot_connector_readiness \
+  --rtr-root /ecosystem | jq -r '.counts.active')"
+if [[ "$active_connectors" != "0" ]]; then
+  echo "PILOT DATABASE FAIL · unexpected active enterprise connectors: $active_connectors" >&2
+  exit 1
+fi
+
+echo "PILOT DATABASE PASS · project=$pilot_project · schema=$schema_revision · canonical_records=$canonical_records · unexpected_sources=0 · active_connectors=0 · answer_runtime=ready"

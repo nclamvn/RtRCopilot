@@ -457,9 +457,11 @@ class QualityLLMAnswer:
         clients: list[GroundedAnswerClient],
         *,
         reviewers: list[GroundedAnswerClient] | None = None,
+        review_mode: Literal["always", "on_demand"] = "always",
     ) -> None:
         self.clients = clients
         self.reviewers = reviewers
+        self.review_mode = review_mode
         self.calls = 0
         self._request_calls: ContextVar[int] = ContextVar(
             "quality_llm_request_calls",
@@ -469,11 +471,16 @@ class QualityLLMAnswer:
             "quality_llm_request_token_usage",
             default=EMPTY_PROVIDER_USAGE,
         )
+        self._request_generator_index: ContextVar[int] = ContextVar(
+            "quality_llm_request_generator_index",
+            default=0,
+        )
 
     def begin_request_usage(self) -> None:
         """Reset usage for only the current async request context."""
         self._request_calls.set(0)
         self._request_token_usage.set(ProviderUsage())
+        self._request_generator_index.set(0)
 
     def request_usage(self) -> int:
         return self._request_calls.get()
@@ -542,6 +549,7 @@ class QualityLLMAnswer:
                 generator_failures.append(type(failure).__name__)
                 continue
             self._record_tokens(generator)
+            self._request_generator_index.set(index)
             # Point/direct answers still pass deterministic citation, evidence
             # overlap, entity and relevance gates in AnswerService. The LLM
             # reviewer is advisory and cannot change final acceptance, so a
@@ -550,6 +558,13 @@ class QualityLLMAnswer:
                 "completeness=point" in system_policy
                 and "answer_shape=direct" in system_policy
             ):
+                self.name = generator.name
+                self.model = generator.model
+                return candidate
+            if self.review_mode == "on_demand":
+                # AnswerService first applies every deterministic trust gate.
+                # It calls ``review_candidate`` only when exact lexical support
+                # cannot establish a semantically valid paraphrase.
                 self.name = generator.name
                 self.model = generator.model
                 return candidate
@@ -587,6 +602,38 @@ class QualityLLMAnswer:
         # campaign diagnostics can separate payload rejections from declines.
         detail = "_".join(generator_failures) or "no_generators"
         raise InsufficientEvidence(f"provider_unavailable_{detail}")
+
+    async def review_candidate(
+        self,
+        question: str,
+        evidence: Sequence[ProviderEvidence],
+        candidate: ProviderAnswer,
+    ) -> ProviderAnswer:
+        """Run the bounded semantic reviewer for this request's generator.
+
+        A rejection or reviewer transport failure is advisory and never grants
+        support. Deterministic grounding will re-check the returned state and
+        fail closed unless the reviewer explicitly accepted the paraphrase.
+        """
+        if candidate.review_state != "not_reviewed":
+            return candidate
+        index = self._request_generator_index.get()
+        if self.reviewers:
+            reviewer = self.reviewers[index % len(self.reviewers)]
+        elif self.clients:
+            reviewer = self.clients[(index + 1) % len(self.clients)]
+        else:
+            return candidate.model_copy(update={"review_state": "advisory_rejected"})
+        try:
+            self._record_call()
+            accepted = await reviewer.review(question, evidence, candidate)
+        except Exception:  # noqa: BLE001 — bounded reviewer is advisory
+            self._record_tokens(reviewer)
+            return candidate.model_copy(update={"review_state": "advisory_rejected"})
+        self._record_tokens(reviewer)
+        return candidate.model_copy(update={
+            "review_state": "accepted" if accepted else "advisory_rejected",
+        })
 
 
 class UnavailableLLMAnswer:
@@ -712,4 +759,8 @@ def build_answer_provider(settings: Settings) -> AnswerAdapter:
         # both approved routes exist; retain same-provider low-cost review as a
         # reliable single-credential deployment mode.
         reviewers = [*reviewers[1:], reviewers[0]]
-    return QualityLLMAnswer(clients, reviewers=reviewers)
+    return QualityLLMAnswer(
+        clients,
+        reviewers=reviewers,
+        review_mode=settings.rag_review_mode,
+    )

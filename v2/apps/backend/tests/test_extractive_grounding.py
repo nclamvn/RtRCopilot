@@ -21,6 +21,7 @@ from rtr_copilot.rag.answering import (
     profile_facets_covered,
     prune_uncited_units,
     verify_grounding,
+    verify_with_semantic_review,
 )
 from rtr_copilot.rag.models import ProviderAnswer, ProviderEvidence
 from rtr_copilot.rag.ontology import load_ontology
@@ -407,6 +408,89 @@ def test_reviewed_short_heading_inherits_semantically_matching_marker() -> None:
     repaired = normalize_trailing_citations(reviewed, evidence)
     assert "Tình trạng phê duyệt [C1]" in repaired.answer
     verify_grounding(repaired, evidence, max_chars=12000)
+
+
+class _SemanticReviewer:
+    def __init__(self, *, accept: bool) -> None:
+        self.accept = accept
+        self.calls = 0
+
+    async def review_candidate(
+        self,
+        question: str,
+        evidence: list[ProviderEvidence],
+        candidate: ProviderAnswer,
+    ) -> ProviderAnswer:
+        del question, evidence
+        self.calls += 1
+        return candidate.model_copy(update={
+            "review_state": "accepted" if self.accept else "advisory_rejected",
+        })
+
+
+def test_semantic_review_is_not_called_when_deterministic_proof_passes() -> None:
+    evidence = [_evidence("C1", "VEGA là nền tảng UAV tải trọng lớn.")]
+    candidate = ProviderAnswer(
+        answer="VEGA là nền tảng UAV tải trọng lớn. [C1]",
+        used_markers=["C1"],
+    )
+    reviewer = _SemanticReviewer(accept=True)
+    result = asyncio.run(verify_with_semantic_review(
+        reviewer,
+        question="VEGA là gì?",
+        candidate=candidate,
+        evidence=evidence,
+        max_chars=12000,
+    ))
+    assert result.review_state == "not_reviewed"
+    assert reviewer.calls == 0
+
+
+def test_semantic_review_only_bridges_non_lexical_support_when_accepted() -> None:
+    evidence = [_evidence("C1", "The warranty period is twelve months.")]
+    candidate = ProviderAnswer(
+        answer="Thời hạn bảo hành là một năm. [C1]",
+        used_markers=["C1"],
+    )
+    accepted = _SemanticReviewer(accept=True)
+    result = asyncio.run(verify_with_semantic_review(
+        accepted,
+        question="Bảo hành bao lâu?",
+        candidate=candidate,
+        evidence=evidence,
+        max_chars=12000,
+    ))
+    assert result.review_state == "accepted"
+    assert accepted.calls == 1
+
+    rejected = _SemanticReviewer(accept=False)
+    with pytest.raises(GroundingError, match="evidence_unsupported"):
+        asyncio.run(verify_with_semantic_review(
+            rejected,
+            question="Bảo hành bao lâu?",
+            candidate=candidate,
+            evidence=evidence,
+            max_chars=12000,
+        ))
+    assert rejected.calls == 1
+
+
+def test_semantic_review_never_waives_missing_citation() -> None:
+    evidence = [_evidence("C1", "The warranty period is twelve months.")]
+    candidate = ProviderAnswer(
+        answer="Thời hạn bảo hành là một năm.",
+        used_markers=["C1"],
+    )
+    reviewer = _SemanticReviewer(accept=True)
+    with pytest.raises(GroundingError, match="citation_missing_or_unknown"):
+        asyncio.run(verify_with_semantic_review(
+            reviewer,
+            question="Bảo hành bao lâu?",
+            candidate=candidate,
+            evidence=evidence,
+            max_chars=12000,
+        ))
+    assert reviewer.calls == 0
 
 
 def test_unreviewed_short_heading_does_not_gain_a_marker() -> None:

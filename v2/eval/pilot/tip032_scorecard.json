@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "campaign_state": "not_started",
+  "thresholds": {
+    "min_observations": 20,
+    "min_clarification_observations": 3,
+    "min_honest_null_observations": 3,
+    "min_citations_checked": 20,
+    "usefulness_rate": 0.8,
+    "clarification_recovery_rate": 0.8,
+    "citation_accuracy": 0.95,
+    "honest_null_precision": 1.0,
+    "honest_null_recall": 1.0,
+    "false_grounded_count": 0,
+    "authz_leakage_count": 0,
+    "p95_latency_ms": 25000,
+    "average_provider_cost_usd": 0.1
+  },
+  "observations": []
+}

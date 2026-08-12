@@ -115,6 +115,24 @@ class FederationPlan(StrictModel):
     research_never_promotes_to_sot: Literal[True] = True
 
 
+class ConnectorCanaryAttestation(StrictModel):
+    """Content-free proof emitted by an approved source-side canary."""
+
+    schema_version: Literal[1]
+    stable_key: str
+    contract_digest: str = Field(pattern=r"^[a-f0-9]{64}$")
+    read_only: Literal[True]
+    direct_database_access: Literal[False]
+    deletion_propagation: Literal[True]
+    acl_probe: Literal["pass"]
+    denied_row_probe: Literal["pass"]
+    field_mask_probe: Literal["pass"]
+    provenance_probe: Literal["pass"]
+    deletion_probe: Literal["pass"]
+    observed_freshness_seconds: int = Field(ge=0, le=604_800)
+    sample_record_count: int = Field(ge=0, le=10)
+
+
 def registry_path() -> Path:
     return Path(__file__).with_name("connector_registry.json")
 
@@ -132,6 +150,31 @@ def connector_registry_digest(registry: ConnectorRegistry) -> str:
         separators=(",", ":"),
     ).encode()
     return hashlib.sha256(payload).hexdigest()
+
+
+def connector_contract_digest(contract: ConnectorContract) -> str:
+    payload = json.dumps(
+        contract.model_dump(mode="json"),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    return hashlib.sha256(payload).hexdigest()
+
+
+def validate_canary_attestation(
+    contract: ConnectorContract,
+    attestation: ConnectorCanaryAttestation,
+) -> None:
+    """Fail closed unless the source-side proof matches this exact contract."""
+    if contract.lifecycle != "enabled":
+        raise ValueError("connector_lifecycle_not_enabled")
+    if attestation.stable_key != contract.stable_key:
+        raise ValueError("connector_canary_stable_key_mismatch")
+    if attestation.contract_digest != connector_contract_digest(contract):
+        raise ValueError("connector_canary_contract_digest_mismatch")
+    if attestation.observed_freshness_seconds > contract.freshness_sla_seconds:
+        raise ValueError("connector_canary_freshness_sla_failed")
 
 
 def connector_readiness(

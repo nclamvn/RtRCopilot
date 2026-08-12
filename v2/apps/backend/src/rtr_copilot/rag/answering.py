@@ -573,6 +573,50 @@ def verify_grounding(
         raise GroundingError("used_marker_not_rendered")
 
 
+async def verify_with_semantic_review(
+    provider: object,
+    *,
+    question: str,
+    candidate: ProviderAnswer,
+    evidence: list[ProviderEvidence],
+    max_chars: int,
+    presentation_labels: tuple[str, ...] = (),
+) -> ProviderAnswer:
+    """Verify deterministically; review only a non-lexical support gap.
+
+    Reviewer acceptance can bridge semantic paraphrases, exactly as before,
+    but it cannot waive citations, output safety, known markers or any later
+    entity/relevance/coverage check. A rejection or transport failure is
+    re-verified and therefore fails closed.
+    """
+    try:
+        verify_grounding(
+            candidate,
+            evidence,
+            max_chars=max_chars,
+            presentation_labels=presentation_labels,
+        )
+        return candidate
+    except GroundingError as first_error:
+        review_candidate = getattr(provider, "review_candidate", None)
+        if not (
+            first_error.code == "evidence_unsupported"
+            and candidate.review_state == "not_reviewed"
+            and callable(review_candidate)
+        ):
+            raise
+    reviewed = await review_candidate(question, evidence, candidate)
+    if not isinstance(reviewed, ProviderAnswer):
+        raise GroundingError("semantic_review_invalid")
+    verify_grounding(
+        reviewed,
+        evidence,
+        max_chars=max_chars,
+        presentation_labels=presentation_labels,
+    )
+    return reviewed
+
+
 def approved_presentation_labels(
     query_plan: QueryPlan,
     ontology: EnterpriseOntology,
@@ -1414,9 +1458,11 @@ class AnswerService:
                 with contextlib.suppress(RedisError):
                     await breaker.record_success()
                 try:
-                    verify_grounding(
-                        candidate,
-                        evidence,
+                    candidate = await verify_with_semantic_review(
+                        self.provider,
+                        question=question,
+                        candidate=candidate,
+                        evidence=evidence,
                         max_chars=self.settings.rag_answer_max_chars,
                         presentation_labels=presentation_labels,
                     )
@@ -2013,7 +2059,11 @@ class AnswerService:
         used = set(output.used_markers)
         selected = [item for item in hits if item.citation.marker in used]
         coverage_state = answer_coverage_state(query_plan, evidence, output)
-        if not await self._citations_current(selected):
+        citations_current, soft_versions = await asyncio.gather(
+            self._citations_current(selected),
+            self._soft_cited_version_ids(selected),
+        )
+        if not citations_current:
             return await self._honest_null(
                 subject,
                 conversation_id=conversation_id,
@@ -2048,9 +2098,9 @@ class AnswerService:
                 started=started,
                 provider_calls=provider_calls,
             )
-        # TIP-013B AC-3: read the already-selected records' values and mark the
-        # soft-grounded ones so the answer surfaces the double-check caveat.
-        soft_versions = await self._soft_cited_version_ids(selected)
+        # TIP-013B AC-3: the soft-tier read ran concurrently with the final
+        # lineage check above. Persistence still re-authorizes every selected
+        # record, so this overlap changes latency only—not trust semantics.
         await emit_ask_progress(
             progress,
             started=started,

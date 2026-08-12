@@ -17,7 +17,7 @@ else
     python:3.12.4-slim \
     sh -ec 'apt-get update -qq &&
       apt-get install --no-install-recommends --yes fonts-dejavu-core=2.37-6 >/dev/null &&
-      pip install --no-cache-dir uv==0.8.11 >/dev/null &&
+      pip install --no-cache-dir --retries 5 --timeout 180 uv==0.8.11 >/dev/null &&
       export UV_PROJECT_ENVIRONMENT=/tmp/rtr-verify-venv &&
       uv sync --frozen &&
       uv run ruff check . &&

@@ -242,6 +242,57 @@ def test_quality_router_preserves_complex_review_rejection_as_advisory() -> None
     assert result.review_state == "advisory_rejected"
 
 
+def test_quality_router_on_demand_defers_review_until_requested() -> None:
+    reviewer = FakeClient("reviewer")
+    router = QualityLLMAnswer(
+        [FakeClient("generator")],
+        reviewers=[reviewer],
+        review_mode="on_demand",
+    )
+
+    async def answer_then_review() -> tuple[ProviderAnswer, ProviderAnswer, int, int]:
+        router.begin_request_usage()
+        candidate = await router.answer(
+            "What is VEGA?", evidence(), system_policy="evidence only",
+        )
+        calls_after_generation = router.request_usage()
+        reviewed = await router.review_candidate(
+            "What is VEGA?", evidence(), candidate,
+        )
+        return candidate, reviewed, calls_after_generation, router.request_usage()
+
+    candidate, reviewed, generation_calls, total_calls = asyncio.run(
+        answer_then_review(),
+    )
+    assert candidate.review_state == "not_reviewed"
+    assert generation_calls == 1
+    assert reviewer.reviewed == 1
+    assert reviewed.review_state == "accepted"
+    assert total_calls == 2
+
+
+def test_quality_router_on_demand_rejection_never_grants_support() -> None:
+    reviewer = FakeClient("reviewer", accept=False)
+    router = QualityLLMAnswer(
+        [FakeClient("generator")],
+        reviewers=[reviewer],
+        review_mode="on_demand",
+    )
+
+    async def answer_then_review() -> ProviderAnswer:
+        router.begin_request_usage()
+        candidate = await router.answer(
+            "What is VEGA?", evidence(), system_policy="evidence only",
+        )
+        return await router.review_candidate(
+            "What is VEGA?", evidence(), candidate,
+        )
+
+    reviewed = asyncio.run(answer_then_review())
+    assert reviewed.review_state == "advisory_rejected"
+    assert reviewer.reviewed == 1
+
+
 def test_quality_router_skips_advisory_review_for_point_lookup() -> None:
     reviewer = FakeClient("reviewer", accept=False)
     router = QualityLLMAnswer(
@@ -317,6 +368,7 @@ def test_builder_separates_high_quality_generator_from_bounded_reviewer() -> Non
     assert generator._reasoning_effort == "high"
     assert reviewer._reasoning_effort == "low"
     assert reviewer._max_output_tokens == 256
+    assert provider.review_mode == "on_demand"
 
 
 def test_required_mode_builds_strict_evidence_fallback_without_credentials() -> None:

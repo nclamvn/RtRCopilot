@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 import hashlib
 import json
 import time
@@ -118,6 +120,14 @@ class RetrievalService:
                 self.trace.embedding_degraded = True
                 return None
         return self.embedding.embed(terms_text)
+
+    @staticmethod
+    def _consume_background_result(task: asyncio.Task[Any]) -> None:
+        """Mark an overlapped task's terminal exception as observed."""
+        if task.cancelled():
+            return
+        with contextlib.suppress(Exception):
+            task.exception()
 
     async def _file_authorized(
         self,
@@ -923,6 +933,30 @@ class RetrievalService:
                 ranking_query=ranking_query,
                 support_queries=support_queries,
             )
+        query_profile = profile_query(
+            ranking_query or query,
+            entities=query_entities,
+            intent=query_intent,
+            definition_record_keys=(
+                () if filters.version_id is not None
+                else query_definition_record_keys
+            ),
+            profile_record_keys=(
+                () if filters.version_id is not None
+                else query_profile_record_keys
+            ),
+            collection_record_keys=(
+                () if filters.version_id is not None
+                else query_collection_record_keys
+            ),
+        )
+        # Query embedding is independent of metadata authorization. Start it
+        # now and overlap provider latency with the bounded policy-only scan;
+        # answer content is still loaded strictly after ACL admission.
+        embedding_task = asyncio.create_task(
+            self._query_vector(" ".join(query_profile.terms)),
+        )
+        embedding_task.add_done_callback(self._consume_background_result)
         metadata: list[dict[str, Any]] = []
         allowed_ids: list[uuid.UUID] = []
         allowed_id_set: set[uuid.UUID] = set()
@@ -976,7 +1010,7 @@ class RetrievalService:
         )
         while scanned < self.settings.rag_metadata_scan_limit:
             page_limit = min(
-                self.settings.rag_candidate_limit,
+                self.settings.rag_metadata_page_size,
                 self.settings.rag_metadata_scan_limit - scanned,
             )
             page = await self._metadata(
@@ -1005,6 +1039,9 @@ class RetrievalService:
                 raise RetrievalError("retrieval_budget_exceeded")
         self.trace.policy_allowed = len(allowed_ids)
         if not allowed_ids:
+            embedding_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await embedding_task
             if filters.source_key is None:
                 return await self._search_enterprise_files(
                     subject,
@@ -1019,23 +1056,6 @@ class RetrievalService:
                     support_queries=support_queries,
                 )
             return []
-        query_profile = profile_query(
-            ranking_query or query,
-            entities=query_entities,
-            intent=query_intent,
-            definition_record_keys=(
-                () if filters.version_id is not None
-                else query_definition_record_keys
-            ),
-            profile_record_keys=(
-                () if filters.version_id is not None
-                else query_profile_record_keys
-            ),
-            collection_record_keys=(
-                () if filters.version_id is not None
-                else query_collection_record_keys
-            ),
-        )
         # TIP-014RE: the vector arm embeds the RANKING profile (the user's
         # original wording), not the expanded recall soup. Lexical recall
         # still benefits from planner expansions, but concatenating them
@@ -1044,7 +1064,7 @@ class RetrievalService:
         # live: the company-definition dossier crowded out "tech stack").
         # This also keeps the runtime embedding basis identical to the
         # calibration harness that pre-committed the floor.
-        query_vector = await self._query_vector(" ".join(query_profile.terms))
+        query_vector = await embedding_task
         self.trace.content_queries += 1
         async with self.uow.factory() as session:
             rows = (await session.execute(text("""

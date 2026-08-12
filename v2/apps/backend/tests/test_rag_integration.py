@@ -1298,6 +1298,7 @@ async def test_denied_metadata_pages_cannot_starve_later_authorized_candidate(
     paging_settings = settings(tmp_path).model_copy(update={
         "rag_candidate_limit": 2,
         "rag_metadata_scan_limit": 10,
+        "rag_metadata_page_size": 2,
     })
     retrieval = RetrievalService(paging_settings, factory=factory)
     hits = await retrieval.search(

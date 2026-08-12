@@ -2,7 +2,7 @@ SHELL := /bin/bash
 RTR_BUILD_SHA ?= $(shell ./scripts/build-identity.sh)
 export RTR_BUILD_SHA
 
-.PHONY: dev verify e2e-enterprise answer-runtime-check answer-runtime-refresh pilot-up pilot-check pilot-down enterprise-release inventory-snapshot inventory-check document-lifecycle-proof connector-readiness migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
+.PHONY: dev verify e2e-enterprise tip032-recertify answer-runtime-check answer-runtime-refresh pilot-up pilot-check pilot-scorecard pilot-down enterprise-release inventory-snapshot inventory-check document-lifecycle-proof connector-readiness crm-canary migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
 
 # TIP-012 Task 1 — hardened profile (TLS ingress fronts everything, AC-01).
 # Requires the ingress hostname to resolve to 127.0.0.1 for probes/browsers:
@@ -23,6 +23,9 @@ verify:
 
 e2e-enterprise:
 	./scripts/run-enterprise-e2e.sh
+
+tip032-recertify:
+	./scripts/run-tip032-recertification.sh
 
 # The local quality profile lives in .env.demo. `docker compose restart` does
 # not reload changed environment variables, and plain `docker compose up` reads
@@ -47,6 +50,15 @@ pilot-up:
 
 pilot-check:
 	./scripts/verify-pilot-database.sh
+
+PILOT_SCORECARD_INPUT ?= /app/eval/pilot/tip032_scorecard.json
+PILOT_SCORECARD_OUTPUT ?= /app/eval/pilot/tip032_scorecard_result.json
+
+pilot-scorecard:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \
+		-v "$(CURDIR)/eval:/app/eval" api \
+		python -m rtr_copilot.commands.evaluate_pilot_scorecard \
+		--input "$(PILOT_SCORECARD_INPUT)" --output "$(PILOT_SCORECARD_OUTPUT)"
 
 pilot-down:
 	./scripts/local-demo.sh --down
@@ -84,6 +96,14 @@ connector-readiness:
 		python -m rtr_copilot.commands.snapshot_connector_readiness \
 		--rtr-root /ecosystem \
 		--output /app/eval/enterprise_corpus/connector_readiness.json
+
+crm-canary:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \
+		-v "$(RTR_ECOSYSTEM_ROOT):/ecosystem:ro" \
+		-v "$(CURDIR)/eval:/app/eval" api \
+		python -m rtr_copilot.commands.probe_crm_canary \
+		--rtr-root /ecosystem \
+		--output /app/eval/enterprise_corpus/crm_canary.json
 
 migrate:
 	docker compose --profile tools run --rm migrate
