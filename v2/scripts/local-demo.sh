@@ -33,6 +33,7 @@ cd "$project_root"
 
 PILOT_PROJECT_NAME="${PILOT_PROJECT_NAME:-rtr-copilot-pilot}"
 PILOT_ENV_FILE="${PILOT_ENV_FILE:-.env.pilot}"
+PILOT_BASE_ENV_FILE="${PILOT_BASE_ENV_FILE:-}"
 
 # ---- args -------------------------------------------------------------------
 KERNEL_ROOT="${KERNEL_ROOT:-}"
@@ -71,6 +72,28 @@ fi
 KERNEL_ROOT="$(cd "$KERNEL_ROOT" && pwd)"
 echo "==> kernel snapshot: $KERNEL_ROOT (read-only)"
 
+# Resolve the configuration before any infrastructure is created. A quality
+# profile using OpenAI embeddings exports canonical corpus text during the
+# reindex step; a general request to start a pilot must never imply permission
+# for that separate disclosure purpose.
+if [[ -z "$PILOT_BASE_ENV_FILE" ]]; then
+  PILOT_BASE_ENV_FILE=".env"
+  [[ -f .env.demo ]] && PILOT_BASE_ENV_FILE=".env.demo"
+fi
+effective_env="$PILOT_BASE_ENV_FILE"
+[[ -f "$PILOT_ENV_FILE" ]] && effective_env="$PILOT_ENV_FILE"
+if [[ ! -f "$effective_env" ]]; then
+  echo "ERROR: pilot source environment not found: $effective_env" >&2
+  exit 2
+fi
+embedding_provider="$(awk -F= '$1 == "RAG_EMBEDDING_PROVIDER" {value=substr($0, index($0, "=") + 1)} END {print value}' "$effective_env")"
+embedding_provider="${embedding_provider:-offline}"
+if [[ "$embedding_provider" == "openai" && "${PILOT_APPROVE_EXTERNAL_CORPUS:-0}" != "1" ]]; then
+  echo "PILOT START BLOCKED · semantic indexing would send the governed pilot corpus to the configured OpenAI endpoint" >&2
+  echo "Set PILOT_APPROVE_EXTERNAL_CORPUS=1 only after purpose-bound corpus export approval." >&2
+  exit 2
+fi
+
 # ---- preflight --------------------------------------------------------------
 command -v docker >/dev/null || { echo "ERROR: docker not found" >&2; exit 1; }
 docker compose version >/dev/null 2>&1 || { echo "ERROR: docker compose v2 required" >&2; exit 1; }
@@ -86,8 +109,7 @@ if [[ ! -f "$PILOT_ENV_FILE" ]]; then
             || python3 -c 'import secrets;print(secrets.token_hex(32))')"
   # Reuse the approved quality configuration when available. The copied file
   # is ignored by Git and the pilot gets a separate compose namespace/volumes.
-  source_env=".env"
-  [[ -f .env.demo ]] && source_env=".env.demo"
+  source_env="$PILOT_BASE_ENV_FILE"
   cp "$source_env" "$PILOT_ENV_FILE"
   {
     echo ""

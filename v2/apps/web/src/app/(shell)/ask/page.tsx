@@ -372,21 +372,24 @@ function normalizeClaimCopy(value: string): string {
     .trim();
 }
 
-function startsStructuredMarkdown(value: string): boolean {
-  return /^(?:#{1,4}\s|[-*+]\s|\d+[.)]\s|>\s?|```)/m.test(value);
-}
-
 function sameCitations(left: string[], right: string[]): boolean {
   return left.length === right.length
     && left.every((citation, index) => citation === right[index]);
 }
 
+function hasUnclosedQuotation(value: string): boolean {
+  const curlyOpen = (value.match(/“/g) ?? []).length;
+  const curlyClose = (value.match(/”/g) ?? []).length;
+  const straight = (value.match(/"/g) ?? []).length;
+  return curlyOpen > curlyClose || straight % 2 === 1;
+}
+
 /**
- * Repeated provenance is not a meaningful visual claim boundary. Models may
- * cite each short sentence in a slogan independently; rendering those markers
- * literally would split one sentence into several ruled rows. Preserve real
- * Markdown block boundaries, but coalesce adjacent prose backed by the exact
- * same evidence set.
+ * A citation inside a quoted atomic phrase is not a meaningful visual claim
+ * boundary. Models may cite each short sentence in a slogan independently;
+ * rendering those markers literally would split one quotation into ruled rows.
+ * Only coalesce while the previous text has an unclosed quotation. Ordinary
+ * adjacent claims backed by the same source remain separate and scannable.
  */
 function coalesceRepeatedCitationClaims(claims: AnswerClaim[]): AnswerClaim[] {
   const merged: AnswerClaim[] = [];
@@ -394,8 +397,7 @@ function coalesceRepeatedCitationClaims(claims: AnswerClaim[]): AnswerClaim[] {
     const previous = merged[merged.length - 1];
     if (previous
       && sameCitations(previous.citations, claim.citations)
-      && !startsStructuredMarkdown(previous.text)
-      && !startsStructuredMarkdown(claim.text)) {
+      && hasUnclosedQuotation(previous.text)) {
       previous.text = normalizeClaimCopy(`${previous.text} ${claim.text}`);
       continue;
     }

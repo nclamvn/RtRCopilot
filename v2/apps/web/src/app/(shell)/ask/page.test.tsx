@@ -84,6 +84,18 @@ test("repeated provenance keeps a quoted brand sequence in one claim and one lin
   expect(container.textContent).toContain("Invent.\u00a0Build.\u00a0Prove.");
 });
 
+test("same-source independent statements remain separate claims", () => {
+  expect(parseAnswerClaims(
+    "HERA là nền tảng UAV đa nhiệm. [C1] "
+    + "HERA có bốn khoang payload. [C1] "
+    + "HERA có tải trọng tối đa 14 kg. [C1]",
+  )).toEqual([
+    {text: "HERA là nền tảng UAV đa nhiệm.", citations: ["C1"]},
+    {text: "HERA có bốn khoang payload.", citations: ["C1"]},
+    {text: "HERA có tải trọng tối đa 14 kg.", citations: ["C1"]},
+  ]);
+});
+
 test("Ask SSE exposes backend checkpoints and heartbeat without invented phases", async () => {
   const progress: string[] = [];
   const heartbeats: number[] = [];
