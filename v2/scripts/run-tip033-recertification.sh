@@ -21,25 +21,13 @@ export E2E_CASE_IDS="$bounded_cases"
 export E2E_HTTP_REPORT="${E2E_HTTP_REPORT:-eval/real_world/tip033_latency_recertification.json}"
 export E2E_CONCURRENCY="${E2E_CONCURRENCY:-1}"
 export E2E_SKIP_BROWSER="${E2E_SKIP_BROWSER:-1}"
+candidate_build="$(./scripts/build-identity.sh)"
+if [[ ! "$candidate_build" =~ ^[0-9a-f]{12,64}$ ]]; then
+  echo "TIP-033 RECERTIFICATION BLOCKED · release candidate must be clean and committed: $candidate_build" >&2
+  exit 2
+fi
+export E2E_BUILD_IDENTITY="$candidate_build"
 
 ./scripts/run-enterprise-e2e.sh
-
-actual_cases="$(jq -r '.metrics.total' "$E2E_HTTP_REPORT")"
-false_grounded="$(jq -r '.metrics.false_grounded_count' "$E2E_HTTP_REPORT")"
-citation_accuracy="$(jq -r '.metrics.citation_accuracy' "$E2E_HTTP_REPORT")"
-p95_latency="$(jq -r '.metrics.p95_latency_ms' "$E2E_HTTP_REPORT")"
-max_latency="$(jq -r '[.results[].latency_ms] | max' "$E2E_HTTP_REPORT")"
-if [[ "$actual_cases" != "5" || "$false_grounded" != "0" \
-    || "$citation_accuracy" != "1" ]]; then
-  echo "TIP-033 RECERTIFICATION FAIL · cases=$actual_cases false_grounded=$false_grounded citation_accuracy=$citation_accuracy" >&2
-  exit 1
-fi
-if ! awk -v value="$p95_latency" 'BEGIN { exit !(value <= 25000) }'; then
-  echo "TIP-033 RECERTIFICATION FAIL · p95_ms=$p95_latency target_ms=25000" >&2
-  exit 1
-fi
-if ! awk -v value="$max_latency" 'BEGIN { exit !(value < 45000) }'; then
-  echo "TIP-033 RECERTIFICATION FAIL · max_ms=$max_latency ceiling_ms=45000" >&2
-  exit 1
-fi
-echo "TIP-033 RECERTIFICATION PASS · exact_cases=5 · false_grounded=0 · citation_accuracy=1 · p95_ms=$p95_latency · report=$E2E_HTTP_REPORT"
+TIP033_REPORT="$E2E_HTTP_REPORT" TIP033_EXPECTED_BUILD="$candidate_build" \
+  ./scripts/verify-tip033-report.sh

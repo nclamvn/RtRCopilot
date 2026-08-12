@@ -39,6 +39,18 @@ set +a
 : "${POSTGRES_USER:?POSTGRES_USER is required}"
 : "${POSTGRES_DSN:?POSTGRES_DSN is required}"
 
+# Purpose-bound release campaigns must attest the immutable checkout that was
+# actually built. The local demo env intentionally defaults to "development",
+# so a release wrapper supplies the clean candidate explicitly instead of
+# allowing that placeholder to leak into the generated evidence report.
+if [[ -n "${E2E_BUILD_IDENTITY:-}" ]]; then
+  if [[ ! "$E2E_BUILD_IDENTITY" =~ ^[0-9a-f]{12,64}$ ]]; then
+    echo "E2E_BUILD_IDENTITY must be a clean immutable Git identity" >&2
+    exit 2
+  fi
+  export RTR_BUILD_SHA="$E2E_BUILD_IDENTITY"
+fi
+
 e2e_case_args=()
 if [[ -n "${E2E_CASE_IDS:-}" ]]; then
   IFS=',' read -r -a requested_case_ids <<<"$E2E_CASE_IDS"
