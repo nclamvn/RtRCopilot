@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-12T06:55:51Z",
+  "status": "pass",
+  "scope": {
+    "approved_external_operation": "openai_embeddings",
+    "approved_record_count": 219,
+    "tip034_included": false
+  },
+  "source": {
+    "kind": "certified_active_tip013b_canonical_snapshot",
+    "record_count": 219,
+    "source_count": 6,
+    "record_digest": "e2e47cd64f709d143145cb8f618c58793885123e929fc50c4c34c918871787cb",
+    "records_by_source": {
+      "rtr.boms": 3,
+      "rtr.capabilities": 76,
+      "rtr.derived_costs": 1,
+      "rtr.l3_facts": 116,
+      "rtr.prices": 13,
+      "rtr.specs": 10
+    },
+    "workspace_architecture_note": "The current workspace _Architecture index contains 42 atoms and is not independently sufficient to reproduce the historical certified 219-record TIP-013B snapshot. The already-published active canonical revisions were cloned without copying vectors; no source value or provenance field was fabricated."
+  },
+  "pilot": {
+    "compose_project": "rtr-copilot-pilot",
+    "runtime_build_identity": "d1cb871c8c8f",
+    "schema_revision": "0014_document_outbox_repair",
+    "canonical_records": 219,
+    "canonical_chunks": 219,
+    "embedding_model": "text-embedding-3-small",
+    "embedding_dimension": 1536,
+    "unexpected_active_sources": 0,
+    "active_enterprise_connectors": 0,
+    "answer_runtime": "ready",
+    "existing_vectors_copied": 0
+  },
+  "controls": {
+    "exact_count_gate": "pass",
+    "source_distribution_gate": "pass",
+    "source_target_digest_match": "pass",
+    "isolated_container_identity": "pass",
+    "embedding_postflight": "pass",
+    "pilot_database_verifier": "pass",
+    "worker_race_mitigation_added": true,
+    "temporary_export_removed": true
+  },
+  "release_preflight": {
+    "status": "not_ready",
+    "reason": "The checkout contains uncommitted pilot hardening, TIP-034 was explicitly excluded, production configuration and target drills are not approved, and Homeowner GO was not requested."
+  }
+}

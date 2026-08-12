@@ -51,6 +51,7 @@ from migrate.kernel_adapter import (  # noqa: E402
     leader_only_sources,
     write_package,
 )  # noqa: E402
+from migrate.run_migration import expectation_errors  # noqa: E402
 
 from rtr_copilot.sot.models import PackageRecord  # noqa: E402
 from rtr_copilot.sot.package import (  # noqa: E402
@@ -60,6 +61,20 @@ from rtr_copilot.sot.package import (  # noqa: E402
 )  # noqa: E402
 
 NOW = datetime(2026, 8, 2, tzinfo=UTC)
+
+
+def test_external_publish_count_gate_requires_exact_approved_scope() -> None:
+    report = {
+        "adapter_summary": {"total_facts": 259},
+        "final_tier_totals": {"strict": 8, "soft": 205, "strategic": 6},
+    }
+    assert expectation_errors(report, expect_total=259, expect_ready=219) == []
+    assert expectation_errors(report, expect_total=259, expect_ready=218) == [
+        "ready record count mismatch: expected=218 actual=219",
+    ]
+    assert expectation_errors(report, expect_total=42, expect_ready=219) == [
+        "source fact count mismatch: expected=42 actual=259",
+    ]
 
 
 def _registry() -> dict[str, Any]:

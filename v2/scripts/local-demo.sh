@@ -64,7 +64,7 @@ if [[ -z "$KERNEL_ROOT" ]]; then
     [[ -d "$cand/registry" ]] && KERNEL_ROOT="$cand" && break
   done
 fi
-if [[ -z "$KERNEL_ROOT" || ( ! -d "$KERNEL_ROOT/registry" && ! -f "$KERNEL_ROOT/specs.yaml" ) ]]; then
+if [[ -z "$KERNEL_ROOT" || ( ! -f "$KERNEL_ROOT/registry/specs.yaml" && ! -f "$KERNEL_ROOT/specs.yaml" ) ]]; then
   echo "ERROR: kernel snapshot not found. Pass --kernel-root /path/to/kernel-real" >&2
   echo "       (the directory that contains registry/specs.yaml etc.)" >&2
   exit 1
@@ -157,7 +157,9 @@ compose run --rm \
       --kernel-root /kernel \
       --out "$SOT_STAGING_ROOT" \
       --manifest-out /tmp/manifest.json \
-      --report-json /tmp/emit-report.json
+      --report-json /tmp/emit-report.json \
+      --expect-total 259 \
+      --expect-ready 219
     python /app/eval/demo/seed_curator.py
     python -m rtr_copilot.commands.onboard_batch \
       --manifest /tmp/manifest.json --apply --approve --report /tmp/ledger.json

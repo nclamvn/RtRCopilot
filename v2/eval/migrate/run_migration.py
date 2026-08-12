@@ -154,6 +154,24 @@ def _final_tier_totals(reconciled: list[dict[str, Any]]) -> dict[str, int]:
     return ordered
 
 
+def expectation_errors(
+    report: dict[str, Any],
+    *,
+    expect_total: int | None,
+    expect_ready: int | None,
+) -> list[str]:
+    """Return exact-count gate failures without mutating or publishing data."""
+    total = int(report["adapter_summary"]["total_facts"])
+    tiers = report["final_tier_totals"]
+    ready = sum(int(tiers.get(tier, 0)) for tier in _READY_TIERS)
+    errors: list[str] = []
+    if expect_total is not None and total != expect_total:
+        errors.append(f"source fact count mismatch: expected={expect_total} actual={total}")
+    if expect_ready is not None and ready != expect_ready:
+        errors.append(f"ready record count mismatch: expected={expect_ready} actual={ready}")
+    return errors
+
+
 def build_report(
     kernel_root: Path,
     out_root: Path,
@@ -284,6 +302,22 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default="SOT_SIGNING_SECRET",
         help="env var holding the real signing secret for --emit (>=32 chars)",
     )
+    parser.add_argument(
+        "--expect-total",
+        type=int,
+        help=(
+            "fail before writing an onboarding manifest unless the adapter reads "
+            "exactly this many source facts"
+        ),
+    )
+    parser.add_argument(
+        "--expect-ready",
+        type=int,
+        help=(
+            "fail before writing an onboarding manifest unless the validated "
+            "ready set contains exactly this many records"
+        ),
+    )
     return parser
 
 
@@ -309,6 +343,20 @@ def main(argv: list[str] | None = None) -> int:
     )
     if emit:
         report["mode"] = "EMIT_SIGNED_PACKAGES"
+    count_errors = expectation_errors(
+        report,
+        expect_total=args.expect_total,
+        expect_ready=args.expect_ready,
+    )
+    if count_errors:
+        for error in count_errors:
+            print(f"ERROR: {error}", file=sys.stderr)
+        print(
+            "REFUSING TO WRITE AN ONBOARDING MANIFEST. Nothing was activated or "
+            "sent to an embedding provider.",
+            file=sys.stderr,
+        )
+        return 2
     if args.report_json:
         args.report_json.parent.mkdir(parents=True, exist_ok=True)
         args.report_json.write_text(
