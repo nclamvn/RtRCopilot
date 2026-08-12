@@ -60,10 +60,20 @@ export type AskProgressSource = {
   freshnessState: string;
 };
 
+export type AskProgressMilestone =
+  | "intent_ready"
+  | "sources_ready"
+  | "evidence_ready"
+  | "draft_ready"
+  | "answer_ready";
+
 export type AskProgressEvent = {
   stage: AskProgressStage;
   status: "started" | "completed";
   elapsedMs: number;
+  sequence: number;
+  stageElapsedMs: number | null;
+  milestone: AskProgressMilestone | null;
   detail: string | null;
   sourceCount: number;
   sources: AskProgressSource[];
@@ -128,6 +138,9 @@ const PROGRESS_STAGES = new Set<AskProgressStage>([
   "understanding", "retrieving", "verifying", "synthesizing", "grounding",
 ]);
 const PROGRESS_MARKER = /^C\d{1,3}$/;
+const PROGRESS_MILESTONES = new Set<AskProgressMilestone>([
+  "intent_ready", "sources_ready", "evidence_ready", "draft_ready", "answer_ready",
+]);
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -194,6 +207,14 @@ export function parseAskProgressEvent(value: unknown): AskProgressEvent {
       || (value.status !== "started" && value.status !== "completed")
       || typeof value.elapsed_ms !== "number" || !Number.isSafeInteger(value.elapsed_ms)
       || value.elapsed_ms < 0
+      || !(value.sequence === undefined
+        || (typeof value.sequence === "number" && Number.isSafeInteger(value.sequence)
+          && value.sequence >= 0))
+      || !(value.stage_elapsed_ms === null || value.stage_elapsed_ms === undefined
+        || (typeof value.stage_elapsed_ms === "number"
+          && Number.isSafeInteger(value.stage_elapsed_ms) && value.stage_elapsed_ms >= 0))
+      || !(value.milestone === null || value.milestone === undefined
+        || PROGRESS_MILESTONES.has(value.milestone as AskProgressMilestone))
       || !(value.detail === null || value.detail === undefined || text(value.detail, 500))
       || typeof value.source_count !== "number"
       || !Number.isSafeInteger(value.source_count) || value.source_count < 0
@@ -221,6 +242,11 @@ export function parseAskProgressEvent(value: unknown): AskProgressEvent {
     stage: value.stage as AskProgressStage,
     status: value.status,
     elapsedMs: value.elapsed_ms,
+    sequence: typeof value.sequence === "number" ? value.sequence : 0,
+    stageElapsedMs: typeof value.stage_elapsed_ms === "number"
+      ? value.stage_elapsed_ms : null,
+    milestone: PROGRESS_MILESTONES.has(value.milestone as AskProgressMilestone)
+      ? value.milestone as AskProgressMilestone : null,
     detail: text(value.detail, 500) && value.detail ? value.detail as string : null,
     sourceCount: value.source_count,
     sources,

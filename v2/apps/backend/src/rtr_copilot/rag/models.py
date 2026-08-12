@@ -112,6 +112,14 @@ AskProgressStage = Literal[
     "grounding",
 ]
 
+AskProgressMilestone = Literal[
+    "intent_ready",
+    "sources_ready",
+    "evidence_ready",
+    "draft_ready",
+    "answer_ready",
+]
+
 
 class AskProgressSource(StrictModel):
     """Content-free summary of one already-authorized retrieval candidate."""
@@ -129,6 +137,11 @@ class AskProgressEvent(StrictModel):
     stage: AskProgressStage
     status: Literal["started", "completed"]
     elapsed_ms: int = Field(ge=0)
+    # TIP-033 transport metadata. Defaults preserve direct service/test sinks;
+    # the SSE adapter assigns monotonic sequence and stage duration.
+    sequence: int = Field(default=0, ge=0)
+    stage_elapsed_ms: int | None = Field(default=None, ge=0)
+    milestone: AskProgressMilestone | None = None
     detail: str | None = Field(default=None, max_length=500)
     source_count: int = Field(default=0, ge=0, le=20)
     sources: list[AskProgressSource] = Field(default_factory=list, max_length=20)

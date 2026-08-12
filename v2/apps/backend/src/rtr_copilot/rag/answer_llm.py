@@ -40,7 +40,9 @@ def _prompt_cache_key(route: str, model: str) -> str:
 def _max_output_for_policy(configured: int, system_policy: str) -> int:
     """Right-size output headroom without truncating dossier/list answers."""
     if "governed entity-profile request" in system_policy:
-        return min(configured, 3072)
+        return min(configured, 2560)
+    if "Intent=enumeration" in system_policy:
+        return min(configured, 2560)
     if "Intent=lookup" in system_policy and "completeness=point" in system_policy:
         return min(configured, 1024)
     if "Intent=definition" in system_policy:
@@ -210,6 +212,7 @@ class OpenAIAnswerClient:
         timeout: float,
         reasoning_effort: str,
         max_output_tokens: int,
+        routine_reasoning_effort: str = "low",
         prompt_cache_enabled: bool = True,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
@@ -217,6 +220,7 @@ class OpenAIAnswerClient:
         self.model = model
         self._timeout = timeout
         self._reasoning_effort = reasoning_effort
+        self._routine_reasoning_effort = routine_reasoning_effort
         self._max_output_tokens = max_output_tokens
         self._prompt_cache_enabled = prompt_cache_enabled
         self._transport = transport
@@ -237,6 +241,7 @@ class OpenAIAnswerClient:
         schema: dict[str, Any],
         reasoning_effort: str | None = None,
         max_output_tokens: int | None = None,
+        verbosity: Literal["low", "medium", "high"] = "medium",
     ) -> str:
         self._last_usage.set(ProviderUsage())
         request_payload: dict[str, Any] = {
@@ -249,7 +254,7 @@ class OpenAIAnswerClient:
             "instructions": instructions,
             "input": json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
             "text": {
-                "verbosity": "medium",
+                "verbosity": verbosity,
                 "format": {
                     "type": "json_schema",
                     "name": schema_name,
@@ -289,21 +294,15 @@ class OpenAIAnswerClient:
         *,
         system_policy: str,
     ) -> ProviderAnswer:
-        # Direct lookup and governed enumeration are evidence organization
-        # tasks, not open-ended analysis. Medium reasoning is both more stable
-        # and materially faster for long catalogs; high remains configured for
-        # comparison/procedure/analysis where reasoning depth changes quality.
+        # TIP-033: definition, lookup and enumeration organize already-bounded
+        # evidence. They keep the identical schema and grounding contract but
+        # do not spend the high reasoning lane reserved for analysis/comparison.
+        routine_task = any(
+            marker in system_policy
+            for marker in ("Intent=definition", "Intent=lookup", "Intent=enumeration")
+        )
         adaptive_effort = (
-            "medium"
-            if any(
-                marker in system_policy
-                for marker in (
-                    "Intent=definition",
-                    "Intent=lookup",
-                    "Intent=enumeration",
-                )
-            )
-            else self._reasoning_effort
+            self._routine_reasoning_effort if routine_task else self._reasoning_effort
         )
         output = await self._structured(
             instructions=_generation_instructions(system_policy),
@@ -314,6 +313,14 @@ class OpenAIAnswerClient:
             max_output_tokens=_max_output_for_policy(
                 self._max_output_tokens,
                 system_policy,
+            ),
+            # Catalogs benefit from compact prose; dossiers retain medium
+            # verbosity so supported facets are not silently compressed away.
+            verbosity=(
+                "low"
+                if "Intent=enumeration" in system_policy
+                and "governed entity-profile request" not in system_policy
+                else "medium"
             ),
         )
         return _parse_answer_text(output)
@@ -724,6 +731,7 @@ def build_answer_provider(settings: Settings) -> AnswerAdapter:
             timeout=settings.rag_answer_timeout_seconds,
             reasoning_effort=settings.rag_answer_reasoning_effort,
             max_output_tokens=settings.rag_answer_max_output_tokens,
+            routine_reasoning_effort=settings.rag_answer_routine_reasoning_effort,
             prompt_cache_enabled=settings.rag_prompt_cache_enabled,
         ))
         reviewers.append(OpenAIAnswerClient(

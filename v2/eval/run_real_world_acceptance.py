@@ -186,11 +186,18 @@ async def evaluate_http(
         else:
             singles.append(item)
 
+    runtime_build_identity: str | None = None
     async with httpx.AsyncClient(
         base_url=target,
         follow_redirects=True,
         timeout=httpx.Timeout(request_timeout),
     ) as client:
+        status = await client.get("/api/status")
+        status.raise_for_status()
+        status_body = status.json()
+        runtime_build_identity = status_body.get("build_sha")
+        if not isinstance(runtime_build_identity, str) or not runtime_build_identity:
+            raise ValueError("campaign_runtime_build_identity_missing")
         login = await client.get("/api/auth/login")
         login.raise_for_status()
 
@@ -303,6 +310,7 @@ async def evaluate_http(
         "subject_digest": hashlib.sha256(b"isolated-http-e2e").hexdigest(),
         "database_digest": None,
         "provider": "http-runtime",
+        "runtime_build_identity": runtime_build_identity,
         "ontology_digest": None,
         "case_limit": max_cases,
         "selected_case_ids": list(case_ids),

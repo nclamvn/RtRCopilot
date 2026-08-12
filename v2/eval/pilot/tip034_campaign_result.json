@@ -1,0 +1,34 @@
+{
+  "campaign_digest": "6a745f0cd8d75ad5c8a9c22b6ff1a3d764129040db5bd970d6a3366fdf2ddb34",
+  "campaign_key": "tip034.enterprise-pilot-usefulness",
+  "campaign_state": "not_started",
+  "coverage": {
+    "domains": {},
+    "max_single_domain_share": 0.0,
+    "messy_observations": 0,
+    "shapes": {}
+  },
+  "coverage_gates": {
+    "all_manifest_cases_observed": false,
+    "domain_minimums": false,
+    "messy_query_minimum": false,
+    "shape_minimums": false,
+    "single_domain_share": true,
+    "single_runtime_build": false
+  },
+  "runtime_build_identities": [],
+  "sample_size": 0,
+  "schema_version": 1,
+  "scorecard": {
+    "campaign_state": "not_started",
+    "gates": {
+      "minimum_sample": false
+    },
+    "metrics": {},
+    "sample_size": 0,
+    "schema_version": 1,
+    "verdict": "not_started"
+  },
+  "source_report_digests": [],
+  "verdict": "not_started"
+}

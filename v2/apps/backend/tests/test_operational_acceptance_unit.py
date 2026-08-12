@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 
+import httpx
 import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -13,6 +14,7 @@ EVAL = ROOT / "eval"
 if str(EVAL) not in sys.path:
     sys.path.insert(0, str(EVAL))
 
+import run_real_world_acceptance as acceptance_runner  # noqa: E402
 from lib.operational_acceptance import (  # noqa: E402
     load_campaign,
     score_case,
@@ -20,7 +22,11 @@ from lib.operational_acceptance import (  # noqa: E402
     term_present,
     validate_database_target,
 )
-from run_real_world_acceptance import bounded_cases, validate_http_target  # noqa: E402
+from run_real_world_acceptance import (  # noqa: E402
+    bounded_cases,
+    evaluate_http,
+    validate_http_target,
+)
 
 
 def test_real_world_fixture_is_valid_and_broad() -> None:
@@ -68,6 +74,80 @@ def test_http_target_guard_accepts_loopback_only() -> None:
     )
     with pytest.raises(ValueError, match="must_be_loopback"):
         validate_http_target("https://example.com")
+
+
+@pytest.mark.asyncio
+async def test_http_report_binds_results_to_runtime_build(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    campaign = {
+        "schema_version": 1,
+        "campaign": "build-bound",
+        "thresholds": {
+            "overall_pass_rate": 1,
+            "grounded_success_rate": 1,
+            "citation_accuracy": 1,
+            "honest_null_precision": 1,
+            "false_grounded_count": 0,
+            "minimum_domain_pass_rate": 1,
+            "follow_up_pass_rate": 1,
+            "p95_latency_ms": 1000,
+        },
+        "cases": [{
+            "id": "SAFE-TEST",
+            "domain": "safety",
+            "shapes": ["unknown_entity"],
+            "question": "Unknown?",
+            "expect": "honest_null",
+        }],
+    }
+    cases_path = tmp_path / "cases.json"
+    cases_path.write_text(json.dumps(campaign), encoding="utf-8")
+
+    class FakeAsyncClient:
+        def __init__(self, **_: object) -> None:
+            pass
+
+        async def __aenter__(self) -> FakeAsyncClient:
+            return self
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+        async def get(self, path: str) -> httpx.Response:
+            payload = (
+                {"build_sha": "a" * 12 + "+" + "b" * 12}
+                if path == "/api/status"
+                else {"ok": True}
+            )
+            return httpx.Response(
+                200,
+                json=payload,
+                request=httpx.Request("GET", f"http://127.0.0.1{path}"),
+            )
+
+        async def post(
+            self,
+            path: str,
+            **_: object,
+        ) -> httpx.Response:
+            return httpx.Response(
+                200,
+                json={
+                    "state": "honest_null",
+                    "answer": "No evidence",
+                    "citations": [],
+                    "reason_code": "denied_or_unavailable",
+                    "conversation_id": "conversation-1",
+                },
+                request=httpx.Request("POST", f"http://127.0.0.1{path}"),
+            )
+
+    monkeypatch.setattr(acceptance_runner.httpx, "AsyncClient", FakeAsyncClient)
+    result = await evaluate_http(cases_path, "http://127.0.0.1:3101")
+    assert result["runtime_build_identity"] == "a" * 12 + "+" + "b" * 12
+    assert result["passed"] is True
 
 
 def test_campaign_smoke_slice_is_explicit_bounded_and_deterministic() -> None:

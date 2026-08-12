@@ -169,10 +169,85 @@
 }
 .ask-workspace .honest-null { padding: 22px 0; }
 .ask-workspace .ask-progress {
+  display: block;
+  width: min(100%, 720px);
+  min-height: 0;
   margin: 0;
-  padding: 8px 0;
+  padding: 4px 0 18px;
   border: 0;
   background: transparent;
+}
+.ask-progress-line {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.ask-workspace .ask-progress-marker {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pc-text-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--pc-text-primary) 9%, transparent);
+}
+.ask-workspace .ask-progress-message {
+  width: fit-content;
+  color: var(--pc-text-secondary);
+  font-size: 14px;
+  font-weight: 560;
+  background: linear-gradient(90deg,
+    var(--pc-text-secondary) 18%, var(--pc-text-primary) 48%,
+    var(--pc-text-secondary) 78%);
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ask-progress-sweep 2.4s ease-in-out infinite;
+}
+.ask-workspace .ask-progress-time {
+  color: var(--pc-text-muted);
+  font: 500 10px/1 var(--pc-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.ask-progress-spine {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  margin: 14px 0 10px 18px;
+}
+.ask-progress-spine span {
+  height: 1px;
+  background: var(--pc-border);
+  transition: background-color 180ms ease, opacity 180ms ease;
+}
+.ask-progress-spine span[data-state="done"] { background: var(--pc-text-primary); }
+.ask-progress-spine span[data-state="active"] {
+  background: var(--pc-text-secondary);
+  animation: ask-progress-pulse 1.2s ease-in-out infinite;
+}
+.ask-progress-evidence,
+.ask-progress-trust {
+  margin: 0 0 0 18px;
+  color: var(--pc-text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.ask-progress-evidence small {
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--pc-border);
+  color: var(--pc-text-muted);
+  font: inherit;
+}
+.ask-progress-trust { margin-top: 3px; font-size: 10px; }
+@keyframes ask-progress-sweep {
+  0%, 15% { background-position: 100% 0; }
+  85%, 100% { background-position: -100% 0; }
+}
+@keyframes ask-progress-pulse {
+  0%, 100% { opacity: .38; }
+  50% { opacity: 1; }
 }
 
 /* Composer ----------------------------------------------------------- */
@@ -496,4 +571,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ask-workspace .processing-inspector { transition: none; }
+  .ask-workspace .ask-progress-message {
+    animation: none;
+    color: var(--pc-text-secondary);
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+  .ask-progress-spine span[data-state="active"] { animation: none; }
 }

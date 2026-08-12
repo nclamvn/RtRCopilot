@@ -117,12 +117,12 @@ def test_openai_responses_generates_and_reviews_structured_answer() -> None:
     assert asyncio.run(client.review("What is VEGA?", evidence(), candidate))
 
 
-def test_openai_uses_medium_reasoning_for_governed_enumeration() -> None:
-    observed: list[str] = []
+def test_openai_uses_fast_lane_and_low_verbosity_for_governed_enumeration() -> None:
+    observed: list[tuple[str, str]] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         sent = json.loads(request.content)
-        observed.append(sent["reasoning"]["effort"])
+        observed.append((sent["reasoning"]["effort"], sent["text"]["verbosity"]))
         return httpx.Response(200, json=response_payload({
             "answerable": True,
             "answer": "VEGA is a governed product. [C1]",
@@ -144,7 +144,33 @@ def test_openai_uses_medium_reasoning_for_governed_enumeration() -> None:
             "completeness=exhaustive; answer_shape=list."
         ),
     ))
-    assert observed == ["medium"]
+    assert observed == [("low", "low")]
+
+
+def test_openai_keeps_quality_lane_for_complex_reasoning() -> None:
+    observed: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        sent = json.loads(request.content)
+        observed.append(sent["reasoning"]["effort"])
+        return httpx.Response(200, json=response_payload({
+            "answerable": True,
+            "answer": "The comparison is supported. [C1]",
+            "used_markers": ["C1"],
+            "follow_ups": [],
+            "reason": "supported",
+        }))
+
+    client = OpenAIAnswerClient(
+        "key", "gpt-5.6-sol", timeout=5, reasoning_effort="high",
+        max_output_tokens=1024, transport=httpx.MockTransport(handler),
+    )
+    asyncio.run(client.generate(
+        "Compare the alternatives",
+        evidence(),
+        system_policy="Intent=comparison; completeness=best_effort.",
+    ))
+    assert observed == ["high"]
 
 
 class FakeClient:
@@ -366,6 +392,7 @@ def test_builder_separates_high_quality_generator_from_bounded_reviewer() -> Non
     assert isinstance(generator, OpenAIAnswerClient)
     assert isinstance(reviewer, OpenAIAnswerClient)
     assert generator._reasoning_effort == "high"
+    assert generator._routine_reasoning_effort == "low"
     assert reviewer._reasoning_effort == "low"
     assert reviewer._max_output_tokens == 256
     assert provider.review_mode == "on_demand"

@@ -7,6 +7,7 @@ import {afterEach, expect, test, vi} from "vitest";
 import {I18nProvider} from "../../../i18n/provider";
 import AskPage, {
   AnswerText,
+  AskProgress,
   parseAnswerBlocks,
   parseAnswerClaims,
   readAskPayload,
@@ -66,13 +67,30 @@ test("answer claim parser uses citation boundaries without inventing structure",
   ]);
 });
 
+test("repeated provenance keeps a quoted brand sequence in one claim and one line", () => {
+  const answer = "Sứ mệnh của Real-time Robotics là Drone Innovation to Advance Humanity, "
+    + "với triết lý “Invent. [C3] Build. [C3] Prove.” và năng lực sản xuất. [C3]";
+
+  expect(parseAnswerClaims(answer)).toEqual([{
+    text: "Sứ mệnh của Real-time Robotics là Drone Innovation to Advance Humanity, "
+      + "với triết lý “Invent. Build. Prove.” và năng lực sản xuất.",
+    citations: ["C3"],
+  }]);
+
+  const {container} = render(<I18nProvider initialLocale="vi"><AnswerText
+    text={answer} onCitation={() => undefined}/></I18nProvider>);
+  expect(container.querySelectorAll(".answer-claim")).toHaveLength(1);
+  expect(container.querySelectorAll(".citation-marker")).toHaveLength(1);
+  expect(container.textContent).toContain("Invent.\u00a0Build.\u00a0Prove.");
+});
+
 test("Ask SSE exposes backend checkpoints and heartbeat without invented phases", async () => {
   const progress: string[] = [];
   const heartbeats: number[] = [];
   const stream = [
     "event: progress\ndata: {\"stage\":\"understanding\",\"status\":\"started\",\"elapsed_ms\":4,\"detail\":null,\"source_count\":0,\"sources\":[]}\n\n",
     "event: heartbeat\ndata: {\"elapsed_ms\":1000}\n\n",
-    "event: progress\ndata: {\"stage\":\"retrieving\",\"status\":\"completed\",\"elapsed_ms\":1200,\"detail\":null,\"source_count\":1,\"sources\":[{\"marker\":\"C1\",\"record_key\":\"rtr.product.hera\",\"source_label\":\"HERA spec\",\"verification_state\":\"approved\",\"freshness_state\":\"current\"}]}\n\n",
+    "event: progress\ndata: {\"stage\":\"retrieving\",\"status\":\"completed\",\"elapsed_ms\":1200,\"sequence\":2,\"stage_elapsed_ms\":800,\"milestone\":\"sources_ready\",\"detail\":null,\"source_count\":1,\"sources\":[{\"marker\":\"C1\",\"record_key\":\"rtr.product.hera\",\"source_label\":\"HERA spec\",\"verification_state\":\"approved\",\"freshness_state\":\"current\"}]}\n\n",
     "event: result\ndata: {\"response\":{\"ok\":true}}\n\n",
   ].join("");
   const payload = await readAskPayload(new Response(stream, {
@@ -83,6 +101,39 @@ test("Ask SSE exposes backend checkpoints and heartbeat without invented phases"
   expect(progress).toEqual(["understanding:started", "retrieving:completed"]);
   expect(heartbeats).toEqual([1000]);
   expect(payload).toEqual({ok: true});
+});
+
+test("streaming UX reports authorized evidence readiness without draft answer text", () => {
+  const {container} = render(<I18nProvider initialLocale="vi"><AskProgress progress={{
+    elapsedMs: 12_400,
+    firstUsefulMs: 1_200,
+    events: {
+      understanding: {stage: "understanding", status: "completed", elapsedMs: 400,
+        sequence: 1, stageElapsedMs: 400, milestone: "intent_ready", detail: null,
+        sourceCount: 0, sources: []},
+      retrieving: {stage: "retrieving", status: "completed", elapsedMs: 1_200,
+        sequence: 2, stageElapsedMs: 800, milestone: "sources_ready", detail: null,
+        sourceCount: 1, sources: [{marker: "C1", recordKey: "rtr.product.hera",
+          sourceLabel: "HERA spec", verificationState: "approved",
+          freshnessState: "current"}]},
+      verifying: {stage: "verifying", status: "completed", elapsedMs: 1_800,
+        sequence: 3, stageElapsedMs: 600, milestone: "evidence_ready", detail: null,
+        sourceCount: 1, sources: [{marker: "C1", recordKey: "rtr.product.hera",
+          sourceLabel: "HERA spec", verificationState: "approved",
+          freshnessState: "current"}]},
+      synthesizing: {stage: "synthesizing", status: "started", elapsedMs: 1_801,
+        sequence: 4, stageElapsedMs: null, milestone: null, detail: null,
+        sourceCount: 1, sources: [{marker: "C1", recordKey: "rtr.product.hera",
+          sourceLabel: "HERA spec", verificationState: "approved",
+          freshnessState: "current"}]},
+    },
+  }}/></I18nProvider>);
+
+  expect(screen.getByRole("status")).toHaveTextContent("Đang tổng hợp");
+  expect(container).toHaveTextContent("Đã kiểm tra 1 nguồn được phép");
+  expect(container).toHaveTextContent("Nguồn đầu tiên sẵn sàng sau 1,2 giây");
+  expect(container).toHaveTextContent("chỉ hiển thị sau khi trích dẫn");
+  expect(container).not.toHaveTextContent("HERA spec");
 });
 
 test("answer renderer converts safe Markdown to semantic typography without raw markers", () => {

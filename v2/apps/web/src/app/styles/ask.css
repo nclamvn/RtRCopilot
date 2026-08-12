@@ -384,75 +384,12 @@
 .ask-workspace .surface-loading,
 .ask-workspace .surface-empty { color: var(--pc-text-muted); }
 
-/* The trust pipeline can legitimately take a minute. Keep it visibly alive
-   without introducing color or pretending a determinate completion percent. */
-.ask-workspace .ask-progress {
-  min-height: 56px;
-  display: grid;
-  grid-template-columns: 8px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--pc-space-3);
-  padding: var(--pc-space-3) var(--pc-space-1);
-  color: var(--pc-text-muted);
-}
-.ask-workspace .ask-progress-marker {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--pc-text-primary);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--pc-text-primary) 42%, transparent);
-  animation: ask-progress-pulse 1.8s var(--pc-ease) infinite;
-}
-.ask-workspace .ask-progress-message {
-  width: fit-content;
-  max-width: 100%;
-  color: transparent;
-  background: linear-gradient(100deg,
-    var(--pc-text-muted) 0%,
-    var(--pc-text-muted) 34%,
-    var(--pc-text-primary) 46%,
-    var(--pc-accent-hover) 50%,
-    var(--pc-text-primary) 54%,
-    var(--pc-text-muted) 66%,
-    var(--pc-text-muted) 100%);
-  background-size: 260% 100%;
-  background-position: 100% 0;
-  background-clip: text;
-  -webkit-background-clip: text;
-  font-size: var(--pc-body-size);
-  font-weight: 500;
-  line-height: 1.5;
-  animation: ask-progress-shimmer 2.2s ease-in-out infinite;
-}
-.ask-workspace .ask-progress-time {
-  color: var(--pc-text-muted);
-  font-family: var(--pc-font-mono);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
+/* The processing-ledger shimmer remains a shared primitive. The Ask progress
+   component itself moved to chat-workspace.css; keeping its retired grid here
+   split the new section's children into columns at runtime. */
 @keyframes ask-progress-shimmer {
   0% { background-position: 100% 0; }
   68%, 100% { background-position: -100% 0; }
-}
-@keyframes ask-progress-pulse {
-  0%, 100% { opacity: .45; box-shadow: 0 0 0 0 transparent; }
-  45% {
-    opacity: 1;
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--pc-text-primary) 32%, transparent);
-  }
-  75% {
-    opacity: .45;
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--pc-text-primary) 0%, transparent);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ask-workspace .ask-progress-marker { animation: none; opacity: 1; }
-  .ask-workspace .ask-progress-message {
-    animation: none;
-    color: var(--pc-text-primary);
-    background: none;
-  }
 }
 .ask-workspace .surface-denied {
   border: 1px solid var(--pc-warning);

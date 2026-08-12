@@ -162,7 +162,14 @@ async function mockAsk(page: Page, options: AskMockOptions = {}) {
         };
         const progress = (stage: string, status: string, elapsed: number) =>
           `event: progress\ndata: ${JSON.stringify({
-            stage, status, elapsed_ms: elapsed, detail: null,
+            stage, status, elapsed_ms: elapsed, sequence: elapsed,
+            stage_elapsed_ms: status === "completed" ? 40 : null,
+            milestone: status === "completed" ? ({
+              understanding: "intent_ready", retrieving: "sources_ready",
+              verifying: "evidence_ready", synthesizing: "draft_ready",
+              grounding: "answer_ready",
+            } as Record<string, string>)[stage] : null,
+            detail: null,
             source_count: stage === "understanding" ? 0 : 1,
             sources: stage === "understanding" ? [] : [progressSource],
           })}\n\n`;
@@ -260,6 +267,29 @@ test("composer clears on send and blocks rapid duplicate submits", async ({page}
   await expect(composer).toHaveValue("");
   await expect(page.locator(".ask-turn-user")).toHaveText("sản phẩm");
   await expect.poll(() => askBodies.length).toBe(1);
+});
+
+test("TIP-033 live progress is one aligned vertical block", async ({page}) => {
+  await mockAsk(page, {askDelayMs: 1500});
+  await page.setViewportSize({width: 1920, height: 1080});
+  await page.goto("/ask");
+  await submitQuestion(page, "HERA là gì?");
+
+  const progress = page.locator(".ask-progress");
+  await expect(progress).toBeVisible();
+  expect(await progress.evaluate(node => getComputedStyle(node).display)).toBe("block");
+
+  const line = await progress.locator(".ask-progress-line").boundingBox();
+  const spine = await progress.locator(".ask-progress-spine").boundingBox();
+  const evidence = await progress.locator(".ask-progress-evidence").boundingBox();
+  const trust = await progress.locator(".ask-progress-trust").boundingBox();
+  expect(line && spine && evidence && trust).toBeTruthy();
+  expect(spine!.y).toBeGreaterThan(line!.y + line!.height - 1);
+  expect(evidence!.y).toBeGreaterThan(spine!.y);
+  expect(trust!.y).toBeGreaterThan(evidence!.y);
+  expect(trust!.width).toBeGreaterThan(240);
+
+  await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
 });
 
 test("new conversation cancels a stale in-flight answer", async ({page}) => {

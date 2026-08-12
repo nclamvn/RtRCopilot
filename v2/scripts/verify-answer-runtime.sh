@@ -29,6 +29,8 @@ desired_embedding_model="$(read_env RAG_EMBEDDING_OPENAI_MODEL)"
 desired_embedding_model="${desired_embedding_model:-text-embedding-3-small}"
 desired_review_mode="$(read_env RAG_REVIEW_MODE)"
 desired_review_mode="${desired_review_mode:-on_demand}"
+desired_routine_reasoning="$(read_env RAG_ANSWER_ROUTINE_REASONING_EFFORT)"
+desired_routine_reasoning="${desired_routine_reasoning:-low}"
 desired_metadata_page_size="$(read_env RAG_METADATA_PAGE_SIZE)"
 desired_metadata_page_size="${desired_metadata_page_size:-1000}"
 desired_openai="$(read_env OPENAI_API_KEY)"
@@ -63,6 +65,7 @@ actual_embedding_provider="$(container_env RAG_EMBEDDING_PROVIDER)"
 actual_embedding_dimension="$(container_env RAG_EMBEDDING_DIMENSION)"
 actual_embedding_model="$(container_env RAG_EMBEDDING_OPENAI_MODEL)"
 actual_review_mode="$(container_env RAG_REVIEW_MODE)"
+actual_routine_reasoning="$(container_env RAG_ANSWER_ROUTINE_REASONING_EFFORT)"
 actual_metadata_page_size="$(container_env RAG_METADATA_PAGE_SIZE)"
 actual_build_sha="$(container_env RTR_BUILD_SHA)"
 
@@ -82,6 +85,8 @@ compare_value RAG_EMBEDDING_PROVIDER "$desired_embedding_provider" "$actual_embe
 compare_value RAG_EMBEDDING_DIMENSION "$desired_embedding_dimension" "$actual_embedding_dimension"
 compare_value RAG_EMBEDDING_OPENAI_MODEL "$desired_embedding_model" "$actual_embedding_model"
 compare_value RAG_REVIEW_MODE "$desired_review_mode" "$actual_review_mode"
+compare_value RAG_ANSWER_ROUTINE_REASONING_EFFORT \
+  "$desired_routine_reasoning" "$actual_routine_reasoning"
 compare_value RAG_METADATA_PAGE_SIZE "$desired_metadata_page_size" "$actual_metadata_page_size"
 compare_value RTR_BUILD_SHA "$desired_build_sha" "$actual_build_sha"
 
@@ -185,4 +190,4 @@ if ! printf '%s' "$web_health" | grep -Fq "\"build_sha\":\"$desired_build_sha\""
   exit 1
 fi
 
-echo "ANSWER RUNTIME PASS · provider=$actual_provider · embedding=$actual_embedding_provider/$actual_embedding_dimension · build=$actual_build_sha · credential=$actual_has_credential · policy=loaded · grounded_answering=ready"
+echo "ANSWER RUNTIME PASS · provider=$actual_provider · embedding=$actual_embedding_provider/$actual_embedding_dimension · routine_reasoning=$actual_routine_reasoning · build=$actual_build_sha · credential=$actual_has_credential · policy=loaded · grounded_answering=ready"

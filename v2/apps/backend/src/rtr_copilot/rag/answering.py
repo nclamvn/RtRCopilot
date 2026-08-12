@@ -1714,7 +1714,6 @@ class AnswerService:
             started=started,
             stage="understanding",
             status="completed",
-            detail=query_plan.resolved_question,
         )
         resolved_question = query_plan.resolved_question
         relevance_question = (

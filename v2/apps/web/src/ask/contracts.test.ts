@@ -2,6 +2,7 @@ import {describe, expect, test} from "vitest";
 import {
   askQuery,
   parseAskAnswer,
+  parseAskProgressEvent,
   parseAskState,
   parseConversation,
   parseFileScopePage,
@@ -131,6 +132,55 @@ describe("ask answer contract", () => {
     {patch: {citations: "none"}},
   ])("rejects malformed response $patch", ({patch}) => {
     expect(() => parseAskAnswer({...grounded, ...patch})).toThrow();
+  });
+});
+
+describe("ask progress contract", () => {
+  const progress = {
+    stage: "retrieving",
+    status: "completed",
+    elapsed_ms: 1200,
+    sequence: 4,
+    stage_elapsed_ms: 640,
+    milestone: "sources_ready",
+    detail: null,
+    source_count: 1,
+    sources: [{
+      marker: "C1",
+      record_key: "company.product.hera",
+      source_label: "HERA approved specification",
+      verification_state: "approved",
+      freshness_state: "current",
+    }],
+  };
+
+  test("accepts bounded additive latency metadata", () => {
+    const parsed = parseAskProgressEvent(progress);
+    expect(parsed.sequence).toBe(4);
+    expect(parsed.stageElapsedMs).toBe(640);
+    expect(parsed.milestone).toBe("sources_ready");
+    expect(parsed.sources[0].recordKey).toBe("company.product.hera");
+  });
+
+  test("keeps older stream payloads compatible", () => {
+    const legacy: Record<string, unknown> = {...progress};
+    delete legacy.sequence;
+    delete legacy.stage_elapsed_ms;
+    delete legacy.milestone;
+    const parsed = parseAskProgressEvent(legacy);
+    expect(parsed.sequence).toBe(0);
+    expect(parsed.stageElapsedMs).toBeNull();
+    expect(parsed.milestone).toBeNull();
+  });
+
+  test.each([
+    {milestone: "draft_tokens"},
+    {sequence: -1},
+    {stage_elapsed_ms: -1},
+    {source_count: 21},
+  ])("rejects unbounded or forged progress metadata %o", patch => {
+    expect(() => parseAskProgressEvent({...progress, ...patch}))
+      .toThrow("invalid_ask_progress");
   });
 });
 

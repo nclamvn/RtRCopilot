@@ -56,6 +56,15 @@ PROVIDER_CALL_DURATION = Histogram(
     ("provider", "result"),
     buckets=(0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0),
 )
+# TIP-033: end-user latency is not equivalent to provider latency. These
+# bounded milestones expose time-to-first-useful evidence and final readiness
+# without user/query labels or any content-bearing observation.
+ASK_STREAM_MILESTONE_DURATION = Histogram(
+    "rtr_ask_stream_milestone_duration_seconds",
+    "Ask SSE wall time to a bounded, content-free milestone.",
+    ("milestone",),
+    buckets=(0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 25.0, 45.0, 60.0),
+)
 PROVIDER_CALL_FAILURES = Counter(
     "rtr_provider_call_failures_total",
     "AI provider calls that raised or timed out, by provider.",

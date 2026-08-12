@@ -22,6 +22,7 @@ from rtr_copilot.governance.service import (
 from rtr_copilot.limits.breaker import ProviderUnavailable
 from rtr_copilot.limits.budget import BudgetExhausted
 from rtr_copilot.limits.errors import limit_response
+from rtr_copilot.observability.metrics import ASK_STREAM_MILESTONE_DURATION
 from rtr_copilot.rag.answering import AnswerService, GroundingError
 from rtr_copilot.rag.models import (
     AskProgressEvent,
@@ -105,6 +106,15 @@ async def _ask_stream(
     """Stream real Ask checkpoints; never prompts, snippets or chain-of-thought."""
     queue: asyncio.Queue[AskProgressEvent] = asyncio.Queue(maxsize=32)
     started = time.monotonic()
+    sequence = 0
+    stage_started_ms: dict[str, int] = {}
+    milestone_by_stage = {
+        "understanding": "intent_ready",
+        "retrieving": "sources_ready",
+        "verifying": "evidence_ready",
+        "synthesizing": "draft_ready",
+        "grounding": "answer_ready",
+    }
 
     async def publish(event: AskProgressEvent) -> None:
         await queue.put(event)
@@ -122,7 +132,33 @@ async def _ask_stream(
         while not task.done() or not queue.empty():
             try:
                 event = await asyncio.wait_for(queue.get(), timeout=1.0)
-                yield _sse("progress", event.model_dump(mode="json"))
+                sequence += 1
+                if event.status == "started":
+                    stage_started_ms[event.stage] = event.elapsed_ms
+                stage_elapsed_ms = None
+                if event.status == "completed":
+                    stage_elapsed_ms = max(
+                        0,
+                        event.elapsed_ms
+                        - stage_started_ms.get(event.stage, event.elapsed_ms),
+                    )
+                milestone = (
+                    milestone_by_stage[event.stage]
+                    if event.status == "completed"
+                    # A zero-result retrieval is not useful source feedback.
+                    and (event.stage != "retrieving" or event.source_count > 0)
+                    else None
+                )
+                streamed = event.model_copy(update={
+                    "sequence": sequence,
+                    "stage_elapsed_ms": stage_elapsed_ms,
+                    "milestone": milestone,
+                })
+                if milestone is not None:
+                    ASK_STREAM_MILESTONE_DURATION.labels(milestone).observe(
+                        event.elapsed_ms / 1000,
+                    )
+                yield _sse("progress", streamed.model_dump(mode="json"))
             except TimeoutError:
                 if await request.is_disconnected():
                     task.cancel()
@@ -132,8 +168,12 @@ async def _ask_stream(
                         0,
                         round((time.monotonic() - started) * 1000),
                     ),
+                    "last_sequence": sequence,
                 })
         result = await task
+        ASK_STREAM_MILESTONE_DURATION.labels("result_ready").observe(
+            max(0.0, time.monotonic() - started),
+        )
         yield _sse("result", {
             "response": result.model_dump(mode="json"),
         })

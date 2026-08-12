@@ -84,12 +84,23 @@ const ASK_PIPELINE: ReadonlyArray<{
   {stage: "grounding", label: "ask.inspector.stage.grounding"},
 ];
 
-type AskProgressView = {
-  events: Partial<Record<AskProgressStage, AskProgressEvent>>;
-  elapsedMs: number;
+const ASK_PROGRESS_LABELS: Record<AskProgressStage, MessageKey> = {
+  understanding: "ask.progress.understanding",
+  retrieving: "ask.progress.retrieving",
+  verifying: "ask.progress.verifying",
+  synthesizing: "ask.progress.synthesizing",
+  grounding: "ask.progress.grounding",
 };
 
-const EMPTY_PROGRESS: AskProgressView = {events: {}, elapsedMs: 0};
+export type AskProgressView = {
+  events: Partial<Record<AskProgressStage, AskProgressEvent>>;
+  elapsedMs: number;
+  firstUsefulMs: number | null;
+};
+
+const EMPTY_PROGRESS: AskProgressView = {
+  events: {}, elapsedMs: 0, firstUsefulMs: null,
+};
 
 class AskStreamFailure extends Error {
   constructor(readonly payload: unknown) {
@@ -168,19 +179,47 @@ function activeProgressEvent(progress: AskProgressView): AskProgressEvent | null
   return null;
 }
 
-function AskProgress({progress}: {progress: AskProgressView}) {
+export function AskProgress({progress}: {progress: AskProgressView}) {
   const {t, locale} = useI18n();
   const active = activeProgressEvent(progress);
-  const item = ASK_PIPELINE.find(row => row.stage === active?.stage);
-  const message = item ? t(item.label) : t("ask.inspector.waiting");
-  return <div className="ask-progress" aria-label={message}>
-    <span className="ask-progress-marker" aria-hidden="true"/>
-    <span className="ask-progress-message" role="status" aria-live="polite"
-      aria-atomic="true">{message}</span>
-    <span className="ask-progress-time" aria-hidden="true">
-      {formatNumber(Math.floor(progress.elapsedMs / 1000), locale)} {t("ask.progress.seconds")}
-    </span>
-  </div>;
+  const message = progress.elapsedMs >= 20_000
+    ? t("ask.progress.extended")
+    : active ? t(ASK_PROGRESS_LABELS[active.stage]) : t("ask.inspector.waiting");
+  const sources = latestProgressSources(progress);
+  const evidenceReady = ASK_PIPELINE.slice(2).some(row =>
+    progress.events[row.stage]?.status === "completed");
+  const activeIndex = Math.max(0, ASK_PIPELINE.findIndex(row => row.stage === active?.stage));
+  const seconds = (value: number) => `${formatNumber(
+    Math.max(0, Math.round(value / 100) / 10), locale,
+  )} ${t("ask.progress.seconds")}`;
+  return <section className="ask-progress" aria-label={message}>
+    <div className="ask-progress-line">
+      <span className="ask-progress-marker" aria-hidden="true"/>
+      <span className="ask-progress-message" role="status" aria-live="polite"
+        aria-atomic="true">{message}</span>
+      <span className="ask-progress-time" aria-hidden="true">
+        {seconds(progress.elapsedMs)}
+      </span>
+    </div>
+    <div className="ask-progress-spine" aria-hidden="true">
+      {ASK_PIPELINE.map((row, index) => <span key={row.stage}
+        data-state={progress.events[row.stage]?.status === "completed"
+          ? "done" : index === activeIndex ? "active" : "pending"}/>) }
+    </div>
+    <p className="ask-progress-evidence">
+      {sources.length > 0
+        ? t(evidenceReady
+          ? "ask.progress.evidenceReady" : "ask.progress.sourcesReady")
+          .replace("{count}", formatNumber(sources.length, locale))
+        : t("ask.progress.sourcesWaiting")}
+      {progress.firstUsefulMs !== null && <small>
+        {t("ask.progress.firstUseful").replace(
+          "{time}", seconds(progress.firstUsefulMs),
+        )}
+      </small>}
+    </p>
+    <p className="ask-progress-trust">{t("ask.progress.trustBoundary")}</p>
+  </section>;
 }
 
 function latestProgressSources(progress: AskProgressView): AskProgressSource[] {
@@ -261,6 +300,10 @@ function ProcessingInspector({
             <div>
               <strong>{t(item.label)}</strong>
               {event?.detail && <small>{event.detail}</small>}
+              {event?.stageElapsedMs !== null && event?.stageElapsedMs !== undefined
+                && event.status === "completed" && <small>
+                  {formatNumber(Math.round(event.stageElapsedMs / 100) / 10, locale)}s
+                </small>}
             </div>
             <span className="processing-state">{t(
               state === "done" ? "ask.inspector.done"
@@ -329,6 +372,38 @@ function normalizeClaimCopy(value: string): string {
     .trim();
 }
 
+function startsStructuredMarkdown(value: string): boolean {
+  return /^(?:#{1,4}\s|[-*+]\s|\d+[.)]\s|>\s?|```)/m.test(value);
+}
+
+function sameCitations(left: string[], right: string[]): boolean {
+  return left.length === right.length
+    && left.every((citation, index) => citation === right[index]);
+}
+
+/**
+ * Repeated provenance is not a meaningful visual claim boundary. Models may
+ * cite each short sentence in a slogan independently; rendering those markers
+ * literally would split one sentence into several ruled rows. Preserve real
+ * Markdown block boundaries, but coalesce adjacent prose backed by the exact
+ * same evidence set.
+ */
+function coalesceRepeatedCitationClaims(claims: AnswerClaim[]): AnswerClaim[] {
+  const merged: AnswerClaim[] = [];
+  for (const claim of claims) {
+    const previous = merged[merged.length - 1];
+    if (previous
+      && sameCitations(previous.citations, claim.citations)
+      && !startsStructuredMarkdown(previous.text)
+      && !startsStructuredMarkdown(claim.text)) {
+      previous.text = normalizeClaimCopy(`${previous.text} ${claim.text}`);
+      continue;
+    }
+    merged.push({text: claim.text, citations: [...claim.citations]});
+  }
+  return merged;
+}
+
 /**
  * The answer contract is plain text with postfixed `[C…]` markers. Treat a
  * marker as a real claim boundary instead of painting one unbroken paragraph.
@@ -354,7 +429,7 @@ export function parseAnswerClaims(text: string): AnswerClaim[] {
 
   const tail = normalizeClaimCopy(text.slice(cursor));
   if (tail) claims.push({text: tail, citations: []});
-  if (claims.length > 0) return claims;
+  if (claims.length > 0) return coalesceRepeatedCitationClaims(claims);
   const fallback = normalizeClaimCopy(text);
   return fallback ? [{text: fallback, citations: []}] : [];
 }
@@ -444,9 +519,19 @@ export function parseAnswerBlocks(text: string): AnswerBlock[] {
 
 const INLINE_MARKDOWN = /(\*\*([^*\n]+)\*\*|__([^_\n]+)__|`([^`\n]+)`|\*([^*\n]+)\*|_([^_\n]+)_|\[([^\]\n]+)\]\(https?:\/\/[^\s)]+\))/g;
 
+const ATOMIC_QUOTED_SEQUENCE =
+  /([“"])([\p{L}\p{N}-]+\.(?:\s+[\p{L}\p{N}-]+\.){1,5})([”"])/gu;
+
+function preserveAtomicQuotedSequences(value: string): string {
+  return value.replace(ATOMIC_QUOTED_SEQUENCE, (_match, open, phrase, close) =>
+    `${open}${String(phrase).replace(/\s+/g, "\u00a0")}${close}`);
+}
+
 function plainMarkdown(value: string) {
   // A malformed model delimiter must never leak into the polished surface.
-  return value.replace(/\*\*/g, "").replace(/__/g, "");
+  return preserveAtomicQuotedSequences(
+    value.replace(/\*\*/g, "").replace(/__/g, ""),
+  );
 }
 
 /** Safe inline emphasis: React escapes all text and URLs stay non-activatable. */
@@ -897,6 +982,11 @@ export default function AskPage() {
               if (isCurrentAsk()) setAskProgress(current => ({
                 elapsedMs: Math.max(current.elapsedMs, event.elapsedMs),
                 events: {...current.events, [event.stage]: event},
+                firstUsefulMs: current.firstUsefulMs ?? (
+                  event.milestone === "sources_ready"
+                    || event.milestone === "evidence_ready"
+                    ? event.elapsedMs : null
+                ),
               }));
             },
             elapsedMs => {

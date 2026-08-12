@@ -78,6 +78,11 @@ async def test_ask_stream_emits_only_bounded_progress_then_existing_result() -> 
         "event: result",
     ]
     source_frame = json.loads(frames[1].split("data: ", 1)[1])
+    first_frame = json.loads(frames[0].split("data: ", 1)[1])
+    assert first_frame["sequence"] == 1
+    assert source_frame["sequence"] == 2
+    assert source_frame["stage_elapsed_ms"] == 0
+    assert source_frame["milestone"] == "sources_ready"
     assert set(source_frame["sources"][0]) == {
         "marker",
         "record_key",

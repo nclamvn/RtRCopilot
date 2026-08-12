@@ -2,7 +2,7 @@ SHELL := /bin/bash
 RTR_BUILD_SHA ?= $(shell ./scripts/build-identity.sh)
 export RTR_BUILD_SHA
 
-.PHONY: dev verify e2e-enterprise tip032-recertify answer-runtime-check answer-runtime-refresh pilot-up pilot-check pilot-scorecard pilot-down enterprise-release inventory-snapshot inventory-check document-lifecycle-proof connector-readiness crm-canary migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
+.PHONY: dev verify e2e-enterprise tip032-recertify tip033-recertify tip034-pilot-capture answer-runtime-check answer-runtime-refresh pilot-up pilot-check pilot-scorecard pilot-campaign-check pilot-campaign-evaluate pilot-down enterprise-release inventory-snapshot inventory-check document-lifecycle-proof connector-readiness crm-canary migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
 
 # TIP-012 Task 1 — hardened profile (TLS ingress fronts everything, AC-01).
 # Requires the ingress hostname to resolve to 127.0.0.1 for probes/browsers:
@@ -26,6 +26,12 @@ e2e-enterprise:
 
 tip032-recertify:
 	./scripts/run-tip032-recertification.sh
+
+tip033-recertify:
+	./scripts/run-tip033-recertification.sh
+
+tip034-pilot-capture:
+	./scripts/run-tip034-pilot-capture.sh
 
 # The local quality profile lives in .env.demo. `docker compose restart` does
 # not reload changed environment variables, and plain `docker compose up` reads
@@ -59,6 +65,29 @@ pilot-scorecard:
 		-v "$(CURDIR)/eval:/app/eval" api \
 		python -m rtr_copilot.commands.evaluate_pilot_scorecard \
 		--input "$(PILOT_SCORECARD_INPUT)" --output "$(PILOT_SCORECARD_OUTPUT)"
+
+PILOT_CAMPAIGN ?= /app/eval/pilot/tip034_campaign.json
+PILOT_CAMPAIGN_LEDGER ?= /app/eval/pilot/tip034_observations.json
+PILOT_CAMPAIGN_SOURCE ?= /app/eval/real_world/cases.json
+PILOT_CAMPAIGN_OUTPUT ?= /app/eval/pilot/tip034_campaign_result.json
+PILOT_ACCEPTANCE_REPORT ?= /app/eval/real_world/tip034_pilot_capture.json
+
+pilot-campaign-check:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \
+		-v "$(CURDIR)/eval:/app/eval" api \
+		python -m rtr_copilot.commands.evaluate_pilot_campaign \
+		--campaign "$(PILOT_CAMPAIGN)" --ledger "$(PILOT_CAMPAIGN_LEDGER)" \
+		--source-suite "$(PILOT_CAMPAIGN_SOURCE)" \
+		--output "$(PILOT_CAMPAIGN_OUTPUT)" --definition-only
+
+pilot-campaign-evaluate:
+	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \
+		-v "$(CURDIR)/eval:/app/eval" api \
+		python -m rtr_copilot.commands.evaluate_pilot_campaign \
+		--campaign "$(PILOT_CAMPAIGN)" --ledger "$(PILOT_CAMPAIGN_LEDGER)" \
+		--source-suite "$(PILOT_CAMPAIGN_SOURCE)" \
+		--acceptance-report "$(PILOT_ACCEPTANCE_REPORT)" \
+		--output "$(PILOT_CAMPAIGN_OUTPUT)"
 
 pilot-down:
 	./scripts/local-demo.sh --down

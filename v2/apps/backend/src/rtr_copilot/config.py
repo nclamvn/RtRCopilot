@@ -154,6 +154,12 @@ class Settings(BaseSettings):
     rag_answer_reasoning_effort: Literal[
         "none", "low", "medium", "high", "xhigh", "max",
     ] = "high"
+    # TIP-033: routine evidence-organization does not benefit from the same
+    # reasoning depth as analysis/comparison. Keep it independently tunable so
+    # operators can roll latency tuning back without changing the quality lane.
+    rag_answer_routine_reasoning_effort: Literal[
+        "none", "low", "medium", "high", "xhigh", "max",
+    ] = "low"
     rag_review_reasoning_effort: Literal[
         "none", "low", "medium", "high", "xhigh", "max",
     ] = "low"
