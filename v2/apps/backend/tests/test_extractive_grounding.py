@@ -18,7 +18,9 @@ from rtr_copilot.rag.answering import (
     factual_units,
     grounding_repair_instruction,
     normalize_trailing_citations,
+    profile_answer_instruction,
     profile_facets_covered,
+    profile_material_terms_covered,
     prune_uncited_units,
     verify_grounding,
     verify_with_semantic_review,
@@ -99,6 +101,76 @@ def test_profile_coverage_requires_one_used_marker_per_governed_facet() -> None:
     )
     assert profile_facets_covered(plan, partial_evidence, partial_markers)
     assert answer_coverage_state(plan, partial_evidence, partial) == "partial"
+
+
+def test_profile_material_checkpoint_closes_semantic_completeness_gap() -> None:
+    """One citation per facet cannot hide an omitted material fact."""
+    plan = asyncio.run(plan_query(
+        "HERA là gì?",
+        _ProfilePlanner(),
+        registry=load_ontology(),
+    ))
+    evidence = [
+        ProviderEvidence(
+            marker=f"C{index}",
+            text=(
+                "HERA có 12 trường hợp sử dụng đã được ghi nhận."
+                if facet.facet_id == "applications"
+                else f"Evidence for {facet.label}."
+            ),
+            record_key=facet.record_keys[0],
+            provenance_level="approved_internal",
+            verification_state="approved",
+            freshness_state="current",
+        )
+        for index, facet in enumerate(plan.profile_facets, start=1)
+    ]
+    markers = [item.marker for item in evidence]
+    incomplete = ProviderAnswer(
+        answer=" ".join(f"Fact [{marker}]" for marker in markers),
+        used_markers=markers,
+    )
+    application_marker = next(
+        item.marker for item in evidence if item.record_key == "HC-050"
+    )
+    complete = incomplete.model_copy(update={
+        "answer": (
+            f"{incomplete.answer} HERA có 12 use case [{application_marker}]"
+        ),
+    })
+
+    assert profile_facets_covered(plan, evidence, markers)
+    assert not profile_material_terms_covered(plan, evidence, incomplete.answer)
+    assert answer_coverage_state(plan, evidence, incomplete) == "partial"
+    assert profile_material_terms_covered(plan, evidence, complete.answer)
+    assert answer_coverage_state(plan, evidence, complete) == "complete"
+    instruction = profile_answer_instruction(plan, evidence)
+    assert "evidence-backed coverage checkpoints are mandatory" in instruction
+    assert "12 trường hợp sử dụng | 12 use case | 12 use cases" in instruction
+
+
+def test_profile_checkpoint_is_not_forced_without_authorized_support() -> None:
+    plan = asyncio.run(plan_query(
+        "HERA là gì?",
+        _ProfilePlanner(),
+        registry=load_ontology(),
+    ))
+    evidence = [
+        ProviderEvidence(
+            marker="C1",
+            text="Một ứng dụng được phép hiển thị.",
+            record_key="HC-050",
+            provenance_level="approved_internal",
+            verification_state="approved",
+            freshness_state="current",
+        ),
+    ]
+
+    assert profile_material_terms_covered(plan, evidence, "Ứng dụng [C1]")
+    assert "coverage checkpoints are mandatory" not in profile_answer_instruction(
+        plan,
+        evidence,
+    )
 
 
 def _answer(evidence: list[ProviderEvidence]) -> object:

@@ -336,6 +336,9 @@ class QueryPlan:
             "definition_record_count": len(self.definition_record_keys),
             "profile_facet_count": len(self.profile_facets),
             "profile_record_count": len(self.profile_record_keys),
+            "profile_coverage_checkpoint_count": sum(
+                len(facet.coverage_term_groups) for facet in self.profile_facets
+            ),
             "candidate_count": len(self.candidates),
             "collection_candidate_count": len(self.collection_candidate_ids),
             "collection_count": len(self.collection_ids),
@@ -360,6 +363,13 @@ class QueryPlan:
             ).hexdigest(),
             "profile_record_set_digest": hashlib.sha256(
                 "\n".join(sorted(self.profile_record_keys)).encode(),
+            ).hexdigest(),
+            "profile_coverage_checkpoint_set_digest": hashlib.sha256(
+                "\n".join(sorted(
+                    "|".join(normalize_query(term) for term in group)
+                    for facet in self.profile_facets
+                    for group in facet.coverage_term_groups
+                )).encode(),
             ).hexdigest(),
             "candidate_set_digest": hashlib.sha256(
                 "\n".join(sorted(item.entity_id for item in self.candidates)).encode(),
@@ -613,10 +623,8 @@ async def plan_query(
     )
     # Exact, unambiguous definitions and governed point attributes already
     # have a complete semantic contract in the ontology. Calling an external
-    # planner cannot add authority and only adds cost/latency. Fuzzy identity,
-    # conversation ellipsis, enumeration, comparison and open language always
-    # retain the LLM planner.
-    deterministic_fast_path = bool(
+    # planner cannot add authority and only adds cost/latency.
+    deterministic_entity_fast_path = bool(
         external
         and deterministic
         and not bounded_context
@@ -663,11 +671,38 @@ async def plan_query(
         ontology.collections_by_name[name].collection_id
         for name in collection_candidate_names
     )
+    exact_candidate_entity_ids = {
+        item.entity_id
+        for item in current_question_candidates
+        if item.match_kind == "exact"
+    }
+    # A collection enumeration can use the same zero-network fast lane when
+    # the current turn has an exact governed subject and ontology routing
+    # yields exactly one collection for that subject. The collection boundary,
+    # members and records are already immutable registry data; an LLM planner
+    # cannot add authority here and only adds a latency/cost round-trip.
+    deterministic_collection_fast_path = bool(
+        external
+        and deterministic_intent == "enumeration"
+        and len(deterministic_entity_ids) == 1
+        and not bounded_context
+        and not structural_ambiguity
+        and all(
+            entity_id in exact_candidate_entity_ids
+            for entity_id in deterministic_entity_ids
+        )
+        and len(collection_candidate_names) == 1
+    )
+    deterministic_fast_path = (
+        deterministic_entity_fast_path or deterministic_collection_fast_path
+    )
     planner_source: Literal["deterministic", "external", "fallback"] = (
         "external" if external else "deterministic"
     )
     result = RewriteResult()
     if deterministic_fast_path:
+        if deterministic_collection_fast_path:
+            result = RewriteResult(collections=list(collection_candidate_names))
         external = False
         planner_source = "deterministic"
     else:
@@ -787,7 +822,11 @@ async def plan_query(
     selected_collection_names = list(dict.fromkeys(
         name
         for name in result.collections
-        if external and intent == "enumeration" and name in allowed_collections
+        if (
+            (external or deterministic_collection_fast_path)
+            and intent == "enumeration"
+            and name in allowed_collections
+        )
     ))
     selected_collections = [
         ontology.collections_by_name[name] for name in selected_collection_names

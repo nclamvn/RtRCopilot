@@ -1,5 +1,17 @@
 # COMPLETION REPORT — TIP-033
 
+## Current-build recertification addendum — 12/08/2026
+
+The purpose-bound five-case recertification was executed once on candidate
+`d26c3ad92ebe` and **did not pass**: 4/5 cases passed, citation accuracy was
+1.0, false-grounded remained 0, and P95 was 30,053.265 ms versus the 25,000 ms
+release target. The first result is preserved without retry/cherry-pick.
+
+Current release status: **NOT READY**. See `TIP-035.2_VERIFY_REPORT.md` and the
+content-free evidence file
+`evidence/tip035_2_tip033_recertification_d26.json`. The implementation record
+below remains historical context for the TIP-033 feature delivery.
+
 **STATUS:** IMPLEMENTED / CONDITIONAL — code, local production runtime and all
 non-external quality gates pass. The immutable five-case live latency and quality
 recertification is intentionally pending a new explicit export approval.

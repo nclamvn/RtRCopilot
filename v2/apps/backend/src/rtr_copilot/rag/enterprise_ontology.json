@@ -58,7 +58,7 @@
         {"facet_id": "deployment", "label": "deployment and physical design", "presentation_labels": ["Deployment and physical design", "Triển khai cơ động"], "record_keys": ["HC-004"]},
         {"facet_id": "control", "label": "command, control and naming", "presentation_labels": ["Command and control", "Điều khiển và liên kết"], "query_aliases": ["heralink", "herahub", "đổi tên", "tên mới", "giờ gọi là gì", "renamed to", "former name"], "record_keys": ["HC-017", "L3F.1.008"]},
         {"facet_id": "sensing", "label": "sensor and payload ecosystem", "presentation_labels": ["Sensors and payloads", "Cảm biến"], "record_keys": ["HC-011"]},
-        {"facet_id": "applications", "label": "application space", "presentation_labels": ["Applications", "Ứng dụng"], "record_keys": ["HC-050"]},
+        {"facet_id": "applications", "label": "application space", "presentation_labels": ["Applications", "Ứng dụng"], "record_keys": ["HC-050"], "coverage_term_groups": [["12 trường hợp sử dụng", "12 use case", "12 use cases"]]},
         {"facet_id": "compliance", "label": "current compliance and market status", "presentation_labels": ["Compliance and current status", "Tuân thủ và xác nhận"], "record_keys": ["L3F.RES.003"]},
         {"facet_id": "battery", "label": "battery electrical specification", "presentation_labels": ["Battery", "Pin"], "query_aliases": ["pin", "điện áp pin", "battery", "battery voltage", "44.4v", "50.4v"], "record_keys": ["L3F.2.015"]},
         {"facet_id": "commercial", "label": "current commercial price", "presentation_labels": ["Commercial", "Giá thương mại"], "query_aliases": ["giá", "giá list", "giá bán", "price", "list price", "msrp"], "record_keys": ["PRICE.HERA.MSRP.US"]},

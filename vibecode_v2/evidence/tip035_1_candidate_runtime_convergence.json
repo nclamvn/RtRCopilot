@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-12T08:55:52Z",
+  "status": "pass",
+  "candidate_build": "d26c3ad92ebe",
+  "git": {
+    "head": "d26c3ad92ebea54ed704d2f8d6c853fc504f1469",
+    "origin_main": "d26c3ad92ebea54ed704d2f8d6c853fc504f1469",
+    "build_identity": "d26c3ad92ebe"
+  },
+  "runtime": {
+    "primary": {
+      "compose_project": "rtr-copilot-v2",
+      "long_running_services": 7,
+      "healthy_services": 7,
+      "web_status": "operational",
+      "answer_quality": "ready",
+      "api_build": "d26c3ad92ebe",
+      "web_build": "d26c3ad92ebe",
+      "worker_build": "d26c3ad92ebe"
+    },
+    "isolated_pilot": {
+      "compose_project": "rtr-copilot-pilot",
+      "long_running_services": 7,
+      "healthy_services": 7,
+      "web_status": "operational",
+      "answer_quality": "ready",
+      "api_build": "d26c3ad92ebe",
+      "web_build": "d26c3ad92ebe",
+      "worker_build": "d26c3ad92ebe"
+    }
+  },
+  "pilot_database": {
+    "schema_revision": "0014_document_outbox_repair",
+    "canonical_records": 219,
+    "canonical_chunks": 219,
+    "unexpected_active_sources": 0,
+    "active_enterprise_connectors": 0
+  },
+  "answer_runtime": {
+    "provider": "external",
+    "embedding_provider": "openai",
+    "embedding_dimension": 1536,
+    "routine_reasoning": "low",
+    "credential_configured": true,
+    "external_policy_loaded": true,
+    "grounded_answering": "ready"
+  },
+  "release_preflight": {
+    "status": "not_ready",
+    "passed_gates": 5,
+    "blocked_gates": [
+      "tip033_latency",
+      "tip034_usefulness",
+      "production_configuration",
+      "target_operational_drills",
+      "homeowner_go"
+    ]
+  },
+  "controls": {
+    "persistent_volumes_deleted": false,
+    "semantic_reindex_invoked": false,
+    "external_corpus_export_invoked": false,
+    "tip033_invoked": false,
+    "tip034_invoked": false,
+    "enterprise_connectors_activated": false
+  }
+}

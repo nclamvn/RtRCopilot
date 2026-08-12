@@ -1,5 +1,15 @@
 # VERIFY REPORT — TIP-033
 
+## Current-build release verdict — 12/08/2026
+
+**NOT READY.** The first and only approved five-case run on build
+`d26c3ad92ebe` produced 4/5 passes and P95 30,053.265 ms. Citation accuracy
+remained 1.0 and false-grounded remained 0, but the 5/5 quality gate and 25-second
+P95 gate failed. TIP-035 therefore keeps `tip033_latency` blocked.
+
+The detailed content-free verdict is in `TIP-035.2_VERIFY_REPORT.md`; the report
+below is the historical pre-recertification implementation verification.
+
 **Date:** 12/08/2026
 **Environment:** Local production Docker Compose · `.env.demo`
 **Build:** `5c4049d17cd9+af5df0e43390`

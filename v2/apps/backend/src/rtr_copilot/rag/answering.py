@@ -207,8 +207,10 @@ def grounding_repair_instruction(code: str) -> str:
             "of omitting that member."
         ),
         "answer_profile_incomplete": (
-            "Cover every governed profile facet for which evidence was supplied "
-            "and cite at least one supplied evidence marker for each such facet."
+            "Cover every governed profile facet for which evidence was supplied, "
+            "cite at least one supplied marker for each such facet, and include "
+            "every evidence-backed material coverage checkpoint named in the "
+            "entity-profile instruction."
         ),
     }.get(code, "Return a shorter answer with every factual unit cited.")
     return f" Repair requirement after deterministic rejection ({code}): {specific}"
@@ -242,6 +244,49 @@ def profile_facets_covered(
     return True
 
 
+def supported_profile_coverage_groups(
+    query_plan: QueryPlan,
+    evidence: list[ProviderEvidence],
+) -> tuple[tuple[str, tuple[str, ...]], ...]:
+    """Return curator checkpoints that are present in authorized evidence.
+
+    Registry metadata alone never creates a fact requirement. A term group is
+    active only when at least one equivalent surface is present in evidence
+    for that same facet after ACL, DLP and lineage filtering.
+    """
+    groups: list[tuple[str, tuple[str, ...]]] = []
+    for facet in query_plan.profile_facets:
+        facet_text = " ".join(
+            item.text
+            for item in evidence
+            if item.record_key in facet.record_keys
+        )
+        normalized_evidence = normalize_query(facet_text)
+        for group in facet.coverage_term_groups:
+            if any(
+                f" {normalize_query(term)} " in f" {normalized_evidence} "
+                for term in group
+            ):
+                groups.append((facet.label, group))
+    return tuple(groups)
+
+
+def profile_material_terms_covered(
+    query_plan: QueryPlan,
+    evidence: list[ProviderEvidence],
+    answer: str,
+) -> bool:
+    """Every evidence-backed material checkpoint must appear in the answer."""
+    normalized_answer = normalize_query(answer)
+    return all(
+        any(
+            f" {normalize_query(term)} " in f" {normalized_answer} "
+            for term in group
+        )
+        for _, group in supported_profile_coverage_groups(query_plan, evidence)
+    )
+
+
 def answer_coverage_state(
     query_plan: QueryPlan,
     evidence: list[ProviderEvidence],
@@ -258,7 +303,19 @@ def answer_coverage_state(
         )
         return (
             "complete"
-            if available_facets == len(query_plan.profile_facets)
+            if (
+                available_facets == len(query_plan.profile_facets)
+                and profile_facets_covered(
+                    query_plan,
+                    evidence,
+                    output.used_markers,
+                )
+                and profile_material_terms_covered(
+                    query_plan,
+                    evidence,
+                    output.answer,
+                )
+            )
             else "partial"
         )
     if query_plan.required_items:
@@ -289,6 +346,13 @@ def profile_answer_instruction(
         f"{' | '.join(facet.presentation_labels or (facet.label,))})"
         for facet in available_facets
     )
+    checkpoints = "; ".join(
+        f"{facet_label}: {' | '.join(group)}"
+        for facet_label, group in supported_profile_coverage_groups(
+            query_plan,
+            evidence,
+        )
+    )
     if query_plan.intent == "lookup":
         return (
             " This is a governed point-attribute request. Answer only the "
@@ -302,8 +366,17 @@ def profile_answer_instruction(
         "substantially complete dossier, not a two-sentence definition. Use "
         "one exact allowed heading appropriate to the user's language for each "
         "facet, and cover every facet for which evidence was supplied: "
-        f"{labels}. Each facet must contain at least one direct fact with its "
-        "own supplied evidence marker. Distinguish current configurations from "
+        f"{labels}. Each facet must contain its material supported facts, not "
+        "merely one representative sentence, and at least one direct fact with "
+        "its own supplied evidence marker. "
+        + (
+            "The following evidence-backed coverage checkpoints are mandatory; "
+            "include at least one equivalent surface from every group: "
+            f"{checkpoints}. "
+            if checkpoints
+            else ""
+        )
+        + "Distinguish current configurations from "
         "roadmap or proposed service baselines, and omit unrelated commercial "
         "or historical facts. If a configured facet has no supplied evidence, "
         "omit it without refusing the supported dossier or guessing its content."
@@ -1345,13 +1418,13 @@ class AnswerService:
             output: ProviderAnswer | None = None
             grounding_error = "grounding_failed"
             repair_instruction = ""
-            # TIP-029.1: a candidate that passed marker-level grounding and
-            # relevance but missed full governed-collection naming is an
-            # HONEST partial answer, not a hallucination. Keep the best such
-            # candidate; if the repair attempt cannot certify completeness we
-            # ship it with coverage_state="partial" (already computed and
-            # surfaced downstream) instead of refusing a truthful answer.
+            # A candidate that passed grounding and relevance but missed a
+            # governed collection member or profile checkpoint is an honest
+            # partial answer, not a hallucination. Keep the best such candidate;
+            # if repair cannot certify completeness, ship it with an explicit
+            # partial coverage state instead of refusing useful supported facts.
             partial_candidate: ProviderAnswer | None = None
+            partial_reason = "collection"
             for _ in range(2):
                 call_started = time.monotonic()
                 try:
@@ -1501,7 +1574,13 @@ class AnswerService:
                         query_plan,
                         evidence,
                         candidate.used_markers,
+                    ) or not profile_material_terms_covered(
+                        query_plan,
+                        evidence,
+                        candidate.answer,
                     ):
+                        partial_candidate = candidate
+                        partial_reason = "profile"
                         raise GroundingError("answer_profile_incomplete")
                 except GroundingError as error:
                     grounding_error = error.code
@@ -1516,7 +1595,7 @@ class AnswerService:
                 # client; refusing here was TIP-029's RECALL-MISS on
                 # enumeration questions.
                 output = partial_candidate
-                grounding_error = "collection_certification_waived"
+                grounding_error = f"{partial_reason}_certification_waived"
             provider_usage = request_provider_usage(self.provider, calls_before)
             if provider_usage.calls > 0:
                 await self._debit_budget(

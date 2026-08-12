@@ -338,6 +338,38 @@ def test_exact_governed_definition_bypasses_external_planner_without_quality_los
     assert plan.profile_facets
 
 
+def test_unique_governed_collection_bypasses_external_planner() -> None:
+    """A resolved subject + one ontology collection needs no LLM rewrite."""
+    rewriter = _StubRewriter(RewriteResult(
+        entities=["Real-time Robotics"],
+        intent="enumeration",
+        collections=["Danh mục sản phẩm RtR"],
+    ))
+    plan = asyncio.run(plan_query(
+        "RtR có các sản phẩm gì, tính năng ra sao?",
+        rewriter,
+    ))
+
+    assert rewriter.calls == 0
+    assert plan.planner_source == "deterministic"
+    assert plan.resolution_state == "resolved"
+    assert plan.collection_ids == ("rtr.catalog.product-portfolio",)
+    assert len(plan.required_items) == 16
+    assert plan.required_items[:3] == ("HERA", "VEGA", "HERA + VEGA")
+
+
+def test_multi_entity_enumeration_retains_external_planner() -> None:
+    """A matching collection cannot erase a second exact subject."""
+    rewriter = _StubRewriter(RewriteResult(
+        entities=["Real-time Robotics", "HERA"],
+        intent="enumeration",
+        collections=["Danh mục sản phẩm RtR"],
+    ))
+    asyncio.run(plan_query("RtR và HERA có các sản phẩm gì?", rewriter))
+
+    assert rewriter.calls == 1
+
+
 class TestTokenBoundaryPunctuation:
     """TIP-029.1: sentence punctuation at token edges must not hide entities.
 

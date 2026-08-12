@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "computed_at": "2026-08-12T09:14:11.886243+00:00",
+  "status": "fail",
+  "candidate_build": "d26c3ad92ebe",
+  "run_id": "34a969e3-e4ae-4fb6-8cbe-6514128432c6",
+  "approved_case_ids": [
+    "OPS-010",
+    "SYS-007",
+    "MTH-004",
+    "PRD-001",
+    "PRD-023"
+  ],
+  "metrics": {
+    "total": 5,
+    "passed": 4,
+    "failed": 1,
+    "overall_pass_rate": 0.8,
+    "grounded_success_rate": 0.8,
+    "citation_accuracy": 1.0,
+    "false_grounded_count": 0,
+    "follow_up_pass_rate": 1.0,
+    "p50_latency_ms": 13022.496,
+    "p95_latency_ms": 30053.265,
+    "max_latency_ms": 30053.265
+  },
+  "case_results": [
+    {"case_id": "OPS-010", "passed": true, "latency_ms": 13022.496},
+    {"case_id": "SYS-007", "passed": true, "latency_ms": 4679.586},
+    {"case_id": "MTH-004", "passed": true, "latency_ms": 11979.477},
+    {
+      "case_id": "PRD-001",
+      "passed": false,
+      "latency_ms": 16385.163,
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "failure": "required_term_miss",
+      "citation_ok": true,
+      "false_grounded": false
+    },
+    {"case_id": "PRD-023", "passed": true, "latency_ms": 30053.265}
+  ],
+  "release_contract": {
+    "exact_cases": 5,
+    "required_passes": 5,
+    "false_grounded_max": 0,
+    "citation_accuracy_min": 1.0,
+    "p95_latency_ms_max": 25000,
+    "single_case_latency_ms_exclusive_max": 45000
+  },
+  "failed_release_gates": [
+    "five_of_five_quality",
+    "grounded_success_rate",
+    "minimum_domain_pass_rate",
+    "overall_pass_rate",
+    "p95_latency_25s"
+  ],
+  "source_report": {
+    "path": "v2/eval/real_world/tip033_latency_recertification.json",
+    "sha256": "20c8a23d6377a7123ee9d94308d7b5d6d5bd787f744374d286e498b954abdbdd"
+  },
+  "controls": {
+    "exact_case_set": true,
+    "concurrency": 1,
+    "single_recorded_run": true,
+    "retry_or_cherry_pick": false,
+    "tip034_invoked": false,
+    "semantic_reindex_invoked": false,
+    "connector_activation_invoked": false
+  },
+  "tip035_preflight": {
+    "passed_gates": 5,
+    "tip033_latency": "blocked",
+    "overall_status": "not_ready"
+  }
+}

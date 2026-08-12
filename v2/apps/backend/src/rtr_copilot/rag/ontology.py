@@ -54,6 +54,15 @@ class OntologyProfileFacet(BaseModel):
     # remains registry data instead of accumulating question-specific code.
     query_aliases: tuple[str, ...] = Field(default=(), max_length=40)
     record_keys: tuple[str, ...] = Field(min_length=1, max_length=20)
+    # Material facts that make this facet meaningfully complete. Each inner
+    # tuple contains equivalent presentation alternatives. A checkpoint is
+    # enforced only when the authorized evidence supplied for this facet also
+    # contains an alternative, so stale or denied facts are never forced into
+    # an answer merely because registry metadata mentions them.
+    coverage_term_groups: tuple[tuple[str, ...], ...] = Field(
+        default=(),
+        max_length=20,
+    )
 
     @model_validator(mode="after")
     def record_keys_are_well_formed(self) -> OntologyProfileFacet:
@@ -76,6 +85,17 @@ class OntologyProfileFacet(BaseModel):
             raise ValueError("ontology_profile_query_alias_invalid")
         if len(normalized_aliases) != len(set(normalized_aliases)):
             raise ValueError("ontology_profile_query_alias_duplicate")
+        normalized_groups = [
+            [normalize_query(term) for term in group]
+            for group in self.coverage_term_groups
+        ]
+        if any(
+            not group
+            or any(not term or len(term) > 160 for term in group)
+            or len(group) != len(set(group))
+            for group in normalized_groups
+        ):
+            raise ValueError("ontology_profile_coverage_term_group_invalid")
         return self
 
 

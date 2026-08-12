@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "computed_at": "2026-08-12T09:36:13Z",
+  "status": "local_remediation_pass_external_recertification_pending",
+  "baseline_build": "d26c3ad92ebe",
+  "local_source_identity": "d26c3ad92ebe+7352544b8889",
+  "source_diff_sha256": "7352544b88890328066b41d3c6c6a80780d0b5efec7c59e7597bfbafbc9c3d01",
+  "root_causes": {
+    "prd001": "facet_citation_presence_was_not_semantic_completeness",
+    "prd001_missing_term_group_digest": "b2a3048c42f9f0fc",
+    "prd023": "unique_governed_collection_still_used_external_query_planner"
+  },
+  "controls_added": {
+    "evidence_conditioned_profile_coverage_groups": true,
+    "profile_checkpoint_repair": true,
+    "honest_partial_on_unrepaired_profile": true,
+    "unique_collection_deterministic_planner_bypass": true,
+    "content_free_checkpoint_audit_digest": true
+  },
+  "local_verification": {
+    "focused_initial": {"passed": 85, "failed": 0},
+    "focused_final": {"passed": 89, "failed": 0},
+    "ruff": "pass",
+    "mypy": {"status": "pass", "source_files": 141},
+    "backend": {"passed": 642, "conditional_skips": 128, "failed": 0},
+    "data_integration": {"passed": 69, "failed": 0, "targets": "disposable"},
+    "web_unit": {"passed": 191, "failed": 0},
+    "web_lint": "pass",
+    "typescript": "pass",
+    "production_build": "pass",
+    "mocked_browser": {
+      "passed": 126,
+      "failed": 0,
+      "sandbox_launch_retry": true,
+      "final_environment": "approved_outside_macos_sandbox"
+    },
+    "diff_check": "pass",
+    "tip035_preflight": {
+      "status": "not_ready",
+      "passed_gates": 2,
+      "blocked_gates": 8,
+      "expected_fail_closed": true
+    }
+  },
+  "runtime": {
+    "api_build": "d26c3ad92ebe",
+    "web_build": "d26c3ad92ebe",
+    "contains_local_remediation": false,
+    "healthy_long_running_services": 7
+  },
+  "external_operations": {
+    "llm_calls": 0,
+    "embedding_calls": 0,
+    "tip034_invoked": false,
+    "connector_activation": false
+  },
+  "release_claims": {
+    "prd001_live_recertified": false,
+    "prd023_live_latency_recertified": false,
+    "tip033_gate_advanced": false,
+    "company_release_ready": false
+  },
+  "next_required_sequence": [
+    "commit_remediation",
+    "rebuild_exact_candidate_runtime",
+    "verify_runtime_identity",
+    "obtain_explicit_five_case_external_recertification_approval",
+    "run_single_tip033_recertification"
+  ]
+}
