@@ -21,6 +21,12 @@ export E2E_CASE_IDS="$campaign_cases"
 export E2E_HTTP_REPORT="${E2E_HTTP_REPORT:-eval/real_world/tip034_pilot_capture.json}"
 export E2E_CONCURRENCY="${E2E_CONCURRENCY:-1}"
 export E2E_SKIP_BROWSER="${E2E_SKIP_BROWSER:-1}"
+candidate_build="$(./scripts/build-identity.sh)"
+if [[ ! "$candidate_build" =~ ^[0-9a-f]{12,64}$ ]]; then
+  echo "TIP-034 PILOT CAPTURE BLOCKED · release candidate must be clean and committed: $candidate_build" >&2
+  exit 2
+fi
+export E2E_BUILD_IDENTITY="$candidate_build"
 
 ./scripts/run-enterprise-e2e.sh
 
