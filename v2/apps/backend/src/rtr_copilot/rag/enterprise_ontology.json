@@ -36,7 +36,19 @@
         {"facet_id": "identity", "label": "company identity and legal name", "presentation_labels": ["Company identity", "Nhận diện công ty"], "query_aliases": ["tên pháp nhân", "pháp nhân đầy đủ", "legal name", "tên công ty", "làm mảng gì"], "record_keys": ["L3F.ENT.001", "L3F.ENT.002"]},
         {"facet_id": "brand", "label": "brand mission, doctrine and spelling", "presentation_labels": ["Brand", "Thương hiệu"], "query_aliases": ["triết lý thương hiệu", "sứ mệnh", "brand", "real-time hay real-time", "brand viết"], "record_keys": ["L3F.BRD.002", "L3F.1.020"]},
         {"facet_id": "contact", "label": "official contact channels", "presentation_labels": ["Contact", "Liên hệ"], "query_aliases": ["email cty", "email công ty", "mail công ty", "company email", "điện thoại công ty", "contact"], "record_keys": ["L3F.1.019"]},
-        {"facet_id": "positioning", "label": "approved external origin and positioning answer", "presentation_labels": ["External positioning", "Định vị đối ngoại"], "query_aliases": ["where are you guys from", "công ty từ đâu", "bên mình từ đâu", "answer sao"], "record_keys": ["L3F.1.023"]},
+        {
+          "facet_id": "positioning",
+          "label": "approved external origin and positioning answer",
+          "presentation_labels": ["External positioning", "Định vị đối ngoại"],
+          "query_aliases": ["where are you guys from", "công ty từ đâu", "bên mình từ đâu", "answer sao"],
+          "record_keys": ["L3F.1.023"],
+          "coverage_term_groups": [
+            ["U.S.-aligned", "U.S. aligned"],
+            ["manufacturing in Vietnam", "sản xuất tại Việt Nam"],
+            ["Full-stack vertical integration in-house", "tích hợp dọc toàn diện nội bộ"],
+            ["NDAA-compliant", "tuân thủ NDAA"]
+          ]
+        },
         {"facet_id": "leadership", "label": "leadership and founder", "presentation_labels": ["Leadership", "Lãnh đạo"], "query_aliases": ["ceo", "sếp", "người sáng lập", "founder", "lãnh đạo"], "record_keys": ["L3F.RES.004"]},
         {"facet_id": "recognition", "label": "public recognition and milestones", "presentation_labels": ["Recognition", "Dấu công nhận"], "query_aliases": ["thành tựu", "dấu công nhận", "giải thưởng", "cột mốc", "credentials", "recognition", "award"], "record_keys": ["L3F.REC.001"]}
       ],
@@ -339,6 +351,27 @@
         "L3F.4.004",
         "tip027.mrp.operating-pipelines",
         "tip027.mrp.maturity-assessment"
+      ],
+      "profile_facets": [
+        {
+          "facet_id": "capabilities",
+          "label": "production resource planning capabilities",
+          "presentation_labels": ["Capabilities", "Năng lực"],
+          "query_aliases": ["làm được gì", "làm được những gì", "chức năng", "khả năng"],
+          "record_keys": [
+            "L3F.4.003",
+            "L3F.4.004",
+            "tip027.mrp.operating-pipelines",
+            "tip027.mrp.maturity-assessment"
+          ],
+          "coverage_term_groups": [
+            ["hoạch định nguồn lực sản xuất", "Material Requirements Planning"],
+            ["hoạch định vật tư", "ATP/CTP/Pegging"],
+            ["work orders", "lệnh sản xuất"],
+            ["quản lý chất lượng ISO", "NCR/CAPA"],
+            ["dự báo AI/ML", "Gemini/OpenAI"]
+          ]
+        }
       ],
       "lifecycle": "active",
       "owner": "owner:operations",

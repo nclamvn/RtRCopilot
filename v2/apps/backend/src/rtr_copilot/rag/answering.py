@@ -60,6 +60,7 @@ from rtr_copilot.rag.query_understanding import (
     QueryPlan,
     QueryRewriter,
     plan_query,
+    resolve_entities,
 )
 from rtr_copilot.rag.relevance import (
     answer_relevant,
@@ -87,6 +88,7 @@ ABBREVIATION_RE = re.compile(
 )
 ABBREVIATION_DOT = "\ue000"
 HTML_RE = re.compile(r"<[a-zA-Z!/][^>]*>")
+QUOTED_EVIDENCE_RE = re.compile(r'["\u201c]([^"\u201d\n]{2,2000})["\u201d]')
 REFUSAL_WORDS = re.compile(
     r"(?i)\b(i cannot|i can't|unable to answer|as an ai|tôi không thể)\b",
 )
@@ -271,20 +273,33 @@ def supported_profile_coverage_groups(
     return tuple(groups)
 
 
+def missing_profile_coverage_groups(
+    query_plan: QueryPlan,
+    evidence: list[ProviderEvidence],
+    answer: str,
+) -> tuple[tuple[str, tuple[str, ...]], ...]:
+    """Evidence-backed curator checkpoints absent from a provider draft."""
+    normalized_answer = normalize_query(answer)
+    return tuple(
+        (facet_label, group)
+        for facet_label, group in supported_profile_coverage_groups(
+            query_plan,
+            evidence,
+        )
+        if not any(
+            f" {normalize_query(term)} " in f" {normalized_answer} "
+            for term in group
+        )
+    )
+
+
 def profile_material_terms_covered(
     query_plan: QueryPlan,
     evidence: list[ProviderEvidence],
     answer: str,
 ) -> bool:
     """Every evidence-backed material checkpoint must appear in the answer."""
-    normalized_answer = normalize_query(answer)
-    return all(
-        any(
-            f" {normalize_query(term)} " in f" {normalized_answer} "
-            for term in group
-        )
-        for _, group in supported_profile_coverage_groups(query_plan, evidence)
-    )
+    return not missing_profile_coverage_groups(query_plan, evidence, answer)
 
 
 def answer_coverage_state(
@@ -360,6 +375,13 @@ def profile_answer_instruction(
             "expand into a full entity dossier. Attach a supplied marker to "
             "every factual unit. Routed facet: "
             f"{labels}."
+            + (
+                " The following evidence-backed checkpoints are mandatory; "
+                "include at least one equivalent surface from every group: "
+                f"{checkpoints}."
+                if checkpoints
+                else ""
+            )
         )
     return (
         " This is a governed entity-profile request. Produce a compact but "
@@ -729,6 +751,218 @@ def approved_presentation_labels(
             for alias in entity.aliases
         )
     return tuple(dict.fromkeys(label for label in labels if label.strip()))
+
+
+def _evidence_repair_units(text: str) -> tuple[str, ...]:
+    """Return exact, bounded substrings eligible for local profile repair.
+
+    Ordinary evidence sentences are the baseline. Curated playbooks also
+    commonly wrap an approved multi-sentence reply in quotation marks; expose
+    that exact quoted span as one candidate so a standard answer is not broken
+    into awkward fragments. Nothing is paraphrased or synthesized here.
+    """
+    candidates = [
+        MARKER_RE.sub("", unit).strip()
+        for unit in factual_units(text)
+    ]
+    candidates.extend(
+        MARKER_RE.sub("", match.group(1)).strip()
+        for match in QUOTED_EVIDENCE_RE.finditer(text)
+    )
+    return tuple(dict.fromkeys(
+        candidate for candidate in candidates if candidate
+    ))
+
+
+def repair_profile_coverage_from_evidence(
+    output: ProviderAnswer,
+    query_plan: QueryPlan,
+    evidence: list[ProviderEvidence],
+    *,
+    max_chars: int,
+) -> ProviderAnswer:
+    """Append exact authorized evidence for missing governed checkpoints.
+
+    The repair source must be bound to the active ontology facet and contain a
+    curator-declared equivalent surface. The original evidence marker is
+    carried with the exact unit. If no bounded safe unit exists, the draft is
+    returned unchanged and the normal completeness gate remains fail-closed.
+    """
+    candidate = output
+    while True:
+        missing = missing_profile_coverage_groups(
+            query_plan,
+            evidence,
+            candidate.answer,
+        )
+        if not missing:
+            return candidate
+        facet_label, group = missing[0]
+        facet_record_keys = {
+            record_key
+            for facet in query_plan.profile_facets
+            if facet.label == facet_label and group in facet.coverage_term_groups
+            for record_key in facet.record_keys
+        }
+        matches: list[tuple[int, int, str, str]] = []
+        for evidence_index, item in enumerate(evidence):
+            if item.record_key not in facet_record_keys:
+                continue
+            for unit in _evidence_repair_units(item.text):
+                normalized_unit = normalize_query(unit)
+                if any(
+                    f" {normalize_query(term)} " in f" {normalized_unit} "
+                    for term in group
+                ):
+                    matches.append((len(unit), evidence_index, unit, item.marker))
+        if not matches:
+            return candidate
+        _, _, unit, marker = min(matches)
+        # A quoted approved reply may contain several sentences. Preserve the
+        # source text but attach the same source marker to every factual unit,
+        # exactly as the sentence-level grounding contract requires.
+        rendered = " ".join(
+            f"{factual_unit} [{marker}]"
+            for factual_unit in factual_units(unit)
+        )
+        rebuilt = f"{candidate.answer.rstrip()}\n{rendered}".strip()
+        markers = list(dict.fromkeys((*candidate.used_markers, marker)))
+        if (
+            len(rebuilt) > max_chars
+            or len(markers) > 20
+            or rebuilt == candidate.answer
+        ):
+            return candidate
+        candidate = candidate.model_copy(update={
+            "answer": rebuilt,
+            "used_markers": markers,
+        })
+
+
+def _answer_entity_record_keys(
+    query_plan: QueryPlan,
+    ontology: EnterpriseOntology,
+    canonical_name: str,
+) -> set[str]:
+    """Records that are allowed to prove one planned answer subject."""
+    normalized_target = normalize_query(canonical_name)
+    for entity_id, planned_name in zip(
+        query_plan.entity_ids,
+        query_plan.entities,
+        strict=False,
+    ):
+        if normalize_query(planned_name) != normalized_target:
+            continue
+        entity = ontology.by_id.get(entity_id)
+        if entity is None:
+            return set()
+        return set(entity.definition_record_keys) | {
+            record_key
+            for facet in entity.profile_facets
+            for record_key in facet.record_keys
+        }
+    return set()
+
+
+def anchor_answer_entities_from_markers(
+    output: ProviderAnswer,
+    query_plan: QueryPlan,
+    evidence: list[ProviderEvidence],
+    ontology: EnterpriseOntology,
+) -> ProviderAnswer:
+    """Add only marker-proven canonical labels missing from a grounded draft.
+
+    A canonical label is presentation structure, not generated factual prose.
+    It is admitted only if a marker already rendered in the answer points to a
+    governed record for every missing target. Any foreign entity mention makes
+    the repair ambiguous and therefore a no-op.
+    """
+    targets = tuple(dict.fromkeys(query_plan.answer_entities))
+    if not targets:
+        return output
+    normalized_targets = {normalize_query(target) for target in targets}
+    resolved_mentions = {
+        normalize_query(name)
+        for name in resolve_entities(output.answer, ontology)
+    }
+    if resolved_mentions - normalized_targets:
+        return output
+    missing = tuple(
+        target
+        for target in targets
+        if normalize_query(target) not in resolved_mentions
+    )
+    if not missing:
+        return output
+    rendered_markers = set(MARKER_RE.findall(output.answer))
+    rendered_record_keys = {
+        item.record_key
+        for item in evidence
+        if item.marker in rendered_markers and item.record_key is not None
+    }
+    if any(
+        not (
+            _answer_entity_record_keys(query_plan, ontology, target)
+            & rendered_record_keys
+        )
+        for target in missing
+    ):
+        return output
+    return output.model_copy(update={
+        "answer": "\n".join((*missing, output.answer)).strip(),
+    })
+
+
+def stabilize_grounded_answer(
+    output: ProviderAnswer,
+    *,
+    question: str,
+    query_plan: QueryPlan,
+    evidence: list[ProviderEvidence],
+    ontology: EnterpriseOntology,
+    max_chars: int,
+    presentation_labels: tuple[str, ...] = (),
+) -> ProviderAnswer:
+    """Deterministically stabilize a grounded provider draft before retry.
+
+    This function can only quote already-authorized evidence or add a governed
+    canonical presentation label. Grounding is re-run after every material
+    change; relevance and completeness are still enforced by their existing
+    downstream gates.
+    """
+    candidate = repair_profile_coverage_from_evidence(
+        output,
+        query_plan,
+        evidence,
+        max_chars=max_chars,
+    )
+    if not answer_relevant(
+        question,
+        candidate.answer,
+        entities=query_plan.answer_entities,
+        intent=query_plan.intent,
+        support_terms=tuple(dict.fromkeys((
+            *query_plan.expansions,
+            *query_plan.retrieval_queries,
+        ))),
+    ):
+        candidate = anchor_answer_entities_from_markers(
+            candidate,
+            query_plan,
+            evidence,
+            ontology,
+        )
+    if (
+        candidate.answer != output.answer
+        or candidate.used_markers != output.used_markers
+    ):
+        verify_grounding(
+            candidate,
+            evidence,
+            max_chars=max_chars,
+            presentation_labels=presentation_labels,
+        )
+    return candidate
 
 
 class AnswerService:
@@ -1536,6 +1770,15 @@ class AnswerService:
                         question=question,
                         candidate=candidate,
                         evidence=evidence,
+                        max_chars=self.settings.rag_answer_max_chars,
+                        presentation_labels=presentation_labels,
+                    )
+                    candidate = stabilize_grounded_answer(
+                        candidate,
+                        question=user_question or question,
+                        query_plan=query_plan,
+                        evidence=evidence,
+                        ontology=self.ontology,
                         max_chars=self.settings.rag_answer_max_chars,
                         presentation_labels=presentation_labels,
                     )

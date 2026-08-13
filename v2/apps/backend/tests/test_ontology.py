@@ -335,6 +335,7 @@ def test_unprofiled_entity_definition_stays_point_direct() -> None:
         "positioning",
         "L3F.1.023",
     ),
+    ("MRP làm được gì", "capabilities", "L3F.4.003"),
     (
         "công ty có thành tựu hay dấu công nhận gì nổi bật?",
         "recognition",
@@ -353,6 +354,23 @@ def test_point_attribute_alias_routes_to_governed_facet(
     assert {facet.facet_id for facet in plan.profile_facets} == {facet_id}
     assert record_key in plan.profile_record_keys
     assert record_key in plan.definition_record_keys
+
+
+def test_stability_facets_declare_governed_material_checkpoints() -> None:
+    ontology = load_ontology()
+    company = ontology.by_id["rtr.company.real-time-robotics"]
+    positioning = next(
+        facet for facet in company.profile_facets if facet.facet_id == "positioning"
+    )
+    mrp = ontology.by_id["rtr.system.mrp"]
+    capabilities = next(
+        facet for facet in mrp.profile_facets if facet.facet_id == "capabilities"
+    )
+
+    assert len(positioning.coverage_term_groups) == 4
+    assert len(capabilities.coverage_term_groups) == 5
+    assert ("U.S.-aligned", "U.S. aligned") in positioning.coverage_term_groups
+    assert ("dự báo AI/ML", "Gemini/OpenAI") in capabilities.coverage_term_groups
 
 
 @pytest.mark.parametrize(("question", "planner_intent", "facet_id"), [
