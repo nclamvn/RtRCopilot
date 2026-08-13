@@ -25,6 +25,7 @@ from lib.operational_acceptance import (  # noqa: E402
 from run_real_world_acceptance import (  # noqa: E402
     bounded_cases,
     evaluate_http,
+    validate_http_provenance,
     validate_http_target,
 )
 
@@ -145,9 +146,93 @@ async def test_http_report_binds_results_to_runtime_build(
             )
 
     monkeypatch.setattr(acceptance_runner.httpx, "AsyncClient", FakeAsyncClient)
-    result = await evaluate_http(cases_path, "http://127.0.0.1:3101")
+    result = await evaluate_http(
+        cases_path,
+        "http://127.0.0.1:3101",
+        expected_build_identity="a" * 12 + "+" + "b" * 12,
+        database_digest="c" * 64,
+        ontology_digest="d" * 64,
+    )
     assert result["runtime_build_identity"] == "a" * 12 + "+" + "b" * 12
+    assert result["database_digest"] == "c" * 64
+    assert result["ontology_digest"] == "d" * 64
     assert result["passed"] is True
+
+
+def test_http_provenance_rejects_missing_or_malformed_values() -> None:
+    with pytest.raises(ValueError, match="expected_build_identity_invalid"):
+        validate_http_provenance(
+            expected_build_identity=None,
+            database_digest="c" * 64,
+            ontology_digest="d" * 64,
+        )
+    with pytest.raises(ValueError, match="database_digest_invalid"):
+        validate_http_provenance(
+            expected_build_identity="a" * 12,
+            database_digest="not-a-digest",
+            ontology_digest="d" * 64,
+        )
+    with pytest.raises(ValueError, match="ontology_digest_invalid"):
+        validate_http_provenance(
+            expected_build_identity="a" * 12,
+            database_digest="c" * 64,
+            ontology_digest=None,
+        )
+
+
+@pytest.mark.asyncio
+async def test_http_report_rejects_runtime_build_mismatch_before_question(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    campaign = {
+        "schema_version": 1,
+        "campaign": "build-mismatch",
+        "thresholds": {},
+        "cases": [{
+            "id": "SAFE-TEST",
+            "domain": "safety",
+            "shapes": ["unknown_entity"],
+            "question": "Unknown?",
+            "expect": "honest_null",
+        }],
+    }
+    cases_path = tmp_path / "cases.json"
+    cases_path.write_text(json.dumps(campaign), encoding="utf-8")
+    posted = False
+
+    class FakeAsyncClient:
+        def __init__(self, **_: object) -> None:
+            pass
+
+        async def __aenter__(self) -> FakeAsyncClient:
+            return self
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+        async def get(self, path: str) -> httpx.Response:
+            return httpx.Response(
+                200,
+                json={"build_sha": "b" * 12},
+                request=httpx.Request("GET", f"http://127.0.0.1{path}"),
+            )
+
+        async def post(self, path: str, **_: object) -> httpx.Response:
+            nonlocal posted
+            posted = True
+            raise AssertionError(path)
+
+    monkeypatch.setattr(acceptance_runner.httpx, "AsyncClient", FakeAsyncClient)
+    with pytest.raises(ValueError, match="runtime_build_identity_mismatch"):
+        await evaluate_http(
+            cases_path,
+            "http://127.0.0.1:3101",
+            expected_build_identity="a" * 12,
+            database_digest="c" * 64,
+            ontology_digest="d" * 64,
+        )
+    assert posted is False
 
 
 def test_campaign_smoke_slice_is_explicit_bounded_and_deterministic() -> None:

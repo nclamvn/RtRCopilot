@@ -16,6 +16,10 @@ worker_container="rtr-e2e-worker-${run_suffix}"
 web_container="rtr-e2e-web-${run_suffix}"
 dump_file=""
 http_runtime=""
+evaluation_provenance=""
+provenance_build_identity=""
+provenance_database_digest=""
+provenance_ontology_digest=""
 
 if [[ ! -f "$env_file" ]]; then
   echo "E2E env file not found: $env_file" >&2
@@ -167,6 +171,31 @@ wait_for_url \
   "http://127.0.0.1:${web_port}/api/status" \
   "$web_container"
 
+# Capture provenance from the exact API container connected to the disposable
+# clone.  Do this before the first question so a report can never substitute
+# the source database, ontology or build after the fact.
+evaluation_provenance="$(
+  docker exec "$api_container" \
+    python -m rtr_copilot.commands.snapshot_evaluation_provenance
+)"
+provenance_build_identity="$(
+  jq -er '.build_identity | select(test("^[0-9a-f]{12,64}(\\+[0-9a-f]{12,64})?$"))' \
+    <<<"$evaluation_provenance"
+)"
+provenance_database_digest="$(
+  jq -er '.database_digest | select(test("^[0-9a-f]{64}$"))' \
+    <<<"$evaluation_provenance"
+)"
+provenance_ontology_digest="$(
+  jq -er '.ontology_digest | select(test("^[0-9a-f]{64}$"))' \
+    <<<"$evaluation_provenance"
+)"
+if [[ -n "${E2E_BUILD_IDENTITY:-}" \
+  && "$provenance_build_identity" != "$E2E_BUILD_IDENTITY" ]]; then
+  echo "E2E provenance failure: API build identity mismatch" >&2
+  exit 1
+fi
+
 mkdir -p "$(dirname "$http_report")"
 python3 -m venv "$http_runtime"
 "$http_runtime/bin/python" -m pip install \
@@ -180,6 +209,9 @@ if [[ "${E2E_SKIP_HTTP:-0}" != "1" ]]; then
       --base-url "http://127.0.0.1:${web_port}" \
       --concurrency "${E2E_CONCURRENCY:-3}" \
       --request-timeout "${E2E_REQUEST_TIMEOUT:-150}" \
+      --expected-build-identity "$provenance_build_identity" \
+      --database-digest "$provenance_database_digest" \
+      --ontology-digest "$provenance_ontology_digest" \
       ${e2e_case_args[@]+"${e2e_case_args[@]}"} \
     >"$http_report"
   campaign_status=$?

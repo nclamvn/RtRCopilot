@@ -1,5 +1,40 @@
 # COMPLETION REPORT — TIP-035
 
+## TIP-035.5 provenance closure addendum — 13/08/2026
+
+The P1 evaluation-provenance debt is closed. Database and ontology SHA-256
+digests are now computed from the exact isolated API/database snapshot before
+question one, validated against the runtime build and written non-null into all
+future HTTP acceptance reports. Missing or malformed provenance fails before
+an external question can be sent.
+
+The immutable TIP-034 raw capture was not rewritten. Its current machine
+evidence is bound by a post-capture attestation to database digest
+`911fef5626fede0bb2b2f1002f6acc8cbcae3004f808769f184b4245ed6d526e`
+and ontology digest
+`15e76e881503ea35f9e9d6c061426e7b17d271442ee9d17a7aad831bcffd5f37`.
+No external LLM, embedding, reindex, connector or production operation was
+performed for this closure.
+
+## TIP-034 technical-capture addendum — 13/08/2026
+
+- Candidate `9b019832e08a`: exact.
+- Immutable TIP-034 capture: PASS, 27/27, false-grounded 0, citation 1.0,
+  follow-up 1.0, P95 19,148.973 ms.
+- Human usefulness ledger: still 0/27 and must not be synthesized by AI.
+- TIP-034 release gate therefore remains open until real testers attest the
+  governed observations and the final evaluator returns `go`.
+
+## Candidate `9b019832e08a` addendum — 13/08/2026
+
+TIP-033 has passed its one approved build-bound five-case campaign. TIP-035.3
+has now converged the isolated pilot runtime and certified schema 0014,
+219 records, 219 chunks, zero unexpected sources, zero active connectors and
+seven healthy services. Release preflight is **6 pass / 4 blocked**.
+
+Remaining blockers are TIP-034 usefulness, production configuration, target
+operational drills and Homeowner GO. Overall status remains `NOT READY`.
+
 **STATUS:** IMPLEMENTED LOCALLY / RELEASE NOT READY
 **Date:** 12/08/2026
 **Pre-commit QA build:** dirty candidate derived from `bbb671f9a0fe`

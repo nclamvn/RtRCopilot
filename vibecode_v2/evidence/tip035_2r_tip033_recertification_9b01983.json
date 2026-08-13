@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "computed_at": "2026-08-12T10:00:07.125736+00:00",
+  "status": "pass",
+  "candidate_build": "9b019832e08a",
+  "run_id": "462a53c2-e3ce-47c8-bb84-0e242e02a551",
+  "approved_case_ids": [
+    "OPS-010",
+    "SYS-007",
+    "MTH-004",
+    "PRD-001",
+    "PRD-023"
+  ],
+  "metrics": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "overall_pass_rate": 1.0,
+    "grounded_success_rate": 1.0,
+    "citation_accuracy": 1.0,
+    "false_grounded_count": 0,
+    "follow_up_pass_rate": 1.0,
+    "p50_latency_ms": 12251.656,
+    "p95_latency_ms": 22990.783,
+    "max_latency_ms": 22990.783
+  },
+  "case_results": [
+    {
+      "case_id": "OPS-010",
+      "passed": true,
+      "latency_ms": 11140.668
+    },
+    {
+      "case_id": "SYS-007",
+      "passed": true,
+      "latency_ms": 6245.645
+    },
+    {
+      "case_id": "MTH-004",
+      "passed": true,
+      "latency_ms": 12251.656
+    },
+    {
+      "case_id": "PRD-001",
+      "passed": true,
+      "latency_ms": 22990.783
+    },
+    {
+      "case_id": "PRD-023",
+      "passed": true,
+      "latency_ms": 20719.001
+    }
+  ],
+  "release_contract": {
+    "exact_cases": 5,
+    "required_passes": 5,
+    "false_grounded_max": 0,
+    "citation_accuracy_min": 1.0,
+    "p95_latency_ms_max": 25000,
+    "single_case_latency_ms_exclusive_max": 45000
+  },
+  "failed_release_gates": [],
+  "source_report": {
+    "path": "v2/eval/real_world/tip033_latency_recertification.json",
+    "sha256": "281f0bedfc7754e8fe6141e3119b3e5ccfde508dd8738daaa6322157416a2873"
+  },
+  "controls": {
+    "exact_case_set": true,
+    "concurrency": 1,
+    "single_recorded_run": true,
+    "retry_or_cherry_pick": false,
+    "isolated_database": true,
+    "source_database_unchanged": true,
+    "temporary_runtime_cleaned": true,
+    "tip034_invoked": false,
+    "semantic_reindex_invoked": false,
+    "embedding_operation_invoked": false,
+    "connector_activation_invoked": false
+  },
+  "tip035_preflight": {
+    "status": "not_ready",
+    "passed_gates": 5,
+    "tip033_latency": "pass",
+    "blocked_gates": [
+      "isolated_pilot_database",
+      "tip034_usefulness",
+      "production_configuration",
+      "target_operational_drills",
+      "homeowner_go"
+    ]
+  }
+}

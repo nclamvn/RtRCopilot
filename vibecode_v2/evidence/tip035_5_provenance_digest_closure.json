@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_type": "tip035.5_provenance_digest_closure",
+  "generated_at": "2026-08-13T01:33:35Z",
+  "status": "closed",
+  "base_candidate": "9b019832e08a",
+  "requirements": {
+    "implemented": 8,
+    "total": 8,
+    "coverage": 1.0
+  },
+  "historical_capture": {
+    "raw_report_path": "v2/eval/real_world/tip034_pilot_capture.json",
+    "raw_report_sha256": "694ae8eb060bf347952befffb9e8bd193a9e543eca03129e1405e3fdd1144d7a",
+    "raw_report_rewritten": false,
+    "digest_binding": "post_capture_attested_unchanged_snapshot",
+    "database_digest": "911fef5626fede0bb2b2f1002f6acc8cbcae3004f808769f184b4245ed6d526e",
+    "ontology_digest": "15e76e881503ea35f9e9d6c061426e7b17d271442ee9d17a7aad831bcffd5f37",
+    "schema_revision": "0014_document_outbox_repair",
+    "active_records": 219,
+    "active_generations": 6,
+    "active_chunks": 219
+  },
+  "forward_contract": {
+    "database_digest_nullable": false,
+    "ontology_digest_nullable": false,
+    "captured_from_exact_api_clone": true,
+    "validated_before_first_question": true,
+    "build_identity_must_match": true,
+    "database_scope": [
+      "active_record_content",
+      "active_record_acl",
+      "active_search_generations",
+      "active_chunks",
+      "embedding_vector_hashes",
+      "citation_locators"
+    ]
+  },
+  "verification": {
+    "focused_tests_passed": 19,
+    "focused_tests_failed": 0,
+    "full_backend_passed": 647,
+    "full_backend_failed": 0,
+    "full_backend_conditional_skipped": 128,
+    "ruff_errors": 0,
+    "mypy_errors": 0,
+    "mypy_source_files": 143,
+    "production_image_build": "pass",
+    "pilot_snapshot_command": "pass"
+  },
+  "external_effects": {
+    "llm_calls": 0,
+    "embedding_calls": 0,
+    "reindex_operations": 0,
+    "connector_activations": 0,
+    "production_operations": 0,
+    "tip034_reruns": 0
+  },
+  "open_p1_items": 0
+}

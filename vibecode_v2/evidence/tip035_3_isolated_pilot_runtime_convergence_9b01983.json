@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "computed_at": "2026-08-13T00:50:24Z",
+  "status": "pass",
+  "candidate_build": "9b019832e08a",
+  "baseline": {
+    "pilot_api_build": "d26c3ad92ebe",
+    "pilot_worker_build": "d26c3ad92ebe",
+    "pilot_web_build": "d26c3ad92ebe",
+    "verifier": "fail_runtime_identity_drift"
+  },
+  "pilot_runtime": {
+    "compose_project": "rtr-copilot-pilot",
+    "api_build": "9b019832e08a",
+    "worker_build": "9b019832e08a",
+    "web_build": "9b019832e08a",
+    "long_running_services": 7,
+    "healthy_services": 7,
+    "answer_quality": "ready"
+  },
+  "pilot_database": {
+    "schema_revision": "0014_document_outbox_repair",
+    "canonical_records": 219,
+    "canonical_chunks": 219,
+    "unexpected_active_sources": 0,
+    "active_enterprise_connectors": 0
+  },
+  "primary_runtime_recovery": {
+    "compose_project": "rtr-copilot-v2",
+    "api_build": "9b019832e08a",
+    "long_running_services": 7,
+    "healthy_services": 7,
+    "answer_quality": "ready"
+  },
+  "release_preflight": {
+    "generated_at": "2026-08-13T00:50:12Z",
+    "status": "not_ready",
+    "passed_gates": 6,
+    "isolated_pilot_database": "pass",
+    "tip033_latency": "pass",
+    "blocked_gates": [
+      "tip034_usefulness",
+      "production_configuration",
+      "target_operational_drills",
+      "homeowner_go"
+    ]
+  },
+  "deviation": {
+    "code": "compose_project_not_explicit_on_initial_generic_refresh",
+    "impact": "transient_local_primary_runtime_recreation_and_minio_port_conflict",
+    "recovery": "primary_refreshed_from_env_demo_then_pilot_refreshed_with_explicit_project_selectors",
+    "data_loss": false,
+    "persistent_volumes_deleted": false
+  },
+  "controls": {
+    "pilot_reindex_invoked": false,
+    "embedding_operation_invoked": false,
+    "external_llm_operation_invoked": false,
+    "tip034_invoked": false,
+    "connector_activation_invoked": false,
+    "persistent_volumes_deleted": false
+  }
+}

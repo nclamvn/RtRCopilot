@@ -1,5 +1,53 @@
 # VERIFY REPORT — TIP-034
 
+## Live technical-capture addendum — 13/08/2026
+
+**Candidate:** `9b019832e08a`
+**Run ID:** `fef13ede-4b61-450c-b1f4-84e64b00fadc`
+**Status:** `TECHNICAL_CAPTURE_PASS / HUMAN_EVALUATION_PENDING`
+
+| Gate | Result | Verdict |
+|---|---:|---|
+| Immutable cases | 27 selected, 27 unique | PASS |
+| Overall | 27 passed, 0 failed | PASS |
+| Grounded success | 1.0 | PASS |
+| Citation accuracy | 1.0 | PASS |
+| Honest-null precision | 1.0 | PASS |
+| False grounded | 0 | PASS |
+| Follow-up recovery | 1.0 | PASS |
+| P95 latency | 19,148.973 ms ≤ 25,000 ms | PASS |
+| Domain strata | 7/7 at pass rate 1.0 | PASS |
+| Human observations | 0/27 | PENDING |
+
+The technical capture ran exactly once with concurrency one, browser-off,
+without rebuild, embeddings, reindex, connectors or production operations.
+Temporary E2E containers and cloned database were cleaned up; the seven pilot
+services remained healthy. No retry was performed.
+
+The historical report below remains useful as implementation evidence, but its
+“external capture not started” statement is superseded by this addendum.
+
+### Provenance debt closure — TIP-035.5
+
+The historical raw report remains byte-for-byte immutable and therefore still
+shows the two fields as null. TIP-035.5 closes the open P1 without rewriting
+history:
+
+- every future HTTP campaign collects database and ontology digests from the
+  exact API container connected to its disposable clone before question one;
+- missing, malformed or build-mismatched provenance fails before any question
+  is posted;
+- the database digest covers active records, generations, chunks, vector
+  hashes, locators and ACL-relevant fields;
+- a separate post-capture attestation binds this historical report hash to the
+  unchanged pilot snapshot: database
+  `911fef5626fede0bb2b2f1002f6acc8cbcae3004f808769f184b4245ed6d526e`
+  and ontology
+  `15e76e881503ea35f9e9d6c061426e7b17d271442ee9d17a7aad831bcffd5f37`.
+
+P1 status: **CLOSED**. The raw capture is retained as historical evidence; its
+content is not silently backfilled.
+
 **Date:** 12/08/2026
 **Environment:** Local Docker production image + isolated Python 3.12 verifier
 **Runtime build:** `5c4049d17cd9+90cb5f148fbe`

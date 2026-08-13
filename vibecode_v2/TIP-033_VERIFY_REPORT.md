@@ -1,6 +1,16 @@
 # VERIFY REPORT — TIP-033
 
-## Current-build release verdict — 12/08/2026
+## Post-remediation release verdict — 12/08/2026
+
+**PASS.** Candidate `9b019832e08a` passed the first and only approved immutable
+five-case run: 5/5 quality, citation accuracy 1.0, false-grounded 0, follow-up
+pass rate 1.0, P95 22,990.783 ms and maximum 22,990.783 ms. The report verifier
+accepted the exact build, case set and release thresholds.
+
+Requirement coverage: **12/12 acceptance criteria pass**. TIP-035 records
+`tip033_latency=pass`; this does not imply company-wide release readiness.
+
+## Prior baseline release verdict — 12/08/2026
 
 **NOT READY.** The first and only approved five-case run on build
 `d26c3ad92ebe` produced 4/5 passes and P95 30,053.265 ms. Citation accuracy
@@ -37,8 +47,8 @@ purpose-bound internal cases.
 | Web | 189 unit; TypeScript, ESLint and production build | PASS |
 | Browser | 126 full; 22 Ask-specific, including progress geometry | PASS |
 | Runtime | Exact build, policy/credential loaded, routine low, 7 healthy services | PASS |
-| Five-case quality | Requires newly approved TIP-033 export | PENDING |
-| Five-case p95/max | Requires newly approved TIP-033 export | PENDING |
+| Five-case quality | 5/5, citation accuracy 1.0, false-grounded 0 | PASS |
+| Five-case p95/max | 22,990.783 ms / 22,990.783 ms | PASS |
 
 ## Requirement traceability
 
@@ -52,8 +62,8 @@ purpose-bound internal cases.
 | AC-06 | PASS — ARIA status and reduced-motion styles are covered. |
 | AC-07 | PASS — fast routine lane configurable and runtime-certified. |
 | AC-08 | PASS — output schema and trust/grounding gates remain intact. |
-| AC-09 | PENDING — exact five-case live quality run needs approval. |
-| AC-10 | PENDING — live p95/max needs the same bounded run. |
+| AC-09 | PASS — exact five-case live quality contract passed. |
+| AC-10 | PASS — P95 and max latency are below release thresholds. |
 | AC-11 | PASS — all specified local QA gates passed. |
 | AC-12 | PASS — wrapper blocks without explicit TIP-033 acknowledgement. |
 

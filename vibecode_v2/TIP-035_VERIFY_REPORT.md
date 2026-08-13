@@ -1,5 +1,47 @@
 # VERIFY REPORT — TIP-035
 
+## TIP-035.5 provenance closure verdict — 13/08/2026
+
+- Open P1 provenance items: **0**.
+- Current machine evidence exposes non-null database and ontology digests.
+- Forward HTTP capture contract rejects missing/malformed digests before the
+  first question.
+- Exact pilot snapshot: schema 0014; 219 active records; 6 active generations;
+  219 active chunks.
+- Focused tests: 19/19; full backend: 647 passed, 128 conditional skipped;
+  Ruff, mypy strict and production image: PASS.
+- Historical raw report hash remains
+  `694ae8eb060bf347952befffb9e8bd193a9e543eca03129e1405e3fdd1144d7a`.
+
+Verdict: **P1 CLOSED**. This does not close the separate real-employee
+usefulness, production configuration, operational-drill or Homeowner gates.
+
+## TIP-034 technical-capture addendum — 13/08/2026
+
+The build-bound external capture now passes: 27/27 cases, seven domains,
+false-grounded 0, citation accuracy 1.0, follow-up pass rate 1.0 and P95
+19,148.973 ms on candidate `9b019832e08a`.
+
+This closes the technical-capture portion only. `tip034_usefulness` remains
+blocked because the governed ledger still contains zero real employee
+observations; production configuration, target drills and Homeowner GO also
+remain open.
+
+## Candidate `9b019832e08a` verdict addendum — 13/08/2026
+
+Current machine evidence supersedes the historical baseline below:
+
+- Candidate build and primary runtime exact: PASS.
+- TIP-033 quality/latency: PASS, 5/5, false-grounded 0, citation accuracy 1.0,
+  P95 22,990.783 ms.
+- Isolated pilot database: PASS, schema 0014, 219 records, 219 chunks,
+  unexpected sources 0, active connectors 0, 7/7 healthy.
+- Connector boundary: PASS.
+- TIP-035 preflight: `NOT READY`, 6 pass / 4 blocked.
+
+Open gates: TIP-034 usefulness, production configuration, target operational
+drills and Homeowner GO.
+
 **Date:** 12/08/2026
 **Environment:** Local Docker quality runtime + containerized Python 3.12 CI +
 macOS Playwright

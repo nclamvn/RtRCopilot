@@ -1,0 +1,1032 @@
+{
+  "campaign": "TIP-026 real-world enterprise acceptance · HTTP E2E",
+  "case_limit": null,
+  "computed_at": "2026-08-13T01:11:20.269185+00:00",
+  "database_digest": null,
+  "full_campaign_size": 77,
+  "gates": {
+    "citation_accuracy": true,
+    "false_grounded_count": true,
+    "follow_up_pass_rate": true,
+    "grounded_success_rate": true,
+    "honest_null_precision": true,
+    "minimum_domain_pass_rate": true,
+    "overall_pass_rate": true,
+    "p95_latency_ms": true
+  },
+  "metrics": {
+    "citation_accuracy": 1.0,
+    "domains": {
+      "company": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "total": 4
+      },
+      "conversation": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "total": 6
+      },
+      "methods": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "total": 3
+      },
+      "operations": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "total": 4
+      },
+      "product": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "total": 4
+      },
+      "safety": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "total": 3
+      },
+      "systems": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "total": 3
+      }
+    },
+    "failed": 0,
+    "false_grounded_count": 0,
+    "follow_up_pass_rate": 1.0,
+    "grounded_expected": 24,
+    "grounded_success_rate": 1.0,
+    "honest_null_expected": 3,
+    "honest_null_precision": 1.0,
+    "overall_pass_rate": 1.0,
+    "p50_latency_ms": 8915.207,
+    "p95_latency_ms": 19148.973,
+    "passed": 27,
+    "shapes": {
+      "abbreviation": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "total": 4
+      },
+      "ambiguity": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "ambiguous_abbreviation": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "ambiguous_name": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "audit": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "broad": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "total": 5
+      },
+      "code_switching": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      },
+      "colloquial": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "total": 6
+      },
+      "comparison": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "contact": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "conversation_anchor": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "total": 3
+      },
+      "credentials": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "data_governance": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "enterprise_alias_collision": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "enumeration": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      },
+      "event": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "exhaustive": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      },
+      "features": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "follow_up": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "total": 3
+      },
+      "missing_diacritics": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      },
+      "multi_entity": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "multi_intent": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "name_collision": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "partial_name": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "policy_state": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "process": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "pronoun": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "total": 3
+      },
+      "sales": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "short": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "specific": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      },
+      "spreadsheet": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "system": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      },
+      "technical": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "total": 2
+      },
+      "typo": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "total": 1
+      }
+    },
+    "total": 27
+  },
+  "ontology_digest": null,
+  "passed": true,
+  "provider": "http-runtime",
+  "results": [
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-002"
+      ],
+      "decision_diagnostic": null,
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-005",
+      "latency_ms": 16385.326,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "4857f0fd9d44e5a8c343c1ca3baa2d78b67cc8bcbde531c722216b533aaa224d",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "typo",
+        "missing_diacritics"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-001",
+        "HC-002"
+      ],
+      "decision_diagnostic": null,
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-013",
+      "latency_ms": 13304.953,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "2c002e35b8842139a06dfe5c25a56ae5dd1ad03e3cf8b41c700f584c5c2a9fea",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "comparison",
+        "multi_entity"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3R.2.005",
+        "HC-001",
+        "HC-002",
+        "HC-017",
+        "HC-019",
+        "HC-010",
+        "HC-011",
+        "HC-057",
+        "HC-013",
+        "HC-012",
+        "HC-014",
+        "HC-058"
+      ],
+      "decision_diagnostic": null,
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-021",
+      "latency_ms": 11946.805,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "9f18140be49c859e9fc0292703b2a72382bd4a81c952483b9fdd6864abbdf422",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "enumeration",
+        "exhaustive",
+        "missing_diacritics",
+        "colloquial"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3R.2.005",
+        "HC-001",
+        "HC-002",
+        "L3F.1.011",
+        "HC-017",
+        "HC-019",
+        "HC-010",
+        "HC-011",
+        "HC-057",
+        "HC-013",
+        "HC-012",
+        "HC-014",
+        "HC-058"
+      ],
+      "decision_diagnostic": null,
+      "domain": "product",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "PRD-023",
+      "latency_ms": 16769.568,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "675bfd26979b4a27cd4b5d06ef880be0feecab5e544bf1d0f5083e21fcd10e31",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "enumeration",
+        "exhaustive",
+        "multi_intent",
+        "features"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.ENT.002"
+      ],
+      "decision_diagnostic": null,
+      "domain": "company",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "COM-002",
+      "latency_ms": 7736.248,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "f6b0b9f13e94d3dcf07b0440efe6dc81726818ba001897c5c8cfa1982013b371",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "colloquial",
+        "broad"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.1.019"
+      ],
+      "decision_diagnostic": null,
+      "domain": "company",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "COM-006",
+      "latency_ms": 2885.603,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "d0a6a6ecdd9fc0577a2cf59f7cf8590363ff459ea27aaef029a9cc4fa809b20f",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "abbreviation",
+        "contact"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.1.023"
+      ],
+      "decision_diagnostic": null,
+      "domain": "company",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "COM-008",
+      "latency_ms": 7553.885,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "8d628d5101b82e38dd501fb287b2a121b1a0a6a038f9915152d86edc59b8aec9",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "code_switching",
+        "sales"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.REC.001"
+      ],
+      "decision_diagnostic": null,
+      "domain": "company",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "COM-010",
+      "latency_ms": 11930.167,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "31c0c2730730fa5db37fb16da5dfb0476263759b425ddff06fb49da4afe59793",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "broad",
+        "credentials"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.1.029",
+        "L3F.1.030"
+      ],
+      "decision_diagnostic": null,
+      "domain": "operations",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "OPS-001",
+      "latency_ms": 14646.697,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "e33df86c8b4b8df21e0d4182ae8659ab388e193df633dc274957ab37b1a532a8",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "colloquial",
+        "process"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.2.004"
+      ],
+      "decision_diagnostic": null,
+      "domain": "operations",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "OPS-005",
+      "latency_ms": 5686.066,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "c22d1bc22455250d3ba105ba1f65d40fffcbf9d2ff6a7e288aa3aa6d5299580f",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "spreadsheet",
+        "specific"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.2.010"
+      ],
+      "decision_diagnostic": null,
+      "domain": "operations",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "OPS-008",
+      "latency_ms": 10215.822,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "ea6e4f4cacea1b3d9183abc61d619cc5bbee0411bed574bd7e6d99eab3a150ef",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "policy_state",
+        "colloquial"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.1.027"
+      ],
+      "decision_diagnostic": null,
+      "domain": "operations",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "OPS-010",
+      "latency_ms": 8973.329,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "f2289bed3e59fa64bb7aa68962762e87b723f16387f6b45ca7a1cf0789c67777",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "event",
+        "specific"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.4.003"
+      ],
+      "decision_diagnostic": null,
+      "domain": "systems",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "SYS-003",
+      "latency_ms": 12358.245,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "802a015bb65da94b6ebc4040122c70201ed3688f02be420de7c1431d194c8de6",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "abbreviation",
+        "broad"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.4.005",
+        "L3F.4.006",
+        "L3F.4.013"
+      ],
+      "decision_diagnostic": null,
+      "domain": "systems",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "SYS-004",
+      "latency_ms": 8480.336,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "53b7e57db6361cabdc21c13a8682b958a7accd169ea0ef3aaf4fcad3d2545e7d",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "ambiguous_name",
+        "broad"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.4.011"
+      ],
+      "decision_diagnostic": null,
+      "domain": "systems",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "SYS-007",
+      "latency_ms": 4178.39,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "8e48984621835045548b6d085a0c2d8af4e7db60842b00deb4d0c97a279dc7c6",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "technical",
+        "short"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.2.033",
+        "L3F.2.037"
+      ],
+      "decision_diagnostic": null,
+      "domain": "methods",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "MTH-001",
+      "latency_ms": 15032.781,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "f421cb2096037b7bf031810cfcbaaa42d4f7d6d4696ee215006a19e3ad4a81d8",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "abbreviation",
+        "colloquial"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.2.035"
+      ],
+      "decision_diagnostic": null,
+      "domain": "methods",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "MTH-004",
+      "latency_ms": 8915.207,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "defb2dc6ad2aa78fbea13a6effb56ad7e638847add2eeccc3944d74f0289b37b",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "broad",
+        "audit"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.3.007"
+      ],
+      "decision_diagnostic": null,
+      "domain": "methods",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "MTH-006",
+      "latency_ms": 7272.178,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "a382af84f366daf82e0d6d5a815b7479d77ec8f1798eec7d7c97a074c17888c2",
+      "reason_code": null,
+      "scenario_id": null,
+      "shapes": [
+        "technical",
+        "data_governance"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "honest_null",
+      "answer_mode": null,
+      "citation_ok": true,
+      "citations": [],
+      "decision_diagnostic": "not_called_query_ambiguous",
+      "domain": "safety",
+      "expected_state": "honest_null",
+      "failures": [],
+      "false_grounded": false,
+      "id": "SAFE-003",
+      "latency_ms": 4787.837,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "e54af19de4708cc31cc00f3a23ac51c9c6c622319527a65b76b0cb446a53f115",
+      "reason_code": "insufficient_confidence",
+      "scenario_id": null,
+      "shapes": [
+        "partial_name",
+        "ambiguity"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "honest_null",
+      "answer_mode": null,
+      "citation_ok": true,
+      "citations": [],
+      "decision_diagnostic": "not_called_query_ambiguous",
+      "domain": "safety",
+      "expected_state": "honest_null",
+      "failures": [],
+      "false_grounded": false,
+      "id": "SAFE-007",
+      "latency_ms": 4016.202,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "b97a8d3b51e0a78d0322e8201a7fc20499e2c5e501377508193901619ff522a1",
+      "reason_code": "insufficient_confidence",
+      "scenario_id": null,
+      "shapes": [
+        "enterprise_alias_collision",
+        "abbreviation"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "honest_null",
+      "answer_mode": null,
+      "citation_ok": true,
+      "citations": [],
+      "decision_diagnostic": "not_called_query_ambiguous",
+      "domain": "safety",
+      "expected_state": "honest_null",
+      "failures": [],
+      "false_grounded": false,
+      "id": "SAFE-008",
+      "latency_ms": 3993.517,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "537521fe011305536e69a50f9a34acb49227ff686e7da3bef4fa5c33d757f9a2",
+      "reason_code": "insufficient_confidence",
+      "scenario_id": null,
+      "shapes": [
+        "ambiguous_abbreviation"
+      ],
+      "terms_ok": true,
+      "turn_index": null
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-001",
+        "L3F.PRD.001",
+        "HC-004",
+        "HC-017",
+        "L3F.1.008",
+        "HC-011",
+        "HC-050",
+        "L3F.RES.003",
+        "L3F.2.015",
+        "PRICE.HERA.MSRP.US",
+        "L3F.2.007",
+        "L3F.2.009",
+        "L3F.2.022"
+      ],
+      "decision_diagnostic": null,
+      "domain": "conversation",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "CHAT-001-T1",
+      "latency_ms": 19148.973,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "bb757602a0f2492014c890b50db2faf2ee11ef029c07642a030dafea9942afd5",
+      "reason_code": null,
+      "scenario_id": "CHAT-001",
+      "shapes": [
+        "conversation_anchor"
+      ],
+      "terms_ok": true,
+      "turn_index": 1
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "HC-001"
+      ],
+      "decision_diagnostic": null,
+      "domain": "conversation",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "CHAT-001-T2",
+      "latency_ms": 8189.226,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "811ef9d900bbdee66ce79934fdde94b65fb2e9cd7c03069ce54895780da0fd56",
+      "reason_code": null,
+      "scenario_id": "CHAT-001",
+      "shapes": [
+        "follow_up",
+        "pronoun",
+        "colloquial"
+      ],
+      "terms_ok": true,
+      "turn_index": 2
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.3.001",
+        "L3F.3.006",
+        "L3F.4.010",
+        "L3F.3.007"
+      ],
+      "decision_diagnostic": null,
+      "domain": "conversation",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "CHAT-003-T1",
+      "latency_ms": 14890.991,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "500fa001767957dface1564d1755ab0ff534875e53e70ed21ba6961b4e596625",
+      "reason_code": null,
+      "scenario_id": "CHAT-003",
+      "shapes": [
+        "conversation_anchor",
+        "name_collision"
+      ],
+      "terms_ok": true,
+      "turn_index": 1
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.3.006"
+      ],
+      "decision_diagnostic": null,
+      "domain": "conversation",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "CHAT-003-T2",
+      "latency_ms": 6410.415,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "2ad4be0a19202ec9e006d64f0dc979810c3dc5f42641efc585e3f83a4e5d79cb",
+      "reason_code": null,
+      "scenario_id": "CHAT-003",
+      "shapes": [
+        "follow_up",
+        "pronoun"
+      ],
+      "terms_ok": true,
+      "turn_index": 2
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.4.001"
+      ],
+      "decision_diagnostic": null,
+      "domain": "conversation",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "CHAT-004-T1",
+      "latency_ms": 26112.813,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "56978692b21c6d54c1c00a4aa5b4f6458b02ef770c2c5acbf832d1cda517dc23",
+      "reason_code": null,
+      "scenario_id": "CHAT-004",
+      "shapes": [
+        "conversation_anchor",
+        "system"
+      ],
+      "terms_ok": true,
+      "turn_index": 1
+    },
+    {
+      "actual_state": "grounded",
+      "answer_mode": "quality_llm",
+      "citation_ok": true,
+      "citations": [
+        "L3F.4.001"
+      ],
+      "decision_diagnostic": null,
+      "domain": "conversation",
+      "expected_state": "grounded",
+      "failures": [],
+      "false_grounded": false,
+      "id": "CHAT-004-T2",
+      "latency_ms": 6750.697,
+      "missing_term_digests": [],
+      "passed": true,
+      "question_digest": "db1561686d42a2e6ecc2cab63e9fb65ab771311fa1b4e452ed94e240001d6145",
+      "reason_code": null,
+      "scenario_id": "CHAT-004",
+      "shapes": [
+        "follow_up",
+        "pronoun",
+        "code_switching"
+      ],
+      "terms_ok": true,
+      "turn_index": 2
+    }
+  ],
+  "run_id": "fef13ede-4b61-450c-b1f4-84e64b00fadc",
+  "runtime_build_identity": "9b019832e08a",
+  "schema_version": 1,
+  "selected_case_ids": [
+    "PRD-005",
+    "PRD-013",
+    "PRD-021",
+    "PRD-023",
+    "COM-002",
+    "COM-006",
+    "COM-008",
+    "COM-010",
+    "OPS-001",
+    "OPS-005",
+    "OPS-008",
+    "OPS-010",
+    "SYS-003",
+    "SYS-004",
+    "SYS-007",
+    "MTH-001",
+    "MTH-004",
+    "MTH-006",
+    "SAFE-003",
+    "SAFE-007",
+    "SAFE-008",
+    "CHAT-001-T1",
+    "CHAT-001-T2",
+    "CHAT-003-T1",
+    "CHAT-003-T2",
+    "CHAT-004-T1",
+    "CHAT-004-T2"
+  ],
+  "subject_digest": "19d41eca291e2d93647b635f80891d5aa9e752519ce315895e17bb5b01954aa8",
+  "thresholds": {
+    "citation_accuracy": 0.95,
+    "false_grounded_count": 0,
+    "follow_up_pass_rate": 0.8,
+    "grounded_success_rate": 0.9,
+    "honest_null_precision": 1.0,
+    "minimum_domain_pass_rate": 0.8,
+    "overall_pass_rate": 0.9,
+    "p95_latency_ms": 60000.0
+  }
+}

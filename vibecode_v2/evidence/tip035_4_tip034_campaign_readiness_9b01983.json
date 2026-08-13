@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "evidence_type": "tip035.4_tip034_campaign_readiness",
+  "generated_at": "2026-08-13T01:01:16Z",
+  "candidate": {
+    "git_commit": "9b019832e08a5e464bbfcb3f346753ce5fc7df21",
+    "build_identity": "9b019832e08a"
+  },
+  "status": "ready_for_purpose_bound_approval",
+  "campaign": {
+    "campaign_key": "tip034.enterprise-pilot-usefulness",
+    "campaign_digest": "6a745f0cd8d75ad5c8a9c22b6ff1a3d764129040db5bd970d6a3366fdf2ddb34",
+    "source_suite_digest": "fe0b9c8fa420f46810a3bb5c1e7706ef7d3d1462b8983cd33831c55258f76bbc",
+    "case_count": 27,
+    "unique_case_count": 27,
+    "case_ids": [
+      "PRD-005",
+      "PRD-013",
+      "PRD-021",
+      "PRD-023",
+      "COM-002",
+      "COM-006",
+      "COM-008",
+      "COM-010",
+      "OPS-001",
+      "OPS-005",
+      "OPS-008",
+      "OPS-010",
+      "SYS-003",
+      "SYS-004",
+      "SYS-007",
+      "MTH-001",
+      "MTH-004",
+      "MTH-006",
+      "SAFE-003",
+      "SAFE-007",
+      "SAFE-008",
+      "CHAT-001-T1",
+      "CHAT-001-T2",
+      "CHAT-003-T1",
+      "CHAT-003-T2",
+      "CHAT-004-T1",
+      "CHAT-004-T2"
+    ],
+    "domains": {
+      "company": 4,
+      "conversation": 6,
+      "methods": 3,
+      "operations": 4,
+      "product": 4,
+      "safety": 3,
+      "systems": 3
+    },
+    "required_shapes": {
+      "broad": 5,
+      "colloquial": 6,
+      "exhaustive": 2,
+      "follow_up": 3
+    },
+    "messy_case_count": 17,
+    "honest_null_case_count": 3,
+    "clarification_probe_count": 3,
+    "ledger_state": "not_started",
+    "ledger_observations": 0
+  },
+  "definition_evaluation": {
+    "status": "pass",
+    "verdict": "not_started",
+    "sample_size": 0,
+    "output": "/tmp/rtr-tip0354-readiness/tip034_definition_result.json"
+  },
+  "anti_gaming": {
+    "status": "pass",
+    "checks_passed": 8,
+    "checks": [
+      "immutable_manifest_and_empty_ledger",
+      "complete_bound_run_passes",
+      "cherry_pick_rejected",
+      "question_digest_binding",
+      "runtime_build_binding",
+      "temporal_binding",
+      "duplicate_observation_rejected",
+      "source_digest_binding"
+    ]
+  },
+  "approval_guard": {
+    "status": "pass",
+    "without_approval_exit_code": 2,
+    "live_report_created": false
+  },
+  "isolated_pilot_runtime": {
+    "compose_project": "rtr-copilot-pilot",
+    "environment_file": ".env.pilot",
+    "healthy_services": 7,
+    "expected_services": 7
+  },
+  "required_live_launch_pins": {
+    "compose_project": "rtr-copilot-pilot",
+    "environment_file": ".env.pilot",
+    "skip_build": true,
+    "build_identity": "9b019832e08a",
+    "concurrency": 1,
+    "skip_browser": true,
+    "immutable_case_set": true
+  },
+  "external_effects": {
+    "llm_calls": 0,
+    "embedding_calls": 0,
+    "reindex_operations": 0,
+    "connector_activations": 0,
+    "production_operations": 0
+  },
+  "next_gate": "homeowner_approval_for_one_tip034_technical_capture"
+}

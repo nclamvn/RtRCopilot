@@ -1,5 +1,30 @@
 # COMPLETION REPORT — TIP-034
 
+## Live technical-capture addendum — candidate `9b019832e08a`
+
+**Date:** 13/08/2026
+**Technical capture:** `PASS`
+**Human usefulness campaign:** `AWAITING_REAL_TESTER_OBSERVATIONS`
+
+Homeowner approved one purpose-bound external capture of the immutable 27-case
+campaign. It ran once on isolated project `rtr-copilot-pilot` using
+`.env.pilot`, existing verified images, build `9b019832e08a`, concurrency one
+and browser duplication off. No retry or cherry-pick occurred.
+
+Results: 27/27 passed; grounded success 1.0; citation accuracy 1.0;
+honest-null precision 1.0; follow-up pass rate 1.0; false-grounded count 0;
+P95 latency 19,148.973 ms. All seven domain strata passed at 1.0.
+
+Technical report:
+`v2/eval/real_world/tip034_pilot_capture.json` (SHA-256
+`694ae8eb060bf347952befffb9e8bd193a9e543eca03129e1405e3fdd1144d7a`).
+
+This addendum supersedes only the historical “pilot not started” technical
+capture status below. The human ledger remains truthfully empty; employees
+must still assess usefulness, clarification recovery, authorization leakage
+and provider cost from real work outcomes before the final evaluator can issue
+a GO/NO-GO.
+
 **STATUS:** IMPLEMENTED LOCALLY / PILOT NOT STARTED. The immutable campaign,
 provenance evaluator, operator commands and anti-gaming regressions are complete.
 No internal question or evidence was sent to an external LLM in this work session.

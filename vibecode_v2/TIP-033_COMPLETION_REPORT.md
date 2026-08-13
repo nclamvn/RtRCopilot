@@ -1,6 +1,22 @@
 # COMPLETION REPORT — TIP-033
 
-## Current-build recertification addendum — 12/08/2026
+## Post-remediation recertification addendum — 12/08/2026
+
+The Homeowner-approved immutable five-case campaign ran exactly once on clean
+candidate `9b019832e08a` at concurrency one and **passed**. All 5/5 cases were
+grounded successfully; citation accuracy and follow-up pass rate were 1.0,
+false-grounded remained 0, P95 was 22,990.783 ms and the maximum case latency
+was 22,990.783 ms.
+
+TIP-033 is now **RECERTIFIED** for this build. The first result was accepted
+without retry or cherry-pick. The content-free machine evidence is
+`evidence/tip035_2r_tip033_recertification_9b01983.json`.
+
+Overall company release remains `NOT READY` because TIP-035 still blocks five
+unrelated gates: isolated pilot database, TIP-034 usefulness, production
+configuration, target operational drills and Homeowner GO.
+
+## Prior baseline recertification — 12/08/2026
 
 The purpose-bound five-case recertification was executed once on candidate
 `d26c3ad92ebe` and **did not pass**: 4/5 cases passed, citation accuracy was
@@ -12,9 +28,8 @@ content-free evidence file
 `evidence/tip035_2_tip033_recertification_d26.json`. The implementation record
 below remains historical context for the TIP-033 feature delivery.
 
-**STATUS:** IMPLEMENTED / CONDITIONAL — code, local production runtime and all
-non-external quality gates pass. The immutable five-case live latency and quality
-recertification is intentionally pending a new explicit export approval.
+**STATUS:** IMPLEMENTED / RECERTIFIED — code, local production runtime and the
+immutable five-case live latency and quality contract pass on `9b019832e08a`.
 
 **Date:** 12/08/2026
 **Runtime build:** `5c4049d17cd9+af5df0e43390`
@@ -69,19 +84,17 @@ recertification is intentionally pending a new explicit export approval.
 - Fail-loud approval probe: `make tip033-recertify` exits 2 without the TIP-033
   acknowledgement and emits only the exact case identifiers.
 
-## Pending release evidence
+## Release evidence
 
-AC-09 and AC-10 still require one bounded external run for exactly:
-`OPS-010`, `SYS-007`, `MTH-004`, `PRD-001`, `PRD-023`. The release target is
-5/5, false-grounded 0, citation accuracy 1.0, p95 at most 25,000 ms and no case
-at or above 45,000 ms. TIP-032 authorization is not reused implicitly.
+AC-09 and AC-10 pass on the exact bounded set `OPS-010`, `SYS-007`, `MTH-004`,
+`PRD-001`, `PRD-023`: 5/5 pass, false-grounded 0, citation accuracy 1.0, P95
+22,990.783 ms and maximum 22,990.783 ms.
 
 ## Known boundary
 
-The active-state visual is covered by component/browser behavior tests, but the
-real provider-duration screenshot and final latency artifact can only be captured
-during the approved bounded run. This is a release evidence gap, not a runtime
-configuration gap.
+The final latency artifact now exists and is build-bound. The campaign skipped
+browser duplication intentionally to avoid extra external spend; streaming UX
+remains covered by the existing component/browser suites.
 
 ## Rollback
 

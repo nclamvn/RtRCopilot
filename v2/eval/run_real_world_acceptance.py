@@ -7,6 +7,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import re
 import sys
 import time
 import uuid
@@ -33,6 +34,8 @@ from lib.operational_acceptance import (  # noqa: E402
 
 DEFAULT_CASES = HERE / "real_world" / "cases.json"
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
+SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+BUILD_IDENTITY_PATTERN = re.compile(r"^[0-9a-f]{12,64}(?:\+[0-9a-f]{12,64})?$")
 
 
 def bounded_cases(
@@ -71,14 +74,17 @@ async def evaluate(
 
     from rtr_copilot.db.engine import session_factory
     from rtr_copilot.rag.answering import AnswerService
+    from rtr_copilot.rag.evaluation_provenance import load_evaluation_provenance
     from rtr_copilot.rag.models import SearchFilters
     from rtr_copilot.repositories.identity_postgres import (
         PostgresSubjectRepository,
     )
 
-    async with session_factory()() as session:
+    factory = session_factory()
+    async with factory() as session:
         actual_database = str(await session.scalar(text("SELECT current_database()")))
     validate_database_target(actual_database, expected_database)
+    provenance = await load_evaluation_provenance(factory)
     campaign = load_campaign(cases_path)
     subject = await PostgresSubjectRepository().get_by_user_id(subject_id)
     if subject is None:
@@ -137,9 +143,9 @@ async def evaluate(
         "run_id": str(run_id),
         "computed_at": datetime.now(UTC).isoformat(),
         "subject_digest": subject_digest,
-        "database_digest": hashlib.sha256(actual_database.encode()).hexdigest(),
+        "database_digest": provenance.database_digest,
         "provider": service.provider.name,
-        "ontology_digest": service.ontology.digest,
+        "ontology_digest": provenance.ontology_digest,
         "case_limit": max_cases,
         "selected_case_ids": list(case_ids),
         "full_campaign_size": len(campaign["flattened_cases"]),
@@ -156,6 +162,24 @@ def validate_http_target(base_url: str) -> str:
     return base_url.rstrip("/")
 
 
+def validate_http_provenance(
+    *,
+    expected_build_identity: str | None,
+    database_digest: str | None,
+    ontology_digest: str | None,
+) -> tuple[str, str, str]:
+    if (
+        expected_build_identity is None
+        or not BUILD_IDENTITY_PATTERN.fullmatch(expected_build_identity)
+    ):
+        raise ValueError("campaign_expected_build_identity_invalid")
+    if database_digest is None or not SHA256_PATTERN.fullmatch(database_digest):
+        raise ValueError("campaign_database_digest_invalid")
+    if ontology_digest is None or not SHA256_PATTERN.fullmatch(ontology_digest):
+        raise ValueError("campaign_ontology_digest_invalid")
+    return expected_build_identity, database_digest, ontology_digest
+
+
 async def evaluate_http(
     cases_path: Path,
     base_url: str,
@@ -164,6 +188,9 @@ async def evaluate_http(
     request_timeout: float = 150.0,
     max_cases: int | None = None,
     case_ids: tuple[str, ...] = (),
+    expected_build_identity: str | None = None,
+    database_digest: str | None = None,
+    ontology_digest: str | None = None,
 ) -> dict[str, Any]:
     """Run the semantic oracle through the real browser-facing HTTP session.
 
@@ -172,6 +199,13 @@ async def evaluate_http(
     conversation id. The result intentionally stores no answer plaintext.
     """
     target = validate_http_target(base_url)
+    expected_build_identity, database_digest, ontology_digest = (
+        validate_http_provenance(
+            expected_build_identity=expected_build_identity,
+            database_digest=database_digest,
+            ontology_digest=ontology_digest,
+        )
+    )
     campaign = load_campaign(cases_path)
     run_id = uuid.uuid4()
     semaphore = asyncio.Semaphore(max(1, min(concurrency, 4)))
@@ -198,6 +232,8 @@ async def evaluate_http(
         runtime_build_identity = status_body.get("build_sha")
         if not isinstance(runtime_build_identity, str) or not runtime_build_identity:
             raise ValueError("campaign_runtime_build_identity_missing")
+        if runtime_build_identity != expected_build_identity:
+            raise ValueError("campaign_runtime_build_identity_mismatch")
         login = await client.get("/api/auth/login")
         login.raise_for_status()
 
@@ -308,10 +344,10 @@ async def evaluate_http(
         "run_id": str(run_id),
         "computed_at": datetime.now(UTC).isoformat(),
         "subject_digest": hashlib.sha256(b"isolated-http-e2e").hexdigest(),
-        "database_digest": None,
+        "database_digest": database_digest,
         "provider": "http-runtime",
         "runtime_build_identity": runtime_build_identity,
-        "ontology_digest": None,
+        "ontology_digest": ontology_digest,
         "case_limit": max_cases,
         "selected_case_ids": list(case_ids),
         "full_campaign_size": len(campaign["flattened_cases"]),
@@ -327,6 +363,9 @@ async def amain() -> int:
     parser.add_argument("--subject-id", type=uuid.UUID)
     parser.add_argument("--expected-database")
     parser.add_argument("--base-url")
+    parser.add_argument("--expected-build-identity")
+    parser.add_argument("--database-digest")
+    parser.add_argument("--ontology-digest")
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--request-timeout", type=float, default=150.0)
     parser.add_argument(
@@ -353,6 +392,9 @@ async def amain() -> int:
             request_timeout=args.request_timeout,
             max_cases=args.max_cases,
             case_ids=tuple(args.case_id),
+            expected_build_identity=args.expected_build_identity,
+            database_digest=args.database_digest,
+            ontology_digest=args.ontology_digest,
         )
     else:
         if args.subject_id is None or args.expected_database is None:
