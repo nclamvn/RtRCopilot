@@ -39,15 +39,38 @@ def _run_wrapper(
         scripts / "run-enterprise-e2e.sh",
         """#!/usr/bin/env bash
 set -euo pipefail
-printf '%s|%s|%s|%s\\n' \
+printf '%s|%s|%s|%s|%s|%s\\n' \
   "$E2E_BUILD_IDENTITY" "$E2E_CASE_IDS" "$E2E_CONCURRENCY" \
-  "$E2E_SKIP_BROWSER" > "$TIP034_TEST_CAPTURE"
+  "$E2E_SKIP_BROWSER" "$E2E_SKIP_BUILD" "$E2E_HTTP_REPORT" \
+  > "$TIP034_TEST_CAPTURE"
 mkdir -p "$(dirname "$E2E_HTTP_REPORT")"
 printf '%s\\n' '{"metrics":{"total":27}}' > "$E2E_HTTP_REPORT"
 """,
     )
+    _write_executable(
+        scripts / "assert-release-evidence-path.sh",
+        """#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$1" == eval/real_world/* ]]; then
+  echo "RELEASE EVIDENCE PATH FAIL" >&2
+  exit 2
+fi
+printf '%s\\n' "$1"
+""",
+    )
+    _write_executable(
+        scripts / "jq",
+        """#!/usr/bin/env python3
+import json
+import sys
+
+with open(sys.argv[-1], encoding="utf-8") as source:
+    print(json.load(source)["metrics"]["total"])
+""",
+    )
     env = {
         **os.environ,
+        "PATH": f"{scripts}:{os.environ['PATH']}",
         "TIP034_APPROVE_EXTERNAL": "1",
         "TIP034_TEST_CAPTURE": str(capture),
     }
@@ -73,7 +96,10 @@ class Tip034ReleaseScriptTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
             capture.read_text(encoding="utf-8").strip(),
-            f"{build}|{EXPECTED_CASES}|1|1",
+            (
+                f"{build}|{EXPECTED_CASES}|1|1|1|"
+                "eval/runtime/tip034_pilot_capture.json"
+            ),
         )
         self.assertIn("TIP-034 PILOT CAPTURE COMPLETE", result.stdout)
 
@@ -97,3 +123,16 @@ class Tip034ReleaseScriptTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertFalse(capture.exists())
         self.assertIn("case set is immutable", result.stderr)
+
+    def test_rejects_tracked_report_target_before_runner(self) -> None:
+        result, capture, temporary = _run_wrapper(
+            build_identity="a" * 12,
+            extra_env={
+                "E2E_HTTP_REPORT": "eval/real_world/tip034_pilot_capture.json"
+            },
+        )
+        self.addCleanup(temporary.cleanup)
+
+        self.assertEqual(result.returncode, 2)
+        self.assertFalse(capture.exists())
+        self.assertIn("RELEASE EVIDENCE PATH FAIL", result.stderr)

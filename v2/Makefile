@@ -70,18 +70,20 @@ pilot-scorecard:
 		--input "$(PILOT_SCORECARD_INPUT)" --output "$(PILOT_SCORECARD_OUTPUT)"
 
 PILOT_CAMPAIGN ?= /app/eval/pilot/tip034_campaign.json
-PILOT_CAMPAIGN_LEDGER ?= /app/eval/pilot/tip034_observations.json
+PILOT_CAMPAIGN_DEFINITION_LEDGER ?= /app/eval/pilot/tip034_observations.json
+PILOT_CAMPAIGN_LEDGER ?= /app/eval/runtime/tip034_observations.json
 PILOT_CAMPAIGN_SOURCE ?= /app/eval/real_world/cases.json
-PILOT_CAMPAIGN_OUTPUT ?= /app/eval/pilot/tip034_campaign_result.json
-PILOT_ACCEPTANCE_REPORT ?= /app/eval/real_world/tip034_pilot_capture.json
+PILOT_CAMPAIGN_DEFINITION_OUTPUT ?= /app/eval/runtime/tip034_definition_result.json
+PILOT_CAMPAIGN_OUTPUT ?= /app/eval/runtime/tip034_campaign_result.json
+PILOT_ACCEPTANCE_REPORT ?= /app/eval/runtime/tip034_pilot_capture.json
 
 pilot-campaign-check:
 	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \
 		-v "$(CURDIR)/eval:/app/eval" api \
 		python -m rtr_copilot.commands.evaluate_pilot_campaign \
-		--campaign "$(PILOT_CAMPAIGN)" --ledger "$(PILOT_CAMPAIGN_LEDGER)" \
+		--campaign "$(PILOT_CAMPAIGN)" --ledger "$(PILOT_CAMPAIGN_DEFINITION_LEDGER)" \
 		--source-suite "$(PILOT_CAMPAIGN_SOURCE)" \
-		--output "$(PILOT_CAMPAIGN_OUTPUT)" --definition-only
+		--output "$(PILOT_CAMPAIGN_DEFINITION_OUTPUT)" --definition-only
 
 pilot-campaign-evaluate:
 	docker compose --env-file "$(ANSWER_ENV_FILE)" run --rm \

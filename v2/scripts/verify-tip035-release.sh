@@ -10,6 +10,7 @@ cd "$project_root"
 runtime_env="${TIP035_RUNTIME_ENV_FILE:-.env.demo}"
 pilot_env="${TIP035_PILOT_ENV_FILE:-.env.pilot}"
 production_env="${TIP035_PRODUCTION_ENV_FILE:-.env.production}"
+release_evidence_dir="${RTR_RELEASE_EVIDENCE_DIR:-eval/runtime}"
 report="${TIP035_REPORT:-/tmp/tip035-release-preflight.json}"
 gates="$(mktemp)"
 trap 'rm -f "$gates"' EXIT
@@ -52,7 +53,7 @@ else
   record isolated_pilot_database blocked "isolated pilot database verifier failed"
 fi
 
-tip033_report="eval/real_world/tip033_latency_recertification.json"
+tip033_report="${TIP035_TIP033_REPORT:-${release_evidence_dir%/}/tip033_latency_recertification.json}"
 if [[ -f "$tip033_report" ]] && jq -e --arg build "$candidate" '
     .runtime_build_identity == $build
     and .metrics.total == 5
@@ -66,7 +67,7 @@ else
   record tip033_latency blocked "fresh passing five-case report is absent for this build"
 fi
 
-tip034_result="eval/pilot/tip034_campaign_result.json"
+tip034_result="${TIP035_TIP034_RESULT:-${release_evidence_dir%/}/tip034_campaign_result.json}"
 if [[ -f "$tip034_result" ]] && jq -e --arg build "$candidate" '
     .verdict == "go"
     and .sample_size == 27

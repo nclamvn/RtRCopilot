@@ -4,7 +4,8 @@ set -euo pipefail
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$project_root"
 
-report="${TIP033_REPORT:-eval/real_world/tip033_latency_recertification.json}"
+release_evidence_dir="${RTR_RELEASE_EVIDENCE_DIR:-eval/runtime}"
+report="${TIP033_REPORT:-${release_evidence_dir%/}/tip033_latency_recertification.json}"
 expected_build="${TIP033_EXPECTED_BUILD:-$(./scripts/build-identity.sh)}"
 
 if [[ ! -f "$report" ]]; then

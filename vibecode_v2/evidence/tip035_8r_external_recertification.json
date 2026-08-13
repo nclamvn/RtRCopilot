@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-13T03:23:42Z",
+  "candidate_build": "d64edcdbe7fe",
+  "status": "technical_pass_human_usefulness_pending",
+  "release_ready": false,
+  "tip033": {
+    "execution_attempts": 1,
+    "run_id": "4bf43c20-0635-4bff-b294-c0f956fbe553",
+    "computed_at": "2026-08-13T03:15:55.075717+00:00",
+    "case_count": 5,
+    "passed": 5,
+    "failed": 0,
+    "citation_accuracy": 1.0,
+    "false_grounded_count": 0,
+    "p95_latency_ms": 19563.926,
+    "max_latency_ms": 19563.926,
+    "database_digest": "5392a043c9993b6d3af9c8b4820ae3d42e005408a8222e370498298f402dd446",
+    "ontology_digest": "556fa7c519dbe4555dad1c1b5dc2499f42ff7fc8b0a3005d7c777cc25b5fffda",
+    "report_sha256": "fab7ce86174c91e25427602badac0d4364ca6a41e616e3d90bdc5feaa11adaf0"
+  },
+  "tip034": {
+    "execution_attempts": 1,
+    "run_id": "c38ff76e-251b-4371-8e18-a146d1e36b31",
+    "computed_at": "2026-08-13T03:20:42.917051+00:00",
+    "environment": "rtr-copilot-pilot",
+    "case_count": 27,
+    "passed": 27,
+    "failed": 0,
+    "domain_count": 7,
+    "citation_accuracy": 1.0,
+    "honest_null_precision": 1.0,
+    "false_grounded_count": 0,
+    "follow_up_pass_rate": 1.0,
+    "p95_latency_ms": 15635.653,
+    "max_latency_ms": 26050.012,
+    "database_digest": "911fef5626fede0bb2b2f1002f6acc8cbcae3004f808769f184b4245ed6d526e",
+    "ontology_digest": "15e76e881503ea35f9e9d6c061426e7b17d271442ee9d17a7aad831bcffd5f37",
+    "report_sha256": "89ab59895800f5abfccc1ad8c7d422a0d7dc59bac16399111b34249340144767",
+    "ai_simulated_behavior_evaluation": "pass",
+    "real_employee_usefulness": "pending"
+  },
+  "post_run": {
+    "primary_runtime_exact": true,
+    "pilot_runtime_exact": true,
+    "pilot_canonical_records": 219,
+    "pilot_canonical_chunks": 219,
+    "unexpected_pilot_sources": 0,
+    "active_connectors": 0,
+    "healthy_long_running_services": 14,
+    "disposable_e2e_containers_remaining": 0,
+    "human_observation_ledger_modified": false
+  },
+  "deviations": [
+    "tip033_default_image_build_invoked_all_layers_cached_no_persistent_runtime_recreated",
+    "tracked_tip034_report_dirties_source_worktree_after_capture"
+  ],
+  "blocked_gates": [
+    "release_evidence_source_separation",
+    "real_employee_usefulness",
+    "production_configuration",
+    "homeowner_go"
+  ]
+}

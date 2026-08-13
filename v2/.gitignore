@@ -17,6 +17,7 @@ playwright-report/
 test-results/
 eval/real_world/latest_*.json
 eval/real_world/tip033_latency_recertification.json
+eval/runtime/
 eval/pilot/tip034_campaign.json
 eval/pilot/tip034_campaign_result.json
 eval/pilot/tip034_observations.json

@@ -18,9 +18,12 @@ if [[ "${E2E_CASE_IDS:-$bounded_cases}" != "$bounded_cases" ]]; then
 fi
 
 export E2E_CASE_IDS="$bounded_cases"
-export E2E_HTTP_REPORT="${E2E_HTTP_REPORT:-eval/real_world/tip033_latency_recertification.json}"
+release_evidence_dir="${RTR_RELEASE_EVIDENCE_DIR:-eval/runtime}"
+export E2E_HTTP_REPORT="${E2E_HTTP_REPORT:-${release_evidence_dir%/}/tip033_latency_recertification.json}"
 export E2E_CONCURRENCY="${E2E_CONCURRENCY:-1}"
 export E2E_SKIP_BROWSER="${E2E_SKIP_BROWSER:-1}"
+export E2E_SKIP_BUILD="${E2E_SKIP_BUILD:-1}"
+./scripts/assert-release-evidence-path.sh "$E2E_HTTP_REPORT" >/dev/null
 candidate_build="$(./scripts/build-identity.sh)"
 if [[ ! "$candidate_build" =~ ^[0-9a-f]{12,64}$ ]]; then
   echo "TIP-033 RECERTIFICATION BLOCKED · release candidate must be clean and committed: $candidate_build" >&2
