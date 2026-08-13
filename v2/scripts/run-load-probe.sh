@@ -38,3 +38,5 @@ docker run --rm \
     --insecure-skip-tls-verify \
     --summary-export=/results/rate_limit_probe.summary.json \
     /load/rate_limit_probe.js 2>&1 | tee "$results/rate_limit_probe.log"
+python3 "$project_root/scripts/redact-k6-summary.py" \
+  "$results/rate_limit_probe.summary.json"

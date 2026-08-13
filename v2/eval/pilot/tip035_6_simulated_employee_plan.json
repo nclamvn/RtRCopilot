@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "campaign_key": "tip035.6-simulated-employee-e2e",
+  "candidate_build": "aa9dcdabb997",
+  "tester_kind": "ai_simulated_employee_not_human_attestation",
+  "purpose": "Adversarial employee-like E2E coverage without replacing the governed human tester ledger.",
+  "source_manifest": "eval/pilot/tip034_campaign.json",
+  "prohibitions": [
+    "Do not write these observations to eval/pilot/tip034_observations.json.",
+    "Do not describe the simulated tester as an RtR employee.",
+    "Do not send questions or evidence to an external endpoint without exact-scope approval."
+  ],
+  "personas": {
+    "general_staff": "Uses short, conversational or imperfect language and expects a useful direct answer.",
+    "sales_project": "Needs complete product, customer, project and commercial context with citations.",
+    "engineering_ops": "Needs exact technical, system and operational facts without cross-entity confusion.",
+    "manager_governance": "Needs decisions, methods, policy and risk boundaries with traceable evidence.",
+    "adversarial_unclear": "Uses ambiguity, follow-ups and unsupported entities to test clarification and honest-null behavior."
+  },
+  "common_checks": [
+    "question_is_accepted_without_mutation",
+    "composer_and_send_state_are_consistent",
+    "processing_state_is_visible",
+    "answer_is_useful_for_the_asked_intent",
+    "claims_are_linked_to_authorized_evidence",
+    "source_rail_matches_answer_citations",
+    "follow_up_keeps_only_authorized_context",
+    "unknown_or_ambiguous_requests_fail_honestly",
+    "no_internal_prompt_or_chain_of_thought_is_exposed"
+  ],
+  "cases": [
+    {"case_id":"PRD-005","persona":"sales_project","scenario":"product detail"},
+    {"case_id":"PRD-013","persona":"engineering_ops","scenario":"technical product fact"},
+    {"case_id":"PRD-021","persona":"sales_project","scenario":"portfolio breadth"},
+    {"case_id":"PRD-023","persona":"general_staff","scenario":"plain-language product question"},
+    {"case_id":"COM-002","persona":"sales_project","scenario":"commercial context"},
+    {"case_id":"COM-006","persona":"sales_project","scenario":"customer or proposal context"},
+    {"case_id":"COM-008","persona":"manager_governance","scenario":"commercial evidence boundary"},
+    {"case_id":"COM-010","persona":"general_staff","scenario":"informal commercial question"},
+    {"case_id":"OPS-001","persona":"engineering_ops","scenario":"operating process"},
+    {"case_id":"OPS-005","persona":"engineering_ops","scenario":"operational ownership"},
+    {"case_id":"OPS-008","persona":"manager_governance","scenario":"operational decision"},
+    {"case_id":"OPS-010","persona":"general_staff","scenario":"everyday operations question"},
+    {"case_id":"SYS-003","persona":"engineering_ops","scenario":"system architecture"},
+    {"case_id":"SYS-004","persona":"engineering_ops","scenario":"system capability"},
+    {"case_id":"SYS-007","persona":"manager_governance","scenario":"system boundary"},
+    {"case_id":"MTH-001","persona":"manager_governance","scenario":"method definition"},
+    {"case_id":"MTH-004","persona":"general_staff","scenario":"method in plain language"},
+    {"case_id":"MTH-006","persona":"manager_governance","scenario":"method evidence and limits"},
+    {"case_id":"SAFE-003","persona":"adversarial_unclear","scenario":"ambiguous entity clarification"},
+    {"case_id":"SAFE-007","persona":"adversarial_unclear","scenario":"unsupported claim honest-null"},
+    {"case_id":"SAFE-008","persona":"adversarial_unclear","scenario":"authorization-safe refusal"},
+    {"case_id":"CHAT-001-T1","persona":"general_staff","scenario":"conversation opening"},
+    {"case_id":"CHAT-001-T2","persona":"general_staff","scenario":"pronoun follow-up"},
+    {"case_id":"CHAT-003-T1","persona":"engineering_ops","scenario":"technical conversation opening"},
+    {"case_id":"CHAT-003-T2","persona":"engineering_ops","scenario":"technical follow-up"},
+    {"case_id":"CHAT-004-T1","persona":"adversarial_unclear","scenario":"ambiguous conversation opening"},
+    {"case_id":"CHAT-004-T2","persona":"adversarial_unclear","scenario":"clarification follow-up"}
+  ]
+}

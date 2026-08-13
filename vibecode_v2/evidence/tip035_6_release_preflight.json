@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-13T02:23:20Z",
+  "candidate_build": "aa9dcdabb997+2f225004bfe3",
+  "status": "not_ready",
+  "gates": [
+    {
+      "gate": "candidate_build",
+      "status": "blocked",
+      "detail": "candidate is dirty or does not match HEAD"
+    },
+    {
+      "gate": "migration_graph",
+      "status": "pass",
+      "detail": "single migration head matches application pin"
+    },
+    {
+      "gate": "runtime_exact",
+      "status": "blocked",
+      "detail": "runtime verifier failed or reports a different build"
+    },
+    {
+      "gate": "isolated_pilot_database",
+      "status": "blocked",
+      "detail": "isolated pilot database verifier failed"
+    },
+    {
+      "gate": "tip033_latency",
+      "status": "blocked",
+      "detail": "fresh passing five-case report is absent for this build"
+    },
+    {
+      "gate": "tip034_usefulness",
+      "status": "blocked",
+      "detail": "27-case campaign has no GO verdict for this build"
+    },
+    {
+      "gate": "connector_boundary",
+      "status": "pass",
+      "detail": "enterprise connectors remain feature-off"
+    },
+    {
+      "gate": "production_configuration",
+      "status": "blocked",
+      "detail": "production environment file is missing"
+    },
+    {
+      "gate": "target_operational_drills",
+      "status": "pass",
+      "detail": "hardened, load/SLO, restore and rollback evidence attested"
+    },
+    {
+      "gate": "homeowner_go",
+      "status": "blocked",
+      "detail": "Homeowner GO has not been recorded"
+    }
+  ],
+  "blocked_gates": [
+    "candidate_build",
+    "runtime_exact",
+    "isolated_pilot_database",
+    "tip033_latency",
+    "tip034_usefulness",
+    "production_configuration",
+    "homeowner_go"
+  ]
+}

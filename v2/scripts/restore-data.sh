@@ -430,17 +430,31 @@ for statement in \
   "DELETE FROM evidence_spans" \
   "DELETE FROM sot_reindex_outbox" \
   "DELETE FROM chunks" \
-  "UPDATE chunks SET normalized_text='tamper'" \
   "DELETE FROM answer_citations" \
-  "UPDATE answer_citations SET marker='C999'" \
-  "DELETE FROM messages" \
-  "UPDATE messages SET sanitized_content='tamper'"
+  "DELETE FROM messages"
 do
   if ! runtime_sql "$statement"; then
     denied=$((denied + 1))
   fi
 done
-[[ "$denied" -eq 16 ]] || { echo "Runtime grants verification failed" >&2; exit 12; }
+immutable_triggers="$(docker compose exec -T postgres psql -At \
+  -U "$POSTGRES_USER" -d "$target" -c "SELECT count(*)
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid=t.tgrelid
+    WHERE NOT t.tgisinternal AND t.tgenabled<>'D'
+      AND (c.relname,t.tgname) IN (
+        ('chunks','chunks_immutable'),
+        ('answer_citations','citations_immutable'),
+        ('messages','messages_immutable')
+      )")"
+# Row-level immutable triggers do not fire when a restored canonical table is
+# empty. Executing a blanket UPDATE and expecting an error therefore produced
+# a false restore failure on valid empty databases. Verify the 13 privilege
+# denials and the three enabled immutability controls independently instead.
+if [[ "$denied" -ne 13 || "$immutable_triggers" -ne 3 ]]; then
+  echo "Runtime grants verification failed denials=$denied immutable_triggers=$immutable_triggers" >&2
+  exit 12
+fi
 
 docker compose --profile tools run --rm \
   -e POSTGRES_DSN="$runtime_dsn" \
@@ -472,4 +486,4 @@ docker compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
 restore_succeeded="true"
 duration="$(( $(date +%s) - started_epoch ))"
 object_count="$(python3 -c "import json; print(len(json.load(open('$work_dir/manifest.json'))['minio_inventory']))")"
-echo "RESTORE PASS operation_id=$operation_id target=$target revision=$revision objects=$object_count row_counts=100% checksums=100% audit_chain=valid runtime_denials=16 duration_seconds=$duration"
+echo "RESTORE PASS operation_id=$operation_id target=$target revision=$revision objects=$object_count row_counts=100% checksums=100% audit_chain=valid runtime_denials=13 immutable_triggers=3 runtime_controls=16 duration_seconds=$duration"

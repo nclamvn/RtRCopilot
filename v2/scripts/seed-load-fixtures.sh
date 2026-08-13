@@ -12,12 +12,19 @@ set -euo pipefail
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$project_root"
 INGRESS_HOST="${INGRESS_HOST:-rtr.local}"
+INGRESS_HTTPS_PORT="${INGRESS_HTTPS_PORT:-443}"
+INGRESS_RESOLVE_IP="${INGRESS_RESOLVE_IP:-127.0.0.1}"
 PSQL=(docker compose exec -T postgres psql -At -U rtr_owner -d rtr_copilot -c)
 
 # Resolve the dev-OIDC staff subject through the ingress (creates it if absent).
 jar="$(mktemp)"
-curl -fsSk --noproxy '*' -c "$jar" -b "$jar" -L -o /dev/null "https://$INGRESS_HOST/api/auth/login"
-staff="$(curl -fsSk --noproxy '*' -b "$jar" "https://$INGRESS_HOST/api/auth/me" \
+origin="https://$INGRESS_HOST"
+if [[ "$INGRESS_HTTPS_PORT" != "443" ]]; then
+  origin="$origin:$INGRESS_HTTPS_PORT"
+fi
+resolve=(--resolve "$INGRESS_HOST:$INGRESS_HTTPS_PORT:$INGRESS_RESOLVE_IP")
+curl -fsSk --noproxy '*' "${resolve[@]}" -c "$jar" -b "$jar" -L -o /dev/null "$origin/api/auth/login"
+staff="$(curl -fsSk --noproxy '*' "${resolve[@]}" -b "$jar" "$origin/api/auth/me" \
   | python3 -c 'import sys,json; print(json.load(sys.stdin)["user_id"])')"
 rm -f "$jar"
 [[ -n "$staff" ]] || { echo "could not resolve staff user_id" >&2; exit 1; }

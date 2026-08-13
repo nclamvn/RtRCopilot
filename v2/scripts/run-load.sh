@@ -74,6 +74,8 @@ run_scenario() {
     --summary-export="/results/$name.summary.json"
     "/load/$name.js")
   docker "${docker_args[@]}" 2>&1 | tee "$results/$name.log"
+  python3 "$project_root/scripts/redact-k6-summary.py" \
+    "$results/$name.summary.json"
 }
 
 # S1 (+S5 availability): mixed reads at a representative arrival rate + 1 rps

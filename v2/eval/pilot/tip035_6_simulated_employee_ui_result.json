@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-13T02:10:07Z",
+  "candidate_build": "aa9dcdabb997",
+  "environment": "isolated pilot rtr-copilot-pilot",
+  "tester_kind": "ai_simulated_employee_not_human_attestation",
+  "verdict": "ui_shell_pass_content_evaluation_blocked",
+  "human_ledger_modified": false,
+  "external_calls_executed": 0,
+  "case_input_gate": {
+    "planned": 27,
+    "executed": 27,
+    "exact_input_round_trip": 27,
+    "send_enabled_with_question": 27,
+    "missing_case_ids": []
+  },
+  "composer": {
+    "clear_after_user_keyboard_action": "pass",
+    "send_disabled_after_clear": "pass",
+    "shift_enter_adds_newline_without_submit": "pass",
+    "messy_vietnamese_input_preserved": "pass"
+  },
+  "workspace": {
+    "sidebar_collapse_expand_round_trip": "pass",
+    "vietnamese_english_round_trip": "pass",
+    "command_palette_open_close": "pass",
+    "keyboard_shortcuts_dialog": "pass",
+    "related_information_tabs": "pass",
+    "files_empty_authorized_state": "pass",
+    "documents_empty_authorized_state": "pass"
+  },
+  "responsive": [
+    {"label":"desktop","width":1440,"height":900,"horizontal_overflow":false,"composer_visible":true},
+    {"label":"tablet","width":1024,"height":768,"horizontal_overflow":false,"composer_visible":true},
+    {"label":"mobile","width":390,"height":844,"horizontal_overflow":false,"composer_visible":true}
+  ],
+  "content_evaluation": {
+    "status": "blocked_external_authorization",
+    "reason": "The current answer provider is external. No question or evidence was submitted because this TIP has no exact-scope disclosure approval for candidate aa9dcdabb997.",
+    "scores_recorded": false
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-13T02:24:43Z",
+  "base_candidate": "aa9dcdabb99782105f58898d465abec84e0cf3fd",
+  "base_candidate_short": "aa9dcdabb997",
+  "release_status": "not_ready",
+  "runtime": {
+    "primary_long_running_services_healthy": 7,
+    "pilot_long_running_services_healthy": 7,
+    "primary_build_identity": "aa9dcdabb997",
+    "pilot_build_identity": "aa9dcdabb997",
+    "primary_schema_revision": "0014_document_outbox_repair",
+    "pilot_schema_revision": "0014_document_outbox_repair",
+    "primary_database_digest": "5392a043c9993b6d3af9c8b4820ae3d42e005408a8222e370498298f402dd446",
+    "primary_ontology_digest": "556fa7c519dbe4555dad1c1b5dc2499f42ff7fc8b0a3005d7c777cc25b5fffda",
+    "pilot_database_digest": "911fef5626fede0bb2b2f1002f6acc8cbcae3004f808769f184b4245ed6d526e",
+    "pilot_ontology_digest": "15e76e881503ea35f9e9d6c061426e7b17d271442ee9d17a7aad831bcffd5f37",
+    "pilot_active_records": 219,
+    "pilot_active_chunks": 219,
+    "pilot_active_connectors": 0
+  },
+  "simulated_employee_ui": {
+    "tester_kind": "ai_simulated_employee_not_human_attestation",
+    "planned_cases": 27,
+    "input_cases_passed": 27,
+    "content_cases_scored": 0,
+    "external_calls": 0,
+    "human_ledger_modified": false,
+    "responsive_viewports_passed": 3,
+    "source": "v2/eval/pilot/tip035_6_simulated_employee_ui_result.json"
+  },
+  "hardened_ingress": {
+    "environment": "isolated local rtr-copilot-release-drill",
+    "provider_mode": "local",
+    "embedding_provider": "offline",
+    "external_calls": 0,
+    "http_redirect_status": 308,
+    "https_status_endpoint": 200,
+    "hsts": "pass",
+    "content_security_policy": "pass",
+    "frame_policy": "pass",
+    "security_headers": "pass",
+    "leak_probe_paths": 8,
+    "forbidden_fragments_found": 0
+  },
+  "load_slo": {
+    "verdict": "pass",
+    "objectives_passed": 10,
+    "objectives_total": 10,
+    "point_read_p95_ms": 29.887025,
+    "dashboard_p95_ms": 54.76733325,
+    "availability_fraction": 1.0,
+    "offline_ask_p95_ms": 98.5711373,
+    "upload_1mb_p95_ms": 74.4581622,
+    "spike_recovery_p95_ms": 13.60341245,
+    "error_rate_fraction": 0.0,
+    "rate_limit_status_200": 120,
+    "rate_limit_status_429": 60,
+    "rate_limit_status_5xx": 0,
+    "summaries_sha256": {
+      "steady_read": "bc1c5446667fe2603941387262c88bfdee94114cbc7c097f6325454a590010eb",
+      "ask_burst": "c4a2b5cb4606137a467943fae9b364166ab8a7f053ec2d697d6008f9cb2583a7",
+      "upload_stream": "22478ca1f774b595276e9d728f79234024d8808a8bbfeb374fb397e60335aeec",
+      "spike_recover": "712d0515f12cede335ea7bfffebe7ed917f90e1c258e99cf6b47e597889c4caf",
+      "rate_limit_probe": "267e72e080f918c9702e489d518cee502a8e978b161c83febc56545542e46853"
+    }
+  },
+  "recoverability": {
+    "backup": {
+      "status": "pass",
+      "duration_seconds": 6,
+      "archive_bytes": 305437,
+      "archive_sha256": "8faa8c66a7c40daacc14b29cb21e264ac5de980c18af53d01793ac6900494894"
+    },
+    "restore": {
+      "status": "pass_after_remediation",
+      "isolated_target": "tip0356-restore2-20260813",
+      "duration_seconds": 36,
+      "objects": 60,
+      "row_counts_percent": 100,
+      "checksums_percent": 100,
+      "audit_chain": "valid",
+      "runtime_privilege_denials": 13,
+      "immutable_triggers_enabled": 3
+    },
+    "rollback": {
+      "status": "pass",
+      "scope": "isolated mechanical rehearsal",
+      "anchor": "tip0356-rollback-anchor",
+      "anchor_build": "aa9dcdabb997",
+      "schema_downgraded": false,
+      "health_gate_seconds": 1,
+      "ledger": "isolated temporary ledger"
+    }
+  },
+  "production_contract": {
+    "synthetic_positive_cases_passed": 1,
+    "synthetic_negative_cases_passed": 5,
+    "oidc_discovery_pkce_mock_passed": 1,
+    "live_provider_calls": 0,
+    "real_corporate_oidc_configured": false,
+    "real_production_domain_configured": false,
+    "real_production_secrets_configured": false,
+    "activation_status": "blocked_operator_values_required"
+  },
+  "repository_verify": {
+    "status": "pass",
+    "verify_scaffold_exit_code": 0,
+    "web_tests_passed": 191,
+    "web_tests_total": 191,
+    "backend_tests_collected": 775,
+    "backend_gate": "pass",
+    "backend_source_files_mypy_checked": 143,
+    "ruff": "pass",
+    "mypy": "pass",
+    "eslint": "pass",
+    "typescript": "pass",
+    "production_web_build": "pass",
+    "migration_data_integration_tests_passed": 69,
+    "migration_data_integration_tests_total": 69,
+    "final_verdict": "VERIFY PASS"
+  },
+  "remediations": [
+    "Restore verification now separates privilege denials from row-level immutability triggers so valid empty canonical tables do not cause a false failure.",
+    "Deploy and rollback ledgers accept an isolated RTR_DEPLOY_DIR for non-production drills.",
+    "Load fixture seeding resolves the local ingress explicitly and no longer depends on a host DNS entry.",
+    "K6 summary evidence is redacted after every run so authenticated setup cookies are never persisted."
+  ],
+  "blocked_gates": [
+    "commit_and_rebuild_remediated_candidate",
+    "tip033_external_recertification_for_new_candidate",
+    "tip034_27_case_content_capture_and_real_human_usefulness_attestation",
+    "real_corporate_oidc_domain_tls_and_secret_activation",
+    "explicit_post_evidence_homeowner_go"
+  ]
+}

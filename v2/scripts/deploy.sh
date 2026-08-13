@@ -29,7 +29,7 @@ PROJECT="${RTR_PROJECT_NAME:-rtr-copilot-v2}"
 SERVICES=(api worker web migrate)
 HARDENED_COMPOSE=(docker compose -f compose.yaml -f compose.hardened.yaml)
 
-deploy_dir="$project_root/deploy"
+deploy_dir="${RTR_DEPLOY_DIR:-$project_root/deploy}"
 current_file="$deploy_dir/current-version"
 previous_file="$deploy_dir/previous-version"
 ledger="$deploy_dir/versions.log"
