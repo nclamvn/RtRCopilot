@@ -37,7 +37,7 @@ async def run() -> int:
     if repair is None:
         # Preserve the existing read-only command contract for operators and
         # automation that consume the three reconciliation lists directly.
-        output: dict[str, object] = report
+        output: object = report
     else:
         # Repair logs remain content-free: counts and the key-set digest prove
         # scope without exposing internal object paths.
