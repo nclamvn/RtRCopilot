@@ -409,6 +409,69 @@ def test_multi_entity_enumeration_retains_external_planner() -> None:
     assert rewriter.calls == 1
 
 
+def test_exact_governed_comparison_bypasses_external_planner_tail() -> None:
+    """Two exact bound subjects already form a complete comparison contract."""
+    rewriter = _StubRewriter(RewriteResult(
+        entities=["HERA"],
+        intent="lookup",
+    ))
+    plan = asyncio.run(plan_query(
+        "HERA với VEGA khác nhau thế nào về tải và thời gian bay?",
+        rewriter,
+    ))
+
+    assert rewriter.calls == 0
+    assert plan.planner_source == "deterministic"
+    assert plan.intent == "comparison"
+    assert plan.answer_shape == "comparison"
+    assert plan.entities == ("HERA", "VEGA")
+    assert plan.resolution_state == "resolved"
+    assert {"HC-001", "HC-002"}.issubset(plan.definition_record_keys)
+
+
+def test_exact_governed_state_lookup_bypasses_external_planner_tail() -> None:
+    """Governed policy state stays useful when the planner provider is slow."""
+    rewriter = _StubRewriter(RewriteResult(
+        entities=["HERA"],
+        intent="definition",
+    ))
+    plan = asyncio.run(plan_query(
+        "mấy con số bảo dưỡng này chốt mandatory chưa?",
+        rewriter,
+    ))
+
+    assert rewriter.calls == 0
+    assert plan.planner_source == "deterministic"
+    assert plan.intent == "lookup"
+    assert plan.answer_shape == "direct"
+    assert plan.entities == ("Chương trình bảo dưỡng RtR",)
+    assert plan.resolution_state == "resolved"
+    assert "L3F.2.010" in plan.definition_record_keys
+
+
+def test_unresolved_comparison_keeps_external_fail_closed_path() -> None:
+    """One exact side plus an unknown side is not a safe fast-path contract."""
+    rewriter = _FailingRewriter()
+    plan = asyncio.run(plan_query(
+        "HERA với mẫu chưa đăng ký khác nhau thế nào?",
+        rewriter,
+    ))
+
+    assert rewriter.calls == 1
+    assert plan.planner_source == "fallback"
+    assert plan.resolution_state == "planning_required"
+
+
+def test_state_word_without_exact_governed_subject_keeps_external_path() -> None:
+    """State vocabulary never becomes identity evidence by itself."""
+    rewriter = _FailingRewriter()
+    plan = asyncio.run(plan_query("chính sách này mandatory chưa?", rewriter))
+
+    assert rewriter.calls == 1
+    assert plan.planner_source == "fallback"
+    assert plan.entities == ()
+
+
 class TestTokenBoundaryPunctuation:
     """TIP-029.1: sentence punctuation at token edges must not hide entities.
 

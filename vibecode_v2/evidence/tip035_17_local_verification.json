@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "tip_id": "TIP-035.17",
+  "captured_at": "2026-08-14T15:52:58+07:00",
+  "base_candidate_sha": "9113113b32c236f7297c51816bf0f4d3187226bf",
+  "source_state": "uncommitted_local_remediation",
+  "source_patch_sha256": "1400b16393861b2fe27df23fb714aaffbd87c728c4228aa849e463823ef43883",
+  "external_processing": {
+    "performed": false,
+    "provider_calls": 0,
+    "campaign_retried": false
+  },
+  "requirements": {
+    "implemented": 7,
+    "total": 7,
+    "coverage": 1.0
+  },
+  "scenarios": {
+    "passed": 6,
+    "failed": 0,
+    "untestable": 0
+  },
+  "gates": {
+    "focused_query_understanding": {"passed": 62, "failed": 0},
+    "focused_ontology_compatibility": {"passed": 67, "failed": 0},
+    "backend": {"passed": 681, "failed": 0, "conditional_skip": 130},
+    "data_integration": {"passed": 71, "failed": 0},
+    "ruff": {"status": "pass", "errors": 0},
+    "mypy": {"status": "pass", "source_files": 145, "issues": 0},
+    "backend_migration_image_build": {"status": "pass"},
+    "diff_check": {"status": "pass"}
+  },
+  "release_state": "local_verified_commit_rebuild_recert_pending"
+}

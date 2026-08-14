@@ -95,9 +95,27 @@ _POINT_ATTRIBUTE_PATTERNS = (
     "tech stack", "technology stack", "cong nghe su dung",
 )
 
+# A lifecycle/governance-state question is already a bounded point contract
+# when it names one exact ontology entity.  These phrases do not establish an
+# identity by themselves; they only allow the zero-network planner lane after
+# identity and authoritative record bindings have independently been proven.
+_GOVERNED_STATE_ATTRIBUTE_PATTERNS = (
+    "approval status", "policy state", "trang thai", "mandatory",
+    "proposed", "chot chua", "da chot", "phe duyet chua", "da phe duyet",
+    "bat buoc chua", "co bat buoc", "draft hay final",
+    "du thao hay chinh thuc",
+)
+
 
 def _is_point_attribute_request(normalized: str) -> bool:
     return any(pattern in normalized for pattern in _POINT_ATTRIBUTE_PATTERNS)
+
+
+def _is_governed_state_attribute_request(normalized: str) -> bool:
+    return any(
+        pattern in normalized
+        for pattern in _GOVERNED_STATE_ATTRIBUTE_PATTERNS
+    )
 
 
 def _facet_matches_question(
@@ -621,6 +639,28 @@ async def plan_query(
             or uncorroborated_weak_surfaces(question, ontology)
         )
     )
+    deterministic_entity_ids = tuple(dict.fromkeys(
+        ontology_entity.entity_id
+        for entity in deterministic
+        for ontology_entity in ontology.by_canonical.get(entity, ())
+    ))
+    exact_candidate_entity_ids = {
+        item.entity_id
+        for item in current_question_candidates
+        if item.match_kind == "exact"
+    }
+    deterministic_identity_complete = bool(
+        deterministic_entity_ids
+        and all(
+            entity_id in exact_candidate_entity_ids
+            for entity_id in deterministic_entity_ids
+        )
+        and structural_candidate_ids.issubset(deterministic_entity_ids)
+        and all(
+            ontology.by_id[entity_id].definition_record_keys
+            for entity_id in deterministic_entity_ids
+        )
+    )
     # Exact, unambiguous definitions and governed point attributes already
     # have a complete semantic contract in the ontology. Calling an external
     # planner cannot add authority and only adds cost/latency.
@@ -633,6 +673,12 @@ async def plan_query(
         and (
             deterministic_intent == "definition"
             or _is_point_attribute_request(normalized)
+            or (
+                deterministic_intent == "lookup"
+                and len(deterministic_entity_ids) == 1
+                and deterministic_identity_complete
+                and _is_governed_state_attribute_request(normalized)
+            )
         )
     )
     # Moderate character similarity is useful for giving the planner search
@@ -651,11 +697,6 @@ async def plan_query(
         for item in candidates
         if item.match_kind != "candidate"
     }
-    deterministic_entity_ids = tuple(
-        ontology_entity.entity_id
-        for entity in deterministic
-        for ontology_entity in ontology.by_canonical.get(entity, ())
-    )
     contextual_entity_ids = tuple(
         match.entity_id for match in ontology.resolved_matches(planner_question)
     )
@@ -671,11 +712,6 @@ async def plan_query(
         ontology.collections_by_name[name].collection_id
         for name in collection_candidate_names
     )
-    exact_candidate_entity_ids = {
-        item.entity_id
-        for item in current_question_candidates
-        if item.match_kind == "exact"
-    }
     # A collection enumeration can use the same zero-network fast lane when
     # the current turn has an exact governed subject and ontology routing
     # yields exactly one collection for that subject. The collection boundary,
@@ -693,8 +729,25 @@ async def plan_query(
         )
         and len(collection_candidate_names) == 1
     )
+    # Comparison structure plus two or more exact governed identities is a
+    # complete semantic contract: the user supplied both sides, the ontology
+    # binds each side to authoritative records, and deterministic language
+    # fixes the answer shape.  Bypass the external semantic planner so a slow
+    # provider cannot turn a provable comparison into a 20-second honest-null.
+    # Any unresolved structural identity, conversation dependency or missing
+    # record binding keeps the normal external/fail-closed path.
+    deterministic_comparison_fast_path = bool(
+        external
+        and deterministic_intent == "comparison"
+        and len(deterministic_entity_ids) >= 2
+        and not bounded_context
+        and not structural_ambiguity
+        and deterministic_identity_complete
+    )
     deterministic_fast_path = (
-        deterministic_entity_fast_path or deterministic_collection_fast_path
+        deterministic_entity_fast_path
+        or deterministic_collection_fast_path
+        or deterministic_comparison_fast_path
     )
     planner_source: Literal["deterministic", "external", "fallback"] = (
         "external" if external else "deterministic"
