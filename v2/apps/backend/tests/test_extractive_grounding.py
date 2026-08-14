@@ -309,6 +309,143 @@ def test_mrp_capability_answer_is_stabilized_before_provider_retry() -> None:
     ) == repaired
 
 
+@pytest.mark.parametrize(
+    ("question", "canonical_name", "record_key", "answer"),
+    [
+        (
+            "CRM bên mình làm gì?",
+            "RtR CRM",
+            "L3F.4.001",
+            (
+                "Real-time Robotics dùng hệ thống này để quản lý khách hàng, "
+                "cơ hội và pipeline bán hàng. [C1]"
+            ),
+        ),
+        (
+            "MRP bên mình làm gì?",
+            "RtR MRP",
+            "L3F.4.003",
+            (
+                "Real-time Robotics dùng hệ thống này để hoạch định vật tư và "
+                "điều hành work orders. [C1]"
+            ),
+        ),
+        (
+            "app quản lý sáng chế bên mình làm gì?",
+            "RtR IP",
+            "L3F.4.002",
+            (
+                "Real-time Robotics dùng hệ thống này để theo dõi hồ sơ, thời "
+                "hạn và công việc pháp lý. [C1]"
+            ),
+        ),
+    ],
+)
+def test_entity_anchor_allows_governed_company_scope_mention(
+    question: str,
+    canonical_name: str,
+    record_key: str,
+    answer: str,
+) -> None:
+    """A planned company scope must not block its enterprise-system subject.
+
+    Conversational answers often say ``Real-time Robotics uses this system``
+    instead of repeating CRM/MRP/IP.  The company is already a governed scope
+    entity in the plan, so the bound source marker may safely anchor the
+    canonical system label before final relevance without another LLM call.
+    """
+    ontology = load_ontology()
+    plan = asyncio.run(plan_query(
+        question,
+        OfflineRewriter(),
+        registry=ontology,
+    ))
+    evidence = [ProviderEvidence(
+        marker="C1",
+        text=answer.removesuffix(" [C1]"),
+        record_key=record_key,
+        provenance_level="claim",
+        verification_state="approved",
+        freshness_state="current",
+    )]
+    partial = ProviderAnswer(answer=answer, used_markers=["C1"])
+    labels = approved_presentation_labels(plan, ontology)
+
+    assert canonical_name in plan.answer_entities
+    assert "Real-time Robotics" in plan.entities
+    assert not answer_relevant(
+        question,
+        partial.answer,
+        entities=plan.answer_entities,
+        intent=plan.intent,
+    )
+
+    repaired = stabilize_grounded_answer(
+        partial,
+        question=question,
+        query_plan=plan,
+        evidence=evidence,
+        ontology=ontology,
+        max_chars=12000,
+        presentation_labels=labels,
+    )
+
+    assert repaired.answer.startswith(f"{canonical_name}\n")
+    assert answer_relevant(
+        question,
+        repaired.answer,
+        entities=plan.answer_entities,
+        intent=plan.intent,
+    )
+    verify_grounding(
+        repaired,
+        evidence,
+        max_chars=12000,
+        presentation_labels=labels,
+    )
+
+
+def test_entity_anchor_still_rejects_unplanned_foreign_entity() -> None:
+    """Allowing company scope must never bless an adjacent product answer."""
+    ontology = load_ontology()
+    question = "CRM bên mình làm gì?"
+    plan = asyncio.run(plan_query(
+        question,
+        OfflineRewriter(),
+        registry=ontology,
+    ))
+    evidence = [ProviderEvidence(
+        marker="C1",
+        text="HERA hỗ trợ nhiệm vụ ISR và giám sát.",
+        record_key="L3F.4.001",
+        provenance_level="claim",
+        verification_state="approved",
+        freshness_state="current",
+    )]
+    partial = ProviderAnswer(
+        answer="HERA hỗ trợ nhiệm vụ ISR và giám sát. [C1]",
+        used_markers=["C1"],
+    )
+
+    repaired = stabilize_grounded_answer(
+        partial,
+        question=question,
+        query_plan=plan,
+        evidence=evidence,
+        ontology=ontology,
+        max_chars=12000,
+        presentation_labels=approved_presentation_labels(plan, ontology),
+    )
+
+    assert repaired == partial
+    assert not answer_relevant(
+        question,
+        repaired.answer,
+        entities=plan.answer_entities,
+        intent=plan.intent,
+    )
+
+
 def test_entity_anchor_fails_closed_for_unbound_evidence() -> None:
     ontology = load_ontology()
     question = "MRP làm được gì"

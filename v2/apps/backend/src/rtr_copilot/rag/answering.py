@@ -881,11 +881,20 @@ def anchor_answer_entities_from_markers(
     if not targets:
         return output
     normalized_targets = {normalize_query(target) for target in targets}
+    # ``query_plan.entities`` also contains governed scope identities that are
+    # useful for retrieval but intentionally excluded from ``answer_entities``
+    # (for example the company in ``CRM bên mình làm gì?``). A natural draft
+    # may name that owner before describing the system. It is not a foreign
+    # subject and must not disable deterministic anchoring. Only ontology
+    # identities outside the complete planned entity set remain disqualifying.
+    normalized_planned_entities = {
+        normalize_query(entity) for entity in query_plan.entities
+    } | normalized_targets
     resolved_mentions = {
         normalize_query(name)
         for name in resolve_entities(output.answer, ontology)
     }
-    if resolved_mentions - normalized_targets:
+    if resolved_mentions - normalized_planned_entities:
         return output
     missing = tuple(
         target

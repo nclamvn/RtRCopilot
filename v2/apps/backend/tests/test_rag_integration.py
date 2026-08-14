@@ -26,7 +26,11 @@ from rtr_copilot.rag.models import (
     SearchFilters,
 )
 from rtr_copilot.rag.ontology import EnterpriseOntology, OntologySpec
-from rtr_copilot.rag.query_understanding import RewriteResult, plan_query
+from rtr_copilot.rag.query_understanding import (
+    OfflineRewriter,
+    RewriteResult,
+    plan_query,
+)
 from rtr_copilot.rag.reindex import ReindexError, ReindexService
 from rtr_copilot.rag.relevance import collection_items_covered
 from rtr_copilot.rag.retrieval import RetrievalService
@@ -188,6 +192,60 @@ class PartialProfileAnswer:
             ),
             used_markers=[core.marker],
         )
+
+
+class ScopedEntityAnswer:
+    """Natural provider draft that names owner scope but omits system label."""
+
+    name = "test-quality-llm"
+    model = "hermetic-scoped-entity"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def answer(
+        self,
+        question: str,
+        evidence: list[ProviderEvidence],
+        *,
+        system_policy: str,
+    ) -> ProviderAnswer:
+        del question, system_policy
+        self.calls += 1
+        item = evidence[0]
+        return ProviderAnswer(
+            answer=f"{item.text} [{item.marker}]",
+            used_markers=[item.marker],
+        )
+
+
+def scoped_entity_ontology(record_key: str) -> EnterpriseOntology:
+    return EnterpriseOntology(OntologySpec.model_validate({
+        "schema_version": 1,
+        "registry_id": "test.scoped-entity-ontology",
+        "owner": "curator:test",
+        "entities": [
+            {
+                "entity_id": "test.company.rtr",
+                "canonical_name": "Real-time Robotics",
+                "entity_type": "company",
+                "domain": "company",
+                "aliases": ["bên mình", "công ty mình"],
+                "owner": "curator:test",
+                "provenance_level": "approved_internal",
+            },
+            {
+                "entity_id": "test.system.crm",
+                "canonical_name": "RtR CRM",
+                "entity_type": "enterprise_system",
+                "domain": "systems",
+                "aliases": ["crm"],
+                "definition_record_keys": [record_key],
+                "owner": "curator:test",
+                "provenance_level": "approved_internal",
+            },
+        ],
+    }))
 
 
 def partial_profile_ontology() -> EnterpriseOntology:
@@ -448,6 +506,50 @@ async def test_active_reindex_search_grounded_answer_and_citation(
         """), {"source_key": source_key})
     assert persisted == len(response.citations)
     assert pointer == generation_id
+
+
+@pytest.mark.asyncio
+async def test_scoped_entity_answer_stabilizes_in_one_provider_call(
+    tmp_path: Path,
+    factory: async_sessionmaker[Any],
+) -> None:
+    """TIP-035.13: owner scope cannot trigger a retry or honest-null tail."""
+    owner = await actor(factory)
+    source_key = f"tip03513.crm.{uuid.uuid4().hex}"
+    record_key = f"TIP03513.CRM.{uuid.uuid4().hex}"
+    await publish_and_index(
+        tmp_path,
+        factory,
+        owner,
+        source_key=source_key,
+        record_key=record_key,
+        text_value=(
+            "Real-time Robotics dùng hệ thống này để quản lý khách hàng, "
+            "cơ hội và pipeline bán hàng."
+        ),
+    )
+    tuned = settings(tmp_path)
+    provider = ScopedEntityAnswer()
+    response = await AnswerService(
+        tuned,
+        factory=factory,
+        retrieval=RetrievalService(tuned, factory=factory),
+        provider=provider,
+        rewriter=OfflineRewriter(),
+        ontology=scoped_entity_ontology(record_key),
+    ).ask(
+        subject(owner),
+        "CRM bên mình làm gì?",
+        filters=SearchFilters(source_key=source_key),
+        require_verified=True,
+        conversation_id=None,
+        request_id="tip03513-scoped-entity",
+    )
+
+    assert response.state == "grounded"
+    assert response.answer.startswith("RtR CRM\n")
+    assert provider.calls == 1
+    assert [item.record_key for item in response.citations] == [record_key]
 
 
 @pytest.mark.asyncio

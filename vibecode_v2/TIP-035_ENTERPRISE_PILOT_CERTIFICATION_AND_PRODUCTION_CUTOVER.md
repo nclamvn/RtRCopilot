@@ -159,3 +159,17 @@ ledger, record residual risk and execute zero external calls. It is an explicit
 Homeowner risk acceptance, not a human attestation. Production configuration,
 target operational drills, cohort stop/rollback controls and final Homeowner GO
 remain mandatory and cannot be bypassed by the surrogate result.
+
+## 12. Local remediation note — TIP-035.13
+
+On 14/08/2026, `CHAT-004-T1` from the build-bound TIP-034 capture was traced to
+answer-shape variance: a natural draft named the already-planned company scope
+but omitted the canonical CRM subject label, disabling the existing local
+stabilizer and ending in `called_answer_irrelevant`. TIP-035.13 corrects the
+generic query-plan invariant while retaining marker-to-record proof, grounding,
+authorization, DLP and foreign-entity rejection.
+
+The remediation is locally verified only. It does not alter the historical
+campaign evidence and does not satisfy an exact-build gate until committed,
+rebuilt and bound to a new candidate. Any external recertification on that new
+candidate requires a new purpose-bound approval.

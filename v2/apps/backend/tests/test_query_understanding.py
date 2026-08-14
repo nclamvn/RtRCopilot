@@ -327,6 +327,45 @@ class TestConversationPlanning:
         assert plan.context_message_count == 0
         assert "HERA" not in plan.retrieval_query
 
+    def test_external_planner_keeps_crm_subject_for_pronoun_follow_up(
+        self,
+    ) -> None:
+        rewriter = _StubRewriter(RewriteResult(
+            entities=["RtR CRM"],
+            intent="lookup",
+            completeness="point",
+            answer_shape="direct",
+            retrieval_queries=["RtR CRM technology stack"],
+            standalone_question="RtR CRM dùng tech stack gì?",
+        ))
+        plan = asyncio.run(plan_query(
+            "nó dùng tech stack gì?",
+            rewriter,
+            conversation_context=(
+                "user: CRM bên mình làm gì?",
+                (
+                    "assistant: RtR CRM quản lý khách hàng, cơ hội và "
+                    "pipeline bán hàng. [C1]"
+                ),
+            ),
+        ))
+
+        assert plan.entities == ("RtR CRM",)
+        assert plan.answer_entities == ("RtR CRM",)
+        assert "L3F.4.001" in plan.definition_record_keys
+        assert plan.resolved_question == "RtR CRM dùng tech stack gì?"
+        assert plan.context_message_count == 2
+
+
+def test_unregistered_hrm_shorthand_never_aliases_to_hera() -> None:
+    """HRM may be onboarded later, but must never drift into product HERA."""
+    assert "HERA" not in resolve_entities("HRM bên mình làm gì?")
+    plan = asyncio.run(plan_query(
+        "HRM bên mình làm gì?",
+        OfflineRewriter(),
+    ))
+    assert "HERA" not in plan.entities
+
 
 def test_exact_governed_definition_bypasses_external_planner_without_quality_loss() -> None:
     rewriter = _StubRewriter(RewriteResult(entities=["VEGA"]))
