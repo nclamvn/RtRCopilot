@@ -68,14 +68,30 @@ else
 fi
 
 tip034_result="${TIP035_TIP034_RESULT:-${release_evidence_dir%/}/tip034_campaign_result.json}"
+tip03512_result="${TIP035_AI_SURROGATE_RESULT:-${release_evidence_dir%/}/tip035_12_ai_surrogate_result.json}"
 if [[ -f "$tip034_result" ]] && jq -e --arg build "$candidate" '
     .verdict == "go"
     and .sample_size == 27
     and (.runtime_build_identities == [$build])
   ' "$tip034_result" >/dev/null 2>&1; then
   record tip034_usefulness pass "27-case usefulness campaign passed on this build"
+elif [[ "${TIP035_AI_SURROGATE_APPROVED:-0}" == "1" ]] \
+  && [[ -f "$tip03512_result" ]] \
+  && jq -e --arg build "$candidate" '
+    .verdict == "go"
+    and .candidate_build == $build
+    and .tester_kind == "ai_surrogate_not_human_attestation"
+    and .human_usefulness_measured == false
+    and .human_ledger_modified == false
+    and .external_calls_executed == 0
+    and .technical_capture.cases_passed == 27
+    and .technical_capture.false_grounded_count == 0
+    and .ui_e2e.cases_passed == 27
+    and (.residual_risk | index("human_subjective_usefulness_not_measured")) != null
+  ' "$tip03512_result" >/dev/null 2>&1; then
+  record tip034_usefulness pass "Homeowner-approved AI-surrogate operator gate passed; human subjective usefulness remains unmeasured"
 else
-  record tip034_usefulness blocked "27-case campaign has no GO verdict for this build"
+  record tip034_usefulness blocked "no human GO or explicitly approved AI-surrogate GO exists for this build"
 fi
 
 connector_report="eval/enterprise_corpus/connector_readiness.json"

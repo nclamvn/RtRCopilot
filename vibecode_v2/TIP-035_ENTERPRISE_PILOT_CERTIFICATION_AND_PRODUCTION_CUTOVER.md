@@ -142,3 +142,20 @@ blocked by the uncommitted candidate, absent isolated pilot, unrun TIP-033,
 zero-observation TIP-034, absent production environment, absent target drills
 and absent Homeowner GO. Each blocker is independently sufficient to stop the
 release.
+
+## 11. Governance amendment — TIP-035.12
+
+On 14/08/2026 the Homeowner authorized an AI-surrogate operator campaign to
+replace the manual pre-release tester step. AC-03 may therefore be satisfied by
+either:
+
+1. the original governed human observation ledger with a 27-case `go`; or
+2. an exact-build TIP-035.12 result combining the real TIP-034 technical
+   capture and 27-case persona browser E2E, with
+   `TIP035_AI_SURROGATE_APPROVED=1` set for the cutover session.
+
+The second path must say `human_usefulness_measured=false`, preserve the human
+ledger, record residual risk and execute zero external calls. It is an explicit
+Homeowner risk acceptance, not a human attestation. Production configuration,
+target operational drills, cohort stop/rollback controls and final Homeowner GO
+remain mandatory and cannot be bypassed by the surrogate result.

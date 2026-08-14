@@ -8,6 +8,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 ASSERT_SCRIPT = PROJECT_ROOT / "scripts" / "assert-release-evidence-path.sh"
 TIP033_WRAPPER = PROJECT_ROOT / "scripts" / "run-tip033-recertification.sh"
 TIP034_WRAPPER = PROJECT_ROOT / "scripts" / "run-tip034-pilot-capture.sh"
+TIP03512_WRAPPER = PROJECT_ROOT / "scripts" / "run-tip03512-ai-surrogate.sh"
 PREFLIGHT = PROJECT_ROOT / "scripts" / "verify-tip035-release.sh"
 GITIGNORE = PROJECT_ROOT / ".gitignore"
 MAKEFILE = PROJECT_ROOT / "Makefile"
@@ -49,6 +50,16 @@ class ReleaseEvidenceBoundaryTests(unittest.TestCase):
             self.assertIn("E2E_SKIP_BUILD:-1", source)
             self.assertIn("assert-release-evidence-path.sh", source)
 
+    def test_ai_surrogate_wrapper_is_local_only_and_runtime_bound(self) -> None:
+        source = TIP03512_WRAPPER.read_text(encoding="utf-8")
+
+        self.assertIn("tip035_12_ai_surrogate_result.json", source)
+        self.assertIn("tip034_pilot_capture.json", source)
+        self.assertIn("assert-release-evidence-path.sh", source)
+        self.assertIn("docker compose run --rm --no-deps", source)
+        self.assertNotIn("TIP034_APPROVE_EXTERNAL", source)
+        self.assertNotIn("run-enterprise-e2e.sh", source)
+
     def test_release_preflight_reads_runtime_evidence(self) -> None:
         source = PREFLIGHT.read_text(encoding="utf-8")
         self.assertIn("RTR_RELEASE_EVIDENCE_DIR:-eval/runtime", source)
@@ -59,6 +70,9 @@ class ReleaseEvidenceBoundaryTests(unittest.TestCase):
         self.assertNotIn(
             'tip034_result="eval/pilot/tip034_campaign_result.json"', source
         )
+        self.assertIn("TIP035_AI_SURROGATE_APPROVED", source)
+        self.assertIn("ai_surrogate_not_human_attestation", source)
+        self.assertIn("human_subjective_usefulness_not_measured", source)
 
     def test_runtime_evidence_directory_is_ignored(self) -> None:
         patterns = GITIGNORE.read_text(encoding="utf-8").splitlines()

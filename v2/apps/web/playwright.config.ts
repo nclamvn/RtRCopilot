@@ -2,6 +2,7 @@ import {defineConfig} from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/browser",
+  testIgnore: "ai-surrogate.spec.ts",
   fullyParallel: true,
   reporter: "line",
   use: {

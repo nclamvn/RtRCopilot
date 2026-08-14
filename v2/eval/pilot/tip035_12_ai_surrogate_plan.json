@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "campaign_key": "tip035.12-ai-surrogate-operator-e2e",
+  "tester_kind": "ai_surrogate_not_human_attestation",
+  "purpose": "Repeatable employee-like operator coverage that combines the real technical capture with a persona-driven browser journey without impersonating a human employee.",
+  "source_manifest": "eval/pilot/tip034_campaign.json",
+  "source_suite": "eval/real_world/cases.json",
+  "prohibitions": [
+    "Do not write AI observations to eval/pilot/tip034_observations.json.",
+    "Do not describe the AI surrogate as an RtR employee or a human attestation.",
+    "Do not send questions, answers or evidence to an external endpoint from this local campaign.",
+    "Do not treat mocked browser answers as a second test of live answer generation."
+  ],
+  "personas": {
+    "general_staff": "Uses short, conversational or imperfect language and expects a useful direct answer.",
+    "sales_project": "Needs complete product, customer, project and commercial context with citations.",
+    "engineering_ops": "Needs exact technical, system and operational facts without cross-entity confusion.",
+    "manager_governance": "Needs decisions, methods, policy and risk boundaries with traceable evidence.",
+    "adversarial_unclear": "Uses ambiguity, follow-ups and unsupported entities to test clarification and honest-null behavior."
+  },
+  "common_checks": [
+    "question_is_accepted_without_mutation",
+    "composer_clears_after_submit",
+    "processing_state_is_visible",
+    "expected_answer_state_renders",
+    "citation_or_honest_null_boundary_renders",
+    "evidence_rail_matches_rendered_citation",
+    "follow_up_preserves_only_the_active_conversation",
+    "no_prompt_or_chain_of_thought_is_exposed"
+  ],
+  "cases": [
+    {"case_id":"PRD-005","persona":"general_staff","scenario":"misspelled product duration"},
+    {"case_id":"PRD-013","persona":"engineering_ops","scenario":"multi-product comparison"},
+    {"case_id":"PRD-021","persona":"sales_project","scenario":"colloquial exhaustive portfolio"},
+    {"case_id":"PRD-023","persona":"sales_project","scenario":"portfolio and feature breadth"},
+    {"case_id":"COM-002","persona":"general_staff","scenario":"plain-language company scope"},
+    {"case_id":"COM-006","persona":"general_staff","scenario":"company contact shorthand"},
+    {"case_id":"COM-008","persona":"sales_project","scenario":"code-switched company positioning"},
+    {"case_id":"COM-010","persona":"manager_governance","scenario":"company credentials"},
+    {"case_id":"OPS-001","persona":"sales_project","scenario":"event lead workflow"},
+    {"case_id":"OPS-005","persona":"engineering_ops","scenario":"spreadsheet field lookup"},
+    {"case_id":"OPS-008","persona":"manager_governance","scenario":"policy-state distinction"},
+    {"case_id":"OPS-010","persona":"general_staff","scenario":"event date and booth"},
+    {"case_id":"SYS-003","persona":"engineering_ops","scenario":"system abbreviation"},
+    {"case_id":"SYS-004","persona":"general_staff","scenario":"ambiguous system name"},
+    {"case_id":"SYS-007","persona":"engineering_ops","scenario":"website technology stack"},
+    {"case_id":"MTH-001","persona":"manager_governance","scenario":"SOT method organization"},
+    {"case_id":"MTH-004","persona":"general_staff","scenario":"internal skill audit"},
+    {"case_id":"MTH-006","persona":"manager_governance","scenario":"data-governance gates"},
+    {"case_id":"SAFE-003","persona":"adversarial_unclear","scenario":"partial product-family name"},
+    {"case_id":"SAFE-007","persona":"adversarial_unclear","scenario":"enterprise alias collision"},
+    {"case_id":"SAFE-008","persona":"adversarial_unclear","scenario":"ambiguous abbreviation"},
+    {"case_id":"CHAT-001-T1","persona":"general_staff","scenario":"product conversation anchor"},
+    {"case_id":"CHAT-001-T2","persona":"general_staff","scenario":"product pronoun follow-up"},
+    {"case_id":"CHAT-003-T1","persona":"sales_project","scenario":"external platform anchor"},
+    {"case_id":"CHAT-003-T2","persona":"sales_project","scenario":"external platform quantity follow-up"},
+    {"case_id":"CHAT-004-T1","persona":"engineering_ops","scenario":"enterprise system anchor"},
+    {"case_id":"CHAT-004-T2","persona":"engineering_ops","scenario":"enterprise system stack follow-up"}
+  ]
+}

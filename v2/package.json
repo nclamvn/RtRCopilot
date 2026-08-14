@@ -8,6 +8,7 @@
     "build": "pnpm --filter @rtr/web build",
     "test": "pnpm --filter @rtr/web test",
     "test:browser": "pnpm --filter @rtr/web test:browser",
+    "test:browser:ai-surrogate": "pnpm --filter @rtr/web test:browser:ai-surrogate",
     "verify:web": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   }
 }

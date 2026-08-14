@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run src",
     "test:browser": "playwright test",
+    "test:browser:ai-surrogate": "playwright test --config playwright.ai-surrogate.config.ts",
     "test:browser:live": "playwright test --config playwright.live.config.ts"
   },
   "dependencies": {
