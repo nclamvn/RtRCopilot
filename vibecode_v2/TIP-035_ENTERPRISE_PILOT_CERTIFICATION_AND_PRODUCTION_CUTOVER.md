@@ -191,3 +191,13 @@ the optional compose build-argument array was empty. TIP-035.15 centralizes the
 empty/non-empty branch in the shared CI helper and keeps nounset, migration,
 health and version-ledger gates intact. The resulting source change requires a
 new exact candidate and invalidates pre-commit build-bound evidence.
+
+## 15. Restore RTO amendment — TIP-035.16
+
+The final-corpus restore drill passed every integrity check but took 326 seconds
+because it started one MinIO client container per object. TIP-035.16 replaces
+that orchestration boundary with one container consuming a NUL-delimited copy
+manifest while preserving object-level checksums, sizes, ownership and restore
+metadata. The same 657-object archive then restored in 49 seconds with all row,
+checksum, audit and runtime-control gates green. This source change requires a
+new exact candidate before remaining release evidence can be accepted.

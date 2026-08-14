@@ -15,6 +15,7 @@ MAKEFILE = PROJECT_ROOT / "Makefile"
 CI_COMMON = PROJECT_ROOT / "scripts" / "ci-common.sh"
 CI_LOCAL = PROJECT_ROOT / "scripts" / "ci-local.sh"
 DEPLOY = PROJECT_ROOT / "scripts" / "deploy.sh"
+RESTORE = PROJECT_ROOT / "scripts" / "restore-data.sh"
 
 
 def _check(path: str) -> subprocess.CompletedProcess[str]:
@@ -113,3 +114,11 @@ class ReleaseEvidenceBoundaryTests(unittest.TestCase):
         self.assertNotIn(
             'build "${RTR_COMPOSE_BUILD_ARGS[@]}"', deploy
         )
+
+    def test_restore_batches_object_copies_in_one_container(self) -> None:
+        source = RESTORE.read_text(encoding="utf-8")
+
+        self.assertIn("object-copy.nul", source)
+        self.assertIn("while IFS= read -r -d '' object_key", source)
+        self.assertIn(r'\"/objects/\$object_key\"', source)
+        self.assertNotIn("while IFS='|' read -r object_key", source)

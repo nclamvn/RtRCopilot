@@ -217,21 +217,36 @@ GRANT EXECUTE ON FUNCTION append_audit_event(
 REVOKE CREATE ON SCHEMA public FROM rtr_app;
 SQL
 
-while IFS='|' read -r object_key object_sha object_size; do
-  [[ -z "$object_key" ]] && continue
-  docker run --rm --network "container:$minio_id" \
-    -v "$work_dir/objects:/objects:ro" \
-    --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
-    -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
-         mc cp --attr 'sha256=$object_sha;byte-size=$object_size;upload-state=restored;restore-operation-id=$operation_id' \
-           '/objects/$object_key' 'local/$target/$object_key' >/dev/null"
-done < <(python3 - "$work_dir/manifest.json" <<'PY'
+python3 - "$work_dir/manifest.json" "$work_dir/object-copy.nul" <<'PY'
 import json
+import pathlib
 import sys
-for item in json.load(open(sys.argv[1]))["minio_inventory"]:
-    print(f"{item['key']}|{item['sha256']}|{item['byte_size']}")
+
+manifest = json.load(open(sys.argv[1]))
+payload = bytearray()
+for item in manifest["minio_inventory"]:
+    for value in (item["key"], item["sha256"], str(item["byte_size"])):
+        payload.extend(value.encode("utf-8"))
+        payload.append(0)
+pathlib.Path(sys.argv[2]).write_bytes(payload)
 PY
-)
+
+# Keep the operation metadata on every restored object, but avoid starting one
+# Docker container per object.  A single MinIO client container consumes a
+# NUL-delimited manifest so spaces, tabs, newlines and shell metacharacters in
+# object keys cannot alter field boundaries or become shell code.  The old
+# per-object container loop dominated the measured RTO as the corpus grew.
+docker run --rm --network "container:$minio_id" \
+  -v "$work_dir/objects:/objects:ro" \
+  -v "$work_dir/object-copy.nul:/restore/object-copy.nul:ro" \
+  --entrypoint /bin/sh quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z \
+  -ec "mc alias set local http://127.0.0.1:9000 '$S3_ACCESS_KEY' '$S3_SECRET_KEY' >/dev/null
+       while IFS= read -r -d '' object_key \
+         && IFS= read -r -d '' object_sha \
+         && IFS= read -r -d '' object_size; do
+         mc cp --attr \"sha256=\$object_sha;byte-size=\$object_size;upload-state=restored;restore-operation-id=$operation_id\" \
+           \"/objects/\$object_key\" \"local/$target/\$object_key\" >/dev/null
+       done < /restore/object-copy.nul"
 
 docker compose --profile tools run --rm \
   -v "$work_dir:/restore:ro" \
