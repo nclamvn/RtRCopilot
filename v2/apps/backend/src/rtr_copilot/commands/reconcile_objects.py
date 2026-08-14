@@ -14,6 +14,8 @@ async def run() -> int:
     parser.add_argument("--actor-id")
     parser.add_argument("--request-id", default="object-reconciliation")
     parser.add_argument("--confirm-delete", action="store_true")
+    parser.add_argument("--mark-missing", action="store_true")
+    parser.add_argument("--confirm-mark-missing", action="store_true")
     args = parser.parse_args()
     repository = ObjectRepository(S3ObjectStorage(get_settings()))
     if args.delete_key:
@@ -25,8 +27,27 @@ async def run() -> int:
             request_id=args.request_id,
             explicit=args.confirm_delete,
         )
+    repair = None
+    if args.mark_missing:
+        repair = await repository.reconcile_mark_missing(
+            request_id=args.request_id,
+            explicit=args.confirm_mark_missing,
+        )
     report = await repository.reconcile()
-    print(json.dumps(report, sort_keys=True))
+    if repair is None:
+        # Preserve the existing read-only command contract for operators and
+        # automation that consume the three reconciliation lists directly.
+        output: dict[str, object] = report
+    else:
+        # Repair logs remain content-free: counts and the key-set digest prove
+        # scope without exposing internal object paths.
+        output = {
+            "repair": repair,
+            "report_counts": {
+                key: len(value) for key, value in report.items()
+            },
+        }
+    print(json.dumps(output, sort_keys=True))
     return 1 if report["database_missing"] else 0
 
 

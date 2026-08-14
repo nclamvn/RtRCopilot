@@ -104,6 +104,7 @@ row_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" \
    SELECT 'search_generations',count(*) FROM search_generations UNION ALL
    SELECT 'active_search_generations',count(*) FROM active_search_generations UNION ALL
    SELECT 'chunks',count(*) FROM chunks UNION ALL
+   SELECT 'file_chunks',count(*) FROM file_chunks UNION ALL
    SELECT 'index_jobs',count(*) FROM index_jobs UNION ALL
    SELECT 'conversations',count(*) FROM conversations UNION ALL
    SELECT 'messages',count(*) FROM messages UNION ALL
@@ -138,7 +139,9 @@ path = pathlib.Path("$work_dir/minio-inventory.json")
 if path.exists():
     inventory = json.loads(path.read_text())
 manifest = {
-    "manifest_version": 1,
+    # v2 adds private-context ``file_chunks`` to the exact row-count ledger.
+    # The dump always contained the table; v1 merely failed to attest it.
+    "manifest_version": 2,
     "started_at": "$started",
     "finished_at": "$finished",
     "application_version": "0.1.0",

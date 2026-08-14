@@ -437,6 +437,104 @@ async def test_streamed_objects_concurrent_versions_and_orphan_report(
 
 
 @pytest.mark.asyncio
+async def test_missing_object_reconciliation_is_explicit_maintenance_only_and_audited(
+    factory: async_sessionmaker[Any],
+) -> None:
+    from rtr_copilot.db.uow import UnitOfWork
+
+    storage = FakeStorage()
+    repository = ObjectRepository(storage, UnitOfWork(factory))  # type: ignore[arg-type]
+    identity = PostgresSubjectRepository(factory)
+    suffix = uuid.uuid4().hex
+    actor = await identity.upsert_from_claims(
+        corporate_claims(f"missing-{suffix}", f"missing-{suffix}@rtrobotics.com"),
+        {},
+    )
+    actor_id = uuid.UUID(actor.user_id)
+    document_id = await repository.create_document(
+        owner_id=actor_id,
+        logical_name="Missing object reconciliation",
+    )
+    staged = await repository.stage_upload(
+        stream=io.BytesIO(b"recoverable"),
+        mime_type="text/plain",
+        created_by=actor_id,
+        request_id="missing-stage",
+    )
+    version = await repository.activate_version(
+        document_id=document_id,
+        staged=staged,
+        original_filename="recoverable.txt",
+        created_by=actor_id,
+        request_id="missing-activate",
+    )
+    storage.objects.pop(staged.stored.key)
+    # The integration gate intentionally shares one disposable database while
+    # each test owns an isolated fake bucket. Mirror earlier AVAILABLE keys so
+    # this case has exactly one missing object under examination.
+    async with factory() as session:
+        available_keys = (await session.execute(text("""
+            SELECT object_key FROM object_blobs WHERE storage_state='available'
+        """))).scalars().all()
+    for key in available_keys:
+        if str(key) != staged.stored.key:
+            storage.objects.setdefault(str(key), b"")
+
+    with pytest.raises(PermissionError, match="explicit_mark_missing"):
+        await repository.reconcile_mark_missing(
+            request_id="missing-no-confirm",
+            explicit=False,
+        )
+    with pytest.raises(PermissionError, match="maintenance_mode_required"):
+        await repository.reconcile_mark_missing(
+            request_id="missing-no-maintenance",
+            explicit=True,
+        )
+
+    async with factory() as session, session.begin():
+        await session.execute(text(
+            "UPDATE maintenance_state SET enabled=true WHERE singleton",
+        ))
+    try:
+        result = await repository.reconcile_mark_missing(
+            request_id="missing-confirmed",
+            explicit=True,
+        )
+    finally:
+        async with factory() as session, session.begin():
+            await session.execute(text(
+                "UPDATE maintenance_state SET enabled=false WHERE singleton",
+            ))
+
+    assert result["object_count"] == 1
+    async with factory() as session:
+        state = (await session.execute(text("""
+            SELECT ob.storage_state,ro.lifecycle_state object_lifecycle,
+              rv.lifecycle_state version_lifecycle,
+              rd.lifecycle_state document_lifecycle
+            FROM object_blobs ob
+            JOIN resources ro ON ro.resource_id=ob.object_id
+            JOIN document_versions dv ON dv.object_id=ob.object_id
+            JOIN resources rv ON rv.resource_id=dv.version_id
+            JOIN documents d ON d.document_id=dv.document_id
+            JOIN resources rd ON rd.resource_id=d.document_id
+            WHERE ob.object_id=:object_id
+        """), {"object_id": version.object_id})).mappings().one()
+        audit_count = await session.scalar(text("""
+            SELECT count(*) FROM audit_events
+            WHERE request_id='missing-confirmed'
+              AND action='object.reconcile.mark_missing'
+        """))
+    assert dict(state) == {
+        "storage_state": "missing",
+        "object_lifecycle": "quarantined",
+        "version_lifecycle": "quarantined",
+        "document_lifecycle": "quarantined",
+    }
+    assert audit_count == 1
+
+
+@pytest.mark.asyncio
 async def test_audit_chain_redaction_transactionality_and_tamper_detection(
     factory: async_sessionmaker[Any],
     owner_factory: async_sessionmaker[Any],

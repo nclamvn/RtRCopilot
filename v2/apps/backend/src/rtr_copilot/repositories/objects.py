@@ -1,3 +1,4 @@
+import hashlib
 import re
 import uuid
 from dataclasses import dataclass
@@ -292,11 +293,114 @@ class ObjectRepository:
             """))).mappings()
             database = {str(row["object_key"]): str(row["storage_state"]) for row in rows}
         storage_keys = {str(item["key"]) for item in inventory}
+        expected_keys = {
+            key for key, state in database.items() if state == "available"
+        }
         return {
             "storage_orphans": sorted(storage_keys - database.keys()),
-            "database_missing": sorted(database.keys() - storage_keys),
+            # A staged upload may not have reached object storage yet, while
+            # missing/deleted are explicit terminal metadata states. Only an
+            # AVAILABLE object absent from the bucket violates the contract.
+            "database_missing": sorted(expected_keys - storage_keys),
             "staged": sorted(key for key, state in database.items() if state == "staged"),
         }
+
+    async def reconcile_mark_missing(
+        self,
+        *,
+        request_id: str,
+        explicit: bool,
+    ) -> dict[str, int | str]:
+        """Quarantine AVAILABLE database objects absent from object storage.
+
+        This is intentionally a maintenance-only, fail-closed repair. It does
+        not delete metadata, immutable answer history or citations. The state
+        transition hides unavailable content from retrieval/download while
+        preserving enough lineage for a later, audited object recovery.
+        """
+        if not explicit:
+            raise PermissionError("explicit_mark_missing_flag_required")
+        inventory = await self.storage.inventory()
+        storage_keys = {str(item["key"]) for item in inventory}
+        async with self.uow.factory() as session, session.begin():
+            await session.execute(text("SELECT pg_advisory_xact_lock(827005)"))
+            maintenance = await session.scalar(text(
+                "SELECT enabled FROM maintenance_state WHERE singleton",
+            ))
+            if not maintenance:
+                raise PermissionError("maintenance_mode_required")
+            rows = (await session.execute(text("""
+                SELECT object_id,object_key FROM object_blobs
+                WHERE storage_state='available'
+                ORDER BY object_id FOR UPDATE
+            """))).mappings().all()
+            missing = [
+                row for row in rows if str(row["object_key"]) not in storage_keys
+            ]
+            missing_ids = [row["object_id"] for row in missing]
+            key_digest = hashlib.sha256(
+                "\n".join(sorted(str(row["object_key"]) for row in missing)).encode()
+            ).hexdigest()
+            if missing_ids:
+                await session.execute(text("""
+                    UPDATE object_blobs
+                    SET storage_state='missing',verified_at=now()
+                    WHERE object_id=ANY(:ids) AND storage_state='available'
+                """), {"ids": missing_ids})
+                await session.execute(text("""
+                    UPDATE resources SET lifecycle_state='quarantined',updated_at=now()
+                    WHERE resource_id=ANY(:ids)
+                """), {"ids": missing_ids})
+                rendition_ids = list((await session.execute(text("""
+                    UPDATE renditions
+                    SET status='failed',error_code='object_missing',updated_at=now()
+                    WHERE object_id=ANY(:ids) OR manifest_object_id=ANY(:ids)
+                    RETURNING rendition_id
+                """), {"ids": missing_ids})).scalars())
+                version_ids = list((await session.execute(text("""
+                    SELECT version_id FROM document_versions
+                    WHERE object_id=ANY(:ids)
+                """), {"ids": missing_ids})).scalars())
+                affected_resource_ids = [*rendition_ids, *version_ids]
+                if affected_resource_ids:
+                    await session.execute(text("""
+                        UPDATE resources
+                        SET lifecycle_state='quarantined',updated_at=now()
+                        WHERE resource_id=ANY(:ids)
+                    """), {"ids": affected_resource_ids})
+                document_ids = list((await session.execute(text("""
+                    SELECT document_id FROM documents
+                    WHERE current_version_id=ANY(:version_ids)
+                """), {"version_ids": version_ids})).scalars()) if version_ids else []
+                if document_ids:
+                    await session.execute(text("""
+                        UPDATE resources
+                        SET lifecycle_state='quarantined',updated_at=now()
+                        WHERE resource_id=ANY(:ids)
+                    """), {"ids": document_ids})
+                await AuditRepository().append(
+                    session,
+                    actor_kind="service",
+                    actor_user_id=None,
+                    action="object.reconcile.mark_missing",
+                    result="success",
+                    reason_code="available_object_absent_from_storage",
+                    request_id=request_id,
+                    details={
+                        "object_count": len(missing_ids),
+                        "object_key_set_sha256": key_digest,
+                        "rendition_count": len(rendition_ids),
+                        "document_version_count": len(version_ids),
+                        "document_count": len(document_ids),
+                    },
+                )
+            return {
+                "object_count": len(missing_ids),
+                "object_key_set_sha256": key_digest,
+                "rendition_count": len(rendition_ids) if missing_ids else 0,
+                "document_version_count": len(version_ids) if missing_ids else 0,
+                "document_count": len(document_ids) if missing_ids else 0,
+            }
 
     async def reconcile_delete(
         self,

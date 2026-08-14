@@ -100,7 +100,7 @@ for required in (manifest_path, dump_path, inventory_path, root / "objects"):
         raise SystemExit(f"archive missing required entry: {required.name}")
 manifest = json.loads(manifest_path.read_text())
 inventory = json.loads(inventory_path.read_text())
-if manifest.get("manifest_version") != 1:
+if manifest.get("manifest_version") not in (1, 2):
     raise SystemExit("unsupported manifest version")
 if inventory != manifest.get("minio_inventory"):
     raise SystemExit("inventory file differs from manifest")
@@ -200,14 +200,15 @@ REVOKE INSERT, UPDATE, DELETE ON alembic_version FROM rtr_app;
 REVOKE DELETE ON
   sot_packages, records, record_versions, evidence_spans, sot_publish_runs,
   sot_active_revisions, sot_reindex_outbox, search_generations,
-  active_search_generations, chunks, index_jobs, messages, answer_runs,
+  active_search_generations, chunks, file_chunks, index_jobs, messages, answer_runs,
   answer_citations, templates, template_versions, template_bindings,
   render_jobs, document_publication_outbox, render_job_bindings, generated_files, approvals,
   document_issuances, research_sources, research_packages, research_records,
   gaps, gap_transitions, review_tasks, graduation_proposals,
   governance_settings
 FROM rtr_app;
-REVOKE UPDATE ON research_records, gap_transitions, governance_settings
+REVOKE UPDATE ON
+  file_chunks, research_records, gap_transitions, governance_settings
 FROM rtr_app;
 GRANT EXECUTE ON FUNCTION append_audit_event(
   uuid,timestamptz,text,uuid,text,text,text,text,text,uuid,text,uuid[],
@@ -301,20 +302,44 @@ rag_integrity_errors="$(docker compose exec -T postgres psql -At -U "$POSTGRES_U
          WHERE g.generation_id IS NULL OR rv.version_id IS NULL
            OR c.text_sha256 !~ '^[0-9a-f]{64}$'
            OR c.record_checksum !~ '^[0-9a-f]{64}$')
+      + (SELECT count(*) FROM file_chunks fc
+         LEFT JOIN document_versions dv
+           ON dv.version_id=fc.document_version_id
+         LEFT JOIN renditions rd ON rd.rendition_id=fc.rendition_id
+         WHERE dv.version_id IS NULL OR rd.rendition_id IS NULL
+           OR fc.text_sha256 !~ '^[0-9a-f]{64}$'
+           OR fc.source_sha256 !~ '^[0-9a-f]{64}$'
+           OR fc.rendition_sha256 !~ '^[0-9a-f]{64}$')
       + (SELECT count(*) FROM answer_citations ac
          LEFT JOIN answer_runs ar ON ar.answer_run_id=ac.answer_run_id
          LEFT JOIN chunks c ON c.chunk_id=ac.chunk_id
-         WHERE ar.answer_run_id IS NULL OR c.chunk_id IS NULL
-           OR ac.record_checksum<>c.record_checksum
-           OR ac.record_version_id<>c.record_version_id)")"
+         LEFT JOIN file_chunks fc ON fc.file_chunk_id=ac.file_chunk_id
+         WHERE ar.answer_run_id IS NULL
+           OR (ac.zone_label='sot' AND (
+             c.chunk_id IS NULL
+             OR ac.record_checksum<>c.record_checksum
+             OR ac.record_version_id<>c.record_version_id
+           ))
+           OR (ac.zone_label='private' AND (
+             fc.file_chunk_id IS NULL
+             OR ac.document_version_id<>fc.document_version_id
+             OR ac.record_checksum<>fc.source_sha256
+             OR ac.evidence_checksum IS DISTINCT FROM fc.rendition_sha256
+           )))")"
 [[ "$rag_integrity_errors" == "0" ]] || exit 11
-rag_delete_grants="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
-  -c "SELECT count(*) FROM unnest(ARRAY[
+rag_mutation_grants="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
+  -c "SELECT
+      (SELECT count(*) FROM unnest(ARRAY[
       'search_generations','active_search_generations','chunks','index_jobs',
-      'messages','answer_runs','answer_citations'
+      'file_chunks','messages','answer_runs','answer_citations'
     ]) table_name
-    WHERE has_table_privilege('$POSTGRES_RUNTIME_USER',table_name,'DELETE')")"
-[[ "$rag_delete_grants" == "0" ]] || exit 11
+      WHERE has_table_privilege(
+        '$POSTGRES_RUNTIME_USER',table_name,'DELETE'
+      ))
+      + CASE WHEN has_table_privilege(
+          '$POSTGRES_RUNTIME_USER','file_chunks','UPDATE'
+        ) THEN 1 ELSE 0 END")"
+[[ "$rag_mutation_grants" == "0" ]] || exit 11
 document_os_integrity_errors="$(docker compose exec -T postgres psql -At \
   -U "$POSTGRES_USER" -d "$target" -c "SELECT
     (SELECT count(*) FROM template_versions tv
@@ -371,6 +396,7 @@ restored_counts="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" 
    SELECT 'search_generations',count(*) FROM search_generations UNION ALL
    SELECT 'active_search_generations',count(*) FROM active_search_generations UNION ALL
    SELECT 'chunks',count(*) FROM chunks UNION ALL
+   SELECT 'file_chunks',count(*) FROM file_chunks UNION ALL
    SELECT 'index_jobs',count(*) FROM index_jobs UNION ALL
    SELECT 'conversations',count(*) FROM conversations UNION ALL
    SELECT 'messages',count(*) FROM messages UNION ALL
@@ -404,7 +430,14 @@ python3 - "$work_dir/manifest.json" "$restored_counts" "$restored_audit" <<'PY'
 import json
 import sys
 manifest = json.load(open(sys.argv[1]))
-if manifest["row_counts"] != json.loads(sys.argv[2]):
+expected = manifest["row_counts"]
+actual = json.loads(sys.argv[2])
+# Manifest v1 predates the explicit private-chunk count. Its database dump
+# still contains ``file_chunks``; compare the attested subset for backwards
+# compatibility. Every v2+ archive must attest the table exactly.
+if manifest.get("manifest_version") == 1:
+    actual = {key: actual[key] for key in expected}
+if expected != actual:
     raise SystemExit("restored row counts differ from manifest")
 if manifest["audit"] != json.loads(sys.argv[3]):
     raise SystemExit("restored audit anchor differs from manifest")
@@ -430,6 +463,8 @@ for statement in \
   "DELETE FROM evidence_spans" \
   "DELETE FROM sot_reindex_outbox" \
   "DELETE FROM chunks" \
+  "DELETE FROM file_chunks" \
+  "UPDATE file_chunks SET normalized_text='tamper'" \
   "DELETE FROM answer_citations" \
   "DELETE FROM messages"
 do
@@ -449,9 +484,9 @@ immutable_triggers="$(docker compose exec -T postgres psql -At \
       )")"
 # Row-level immutable triggers do not fire when a restored canonical table is
 # empty. Executing a blanket UPDATE and expecting an error therefore produced
-# a false restore failure on valid empty databases. Verify the 13 privilege
+# a false restore failure on valid empty databases. Verify the 15 privilege
 # denials and the three enabled immutability controls independently instead.
-if [[ "$denied" -ne 13 || "$immutable_triggers" -ne 3 ]]; then
+if [[ "$denied" -ne 15 || "$immutable_triggers" -ne 3 ]]; then
   echo "Runtime grants verification failed denials=$denied immutable_triggers=$immutable_triggers" >&2
   exit 12
 fi
@@ -486,4 +521,4 @@ docker compose exec -T postgres psql -X -v ON_ERROR_STOP=1 \
 restore_succeeded="true"
 duration="$(( $(date +%s) - started_epoch ))"
 object_count="$(python3 -c "import json; print(len(json.load(open('$work_dir/manifest.json'))['minio_inventory']))")"
-echo "RESTORE PASS operation_id=$operation_id target=$target revision=$revision objects=$object_count row_counts=100% checksums=100% audit_chain=valid runtime_denials=13 immutable_triggers=3 runtime_controls=16 duration_seconds=$duration"
+echo "RESTORE PASS operation_id=$operation_id target=$target revision=$revision objects=$object_count row_counts=100% checksums=100% audit_chain=valid runtime_denials=15 immutable_triggers=3 runtime_controls=18 duration_seconds=$duration"

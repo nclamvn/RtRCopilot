@@ -173,3 +173,13 @@ The remediation is locally verified only. It does not alter the historical
 campaign evidence and does not satisfy an exact-build gate until committed,
 rebuilt and bound to a new candidate. Any external recertification on that new
 candidate requires a new purpose-bound approval.
+
+## 13. Release recovery amendment — TIP-035.14
+
+The release recovery drill found that restore validation treated private-file
+citations as canonical SOT citations and that historical disposable uploads
+had left some `available` object metadata without physical bytes. TIP-035.14
+adds provenance-aware citation verification, manifest-v2 private-chunk
+attestation and an explicit maintenance-only quarantine workflow. The
+remediation must be committed and rebuilt before release certifications can be
+renewed for the resulting exact candidate.
