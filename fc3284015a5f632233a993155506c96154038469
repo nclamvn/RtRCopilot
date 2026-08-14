@@ -1,0 +1,52 @@
+RtR Copilot TIP-033/TIP-034 build-bound recertification
+
+Candidate: fc3284015a5f632233a993155506c96154038469
+Runtime build identity: fc3284015a5f
+Captured: 2026-08-14
+
+Execution contract:
+- TIP-033 campaign attempts: 1
+- TIP-034 campaign attempts: 1
+- Campaign retries: 0
+- Concurrency: 1
+- Browser duplication: off
+- No rebuild, embeddings, reindex, connector activation or production operation
+
+TIP-033:
+- PASS 5/5
+- Citation accuracy: 1.0
+- False grounded: 0
+- Grounded success: 1.0
+- Follow-up pass rate: 1.0
+- p95/max latency: 17431.449 ms
+- Database digest: 5392a043c9993b6d3af9c8b4820ae3d42e005408a8222e370498298f402dd446
+- Ontology digest: 556fa7c519dbe4555dad1c1b5dc2499f42ff7fc8b0a3005d7c777cc25b5fffda
+- Report SHA-256: 51b5d440a4b46e11e1840f0c44d80978f8a586916f53b2aabb91e60657bdaa6d
+
+TIP-034 isolated pilot:
+- PASS 27/27 across 7 domains
+- Citation accuracy: 1.0
+- False grounded: 0
+- Grounded success: 1.0
+- Follow-up pass rate: 1.0
+- p95 latency: 19357.603 ms
+- max latency: 19925.842 ms
+- Database digest: 911fef5626fede0bb2b2f1002f6acc8cbcae3004f808769f184b4245ed6d526e
+- Ontology digest: fc676b52058e2291d1dc223ba378089fb92a3f02f04df1bdc0c0cdf30bda1e3c
+- Report SHA-256: 9edfc26e3590461b9e4b8ceb81316af973a20f9aefbce86d2ae1be13b2aec617
+
+AI-surrogate:
+- GO, not a human attestation
+- 27/27 cases and 216/216 assertions
+- External calls executed by surrogate: 0
+- Report SHA-256: a91a0a2221ba7cd5fb3a90c9f328e023a42e6218a709d19545f984f78f3f7819
+
+Consolidated evidence SHA-256:
+c08f23ea53083fc278008a5e12c904d2921a19ffdccedd06eed813f8566510fb
+
+Release preflight: 7/10 gates pass.
+Remaining gates: production_configuration, target_operational_drills, homeowner_go.
+
+Evidence is deliberately excluded from the tracked source tree per
+v2/scripts/assert-release-evidence-path.sh so recording certification does not
+change and invalidate the candidate build identity.
