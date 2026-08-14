@@ -1,0 +1,26 @@
+RtR Copilot TIP-035.18 production-configuration control-plane and runtime convergence
+
+Candidate: 2eedb195f2551320f4f37947df6cef9b69da178d
+Runtime build identity: 2eedb195f255
+Captured: 2026-08-15
+
+Source and remote:
+- HEAD equals origin/main
+- TIP-035.18 control-plane QA: backend 694 pass, 130 conditional skip; focused 44/44; Ruff/mypy pass
+
+Primary runtime:
+- 7/7 long-running services healthy
+- answer runtime exact-build PASS
+- grounded answering ready; external policy and credential loaded
+
+Isolated pilot runtime:
+- 7/7 long-running services healthy
+- answer runtime exact-build PASS
+- schema 0014_document_outbox_repair
+- canonical records/chunks 219/219
+- unexpected sources 0; active connectors 0
+
+Release preflight: 5/10 gates pass.
+Remaining gates: tip033_latency, tip034_usefulness, production_configuration, target_operational_drills, homeowner_go.
+
+No TIP-033/TIP-034 campaign, embedding, reindex, connector activation or production operation was executed. ClamAV local runtime uses the documented 14-day offline-drill freshness threshold; signature version remained unchanged. Runtime evidence remains ignored so this note does not change candidate identity.
