@@ -47,6 +47,7 @@ def test_production_identity_config_fails_fast_without_echoing_values() -> None:
         "S3_ACCESS_KEY": "ACCESS_SENTINEL",
         "S3_SECRET_KEY": "PASSWORD_SENTINEL",
         "S3_BUCKET": "sentinel-bucket",
+        "RTR_BUILD_SHA": "0123456789abcdef0123456789abcdef01234567",
         "APP_ENV": "production",
         "PUBLIC_BASE_URL": "http://sentinel-callback.invalid",
         "OIDC_ISSUER": "https://sentinel-issuer.invalid",
@@ -84,11 +85,14 @@ def production_kwargs(**overrides: object) -> dict[str, object]:
         "s3_access_key": "prod-access-key",
         "s3_secret_key": "prod-secret-key-with-entropy",
         "s3_bucket": "rtr-copilot",
+        "rtr_build_sha": "0123456789abcdef0123456789abcdef01234567",
         "app_env": "production",
         "public_base_url": "https://copilot.rtrobotics.com",
         "oidc_issuer": "https://login.identity.example/tenant/v2.0",
         "oidc_client_id": "prod-client-id",
         "oidc_client_secret": "prod-oidc-client-secret-value",
+        "oidc_allowed_domains": "rtrobotics.com",
+        "oidc_group_mapping": "{}",
         "dev_oidc_enabled": False,
         "sot_signing_secret": "a-dedicated-production-signing-secret-48-bytes!!",
     }
@@ -173,6 +177,44 @@ def test_production_refuses_plaintext_oidc_issuer() -> None:
     assert "oidc_issuer:https_required" in str(excinfo.value)
 
 
+def test_production_refuses_unbound_build_identity() -> None:
+    with pytest.raises(ValidationError) as excinfo:
+        Settings(**production_kwargs(rtr_build_sha="development"))  # type: ignore[arg-type]
+    assert "rtr_build_sha:clean_identity_required" in str(excinfo.value)
+
+
+def test_production_refuses_empty_corporate_domain_policy() -> None:
+    with pytest.raises(ValidationError) as excinfo:
+        Settings(**production_kwargs(oidc_allowed_domains=""))  # type: ignore[arg-type]
+    assert "oidc_allowed_domains:required_in_production" in str(excinfo.value)
+
+
+@pytest.mark.parametrize("mapping", ["[]", "not-json"])
+def test_production_refuses_invalid_group_mapping(mapping: str) -> None:
+    with pytest.raises(ValidationError) as excinfo:
+        Settings(**production_kwargs(oidc_group_mapping=mapping))  # type: ignore[arg-type]
+    assert "oidc_group_mapping:object_required" in str(excinfo.value)
+
+
+def test_production_external_provider_requires_internal_policy_and_key() -> None:
+    common = {
+        "rag_provider_mode": "external",
+        "rag_external_endpoint_policy": "approved-openai-endpoint",
+        "rag_external_credential_source": "operator-managed-env",
+    }
+    with pytest.raises(ValidationError, match="rag_external_provider:policy_required"):
+        Settings(**production_kwargs(  # type: ignore[arg-type]
+            **common,
+            rag_external_classification_allowlist="public",
+            openai_api_key="sk-test-production-key",
+        ))
+    with pytest.raises(ValidationError, match="rag_external_provider:policy_required"):
+        Settings(**production_kwargs(  # type: ignore[arg-type]
+            **common,
+            rag_external_classification_allowlist="internal",
+        ))
+
+
 def test_session_cookie_secure_defaults_follow_environment() -> None:
     plain_dev = Settings(**development_kwargs())  # type: ignore[arg-type]
     assert plain_dev.session_cookie_secure_effective is False
@@ -207,6 +249,7 @@ def test_production_boot_guard_fails_closed_without_echoing_secret_values() -> N
         "S3_ACCESS_KEY": "rtr-local",
         "S3_SECRET_KEY": "change-this-local-secret",
         "S3_BUCKET": "rtr-copilot",
+        "RTR_BUILD_SHA": "0123456789abcdef0123456789abcdef01234567",
         "SOT_SIGNING_SECRET": (
             "replace-with-a-dedicated-random-secret-at-least-32-bytes"
         ),

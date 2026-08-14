@@ -1,6 +1,7 @@
 .env
 .env.demo
 .env.pilot
+.env.production
 .next/
 node_modules/
 .pnpm-store/

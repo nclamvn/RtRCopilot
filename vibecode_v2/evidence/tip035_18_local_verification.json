@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "tip_id": "TIP-035.18",
+  "captured_at": "2026-08-14T17:27:33Z",
+  "base_candidate_sha": "fc3284015a5f632233a993155506c96154038469",
+  "source_state": "uncommitted_local_control_plane",
+  "external_processing": {
+    "performed": false,
+    "provider_calls": 0,
+    "campaign_retried": false
+  },
+  "requirements": {
+    "implemented": 8,
+    "total": 8,
+    "coverage": 1.0
+  },
+  "scenarios": {
+    "passed": 8,
+    "failed": 0,
+    "untestable": 0
+  },
+  "gates": {
+    "focused_configuration": {
+      "passed": 44,
+      "failed": 0
+    },
+    "backend": {
+      "passed": 694,
+      "failed": 0,
+      "conditional_skip": 130
+    },
+    "ruff_backend": {
+      "status": "pass",
+      "errors": 0
+    },
+    "ruff_standalone_validator": {
+      "status": "pass",
+      "errors": 0
+    },
+    "mypy": {
+      "status": "pass",
+      "source_files": 145,
+      "issues": 0
+    },
+    "python_compile": {
+      "status": "pass"
+    },
+    "shell_syntax": {
+      "status": "pass"
+    },
+    "compose_current_profile": {
+      "status": "pass"
+    },
+    "template_negative_gate": {
+      "status": "blocked_as_designed",
+      "typed_error_count": 24,
+      "environment_mode": "0600"
+    },
+    "diff_check": {
+      "status": "pass"
+    }
+  },
+  "release_preflight": {
+    "status": "not_ready",
+    "passed": 2,
+    "blocked": 8,
+    "production_configuration": "blocked_real_inputs_absent"
+  },
+  "release_state": "control_plane_complete_real_production_inputs_pending"
+}

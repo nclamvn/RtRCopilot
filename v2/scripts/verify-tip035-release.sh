@@ -104,12 +104,13 @@ fi
 
 if [[ ! -f "$production_env" ]]; then
   record production_configuration blocked "production environment file is missing"
-elif docker compose --env-file "$production_env" run --rm --no-deps -T api \
-    python -c 'from rtr_copilot.config import get_settings; s=get_settings(); assert s.app_env == "production"' \
-    >/dev/null 2>&1; then
-  record production_configuration pass "fail-closed production configuration validator passed"
+elif PRODUCTION_ENV_FILE="$production_env" \
+    PRODUCTION_EXPECTED_BUILD="$candidate" \
+    PRODUCTION_CONFIGURATION_REPORT="${release_evidence_dir%/}/tip035_18_production_configuration.json" \
+    ./scripts/verify-production-configuration.sh >/dev/null 2>&1; then
+  record production_configuration pass "deployment, TLS and application production validators passed"
 else
-  record production_configuration blocked "production configuration validator failed"
+  record production_configuration blocked "deployment, TLS or application production validator failed"
 fi
 
 if [[ "${TIP035_TARGET_DRILLS_ATTESTED:-0}" == "1" ]]; then

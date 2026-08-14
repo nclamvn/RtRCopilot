@@ -2,7 +2,7 @@ SHELL := /bin/bash
 RTR_BUILD_SHA ?= $(shell ./scripts/build-identity.sh)
 export RTR_BUILD_SHA
 
-.PHONY: dev verify e2e-enterprise tip032-recertify tip033-recertify tip034-pilot-capture tip03512-ai-surrogate tip035-preflight answer-runtime-check answer-runtime-refresh pilot-up pilot-check pilot-scorecard pilot-campaign-check pilot-campaign-evaluate pilot-down enterprise-release inventory-snapshot inventory-check document-lifecycle-proof connector-readiness crm-canary migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
+.PHONY: dev verify e2e-enterprise tip032-recertify tip033-recertify tip034-pilot-capture tip03512-ai-surrogate tip035-preflight production-config-init production-config-check answer-runtime-check answer-runtime-refresh pilot-up pilot-check pilot-scorecard pilot-campaign-check pilot-campaign-evaluate pilot-down enterprise-release inventory-snapshot inventory-check document-lifecycle-proof connector-readiness crm-canary migrate migration-check db-verify backup restore-drill down clean reset ps logs hardened-up hardened-down hardened-probe ci-local migration-gate image-policy deploy rollback load-up load load-probe slo onboard-batch parity eval
 
 # TIP-012 Task 1 — hardened profile (TLS ingress fronts everything, AC-01).
 # Requires the ingress hostname to resolve to 127.0.0.1 for probes/browsers:
@@ -38,6 +38,16 @@ tip03512-ai-surrogate:
 
 tip035-preflight:
 	./scripts/verify-tip035-release.sh
+
+PRODUCTION_ENV_FILE ?= .env.production
+
+production-config-init:
+	@test ! -e "$(PRODUCTION_ENV_FILE)" || { echo "Refusing to overwrite $(PRODUCTION_ENV_FILE)" >&2; exit 1; }
+	install -m 600 .env.production.example "$(PRODUCTION_ENV_FILE)"
+	@echo "Created $(PRODUCTION_ENV_FILE) with mode 600. Replace every __SET_*__ value, then run make production-config-check."
+
+production-config-check:
+	PRODUCTION_ENV_FILE="$(PRODUCTION_ENV_FILE)" ./scripts/verify-production-configuration.sh
 
 # The local quality profile lives in .env.demo. `docker compose restart` does
 # not reload changed environment variables, and plain `docker compose up` reads

@@ -34,8 +34,8 @@ profiles share one compose project — run one at a time.
 
 Configuration knobs (all in `.env`, defaults shown in `.env.example`):
 `INGRESS_HOST` (default `rtr.local`), `INGRESS_HTTP_PORT`/`INGRESS_HTTPS_PORT`
-(default 80/443 on 127.0.0.1; front with your LAN/VPN interface by changing the
-bind in `compose.yaml` for a real VM), `INGRESS_HSTS_MAX_AGE`.
+(default 80/443), `INGRESS_BIND_ADDRESS` (default `127.0.0.1`; set the reviewed
+LAN/VPN/public interface IP for a real VM), `INGRESS_HSTS_MAX_AGE`.
 `make hardened-up` also overrides `PUBLIC_BASE_URL` to
 `https://$(INGRESS_HOST)` for the app containers so the OIDC callback and the
 session-cookie `Secure` derivation follow the ingress origin.
@@ -121,6 +121,52 @@ Generate values with `openssl rand -base64 48` (≥32 bytes for
 `SOT_SIGNING_SECRET`). Session cookies are `Secure + HttpOnly + SameSite=lax`
 whenever served through the HTTPS ingress (derived; `SESSION_COOKIE_SECURE`
 overrides — production refuses `false`).
+
+## Production configuration closure (TIP-035.18)
+
+The release gate uses a dedicated, fully materialized production profile. It
+does not accept the development template, Caddy's local CA, shell expressions,
+placeholder domains, a dirty build identity or a group/world-readable secret
+file.
+
+```bash
+cd v2
+make production-config-init
+# edit .env.production from the approved secret source; never paste values in logs
+chmod 600 .env.production
+chmod 600 "$(awk -F= '$1 == "INGRESS_CERTS_DIR" {print $2}' .env.production)/privkey.pem"
+make production-config-check
+```
+
+Before the check can pass, the operator must provide:
+
+- the exact clean candidate SHA in `RTR_BUILD_SHA`;
+- the real `PUBLIC_BASE_URL`, matching `INGRESS_HOST`, DNS and the TLS
+  certificate; the OIDC redirect URI is
+  `https://<INGRESS_HOST>/api/auth/callback`;
+- the real HTTPS OIDC issuer, client ID/secret, corporate email domains and a
+  valid JSON group mapping;
+- unique database, S3, OIDC, SOT and provider secrets from the approved secret
+  source; DSN passwords must match their dedicated owner/runtime passwords;
+- the approved external-processing policy reference, credential-source
+  reference and `internal` classification allowlist;
+- `fullchain.pem` and `privkey.pem` for the production hostname, with at least
+  seven days remaining and a mode-600 private key;
+- a reviewed ingress bind IP and encrypted `BACKUP_DESTINATION`.
+
+`make production-config-check` performs three fail-closed layers:
+
+1. a content-free deployment check for exact build, OIDC/domain policy,
+   separated secrets, connector-off state, TLS hostname/expiry/key match, file
+   permissions, HSTS and ingress-origin coherence;
+2. `docker compose config --quiet`, so the same materialized profile must form
+   a valid stack;
+3. application `Settings` construction inside the locked backend image.
+
+The JSON verdict is written only below the ignored `eval/runtime/` boundary
+and contains booleans, counts, digests and stable error codes—never environment
+values. `.env.production` is ignored explicitly. A real file failing any layer
+keeps the `production_configuration` release gate blocked.
 
 ## Verification
 

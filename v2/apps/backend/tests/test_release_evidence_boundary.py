@@ -10,6 +10,9 @@ TIP033_WRAPPER = PROJECT_ROOT / "scripts" / "run-tip033-recertification.sh"
 TIP034_WRAPPER = PROJECT_ROOT / "scripts" / "run-tip034-pilot-capture.sh"
 TIP03512_WRAPPER = PROJECT_ROOT / "scripts" / "run-tip03512-ai-surrogate.sh"
 PREFLIGHT = PROJECT_ROOT / "scripts" / "verify-tip035-release.sh"
+PRODUCTION_PREFLIGHT = (
+    PROJECT_ROOT / "scripts" / "verify-production-configuration.sh"
+)
 GITIGNORE = PROJECT_ROOT / ".gitignore"
 MAKEFILE = PROJECT_ROOT / "Makefile"
 CI_COMMON = PROJECT_ROOT / "scripts" / "ci-common.sh"
@@ -77,11 +80,21 @@ class ReleaseEvidenceBoundaryTests(unittest.TestCase):
         self.assertIn("TIP035_AI_SURROGATE_APPROVED", source)
         self.assertIn("ai_surrogate_not_human_attestation", source)
         self.assertIn("human_subjective_usefulness_not_measured", source)
+        self.assertIn("verify-production-configuration.sh", source)
+
+    def test_production_preflight_is_content_free_and_runtime_bound(self) -> None:
+        source = PRODUCTION_PREFLIGHT.read_text(encoding="utf-8")
+
+        self.assertIn("validate_production_env.py", source)
+        self.assertIn("assert-release-evidence-path.sh", source)
+        self.assertIn("get_settings", source)
+        self.assertNotIn("set -x", source)
 
     def test_runtime_evidence_directory_is_ignored(self) -> None:
         patterns = GITIGNORE.read_text(encoding="utf-8").splitlines()
 
         self.assertIn("eval/runtime/", patterns)
+        self.assertIn(".env.production", patterns)
 
     def test_pilot_evaluator_writes_only_runtime_evidence(self) -> None:
         source = MAKEFILE.read_text(encoding="utf-8")

@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -282,6 +283,8 @@ class Settings(BaseSettings):
                 raise ValueError("rag_embedding_provider:policy_required")
         if self.app_env != "production":
             return self
+        if not re.fullmatch(r"[0-9a-f]{12,64}", self.rtr_build_sha):
+            raise ValueError("rtr_build_sha:clean_identity_required")
         required = {
             "oidc_issuer": self.oidc_issuer,
             "oidc_client_id": self.oidc_client_id,
@@ -299,6 +302,14 @@ class Settings(BaseSettings):
             raise ValueError("dev_oidc_enabled:forbidden_in_production")
         if self.session_cookie_secure is False:
             raise ValueError("session_cookie_secure:required_in_production")
+        if not self.allowed_domains:
+            raise ValueError("oidc_allowed_domains:required_in_production")
+        try:
+            group_mapping = json.loads(self.oidc_group_mapping)
+        except json.JSONDecodeError as error:
+            raise ValueError("oidc_group_mapping:object_required") from error
+        if not isinstance(group_mapping, dict):
+            raise ValueError("oidc_group_mapping:object_required")
         secret_catalog: dict[str, list[str]] = {
             "postgres_dsn": _dsn_passwords(self.postgres_dsn),
             "migration_dsn": (
@@ -330,12 +341,19 @@ class Settings(BaseSettings):
             or signing_secret in {self.s3_secret_key, self.oidc_client_secret}
         ):
             raise ValueError("sot_signing_secret:unsafe_in_production")
-        if self.rag_provider_mode == "external" and (
-            not self.rag_external_classification_allowlist.strip()
-            or not self.rag_external_endpoint_policy
-            or not self.rag_external_credential_source
-        ):
-            raise ValueError("rag_external_provider:policy_required")
+        if self.rag_provider_mode == "external":
+            external_allowlist = {
+                item.strip().lower()
+                for item in self.rag_external_classification_allowlist.split(",")
+                if item.strip()
+            }
+            if (
+                "internal" not in external_allowlist
+                or not self.rag_external_endpoint_policy
+                or not self.rag_external_credential_source
+                or (self.openai_api_key is None and self.anthropic_api_key is None)
+            ):
+                raise ValueError("rag_external_provider:policy_required")
         return self
 
     @property
