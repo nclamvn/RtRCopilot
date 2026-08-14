@@ -12,6 +12,9 @@ TIP03512_WRAPPER = PROJECT_ROOT / "scripts" / "run-tip03512-ai-surrogate.sh"
 PREFLIGHT = PROJECT_ROOT / "scripts" / "verify-tip035-release.sh"
 GITIGNORE = PROJECT_ROOT / ".gitignore"
 MAKEFILE = PROJECT_ROOT / "Makefile"
+CI_COMMON = PROJECT_ROOT / "scripts" / "ci-common.sh"
+CI_LOCAL = PROJECT_ROOT / "scripts" / "ci-local.sh"
+DEPLOY = PROJECT_ROOT / "scripts" / "deploy.sh"
 
 
 def _check(path: str) -> subprocess.CompletedProcess[str]:
@@ -93,4 +96,20 @@ class ReleaseEvidenceBoundaryTests(unittest.TestCase):
         self.assertIn(
             "PILOT_ACCEPTANCE_REPORT ?= /app/eval/runtime/tip034_pilot_capture.json",
             source,
+        )
+
+    def test_empty_optional_compose_build_args_are_nounset_safe(self) -> None:
+        helper = CI_COMMON.read_text(encoding="utf-8")
+        ci_local = CI_LOCAL.read_text(encoding="utf-8")
+        deploy = DEPLOY.read_text(encoding="utf-8")
+
+        self.assertIn("rtr_compose_build()", helper)
+        self.assertIn("${#RTR_COMPOSE_BUILD_ARGS[@]}", helper)
+        self.assertIn("rtr_compose_build docker compose build", ci_local)
+        self.assertIn("rtr_compose_build \"${HARDENED_COMPOSE[@]}\"", deploy)
+        self.assertNotIn(
+            'build "${RTR_COMPOSE_BUILD_ARGS[@]}"', ci_local
+        )
+        self.assertNotIn(
+            'build "${RTR_COMPOSE_BUILD_ARGS[@]}"', deploy
         )

@@ -51,7 +51,8 @@ rtr_stage "DEPLOY $version" "git=$git_sha host=$INGRESS_HOST base=$PUBLIC_BASE_U
 # ---- Stage 1: build ------------------------------------------------------
 rtr_stage "1/6 BUILD" "docker compose build (hardened profile)"
 rtr_sandbox_prepare
-"${HARDENED_COMPOSE[@]}" --profile tools --profile hardened build "${RTR_COMPOSE_BUILD_ARGS[@]}"
+rtr_compose_build "${HARDENED_COMPOSE[@]}" \
+  --profile tools --profile hardened build
 
 # ---- Stage 2: tag images :<version> -------------------------------------
 rtr_stage "2/6 TAG" "tag built images :$version"

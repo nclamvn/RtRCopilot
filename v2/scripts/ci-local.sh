@@ -79,7 +79,7 @@ stage_compose() {
   docker compose config --quiet
   docker compose -f compose.yaml -f compose.hardened.yaml --profile hardened config --quiet
   rtr_sandbox_prepare
-  docker compose build "${RTR_COMPOSE_BUILD_ARGS[@]}"
+  rtr_compose_build docker compose build
 }
 
 stage_trivy() { "$project_root/scripts/verify-container-vulnerabilities.sh"; }

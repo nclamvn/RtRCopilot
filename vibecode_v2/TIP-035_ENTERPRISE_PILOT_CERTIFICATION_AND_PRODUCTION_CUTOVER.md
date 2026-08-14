@@ -183,3 +183,11 @@ adds provenance-aware citation verification, manifest-v2 private-chunk
 attestation and an explicit maintenance-only quarantine workflow. The
 remediation must be committed and rebuilt before release certifications can be
 renewed for the resulting exact candidate.
+
+## 14. Release automation amendment — TIP-035.15
+
+The isolated versioned deploy drill exposed a Bash 3.2 `set -u` failure when
+the optional compose build-argument array was empty. TIP-035.15 centralizes the
+empty/non-empty branch in the shared CI helper and keeps nounset, migration,
+health and version-ledger gates intact. The resulting source change requires a
+new exact candidate and invalidates pre-commit build-bound evidence.

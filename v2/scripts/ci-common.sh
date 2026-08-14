@@ -21,8 +21,20 @@ RTR_SANDBOX_MIRROR_DEFAULT_POLICY="/tmp/mirror/source-policy.json"
 RTR_SANDBOX_MIRROR_DEFAULT_VOSK="http://172.17.0.1:8123/vosk.zip"
 RTR_SANDBOX_MIRROR_DEFAULT_PROBE="http://172.17.0.1:8123/vosk.zip"
 
-# Populated by rtr_sandbox_prepare; splice into `docker compose build "${RTR_COMPOSE_BUILD_ARGS[@]}"`.
+# Populated by rtr_sandbox_prepare. Callers must branch on the array length
+# before expanding it: Bash 3.2 treats an empty-array expansion as an unbound
+# variable under `set -u`.
 RTR_COMPOSE_BUILD_ARGS=()
+
+rtr_compose_build() {
+  # rtr_compose_build <compose command...>
+  # The command is expected to end immediately before its optional build args.
+  if [[ ${#RTR_COMPOSE_BUILD_ARGS[@]} -gt 0 ]]; then
+    "$@" "${RTR_COMPOSE_BUILD_ARGS[@]}"
+  else
+    "$@"
+  fi
+}
 
 rtr_stage() {
   # rtr_stage "<label>" "<description>"
