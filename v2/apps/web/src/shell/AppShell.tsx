@@ -36,12 +36,15 @@ import {SIDEBAR_COOKIE, Theme, THEME_COOKIE} from "./theme";
 type Identity = {user_id: string; email: string; display_name: string; roles: string[]};
 
 export type ShellArea =
-  | "ask" | "files" | "documents" | "knowledge" | "operations" | "admin";
+  | "ask" | "intelligence" | "files" | "documents"
+  | "knowledge" | "operations" | "admin";
 
 export const NAV_AREAS: ReadonlyArray<{
   area: ShellArea; href: string; labelKey: MessageKey; icon: IconName;
 }> = [
   {area: "ask", href: "/ask", labelKey: "shell.nav.ask", icon: "ask"},
+  {area: "intelligence", href: "/intelligence",
+    labelKey: "shell.nav.intelligence", icon: "intelligence"},
   {area: "files", href: "/files", labelKey: "shell.nav.files", icon: "files"},
   {area: "documents", href: "/documents", labelKey: "shell.nav.documents", icon: "documents"},
   {area: "knowledge", href: "/knowledge-ops?view=research", labelKey: "shell.nav.knowledge", icon: "knowledge"},
@@ -63,7 +66,7 @@ export function visibleAreas(identity: Identity | null): ReadonlyArray<(typeof N
 }
 
 const GROUPS: ReadonlyArray<{titleKey: MessageKey; areas: ShellArea[]}> = [
-  {titleKey: "shell.group.workspace", areas: ["ask", "files", "documents"]},
+  {titleKey: "shell.group.workspace", areas: ["ask", "intelligence", "files", "documents"]},
   {titleKey: "shell.group.governance", areas: ["knowledge", "operations", "admin"]},
 ];
 
@@ -73,6 +76,9 @@ const GROUPS: ReadonlyArray<{titleKey: MessageKey; areas: ShellArea[]}> = [
  */
 export function activeArea(pathname: string, view: string | null): ShellArea | null {
   if (pathname === "/ask" || pathname.startsWith("/ask/")) return "ask";
+  if (pathname === "/intelligence" || pathname.startsWith("/intelligence/")) {
+    return "intelligence";
+  }
   if (pathname === "/files" || pathname.startsWith("/files/")) return "files";
   if (pathname === "/documents" || pathname.startsWith("/documents/")) return "documents";
   if (pathname === "/knowledge-ops" || pathname.startsWith("/knowledge-ops/")) {

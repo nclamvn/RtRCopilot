@@ -33,6 +33,60 @@ export const ids = {
 
 export const sha = "a".repeat(64);
 
+export const intelligenceBriefing = {
+  generated_at: "2026-08-15T05:00:00Z", request_id: "req-intelligence",
+  counts: {updates: 1, attention: 1, research: 1},
+  items: [
+    {
+      item_id: "1".repeat(64), zone_label: "sot", kind: "attention",
+      priority: "high", title: "RTR POLICY TRAVEL", summary: "server copy",
+      observed_at: "2026-08-14T05:00:00Z",
+      ask_query: "Giải thích chính sách công tác.",
+      evidence: {
+        zone_label: "sot", record_key: "RTR.POLICY.TRAVEL",
+        source_key: "rtr.company", source_label: "Company policy registry",
+        content_sha256: sha, locator: {record_key: "RTR.POLICY.TRAVEL"},
+        record_version_id: ids.versionId, source_revision: 3,
+        provenance_level: "approved_internal", verification_state: "approved",
+        freshness_state: "stale", research_record_id: null,
+        package_fingerprint: null, tier: null, corroboration_state: null,
+      },
+    },
+    {
+      item_id: "2".repeat(64), zone_label: "sot", kind: "update",
+      priority: "normal", title: "HERA product roadmap",
+      summary: "Roadmap hiện hành đã được phê duyệt.",
+      observed_at: "2026-08-15T04:00:00Z",
+      ask_query: "Giải thích tác động của roadmap HERA.",
+      evidence: {
+        zone_label: "sot", record_key: "RTR.HERA.ROADMAP",
+        source_key: "rtr.company", source_label: "Product registry",
+        content_sha256: sha, locator: {record_key: "RTR.HERA.ROADMAP"},
+        record_version_id: ids.recordId, source_revision: 4,
+        provenance_level: "approved_internal", verification_state: "verified",
+        freshness_state: "current", research_record_id: null,
+        package_fingerprint: null, tier: null, corroboration_state: null,
+      },
+    },
+    {
+      item_id: "3".repeat(64), zone_label: "research", kind: "research",
+      priority: "normal", title: "Precision agriculture market signal",
+      summary: "Tín hiệu nghiên cứu có nguồn đối chiếu.",
+      observed_at: "2026-08-15T03:00:00Z",
+      ask_query: "Đối chiếu tín hiệu nông nghiệp chính xác.",
+      evidence: {
+        zone_label: "research", record_key: "research.agri.signal",
+        source_key: "theskywatch", source_label: "https://theskywatch.com/report",
+        content_sha256: sha, locator: {url: "https://theskywatch.com/report"},
+        record_version_id: null, source_revision: null, provenance_level: null,
+        verification_state: null, freshness_state: null,
+        research_record_id: ids.peerId, package_fingerprint: "b".repeat(64),
+        tier: "P", corroboration_state: "corroborated",
+      },
+    },
+  ],
+};
+
 export const pilotReadiness = {
   computed_at: "2026-08-04T08:00:00Z",
   sot: {active_records: 219, strict_records: 8, caveated_records: 211,
@@ -64,6 +118,25 @@ export async function mockAuth(page: Page) {
   await page.route("**/api/status", route => route.fulfill({json: {
     ok: true, status: "ready",
   }}));
+}
+
+export async function mockIntelligence(page: Page) {
+  await mockAuth(page);
+  await page.route("**/api/ask/conversations**", route => route.fulfill({json: {
+    items: [], next_cursor: null,
+  }}));
+  await page.route("**/api/files/upload-targets", route => route.fulfill({json: {
+    items: [],
+  }}));
+  await page.route("**/api/document-os/artifact-plans", route => route.fulfill({json: {
+    state: "not_applicable", artifact_kind: null, candidates: [],
+    confirmation_required: true, request_id: "req-artifact-intelligence",
+  }}));
+  await page.route("**/api/governance/research/scope", route => route.fulfill({json: {
+    allowed: false,
+  }}));
+  await page.route("**/api/governance/intelligence/briefing**", route =>
+    route.fulfill({json: intelligenceBriefing}));
 }
 
 /** Admin workspace control-plane fixture: operational snapshot plus empty

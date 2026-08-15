@@ -76,6 +76,21 @@ describe("Knowledge Ops same-origin proxy boundary", () => {
     expect(response.status).toBe(200);
   });
 
+  test("forwards only the bounded TIP-038 intelligence family", async () => {
+    vi.stubEnv("API_INTERNAL_URL", "http://api:8000");
+    vi.stubGlobal("fetch", vi.fn(async (request: URL | RequestInfo) => {
+      const url = new URL(String(request));
+      expect(url.pathname).toBe("/api/v1/intelligence/briefing");
+      expect(url.search).toBe("?limit=16");
+      return Response.json({items: []});
+    }));
+    const response = await GET(
+      new NextRequest("http://localhost/api/governance/intelligence/briefing?limit=16"),
+      {params: Promise.resolve({path: ["intelligence", "briefing"]})},
+    );
+    expect(response.status).toBe(200);
+  });
+
   test("forwards session cookie and request id, passes typed errors through", async () => {
     vi.stubEnv("API_INTERNAL_URL", "http://api:8000");
     vi.stubGlobal("fetch", vi.fn(async (request: URL | RequestInfo, init?: RequestInit) => {

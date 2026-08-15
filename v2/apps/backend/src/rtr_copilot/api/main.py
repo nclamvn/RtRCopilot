@@ -25,6 +25,7 @@ from rtr_copilot.governance.admin_api import router as governance_admin_router
 from rtr_copilot.governance.api import router as governance_router
 from rtr_copilot.governance.audit_export import router as audit_export_router
 from rtr_copilot.ingestion.api import router as files_router
+from rtr_copilot.intelligence.api import router as intelligence_router
 from rtr_copilot.limits.middleware import install_limits_middleware
 from rtr_copilot.observability.db import refresh_db_pool_metrics
 from rtr_copilot.observability.http import install_metrics_middleware, meter_error
@@ -58,6 +59,7 @@ app.include_router(governance_router)
 app.include_router(governance_admin_router)
 app.include_router(audit_export_router)
 app.include_router(research_router)
+app.include_router(intelligence_router)
 if get_settings().app_env in {"development", "test"} and get_settings().dev_oidc_enabled:
     app.include_router(auth_dev_router)
 

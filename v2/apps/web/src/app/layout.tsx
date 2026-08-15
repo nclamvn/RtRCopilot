@@ -30,6 +30,7 @@ import "./styles/chat-workspace.css";
 // last: it retires conflicting legacy grid/focus rules without widening the
 // component API or coupling individual pages to stylesheet import order.
 import "./styles/workspace-consistency.css";
+import "./styles/intelligence.css";
 
 export const metadata: Metadata = {
   title: "RtR Copilot",

@@ -8,7 +8,7 @@ import React from "react";
  */
 
 export type IconName =
-  | "ask" | "files" | "documents" | "knowledge" | "operations" | "admin"
+  | "ask" | "intelligence" | "files" | "documents" | "knowledge" | "operations" | "admin"
   | "recent" | "search" | "moon" | "sun" | "languages" | "send" | "citation"
   | "plus" | "panelLeft" | "chevrons" | "logout" | "arrowRight";
 
@@ -16,6 +16,10 @@ const PATHS: Record<IconName, React.ReactNode> = {
   ask: <>
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
     <path d="M13 8H7"/><path d="M17 12H7"/>
+  </>,
+  intelligence: <>
+    <path d="M3 12h3l2.2-5 3.2 10 2.4-6 1.7 3H21"/>
+    <path d="M4 20h16"/>
   </>,
   files: <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>,
   documents: <>

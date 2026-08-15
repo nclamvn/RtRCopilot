@@ -39,13 +39,14 @@ async function mockShell(page: Page, authenticated = true, roles = ["admin"]) {
   });
 }
 
-test("shell shows one topbar, six nav areas, and active state follows navigation", async ({page}) => {
+test("shell shows one topbar, seven nav areas, and active state follows navigation", async ({page}) => {
   await mockShell(page);
   await page.goto("/ask");
   await expect(page.getByRole("heading", {level: 1, name: "Hỏi"})).toBeVisible();
   const nav = page.getByRole("navigation", {name: "Điều hướng chính"});
   for (const [name, href] of [
-    ["Hỏi", "/ask"], ["Tệp", "/files"], ["Tài liệu", "/documents"],
+    ["Hỏi", "/ask"], ["Tín hiệu", "/intelligence"],
+    ["Tệp", "/files"], ["Tài liệu", "/documents"],
     ["Tri thức", "/knowledge-ops?view=research"],
     ["Vận hành", "/knowledge-ops"], ["Quản trị", "/admin"],
   ] as const) {
@@ -177,8 +178,9 @@ test("staff navigation contains only usable workspace areas", async ({page}) => 
   await mockShell(page, true, ["staff"]);
   await page.goto("/ask");
   const nav = page.getByRole("navigation", {name: "Điều hướng chính"});
-  await expect(nav.getByRole("link")).toHaveCount(3);
+  await expect(nav.getByRole("link")).toHaveCount(4);
   await expect(nav.getByRole("link", {name: "Hỏi"})).toBeVisible();
+  await expect(nav.getByRole("link", {name: "Tín hiệu"})).toBeVisible();
   await expect(nav.getByRole("link", {name: "Tri thức"})).toHaveCount(0);
   await expect(nav.getByRole("link", {name: "Quản trị"})).toHaveCount(0);
 });

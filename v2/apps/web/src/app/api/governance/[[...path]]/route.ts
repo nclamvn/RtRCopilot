@@ -10,6 +10,7 @@ const SAFE_SEGMENT = /^[A-Za-z0-9._~-]+$/;
  */
 const FAMILIES = new Set([
   "gaps", "governance", "research", "graduation", "admin", "enterprise",
+  "intelligence",
 ]);
 
 function valid(segment: string) {

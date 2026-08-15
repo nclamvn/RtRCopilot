@@ -52,7 +52,7 @@ function renderShell(initialLocale: "vi" | "en" = "vi") {
   </I18nProvider>);
 }
 
-test("shell renders topbar, six nav areas and marks the active area", async () => {
+test("shell renders topbar, seven nav areas and marks the active area", async () => {
   renderShell();
   expect(screen.getAllByText("Copilot")).toHaveLength(1);
   expect(document.querySelector(".pc-topbar .pc-brand")).not.toBeInTheDocument();
@@ -72,7 +72,7 @@ test("shell renders topbar, six nav areas and marks the active area", async () =
   for (const [name, href] of links) {
     expect(within(navigation).getByRole("link", {name})).toHaveAttribute("href", href);
   }
-  expect(navigation.querySelectorAll("ol a").length).toBe(6);
+  expect(navigation.querySelectorAll("ol a").length).toBe(7);
   expect(within(navigation).getByRole("link", {name: "Hỏi"}))
     .toHaveAttribute("aria-current", "page");
   expect(within(navigation).getByRole("link", {name: "Quản trị"}))
@@ -81,6 +81,7 @@ test("shell renders topbar, six nav areas and marks the active area", async () =
 
 test("active-area rules cover every route, including knowledge-ops views", () => {
   expect(activeArea("/ask", null)).toBe("ask");
+  expect(activeArea("/intelligence", null)).toBe("intelligence");
   // "/" is a server redirect to /files since TIP-011 Task 3 (never shell-rendered).
   expect(activeArea("/", null)).toBeNull();
   expect(activeArea("/files", null)).toBe("files");
@@ -96,11 +97,11 @@ test("active-area rules cover every route, including knowledge-ops views", () =>
 
 test("role-scoped information architecture removes privileged dead ends", () => {
   expect(visibleAreas({...identity, roles: ["staff"]}).map(item => item.area))
-    .toEqual(["ask", "files", "documents"]);
+    .toEqual(["ask", "intelligence", "files", "documents"]);
   expect(visibleAreas({...identity, roles: ["curator"]}).map(item => item.area))
-    .toEqual(["ask", "files", "documents", "knowledge", "operations"]);
+    .toEqual(["ask", "intelligence", "files", "documents", "knowledge", "operations"]);
   expect(visibleAreas(identity).map(item => item.area)).toEqual([
-    "ask", "files", "documents", "knowledge", "operations", "admin",
+    "ask", "intelligence", "files", "documents", "knowledge", "operations", "admin",
   ]);
 });
 
