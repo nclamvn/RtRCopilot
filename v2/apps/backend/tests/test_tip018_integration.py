@@ -178,7 +178,7 @@ async def test_per_file_isolation_acl_and_grounded_persistence(
     version_a, chunk_a = await seed_file(
         factory, owner, token=token_a, leading_fillers=205,
     )
-    version_b, _ = await seed_file(factory, owner, token=token_b)
+    version_b, chunk_b = await seed_file(factory, owner, token=token_b)
     service = RetrievalService(get_settings(), factory=factory)
 
     hits_a = await service.search(
@@ -189,6 +189,16 @@ async def test_per_file_isolation_acl_and_grounded_persistence(
     assert all(hit.citation.zone_label == "private" for hit in hits_a)
     assert all(hit.citation.document_version_id == version_a for hit in hits_a)
     assert token_b.encode() not in "\n".join(hit.snippet for hit in hits_a).encode()
+    multi = await service.search(
+        caller(owner), f"{token_a} {token_b}",
+        filters=SearchFilters(version_ids=[version_a, version_b]),
+        request_id="tip037-multi",
+        top_k=8,
+    )
+    assert {hit.chunk_id for hit in multi} == {chunk_a, chunk_b}
+    assert {hit.citation.document_version_id for hit in multi} == {
+        version_a, version_b,
+    }
     assert await service.search(
         caller(owner), token_a,
         filters=SearchFilters(
@@ -261,11 +271,16 @@ async def test_per_file_isolation_acl_and_grounded_persistence(
         caller(owner), token_a,
         filters=SearchFilters(version_id=version_a), request_id="tip018-denied",
     )
+    denied_multi = await service.search(
+        caller(owner), f"{token_a} {token_b}",
+        filters=SearchFilters(version_ids=[version_a, version_b]),
+        request_id="tip037-denied-set",
+    )
     missing = await service.search(
         caller(owner), token_a,
         filters=SearchFilters(version_id=uuid.uuid4()), request_id="tip018-missing",
     )
-    assert denied == missing == []
+    assert denied == denied_multi == missing == []
     assert await service.search(
         caller(owner), token_b,
         filters=SearchFilters(version_id=version_b), request_id="tip018-b",
@@ -354,3 +369,13 @@ async def test_default_ask_searches_only_manifest_approved_company_files(
 def test_file_scope_is_mutually_exclusive() -> None:
     with pytest.raises(ValueError, match="mutually_exclusive"):
         SearchFilters(source_key="rtr.specs", version_id=uuid.uuid4())
+    with pytest.raises(ValueError, match="mutually_exclusive"):
+        SearchFilters(version_id=uuid.uuid4(), version_ids=[uuid.uuid4()])
+
+
+def test_multi_file_scope_is_unique_and_bounded() -> None:
+    version_id = uuid.uuid4()
+    with pytest.raises(ValueError, match="unique"):
+        SearchFilters(version_ids=[version_id, version_id])
+    with pytest.raises(ValueError, match="at most 5"):
+        SearchFilters(version_ids=[uuid.uuid4() for _ in range(6)])

@@ -12,6 +12,11 @@ class StrictModel(BaseModel):
 class SearchFilters(StrictModel):
     source_key: str | None = None
     version_id: uuid.UUID | None = None
+    version_ids: list[uuid.UUID] | None = Field(
+        default=None,
+        min_length=1,
+        max_length=5,
+    )
     classification_ceiling: Literal[
         "public_internal",
         "internal",
@@ -23,9 +28,29 @@ class SearchFilters(StrictModel):
 
     @model_validator(mode="after")
     def one_scope(self) -> "SearchFilters":
-        if self.source_key is not None and self.version_id is not None:
-            raise ValueError("source_key_and_version_id_are_mutually_exclusive")
+        boundaries = sum((
+            self.source_key is not None,
+            self.version_id is not None,
+            self.version_ids is not None,
+        ))
+        if boundaries > 1:
+            raise ValueError("search_scope_boundaries_are_mutually_exclusive")
+        if self.version_ids is not None and len(set(self.version_ids)) != len(
+            self.version_ids
+        ):
+            raise ValueError("version_ids_must_be_unique")
         return self
+
+    @property
+    def file_version_ids(self) -> tuple[uuid.UUID, ...]:
+        """Canonical immutable file boundary; legacy single-id stays valid."""
+        if self.version_id is not None:
+            return (self.version_id,)
+        return tuple(self.version_ids or ())
+
+    @property
+    def has_file_scope(self) -> bool:
+        return bool(self.file_version_ids)
 
 
 class SearchRequest(StrictModel):

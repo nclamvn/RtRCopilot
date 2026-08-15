@@ -165,6 +165,12 @@ export async function mockFiles(page: Page) {
 export async function mockAsk(page: Page, answer: Record<string, unknown> = groundedAnswer) {
   await mockAuth(page);
   await mockFiles(page);
+  // TIP-036 plans beside Ask. Keep the browser harness fully hermetic so an
+  // unmatched planner call cannot reach the live API and revoke mock auth.
+  await page.route("**/api/document-os/artifact-plans", route => route.fulfill({json: {
+    state: "not_applicable", artifact_kind: null, candidates: [],
+    confirmation_required: true, request_id: "req-artifact-0",
+  }}));
   await page.route("**/api/governance/**", route => {
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/governance/research/scope") {

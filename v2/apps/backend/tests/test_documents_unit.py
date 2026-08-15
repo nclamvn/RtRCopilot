@@ -14,13 +14,19 @@ from pptx.util import Inches
 from pydantic import ValidationError
 from reportlab.pdfgen import canvas
 
+from rtr_copilot.auth.models import Role, Subject
 from rtr_copilot.documents.models import (
+    ArtifactPlanRequest,
     BindingDefinition,
     FieldRules,
+    TemplateListItem,
+    TemplatePage,
     TemplateSchema,
 )
+from rtr_copilot.documents.planner import interpret_artifact_intent, rank_template_items
 from rtr_copilot.documents.renderers import render
 from rtr_copilot.documents.service import (
+    DocumentOSService,
     changed_keys,
     decode_cursor,
     encode_cursor,
@@ -228,6 +234,104 @@ def test_template_cursor_is_stable_signed_and_tamper_evident() -> None:
     assert decode_cursor(cursor, "test-secret") == ("báo cáo", template_id)
     with pytest.raises(ValueError, match="invalid_cursor"):
         decode_cursor(cursor[:-2] + "AA", "test-secret")
+
+
+def template_item(
+    name: str,
+    format_name: str,
+    *,
+    category: str = "company",
+) -> TemplateListItem:
+    return TemplateListItem(
+        template_id=uuid.uuid4(), version_id=uuid.uuid4(),
+        stable_key=name.casefold().replace(" ", "."), display_name=name,
+        category=category, classification="internal", document_class="internal",
+        format=format_name, version_ordinal=1, status="approved",
+        owner_display_name="Owner",
+    )
+
+
+def test_artifact_intent_separates_creation_from_ordinary_questions() -> None:
+    assert interpret_artifact_intent("Báo cáo bán hàng là gì?").state == "not_applicable"
+    assert interpret_artifact_intent("HERA làm gì?").state == "not_applicable"
+    assert interpret_artifact_intent("Ai tạo báo cáo này?").state == "not_applicable"
+    requested = interpret_artifact_intent("Hãy tạo báo cáo bán hàng cho tôi")
+    assert requested.state == "ready"
+    assert requested.kind == "report"
+    assert interpret_artifact_intent("Làm báo cáo dự án").state == "ready"
+    assert interpret_artifact_intent("Hãy tạo giúp tôi").state == "clarification_required"
+
+
+def test_artifact_template_ranking_is_accent_insensitive_and_format_aware() -> None:
+    items = [
+        template_item("Báo cáo dự án", "docx", category="report"),
+        template_item("Customer pitch deck", "pptx", category="sales"),
+    ]
+    intent = interpret_artifact_intent("Tạo slide thuyết trình cho khách hàng")
+    assert rank_template_items(intent, items)[0].format == "pptx"
+
+
+def test_artifact_template_ranking_excludes_wrong_document_class() -> None:
+    items = [
+        template_item("Công văn gửi cơ quan nhà nước", "docx", category="Đối ngoại"),
+        template_item("Fact-sheet sản phẩm", "docx", category="Sản phẩm"),
+        template_item("Sales brief sau buổi gặp", "xlsx", category="Kinh doanh"),
+        template_item("Slide card cho deck", "docx", category="Trình bày"),
+    ]
+    intent = interpret_artifact_intent("Tạo báo cáo hoạt động công ty")
+    ranked = rank_template_items(intent, items)
+    assert [item.display_name for item in ranked] == [
+        "Fact-sheet sản phẩm", "Sales brief sau buổi gặp",
+    ]
+    document_intent = interpret_artifact_intent("Soạn công văn gửi Bộ KH&CN")
+    assert [item.display_name for item in rank_template_items(document_intent, items)] == [
+        "Công văn gửi cơ quan nhà nước",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_artifact_plan_exposes_only_current_renderable_approved_templates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    denied = template_item("Báo cáo bị chặn", "docx", category="report")
+    allowed = template_item("Báo cáo hoạt động", "docx", category="report")
+    service = object.__new__(DocumentOSService)
+
+    async def list_templates(*args: object, **kwargs: object) -> TemplatePage:
+        return TemplatePage(items=[denied, allowed])
+
+    async def template_row(
+        subject: Subject,
+        version_id: uuid.UUID,
+        *,
+        action: str,
+        request_id: str,
+    ) -> dict[str, object] | None:
+        assert action == "render"
+        if version_id == denied.version_id:
+            return None
+        return {
+            "lifecycle": "approved", "status": "approved",
+            "field_schema": TemplateSchema(bindings=[BindingDefinition(
+                field_path="customer_name", field_type="string", source="user",
+                required=True, rules=FieldRules(max_length=100),
+            )]).model_dump(mode="json"),
+        }
+
+    monkeypatch.setattr(service, "list_templates", list_templates)
+    monkeypatch.setattr(service, "_template_row", template_row)
+    subject = Subject(
+        user_id=str(uuid.uuid4()), issuer="test", sub="staff", email="staff@rtr.vn",
+        canonical_domain="rtr.vn", roles={Role.STAFF},
+    )
+    plan = await service.plan_artifact(
+        subject, ArtifactPlanRequest(instruction="Tạo báo cáo hoạt động"),
+        request_id="req-artifact",
+    )
+    assert plan.state == "ready"
+    assert [candidate.version_id for candidate in plan.candidates] == [allowed.version_id]
+    assert plan.candidates[0].required_user_fields == ["customer_name"]
+    assert plan.confirmation_required is True
 
 
 def test_unresolved_placeholders_and_pptx_overflow_fail_closed() -> None:

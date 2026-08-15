@@ -31,6 +31,7 @@ const conversationId = "11111111-1111-4111-8111-111111111111";
 const runId = "22222222-2222-4222-8222-222222222222";
 const gapId = "33333333-3333-4333-8333-333333333333";
 const versionId = "55555555-5555-4555-8555-555555555555";
+const versionId2 = "88888888-8888-4888-8888-888888888888";
 const sha = "a".repeat(64);
 
 const identity = {
@@ -270,6 +271,45 @@ test("grounded ask renders citation markers wired to the shared rail; research d
   expect(localStorage.length + sessionStorage.length).toBe(0);
 });
 
+test("creation request offers only a governed template handoff without storing content", async () => {
+  const templateId = "77777777-7777-4777-8777-777777777777";
+  const templateVersionId = "88888888-8888-4888-8888-888888888888";
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-artifact",
+    }}),
+    "/api/document-os/artifact-plans": () => ({json: {
+      state: "ready", artifact_kind: "report", confirmation_required: true,
+      request_id: "req-artifact", candidates: [{
+        template_id: templateId, version_id: templateVersionId,
+        display_name: "Báo cáo hoạt động", category: "operations", format: "docx",
+        document_class: "internal", required_user_fields: ["report_period"],
+      }],
+    }}),
+    "/api/ask/ask": () => ({json: {
+      state: "grounded", answer: "Mẫu báo cáo được quản trị bởi Document OS. [C1]",
+      citations: [citation], conversation_id: conversationId, answer_run_id: runId,
+      request_id: "req-answer-artifact",
+    }}),
+  });
+  render(<AskPage/>);
+  fireEvent.change(await screen.findByLabelText("Câu hỏi"), {
+    target: {value: "Tạo báo cáo hoạt động"},
+  });
+  fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
+
+  expect(await screen.findByRole("heading", {name: "Chuẩn bị bản nháp"}))
+    .toBeInTheDocument();
+  expect(screen.getByText("Báo cáo hoạt động")).toBeInTheDocument();
+  expect(screen.getByRole("link", {name: "Mở mẫu"})).toHaveAttribute(
+    "href", `/documents?template=${templateVersionId}&from=ask`,
+  );
+  expect(localStorage.length + sessionStorage.length).toBe(0);
+  expect(location.search).toBe(`?conversation=${conversationId}`);
+});
+
 test("composer respects Vietnamese IME, clears immediately and rejects double-submit", async () => {
   let askCalls = 0;
   mockFetch({
@@ -473,12 +513,12 @@ test("denied file catalog renders the typed state inside the picker", async () =
     }}),
   });
   render(<AskPage/>);
-  fireEvent.click(await screen.findByRole("button", {name: "Chọn tệp được cấp quyền"}));
+  fireEvent.click(await screen.findByRole("button", {name: "Đính kèm"}));
   const denied = await screen.findByText(/Bị từ chối theo chính sách/);
   expect(denied).toHaveTextContent("policy_denied · req-5");
 });
 
-test("file-scoped Ask sends the immutable version id", async () => {
+test("attachment-scoped Ask sends the immutable version id set", async () => {
   let askBody: unknown = null;
   mockFetch({
     "/api/auth/me": () => ({json: identity}),
@@ -492,6 +532,13 @@ test("file-scoped Ask sends the immutable version id", async () => {
       logical_name: "flight-envelope",
       display_filename: "flight-envelope.pdf",
       viewer_kind: "pdf",
+      classification: "internal",
+    }, {
+      document_id: "99999999-9999-4999-8999-999999999999",
+      version_id: versionId2,
+      logical_name: "flight-test",
+      display_filename: "flight-test.xlsx",
+      viewer_kind: "xlsx",
       classification: "internal",
     }], next_cursor: null}}),
     "/api/ask/ask": init => {
@@ -507,14 +554,103 @@ test("file-scoped Ask sends the immutable version id", async () => {
     }}),
   });
   render(<AskPage/>);
-  fireEvent.click(await screen.findByRole("button", {name: "Chọn tệp được cấp quyền"}));
+  fireEvent.click(await screen.findByRole("button", {name: "Đính kèm"}));
   fireEvent.click(await screen.findByText("flight-envelope.pdf"));
+  fireEvent.click(await screen.findByText("flight-test.xlsx"));
   fireEvent.change(screen.getByLabelText("Câu hỏi"), {
     target: {value: "Giới hạn bay là gì?"},
   });
   fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
   await waitFor(() => expect(askBody).toEqual({
     question: "Giới hạn bay là gì?",
-    filters: {version_id: versionId},
+    filters: {version_ids: [versionId, versionId2]},
+  }));
+});
+
+test("attachment picker enforces five immutable versions and allows removal", async () => {
+  const items = ["a", "b", "c", "d", "e", "f"].map((prefix, index) => ({
+    document_id: `${prefix}0000000-0000-4000-8000-00000000000${index}`,
+    version_id: `${prefix}1111111-1111-4111-8111-11111111111${index}`,
+    logical_name: `file-${index + 1}`,
+    display_filename: `file-${index + 1}.pdf`,
+    viewer_kind: "pdf",
+    classification: "internal",
+  }));
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-limit",
+    }}),
+    "/api/files/upload-targets": () => ({json: {items: []}}),
+    "/api/files": () => ({json: {items, next_cursor: null}}),
+  });
+  render(<AskPage/>);
+  fireEvent.click(await screen.findByRole("button", {name: "Đính kèm"}));
+  await screen.findByText("file-1.pdf");
+  for (let index = 1; index <= 5; index += 1) {
+    fireEvent.click(screen.getByRole("button", {name: new RegExp(`file-${index}\\.pdf`)}));
+  }
+  expect(screen.getByRole("button", {name: /file-6\.pdf/})).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", {
+    name: "Gỡ tệp khỏi phạm vi · file-1.pdf",
+  }));
+  expect(screen.getByRole("button", {name: /file-6\.pdf/})).not.toBeDisabled();
+});
+
+test("composer upload becomes attachment only after terminal server acceptance", async () => {
+  let askBody: unknown = null;
+  const uploadedVersion = "a2222222-2222-4222-8222-222222222222";
+  const uploadedDocument = "a3333333-3333-4333-8333-333333333333";
+  mockFetch({
+    "/api/auth/me": () => ({json: identity}),
+    "/api/governance/research/scope": () => ({json: {allowed: true}}),
+    "/api/ask/conversations": () => ({json: {
+      items: [], next_cursor: null, request_id: "req-list-upload",
+    }}),
+    "/api/files/upload-targets": () => ({json: {items: [{
+      target_id: "a4444444-4444-4444-8444-444444444444",
+      label: "Company uploads", classification: "internal",
+    }]}}),
+    "/api/files": () => ({json: {items: [], next_cursor: null}}),
+    "/api/files/uploads": () => ({status: 202, json: {
+      upload_id: "a5555555-5555-4555-8555-555555555555",
+      job_id: "a6666666-6666-4666-8666-666666666666",
+      state: "quarantined", status_url: "/api/v1/files/uploads/a5555555-5555-4555-8555-555555555555",
+    }}),
+    "/api/files/uploads/a5555555-5555-4555-8555-555555555555": () => ({json: {
+      upload_id: "a5555555-5555-4555-8555-555555555555",
+      job_id: "a6666666-6666-4666-8666-666666666666",
+      state: "accepted", progress: 100, retryable: false,
+      document_id: uploadedDocument, version_id: uploadedVersion,
+      detected_mime: "application/pdf",
+    }}),
+    "/api/ask/ask": init => {
+      askBody = JSON.parse(String(init?.body));
+      return {json: {
+        state: "honest_null", answer: "Không tìm thấy bằng chứng.", citations: [],
+        conversation_id: conversationId, answer_run_id: runId,
+        gap_id: gapId, request_id: "req-upload",
+      }};
+    },
+    [`/api/governance/gaps/${gapId}`]: () => ({status: 403, json: {
+      error: {code: "forbidden", message: ""}, request_id: "req-gap-upload",
+    }}),
+  });
+  const {container} = render(<AskPage/>);
+  fireEvent.click(await screen.findByRole("button", {name: "Đính kèm"}));
+  await screen.findByRole("button", {name: "Tải tệp mới"});
+  const input = container.querySelector<HTMLInputElement>('input[type="file"]');
+  expect(input).not.toBeNull();
+  fireEvent.change(input!, {target: {files: [new File(["pdf"], "brief.pdf", {
+    type: "application/pdf",
+  })]}});
+  await screen.findByText("brief.pdf", {}, {timeout: 2000});
+  fireEvent.change(screen.getByLabelText("Câu hỏi"), {
+    target: {value: "Tóm tắt tệp này"},
+  });
+  fireEvent.click(screen.getByRole("button", {name: "Gửi câu hỏi"}));
+  await waitFor(() => expect(askBody).toEqual({
+    question: "Tóm tắt tệp này", filters: {version_ids: [uploadedVersion]},
   }));
 });

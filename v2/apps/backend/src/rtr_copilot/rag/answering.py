@@ -2143,7 +2143,7 @@ class AnswerService:
             # An explicit file/source scope is a user-selected evidence
             # boundary. Do not impose the enterprise-wide entity dossier on a
             # narrower diagnostic, file Q&A or hermetic corpus query.
-            profile_enabled=filters.source_key is None and filters.version_id is None,
+            profile_enabled=filters.source_key is None and not filters.has_file_scope,
         )
         await emit_ask_progress(
             progress,

@@ -16,6 +16,7 @@ from rtr_copilot.rag.models import (
     ProviderAnswer,
     ProviderEvidence,
     RetrievalHit,
+    SearchFilters,
 )
 from rtr_copilot.rag.reindex import stable_split
 from rtr_copilot.rag.retrieval import RetrievalService
@@ -40,6 +41,22 @@ def test_normalization_embedding_typo_camelcase_and_vietnamese() -> None:
 
 def test_mixed_case_acronym_remains_one_normalized_token() -> None:
     assert normalize_query("RtR là gì?") == "rtr la gi"
+
+
+def test_attachment_scope_contract_is_exclusive_unique_and_bounded() -> None:
+    first, second = uuid.uuid4(), uuid.uuid4()
+    filters = SearchFilters(version_ids=[first, second])
+    assert filters.file_version_ids == (first, second)
+    assert filters.has_file_scope is True
+    assert SearchFilters(version_id=first).file_version_ids == (first,)
+    with pytest.raises(ValueError, match="mutually_exclusive"):
+        SearchFilters(source_key="rtr.specs", version_ids=[first])
+    with pytest.raises(ValueError, match="mutually_exclusive"):
+        SearchFilters(version_id=first, version_ids=[second])
+    with pytest.raises(ValueError, match="unique"):
+        SearchFilters(version_ids=[first, first])
+    with pytest.raises(ValueError, match="at most 5"):
+        SearchFilters(version_ids=[uuid.uuid4() for _ in range(6)])
 
 
 def test_existence_questions_request_a_useful_capability_summary() -> None:

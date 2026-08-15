@@ -119,6 +119,27 @@ export type FileScopeItem = {
   classification: string;
 };
 
+export type ArtifactKind =
+  | "document" | "report" | "form" | "presentation" | "spreadsheet";
+export type ArtifactPlanState =
+  | "not_applicable" | "clarification_required" | "no_approved_template" | "ready";
+export type ArtifactTemplateCandidate = {
+  templateId: string;
+  versionId: string;
+  displayName: string;
+  category: string;
+  format: "docx" | "xlsx" | "pptx" | "pdf";
+  documentClass: "internal" | "official" | "legal";
+  requiredUserFields: string[];
+};
+export type ArtifactPlan = {
+  state: ArtifactPlanState;
+  artifactKind: ArtifactKind | null;
+  candidates: ArtifactTemplateCandidate[];
+  confirmationRequired: true;
+  requestId: string;
+};
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const STATES = new Set<AnswerState>(["grounded", "honest_null", "failed"]);
 const COVERAGE_STATES = new Set<AnswerCoverageState>([
@@ -141,6 +162,15 @@ const PROGRESS_MARKER = /^C\d{1,3}$/;
 const PROGRESS_MILESTONES = new Set<AskProgressMilestone>([
   "intent_ready", "sources_ready", "evidence_ready", "draft_ready", "answer_ready",
 ]);
+const ARTIFACT_STATES = new Set<ArtifactPlanState>([
+  "not_applicable", "clarification_required", "no_approved_template", "ready",
+]);
+const ARTIFACT_KINDS = new Set<ArtifactKind>([
+  "document", "report", "form", "presentation", "spreadsheet",
+]);
+const ARTIFACT_FORMATS = new Set(["docx", "xlsx", "pptx", "pdf"] as const);
+const DOCUMENT_CLASSES = new Set(["internal", "official", "legal"] as const);
+const FIELD_PATH = /^[a-z][a-z0-9_.]{0,127}$/;
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -197,6 +227,53 @@ export function parseAskAnswer(value: unknown): AskAnswer {
     coverageState: state === "grounded"
       && COVERAGE_STATES.has(value.coverage_state as AnswerCoverageState)
       ? value.coverage_state as AnswerCoverageState : "not_assessed",
+    requestId: value.request_id as string,
+  };
+}
+
+export function parseArtifactPlan(value: unknown): ArtifactPlan {
+  if (!record(value) || !ARTIFACT_STATES.has(value.state as ArtifactPlanState)
+      || !(value.artifact_kind === null || value.artifact_kind === undefined
+        || ARTIFACT_KINDS.has(value.artifact_kind as ArtifactKind))
+      || !Array.isArray(value.candidates) || value.candidates.length > 3
+      || value.confirmation_required !== true || !text(value.request_id, 128)) {
+    throw new Error("invalid_artifact_plan");
+  }
+  const candidates = value.candidates.map((candidate): ArtifactTemplateCandidate => {
+    if (!record(candidate) || !uuid(candidate.template_id) || !uuid(candidate.version_id)
+        || !text(candidate.display_name, 200) || candidate.display_name.length === 0
+        || !text(candidate.category, 100) || candidate.category.length === 0
+        || !ARTIFACT_FORMATS.has(candidate.format as "docx")
+        || !DOCUMENT_CLASSES.has(candidate.document_class as "internal")
+        || !Array.isArray(candidate.required_user_fields)
+        || candidate.required_user_fields.length > 200
+        || !candidate.required_user_fields.every(field =>
+          typeof field === "string" && FIELD_PATH.test(field))) {
+      throw new Error("invalid_artifact_candidate");
+    }
+    return {
+      templateId: candidate.template_id as string,
+      versionId: candidate.version_id as string,
+      displayName: candidate.display_name as string,
+      category: candidate.category as string,
+      format: candidate.format as ArtifactTemplateCandidate["format"],
+      documentClass: candidate.document_class as ArtifactTemplateCandidate["documentClass"],
+      requiredUserFields: candidate.required_user_fields as string[],
+    };
+  });
+  const state = value.state as ArtifactPlanState;
+  const kind = ARTIFACT_KINDS.has(value.artifact_kind as ArtifactKind)
+    ? value.artifact_kind as ArtifactKind : null;
+  if ((state === "ready" && (kind === null || candidates.length === 0))
+      || (state !== "ready" && candidates.length > 0)
+      || (state === "not_applicable" && kind !== null)) {
+    throw new Error("invalid_artifact_plan");
+  }
+  return {
+    state,
+    artifactKind: kind,
+    candidates,
+    confirmationRequired: true,
     requestId: value.request_id as string,
   };
 }

@@ -82,6 +82,34 @@ class TemplatePage(StrictModel):
     next_cursor: str | None = None
 
 
+ArtifactKind = Literal["document", "report", "form", "presentation", "spreadsheet"]
+ArtifactPlanState = Literal[
+    "not_applicable", "clarification_required", "no_approved_template", "ready",
+]
+
+
+class ArtifactPlanRequest(StrictModel):
+    instruction: str = Field(min_length=1, max_length=4_096)
+
+
+class ArtifactTemplateCandidate(StrictModel):
+    template_id: uuid.UUID
+    version_id: uuid.UUID
+    display_name: str = Field(min_length=1, max_length=200)
+    category: str = Field(min_length=1, max_length=100)
+    format: Literal["docx", "xlsx", "pptx", "pdf"]
+    document_class: Literal["internal", "official", "legal"]
+    required_user_fields: list[str] = Field(default_factory=list, max_length=200)
+
+
+class ArtifactPlanResponse(StrictModel):
+    state: ArtifactPlanState
+    artifact_kind: ArtifactKind | None = None
+    candidates: list[ArtifactTemplateCandidate] = Field(default_factory=list, max_length=3)
+    confirmation_required: bool = True
+    request_id: str = Field(min_length=1, max_length=128)
+
+
 class TemplateVersionDetail(StrictModel):
     template_id: uuid.UUID
     version_id: uuid.UUID

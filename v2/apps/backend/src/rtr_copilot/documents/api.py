@@ -8,6 +8,8 @@ from rtr_copilot.auth.models import Subject
 from rtr_copilot.config import get_settings
 from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.documents.models import (
+    ArtifactPlanRequest,
+    ArtifactPlanResponse,
     BindRequest,
     BindResult,
     DecisionRequest,
@@ -85,6 +87,20 @@ async def list_templates(
     return await call(request, DocumentOSService().list_templates(
         actor, request_id=str(request.state.request_id), limit=limit,
         cursor=cursor,
+    ))
+
+
+@router.post("/artifact-plans", response_model=ArtifactPlanResponse)
+async def plan_artifact(
+    request: Request,
+    payload: ArtifactPlanRequest,
+    subject: Annotated[Subject | None, Depends(file_subject)],
+) -> Any:
+    actor = subject_or_error(request, subject)
+    if isinstance(actor, JSONResponse):
+        return actor
+    return await call(request, DocumentOSService().plan_artifact(
+        actor, payload, request_id=str(request.state.request_id),
     ))
 
 

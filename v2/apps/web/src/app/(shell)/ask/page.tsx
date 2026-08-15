@@ -11,10 +11,10 @@
  *   search probe); a false capability renders the option disabled with the
  *   denied state; research results render exactly as the backend labels
  *   them (zone_label/tier/grounding).
- * - Optional file scope: picker over the ACL-filtered Files catalog proxy;
- *   the ask API scopes retrieval by immutable `filters.version_id`, so the
- *   picked file's exact version is sent — evidence outside the
- *   caller's policy scope never appears either way.
+ * - Multimodal attachment scope (TIP-037): select or upload up to five files
+ *   through the governed Files pipeline; Ask receives only immutable
+ *   `filters.version_ids`, and backend retrieval re-authorizes the complete
+ *   selected set before loading any content.
  * - Honest-null is first-class: the recorded gap id (and its state when the
  *   caller may read the gap) with a Knowledge Ops link for curators.
  * - Conversations reopen via the TIP-007 conversation API; the history
@@ -27,6 +27,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import {
+  ArtifactPlan,
   AskAnswer,
   AskProgressEvent,
   AskProgressSource,
@@ -36,6 +37,7 @@ import {
   ConversationListPage,
   FileScopeItem,
   parseAskAnswer,
+  parseArtifactPlan,
   parseAskProgressEvent,
   parseAskState,
   parseConversation,
@@ -64,6 +66,46 @@ import {
 import {PageHeader} from "../../../shell/AppShell";
 
 type Identity = {user_id: string; email: string; display_name: string; roles: string[]};
+type UploadTarget = {target_id: string; label: string; classification: string};
+type ComposerUpload = {
+  upload_id: string;
+  job_id: string;
+  state: string;
+  progress: number;
+  retryable: boolean;
+  document_id?: string | null;
+  version_id?: string | null;
+  detected_mime?: string | null;
+  status_url?: string;
+  error?: {code?: string};
+};
+
+const MAX_ATTACHMENTS = 5;
+const ATTACHMENT_ACCEPT = ".png,.jpg,.jpeg,.webp,.tif,.tiff,.pdf,.docx,.xlsx,.pptx,.mp4,.webm,.mp3,.m4a,.aac,.wav,.ogg,.opus";
+
+function viewerKindFor(file: File, detectedMime?: string | null): FileScopeItem["viewerKind"] {
+  const mime = detectedMime || file.type;
+  if (mime.startsWith("image/")) return "image";
+  if (mime === "application/pdf") return "pdf";
+  if (mime.includes("wordprocessingml")) return "docx";
+  if (mime.includes("spreadsheetml")) return "xlsx";
+  if (mime.includes("presentationml")) return "pptx";
+  if (mime.startsWith("video/")) return "video";
+  if (mime.startsWith("audio/")) return "audio";
+  const extension = file.name.toLowerCase().split(".").pop();
+  if (extension && ["png", "jpg", "jpeg", "webp", "tif", "tiff"].includes(extension)) {
+    return "image";
+  }
+  if (extension === "pdf") return "pdf";
+  if (extension === "docx") return "docx";
+  if (extension === "xlsx") return "xlsx";
+  if (extension === "pptx") return "pptx";
+  if (extension === "mp4" || extension === "webm") return "video";
+  if (extension && ["mp3", "m4a", "aac", "wav", "ogg", "opus"].includes(extension)) {
+    return "audio";
+  }
+  return "unsupported";
+}
 
 export type AnswerClaim = {text: string; citations: string[]};
 export type AnswerBlock =
@@ -633,11 +675,16 @@ export default function AskPage() {
   const [question, setQuestion] = useState(initialPrefill);
   const [includeResearch, setIncludeResearch] = useState(false);
   const [researchAccess, setResearchAccess] = useState<Load<boolean>>(IDLE);
-  const [fileScope, setFileScope] = useState<FileScopeItem | null>(null);
+  const [fileScopes, setFileScopes] = useState<FileScopeItem[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [fileQuery, setFileQuery] = useState("");
   const [catalog, setCatalog] = useState<Load<FileScopeItem[]>>(IDLE);
+  const [uploadTargets, setUploadTargets] = useState<Load<UploadTarget[]>>(IDLE);
+  const [uploadTargetId, setUploadTargetId] = useState("");
+  const [composerUpload, setComposerUpload] = useState<ComposerUpload | null>(null);
+  const [attachmentError, setAttachmentError] = useState("");
   const [answer, setAnswer] = useState<Load<AskAnswer>>(IDLE);
+  const [artifactPlan, setArtifactPlan] = useState<Load<ArtifactPlan>>(IDLE);
   const [research, setResearch] = useState<Load<ResearchSearchEvidence>>(IDLE);
   const [gap, setGap] = useState<Load<GapDetail>>(IDLE);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -658,6 +705,8 @@ export default function AskPage() {
   const draftRevisionRef = useRef(0);
   const askSequenceRef = useRef(0);
   const askAbortRef = useRef<AbortController | null>(null);
+  const uploadAbortRef = useRef<AbortController | null>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
   const ignoredConversationRef = useRef<string | null>(null);
   const requestedConversation = parseAskState(searchParams).conversationId;
 
@@ -711,12 +760,34 @@ export default function AskPage() {
     setAsking(false);
   }, []);
 
+  const addFileScope = useCallback((item: FileScopeItem) => {
+    setFileScopes(current => {
+      if (current.some(existing => existing.versionId === item.versionId)) {
+        return current;
+      }
+      if (current.length >= MAX_ATTACHMENTS) {
+        setAttachmentError("attachment_limit");
+        return current;
+      }
+      setAttachmentError("");
+      return [...current, item];
+    });
+  }, []);
+
+  const removeFileScope = useCallback((versionId: string) => {
+    setFileScopes(current => current.filter(item => item.versionId !== versionId));
+    setAttachmentError("");
+  }, []);
+
   const loseAccess = useCallback(() => {
     cancelActiveAsk();
     setIdentity(null);
-    setResearchAccess(IDLE); setCatalog(IDLE); setAnswer(IDLE);
+    setResearchAccess(IDLE); setCatalog(IDLE); setAnswer(IDLE); setArtifactPlan(IDLE);
     setResearch(IDLE); setGap(IDLE); setConversation(IDLE);
-    setFileScope(null); setPickerOpen(false); setHistory(IDLE);
+    uploadAbortRef.current?.abort();
+    setFileScopes([]); setPickerOpen(false); setCatalog(IDLE);
+    setUploadTargets(IDLE); setComposerUpload(null); setAttachmentError("");
+    setHistory(IDLE);
     setConversationId(null); setActiveCitation(null);
     setAskProgress(EMPTY_PROGRESS);
     setLastQuestion(""); setRelatedOpen(false);
@@ -725,6 +796,7 @@ export default function AskPage() {
   useEffect(() => () => {
     askSequenceRef.current += 1;
     askAbortRef.current?.abort();
+    uploadAbortRef.current?.abort();
   }, []);
 
   useEffect(() => {
@@ -823,6 +895,40 @@ export default function AskPage() {
     return () => clearTimeout(timer);
   }, [identity, loadHistory]);
 
+  // Upload capability is metadata-only and comes from the same policy boundary
+  // as File Workspace. Absence simply leaves the existing-file picker usable.
+  useEffect(() => {
+    if (!identity) return;
+    let active = true;
+    const timer = setTimeout(() => {
+      setUploadTargets({state: "loading"});
+      fetch("/api/files/upload-targets", {cache: "no-store"})
+      .then(async response => {
+        if (!active) return;
+        if (response.status === 401) return loseAccess();
+        const body = await response.json().catch(() => null) as {
+          items?: UploadTarget[];
+        } | null;
+        if (response.status === 403) {
+          return setUploadTargets({state: "denied", error: parseTypedError(body)});
+        }
+        if (!response.ok || !Array.isArray(body?.items)) {
+          return setUploadTargets({state: "error", error: parseTypedError(body)});
+        }
+        const items = body.items.filter(item => typeof item.target_id === "string"
+          && typeof item.label === "string" && typeof item.classification === "string");
+        setUploadTargets({state: "ready", data: items});
+        setUploadTargetId(current => current || items[0]?.target_id || "");
+      })
+      .catch(() => {
+        if (active) setUploadTargets({state: "error", error: {
+          code: "contract_violation", message: "", requestId: "",
+        }});
+      });
+    }, 0);
+    return () => { active = false; clearTimeout(timer); };
+  }, [identity, loseAccess]);
+
   // File-scope picker over the ACL-filtered Files catalog proxy.
   useEffect(() => {
     if (!identity || !pickerOpen) return;
@@ -850,6 +956,95 @@ export default function AskPage() {
     }, 150);
     return () => { active = false; clearTimeout(delay); };
   }, [identity, pickerOpen, fileQuery, loseAccess]);
+
+  const pollComposerUpload = useCallback(async (
+    statusUrl: string,
+    file: File,
+    target: UploadTarget,
+  ) => {
+    uploadAbortRef.current?.abort();
+    const controller = new AbortController();
+    uploadAbortRef.current = controller;
+    let delay = 350;
+    while (!controller.signal.aborted) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      const response = await fetch(
+        statusUrl.replace("/api/v1/files/", "/api/files/"),
+        {cache: "no-store", signal: controller.signal},
+      );
+      if (response.status === 401 || response.status === 403) {
+        loseAccess();
+        return;
+      }
+      const current = await response.json().catch(() => null) as ComposerUpload | null;
+      if (!response.ok || !current) throw new Error("upload_status_unavailable");
+      setComposerUpload(current);
+      if (["accepted", "rejected", "failed"].includes(current.state)) {
+        uploadAbortRef.current = null;
+        if (current.state !== "accepted" || !current.version_id) {
+          setAttachmentError(current.error?.code || current.state);
+          return;
+        }
+        addFileScope({
+          documentId: current.document_id || current.version_id,
+          versionId: current.version_id,
+          logicalName: file.name,
+          displayFilename: file.name,
+          viewerKind: viewerKindFor(file, current.detected_mime),
+          classification: target.classification,
+        });
+        setComposerUpload(null);
+        setPickerOpen(false);
+        return;
+      }
+      delay = Math.min(Math.round(delay * 1.5), 3000);
+    }
+  }, [addFileScope, loseAccess]);
+
+  const startComposerUpload = useCallback(async (file?: File) => {
+    if (!file || uploadTargets.state !== "ready") return;
+    const target = uploadTargets.data.find(item => item.target_id === uploadTargetId)
+      ?? uploadTargets.data[0];
+    if (!target) return;
+    if (fileScopes.length >= MAX_ATTACHMENTS) {
+      setAttachmentError("attachment_limit");
+      return;
+    }
+    setAttachmentError("");
+    setComposerUpload({
+      upload_id: "pending", job_id: "pending", state: "receiving",
+      progress: 0, retryable: false,
+    });
+    try {
+      const response = await fetch("/api/files/uploads", {
+        method: "POST",
+        headers: {
+          "Content-Type": file.type || "application/octet-stream",
+          "X-Parent-Resource-ID": target.target_id,
+          "X-Logical-Name": file.name,
+          "X-Original-Filename": file.name,
+          ...(file.type ? {"X-Declared-MIME": file.type} : {}),
+        },
+        body: file,
+      });
+      if (response.status === 401 || response.status === 403) {
+        loseAccess();
+        return;
+      }
+      const accepted = await response.json().catch(() => null) as ComposerUpload | null;
+      if (!response.ok || !accepted?.status_url) {
+        throw new Error(accepted?.error?.code || "upload_failed");
+      }
+      setComposerUpload({...accepted, progress: 0, retryable: false});
+      await pollComposerUpload(accepted.status_url, file, target);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setComposerUpload(null);
+      setAttachmentError(error instanceof Error ? error.message : "upload_failed");
+    } finally {
+      if (attachmentInputRef.current) attachmentInputRef.current.value = "";
+    }
+  }, [fileScopes.length, loseAccess, pollComposerUpload, uploadTargetId, uploadTargets]);
 
   // Reopen a conversation (URL-restorable id; TIP-007 conversation API).
   useEffect(() => {
@@ -933,11 +1128,37 @@ export default function AskPage() {
     const clearedRevision = clearComposer();
     setAsking(true);
     setAnswer({state: "loading"});
+    setArtifactPlan({state: "loading"});
     setAskProgress(EMPTY_PROGRESS);
     setGap(IDLE);
     setConversation(IDLE);
     setActiveCitation(null);
     setResearch(includeResearch ? {state: "loading"} : IDLE);
+    // TIP-036: local deterministic planning runs beside Ask. It never blocks
+    // the grounded answer and it never renders or issues an artifact.
+    fetch("/api/document-os/artifact-plans", {
+      method: "POST", cache: "no-store",
+      headers: {"content-type": "application/json"},
+      signal: controller.signal,
+      body: JSON.stringify({instruction: trimmed}),
+    }).then(async response => {
+      if (!isCurrentAsk()) return;
+      if (response.status === 401) return loseAccess();
+      const body: unknown = await response.json().catch(() => null);
+      if (response.status === 403) {
+        return setArtifactPlan({state: "denied", error: parseTypedError(body)});
+      }
+      if (!response.ok) {
+        return setArtifactPlan({state: "error", error: parseTypedError(body)});
+      }
+      setArtifactPlan({state: "ready", data: parseArtifactPlan(body)});
+    }).catch(failure => {
+      if (!isCurrentAsk() || (failure instanceof DOMException
+        && failure.name === "AbortError")) return;
+      setArtifactPlan({state: "error", error: {
+        code: "contract_violation", message: "", requestId: "",
+      }});
+    });
     if (includeResearch) {
       fetch("/api/governance/research/search", {
         method: "POST", cache: "no-store",
@@ -972,7 +1193,9 @@ export default function AskPage() {
         body: JSON.stringify({
           question: trimmed,
           ...(conversationId ? {conversation_id: conversationId} : {}),
-          ...(fileScope ? {filters: {version_id: fileScope.versionId}} : {}),
+          ...(fileScopes.length ? {filters: {
+            version_ids: fileScopes.map(item => item.versionId),
+          }} : {}),
         }),
       });
       if (!isCurrentAsk()) return;
@@ -1034,7 +1257,7 @@ export default function AskPage() {
       }
     }
   }, [
-    question, includeResearch, conversationId, fileScope, clearComposer,
+    question, includeResearch, conversationId, fileScopes, clearComposer,
     loadGap, loadHistory, loseAccess, restoreComposer, router,
   ]);
 
@@ -1046,22 +1269,26 @@ export default function AskPage() {
 
   const reopenConversation = useCallback((id: string) => {
     cancelActiveAsk();
+    uploadAbortRef.current?.abort();
     ignoredConversationRef.current = null;
     router.push(`/ask?${askQuery(id)}`, {scroll: false});
     setConversationId(id);
-    setAnswer(IDLE); setResearch(IDLE); setGap(IDLE);
+    setAnswer(IDLE); setResearch(IDLE); setGap(IDLE); setArtifactPlan(IDLE);
     setActiveCitation(null);
     setAskProgress(EMPTY_PROGRESS);
-    setLastQuestion(""); setRelatedOpen(false); clearComposer();
+    setLastQuestion(""); setRelatedOpen(false); setFileScopes([]);
+    setComposerUpload(null); setAttachmentError(""); clearComposer();
   }, [cancelActiveAsk, clearComposer, router]);
 
   const newConversation = useCallback(() => {
     cancelActiveAsk();
+    uploadAbortRef.current?.abort();
     ignoredConversationRef.current = requestedConversation ?? conversationId;
     router.push("/ask", {scroll: false});
     setConversationId(null);
-    setAnswer(IDLE); setResearch(IDLE); setGap(IDLE);
+    setAnswer(IDLE); setResearch(IDLE); setGap(IDLE); setArtifactPlan(IDLE);
     setConversation(IDLE); setActiveCitation(null); clearComposer();
+    setFileScopes([]); setComposerUpload(null); setAttachmentError("");
     setAskProgress(EMPTY_PROGRESS);
     setLastQuestion(""); setRelatedOpen(false);
   }, [cancelActiveAsk, clearComposer, conversationId, requestedConversation, router]);
@@ -1129,8 +1356,8 @@ export default function AskPage() {
           </li>)}</ol>}
     </Surface>
   </details>;
-  const scopeLabel = fileScope
-    ? `${t("ask.chip.file")} · ${fileScope.displayFilename}`
+  const scopeLabel = fileScopes.length
+    ? `${t("ask.chip.file")} · ${fileScopes.length}`
     : includeResearch ? t("ask.chip.research") : t("ask.chip.sot");
   const answerState = current?.state ?? answer.state;
   const conversationLabel = conversationId ?? requestedConversation ?? "—";
@@ -1174,17 +1401,29 @@ export default function AskPage() {
           <div className="ask-chips">
             <span className="ask-chip">
               <span className="ask-chip-key">{t("ask.chip.scope")}</span>
-              {includeResearch ? t("ask.chip.research") : t("ask.chip.sot")}
+              {fileScopes.length
+                ? t("ask.attachment.context")
+                : includeResearch ? t("ask.chip.research") : t("ask.chip.sot")}
             </span>
-            {fileScope && <span className="ask-chip ask-chip-file">
-              <span className="ask-chip-key">{t("ask.chip.file")}</span>
-              <code>{fileScope.displayFilename}</code>
-              <button type="button" aria-label={t("ask.chip.remove")}
-                onClick={() => setFileScope(null)}>×</button>
-            </span>}
+            {fileScopes.map(item => <span className="ask-chip ask-chip-file"
+              key={item.versionId} data-kind={item.viewerKind}>
+              <span className="ask-chip-kind">{item.viewerKind}</span>
+              <code title={item.displayFilename}>{item.displayFilename}</code>
+              <button type="button"
+                aria-label={`${t("ask.chip.remove")} · ${item.displayFilename}`}
+                onClick={() => removeFileScope(item.versionId)}>×</button>
+            </span>)}
           </div>
+          <button type="button" className="ask-attach-trigger"
+            aria-expanded={pickerOpen} aria-controls="ask-attachment-picker"
+            onClick={() => {
+              formRef.current?.querySelector("details.ask-advanced")?.removeAttribute("open");
+              setPickerOpen(open => !open);
+            }}>
+            <span aria-hidden="true">＋</span>{t("ask.attachment.add")}
+          </button>
           <details className="ask-advanced">
-            <summary>{t("ask.advanced")}</summary>
+            <summary onClick={() => setPickerOpen(false)}>{t("ask.advanced")}</summary>
             <div className="ask-advanced-body">
           <fieldset className="ask-scope">
             <legend>{t("ask.scope.legend")}</legend>
@@ -1209,48 +1448,74 @@ export default function AskPage() {
             {researchAccess.state === "error" && <p role="note" className="surface-error">
               {t("ask.scope.researchUnavailable")} · {errorText(researchAccess.error)}</p>}
           </fieldset>
-          <fieldset className="ask-file-scope">
-            <legend>{t("ask.file.legend")}</legend>
-            {fileScope
-              ? <p className="ask-file-current">
-                  <code>{fileScope.displayFilename}</code>
-                  <span> · {fileScope.classification}</span>
-                  <button type="button" onClick={() => setFileScope(null)}>
-                    {t("ask.file.clear")}
-                  </button>
-                </p>
-              : <p className="ask-file-current">{t("ask.file.none")}</p>}
-            <button type="button" aria-expanded={pickerOpen}
-              onClick={() => setPickerOpen(open => !open)}>
-              {pickerOpen ? t("ask.file.close") : t("ask.file.pick")}
-            </button>
-            {pickerOpen && <div className="ask-file-picker">
-              <label>{t("ask.file.pick")}
-                <input value={fileQuery}
-                  onChange={event => setFileQuery(event.target.value)}/>
-              </label>
-              <Surface load={catalog} empty={t("ask.file.empty")}>{items =>
-                items.length === 0
-                  ? <p className="surface-empty">{t("ask.file.empty")}</p>
-                  : <ul className="ask-file-list">{items.map(item =>
-                      <li key={item.versionId}>
-                        <button type="button" onClick={() => {
-                          setFileScope(item);
-                          setPickerOpen(false);
-                        }}>
-                          <span className="file-kind">{item.viewerKind}</span>
-                          <strong>{item.displayFilename}</strong>
-                          <small>{item.classification}</small>
-                        </button>
-                      </li>)}
-                    </ul>}
-              </Surface>
-              <p className="form-note">{t("ask.file.note")}</p>
-            </div>}
-          </fieldset>
             </div>
           </details>
           </div>
+          {pickerOpen && <section id="ask-attachment-picker"
+            className="ask-attachment-popover" aria-label={t("ask.attachment.title")}>
+            <header>
+              <div><strong>{t("ask.attachment.title")}</strong>
+                <small>{fileScopes.length}/{MAX_ATTACHMENTS}</small></div>
+              <button type="button" aria-label={t("ask.file.close")}
+                onClick={() => setPickerOpen(false)}>×</button>
+            </header>
+            <label className="ask-attachment-search">
+              <span className="sr-only">{t("ask.file.pick")}</span>
+              <input value={fileQuery} placeholder={t("ask.attachment.search")}
+                onChange={event => setFileQuery(event.target.value)}/>
+            </label>
+            <Surface load={catalog} empty={t("ask.file.empty")}>{items =>
+              items.length === 0
+                ? <p className="surface-empty">{t("ask.file.empty")}</p>
+                : <ul className="ask-file-list">{items.map(item => {
+                    const selected = fileScopes.some(
+                      currentItem => currentItem.versionId === item.versionId,
+                    );
+                    return <li key={item.versionId}>
+                      <button type="button" aria-pressed={selected}
+                        disabled={!selected && fileScopes.length >= MAX_ATTACHMENTS}
+                        onClick={() => selected
+                          ? removeFileScope(item.versionId) : addFileScope(item)}>
+                        <span className="file-kind">{item.viewerKind}</span>
+                        <span><strong>{item.displayFilename}</strong>
+                          <small>{item.classification}</small></span>
+                        <span className="ask-file-check" aria-hidden="true">
+                          {selected ? "✓" : "+"}
+                        </span>
+                      </button>
+                    </li>;
+                  })}</ul>}
+            </Surface>
+            {uploadTargets.state === "ready" && uploadTargets.data.length > 0
+              && <div className="ask-attachment-upload">
+                <label>{t("files.upload.target")}
+                  <select value={uploadTargetId || uploadTargets.data[0].target_id}
+                    onChange={event => setUploadTargetId(event.target.value)}>
+                    {uploadTargets.data.map(item => <option key={item.target_id}
+                      value={item.target_id}>{item.label} · {item.classification}</option>)}
+                  </select>
+                </label>
+                <input ref={attachmentInputRef} className="sr-only" type="file"
+                  accept={ATTACHMENT_ACCEPT} onChange={event => {
+                    void startComposerUpload(event.target.files?.[0]);
+                  }}/>
+                <button type="button" disabled={Boolean(composerUpload)
+                    || fileScopes.length >= MAX_ATTACHMENTS}
+                  onClick={() => attachmentInputRef.current?.click()}>
+                  {t("ask.attachment.upload")}
+                </button>
+              </div>}
+            {composerUpload && <div className="ask-attachment-progress" role="status">
+              <progress max="100" value={composerUpload.progress}/>
+              <span>{t("ask.attachment.processing")} · {composerUpload.progress}%</span>
+            </div>}
+            {attachmentError && <p role="alert" className="ask-attachment-error">
+              {attachmentError === "attachment_limit"
+                ? t("ask.attachment.limit")
+                : `${t("ask.attachment.failed")} ${attachmentError}`}
+            </p>}
+            <p className="form-note">{t("ask.file.note")}</p>
+          </section>}
           <div className="action-row">
             {(conversationId || conversation.state !== "idle") && <button type="button"
               onClick={newConversation}>{t("ask.history.new")}</button>}
@@ -1357,6 +1622,42 @@ export default function AskPage() {
 
         {current && current.state === "failed" && <div role="alert" className="surface-error">
           {t("ask.answer.failed")} · {current.answer}</div>}
+
+        {artifactPlan.state === "ready"
+          && artifactPlan.data.state !== "not_applicable"
+          && <section className="artifact-proposal"
+            aria-label={t("ask.artifact.aria")}>
+            <header>
+              <p className="artifact-proposal-eyebrow">{t("ask.artifact.eyebrow")}</p>
+              <h2>{t(artifactPlan.data.state === "ready"
+                ? "ask.artifact.title" : artifactPlan.data.state === "clarification_required"
+                  ? "ask.artifact.clarifyTitle" : "ask.artifact.emptyTitle")}</h2>
+            </header>
+            {artifactPlan.data.state === "ready" && <>
+              <p>{t("ask.artifact.summary").replace(
+                "{count}", formatNumber(artifactPlan.data.candidates.length, locale),
+              )}</p>
+              <ol>{artifactPlan.data.candidates.map(candidate => <li
+                key={candidate.versionId}>
+                <div>
+                  <strong>{candidate.displayName}</strong>
+                  <small>{candidate.format.toUpperCase()} · {candidate.category} · {t(
+                    "ask.artifact.requiredFields",
+                  ).replace(
+                    "{count}", formatNumber(candidate.requiredUserFields.length, locale),
+                  )}</small>
+                </div>
+                <Link href={`/documents?template=${candidate.versionId}&from=ask`}>
+                  {t("ask.artifact.openDraft")}
+                </Link>
+              </li>)}</ol>
+            </>}
+            {artifactPlan.data.state === "clarification_required"
+              && <p>{t("ask.artifact.clarifyBody")}</p>}
+            {artifactPlan.data.state === "no_approved_template"
+              && <p>{t("ask.artifact.emptyBody")}</p>}
+            <p className="artifact-proposal-disclosure">{t("ask.artifact.disclosure")}</p>
+          </section>}
 
         {research.state === "loading"
           && <p role="status" className="surface-loading">{t("surface.loading")}</p>}

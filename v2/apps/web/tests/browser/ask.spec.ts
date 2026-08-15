@@ -124,6 +124,10 @@ async function mockAsk(page: Page, options: AskMockOptions = {}) {
   await page.route("**/api/status", route => route.fulfill({json: {
     ok: true, status: "ready",
   }}));
+  await page.route("**/api/document-os/artifact-plans", route => route.fulfill({json: {
+    state: "not_applicable", artifact_kind: null, candidates: [],
+    confirmation_required: true, request_id: "req-artifact-0",
+  }}));
   await page.route("**/api/governance/**", route => {
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/governance/research/scope") {
@@ -483,29 +487,54 @@ test("a denied scope capability disables the research option", async ({page}) =>
 test("denied file catalog renders the typed state inside the picker", async ({page}) => {
   await mockAsk(page, {catalog: "denied"});
   await page.goto("/ask");
-  await page.getByText("Phạm vi & tùy chọn", {exact: true}).click();
-  await page.getByRole("button", {name: "Chọn tệp được cấp quyền"}).click();
+  await page.getByRole("button", {name: "Đính kèm"}).click();
   await expect(page.getByText(/Bị từ chối theo chính sách/))
     .toContainText("policy_denied · req-files-403");
 });
 
-test("a picked file scopes the ask request to its immutable version id", async ({page}) => {
+test("an attachment scopes Ask to its immutable version-id set", async ({page}) => {
   const askBodies = await mockAsk(page);
   await page.goto("/ask");
-  await page.getByText("Phạm vi & tùy chọn", {exact: true}).click();
-  await page.getByRole("button", {name: "Chọn tệp được cấp quyền"}).click();
+  await page.getByRole("button", {name: "Đính kèm"}).click();
   await page.getByRole("button", {name: /company-spec\.pdf/}).click();
-  // The picked file is now echoed both in the fieldset and the composer chip.
+  // The selected immutable version is echoed as a removable context chip.
   await expect(page.getByText("company-spec.pdf").first()).toBeVisible();
   await submitQuestion(page, "Tệp này nói gì về bảo hành?");
   await expect(page.getByText("Robot RtR được bảo hành 24 tháng.")).toBeVisible();
   expect(askBodies).toHaveLength(1);
-  expect(askBodies[0].filters).toEqual({version_id: versionId});
-  // Clearing the scope removes the filter on the next ask.
-  await page.getByRole("button", {name: "Bỏ giới hạn tệp"}).click();
-  await submitQuestion(page, "Còn câu hỏi chung thì sao?");
-  await expect.poll(() => askBodies.length).toBe(2);
-  expect(askBodies[1].filters).toBeUndefined();
+  expect(askBodies[0].filters).toEqual({version_ids: [versionId]});
+});
+
+test("attachment picker remains bounded and touch-safe at 390px", async ({page}) => {
+  await page.setViewportSize({width: 390, height: 844});
+  await mockAsk(page);
+  await page.goto("/ask");
+  await page.getByRole("button", {name: "Đính kèm"}).click();
+  const picker = page.getByRole("region", {name: "Ngữ cảnh tệp"});
+  await expect(picker).toBeVisible();
+  const geometry = await picker.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    return {
+      left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+      viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,
+      pageOverflow: document.documentElement.scrollWidth
+        - document.documentElement.clientWidth,
+    };
+  });
+  expect(geometry.left).toBeGreaterThanOrEqual(0);
+  expect(geometry.right).toBeLessThanOrEqual(geometry.viewportWidth);
+  expect(geometry.top).toBeGreaterThanOrEqual(0);
+  expect(geometry.bottom).toBeLessThanOrEqual(geometry.viewportHeight);
+  expect(geometry.pageOverflow).toBeLessThanOrEqual(0);
+  const undersized = await picker.locator("button:visible, input:visible, select:visible")
+    .evaluateAll(elements => elements.flatMap(element => {
+      const rect = element.getBoundingClientRect();
+      return rect.height < 44
+        ? [{label: element.getAttribute("aria-label") || element.textContent,
+          height: rect.height}]
+        : [];
+    }));
+  expect(undersized).toEqual([]);
 });
 
 test("keyboard-only: ask → citation → rail → viewer at the exact locator", async ({page}) => {

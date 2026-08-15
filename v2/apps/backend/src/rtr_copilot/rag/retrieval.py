@@ -182,7 +182,7 @@ class RetrievalService:
             return None
         return dict(row), attributes
 
-    async def _search_file(
+    async def _search_files(
         self,
         subject: Subject,
         query: str,
@@ -196,7 +196,8 @@ class RetrievalService:
         ranking_query: str | None,
         support_queries: tuple[str, ...],
     ) -> list[RetrievalHit]:
-        assert filters.version_id is not None
+        version_ids = filters.file_version_ids
+        assert version_ids
         lexquery = lexical_query(normalized)
         if not lexquery:
             return []
@@ -205,38 +206,50 @@ class RetrievalService:
             entities=query_entities,
             intent=query_intent,
         )
+        classification_map = {
+            "public": "public_internal",
+            "internal": "internal",
+            "restricted": "restricted",
+            "classified": "highly_restricted",
+        }
+        authorized_by_id: dict[
+            uuid.UUID, tuple[dict[str, Any], str]
+        ] = {}
         async with self.uow.factory() as session:
-            authorized = await self._file_authorized(
-                session, subject, filters.version_id, request_id,
-            )
-            if authorized is None:
-                return []
-            version, attributes = authorized
-            effective_rank = {
-                "public": 0, "internal": 1, "restricted": 2, "classified": 3,
-            }[attributes.classification]
-            effective_classification = {
-                "public": "public_internal",
-                "internal": "internal",
-                "restricted": "restricted",
-                "classified": "highly_restricted",
-            }[attributes.classification]
             ceiling = (
                 CLASSIFICATION_RANK[filters.classification_ceiling]
                 if filters.classification_ceiling else 3
             )
-            if effective_rank > ceiling:
-                return []
+            # Attachment context is an explicit user-selected evidence set.
+            # Authorize the WHOLE immutable set before loading any content;
+            # silently answering from a subset after one attachment was
+            # revoked would misrepresent the question's evidence boundary.
+            for version_id in version_ids:
+                authorized = await self._file_authorized(
+                    session, subject, version_id, request_id,
+                )
+                if authorized is None:
+                    return []
+                version, attributes = authorized
+                effective_classification = classification_map[
+                    attributes.classification
+                ]
+                if CLASSIFICATION_RANK[effective_classification] > ceiling:
+                    return []
+                authorized_by_id[version_id] = (
+                    version,
+                    effective_classification,
+                )
             metadata_count = await session.scalar(text("""
                 SELECT count(*)
                 FROM file_chunks fc
                 JOIN renditions rd ON rd.rendition_id=fc.rendition_id
                 JOIN resources rr ON rr.resource_id=rd.rendition_id
-                WHERE fc.document_version_id=:version_id
+                WHERE fc.document_version_id=ANY(CAST(:version_ids AS uuid[]))
                   AND fc.lifecycle='active' AND rd.status='ready'
                   AND rr.lifecycle_state='active'
             """), {
-                "version_id": filters.version_id,
+                "version_ids": list(version_ids),
             })
         self.trace.metadata_rows = int(metadata_count or 0)
         self.trace.policy_allowed = self.trace.metadata_rows
@@ -264,10 +277,11 @@ class RetrievalService:
                 FROM file_chunks fc
                 JOIN renditions rd ON rd.rendition_id=fc.rendition_id
                 JOIN resources rr ON rr.resource_id=rd.rendition_id
-                WHERE fc.document_version_id=:version_id
+                WHERE fc.document_version_id=ANY(CAST(:version_ids AS uuid[]))
                   AND fc.lifecycle='active'
                   AND rd.status='ready' AND rr.lifecycle_state='active'
-                ORDER BY lexical_score DESC,vector_score DESC,fc.chunk_key
+                ORDER BY lexical_score DESC,vector_score DESC,
+                  fc.document_version_id,fc.chunk_key
                 LIMIT :candidate_limit
             """), {
                 "lexquery": lexquery,
@@ -275,7 +289,10 @@ class RetrievalService:
                     json.dumps(query_vector) if query_vector is not None
                     else None
                 ),
-                "version_id": filters.version_id,
+                "version_ids": list(version_ids),
+                # One request keeps one bounded candidate budget regardless
+                # of how many versions are attached. This prevents a five-file
+                # question from multiplying latency or memory pressure.
                 "candidate_limit": self.settings.rag_candidate_limit,
             })).mappings().all()
         content = [dict(row) for row in rows]
@@ -288,6 +305,8 @@ class RetrievalService:
         )}
         ranked: list[tuple[float, dict[str, Any]]] = []
         for row in content:
+            version_id = row["document_version_id"]
+            version, effective_classification = authorized_by_id[version_id]
             if (
                 float(row["lexical_score"]) <= 0
                 and float(row["vector_score"])
@@ -327,6 +346,8 @@ class RetrievalService:
         output: list[RetrievalHit] = []
         used_bytes = 0
         for fusion, row in ranked:
+            version_id = row["document_version_id"]
+            version, effective_classification = authorized_by_id[version_id]
             payload = str(row["display_text"])
             used_bytes += len(payload.encode())
             if used_bytes > self.settings.rag_evidence_max_bytes:
@@ -343,11 +364,11 @@ class RetrievalService:
                 citation=Citation(
                     zone_label="private", marker=f"C{len(output) + 1}",
                     chunk_id=chunk_id, record_key=str(version["logical_name"]),
-                    document_version_id=filters.version_id,
+                    document_version_id=version_id,
                     evidence_key=str(row["rendition_kind"]),
                     record_checksum=str(row["source_sha256"]),
                     evidence_checksum=str(row["rendition_sha256"]),
-                    source_key=f"file:{filters.version_id}", source_revision=1,
+                    source_key=f"file:{version_id}", source_revision=1,
                     provenance_level="approved_internal",
                     verification_state="approved", freshness_state="current",
                     source_label=str(version["original_filename"]),
@@ -920,8 +941,8 @@ class RetrievalService:
         lexquery = lexical_query(normalized)
         if not lexquery:
             return []
-        if filters.version_id is not None:
-            return await self._search_file(
+        if filters.has_file_scope:
+            return await self._search_files(
                 subject,
                 query,
                 normalized,
@@ -938,15 +959,15 @@ class RetrievalService:
             entities=query_entities,
             intent=query_intent,
             definition_record_keys=(
-                () if filters.version_id is not None
+                () if filters.has_file_scope
                 else query_definition_record_keys
             ),
             profile_record_keys=(
-                () if filters.version_id is not None
+                () if filters.has_file_scope
                 else query_profile_record_keys
             ),
             collection_record_keys=(
-                () if filters.version_id is not None
+                () if filters.has_file_scope
                 else query_collection_record_keys
             ),
         )

@@ -21,6 +21,9 @@ from rtr_copilot.config import get_settings
 from rtr_copilot.db.uow import UnitOfWork
 from rtr_copilot.documents.models import (
     ApprovalEvent,
+    ArtifactPlanRequest,
+    ArtifactPlanResponse,
+    ArtifactTemplateCandidate,
     BindingDefinition,
     BindRequest,
     BindResult,
@@ -41,6 +44,7 @@ from rtr_copilot.documents.models import (
     TemplateVersionDetail,
     TemplateVersionSummary,
 )
+from rtr_copilot.documents.planner import interpret_artifact_intent, rank_template_items
 from rtr_copilot.documents.renderers import MIME_BY_FORMAT, canonical_json, render
 from rtr_copilot.documents.validation import validate_schema, validate_template
 from rtr_copilot.ingestion.api import _effective_principal_ids
@@ -562,6 +566,55 @@ class DocumentOSService:
                 self.settings.sot_signing_secret.get_secret_value(),
             )
         return TemplatePage(items=items, next_cursor=next_cursor)
+
+    async def plan_artifact(
+        self,
+        subject: Subject,
+        payload: ArtifactPlanRequest,
+        *,
+        request_id: str,
+    ) -> ArtifactPlanResponse:
+        intent = interpret_artifact_intent(payload.instruction)
+        if intent.state != "ready":
+            return ArtifactPlanResponse(
+                state=intent.state,
+                artifact_kind=intent.kind,
+                request_id=request_id,
+            )
+
+        visible = await self.list_templates(
+            subject, request_id=request_id, limit=50,
+        )
+        candidates: list[ArtifactTemplateCandidate] = []
+        for item in rank_template_items(intent, visible.items):
+            # Listing proves view access. Planning is stricter: the proposed
+            # current version must independently pass the render policy gate.
+            row = await self._template_row(
+                subject, item.version_id, action="render", request_id=request_id,
+            )
+            if row is None or row["lifecycle"] != "approved" or row["status"] != "approved":
+                continue
+            schema = TemplateSchema.model_validate(row["field_schema"])
+            candidates.append(ArtifactTemplateCandidate.model_validate({
+                "template_id": item.template_id,
+                "version_id": item.version_id,
+                "display_name": item.display_name,
+                "category": item.category,
+                "format": item.format,
+                "document_class": item.document_class,
+                "required_user_fields": sorted(
+                    binding.field_path for binding in schema.bindings
+                    if binding.source == "user" and binding.required
+                ),
+            }))
+            if len(candidates) == 3:
+                break
+        return ArtifactPlanResponse(
+            state="ready" if candidates else "no_approved_template",
+            artifact_kind=intent.kind,
+            candidates=candidates,
+            request_id=request_id,
+        )
 
     async def detail(
         self,

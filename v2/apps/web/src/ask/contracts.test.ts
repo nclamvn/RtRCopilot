@@ -1,6 +1,7 @@
 import {describe, expect, test} from "vitest";
 import {
   askQuery,
+  parseArtifactPlan,
   parseAskAnswer,
   parseAskProgressEvent,
   parseAskState,
@@ -132,6 +133,49 @@ describe("ask answer contract", () => {
     {patch: {citations: "none"}},
   ])("rejects malformed response $patch", ({patch}) => {
     expect(() => parseAskAnswer({...grounded, ...patch})).toThrow();
+  });
+});
+
+describe("artifact plan contract", () => {
+  const candidate = {
+    template_id: "66666666-6666-4666-8666-666666666666",
+    version_id: "77777777-7777-4777-8777-777777777777",
+    display_name: "Sales brief",
+    category: "sales",
+    format: "docx",
+    document_class: "internal",
+    required_user_fields: ["customer_name", "meeting.date"],
+  };
+
+  test("accepts a bounded, confirmation-only governed proposal", () => {
+    const parsed = parseArtifactPlan({
+      state: "ready", artifact_kind: "report", candidates: [candidate],
+      confirmation_required: true, request_id: "req-artifact",
+    });
+    expect(parsed.candidates[0].versionId).toBe(candidate.version_id);
+    expect(parsed.candidates[0].requiredUserFields).toEqual([
+      "customer_name", "meeting.date",
+    ]);
+  });
+
+  test("accepts an ordinary question as not applicable", () => {
+    expect(parseArtifactPlan({
+      state: "not_applicable", artifact_kind: null, candidates: [],
+      confirmation_required: true, request_id: "req-artifact",
+    }).state).toBe("not_applicable");
+  });
+
+  test.each([
+    {confirmation_required: false},
+    {state: "ready", candidates: []},
+    {state: "not_applicable", artifact_kind: "report"},
+    {candidates: [{...candidate, required_user_fields: ["Bad Field"]}]},
+    {candidates: [candidate, candidate, candidate, candidate]},
+  ])("rejects unsafe or malformed proposal $patch", patch => {
+    expect(() => parseArtifactPlan({
+      state: "ready", artifact_kind: "report", candidates: [candidate],
+      confirmation_required: true, request_id: "req-artifact", ...patch,
+    })).toThrow();
   });
 });
 

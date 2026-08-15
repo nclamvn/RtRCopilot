@@ -18,6 +18,11 @@ async function mockShell(page: Page, authenticated = true, roles = ["admin"]) {
   await page.route("**/api/ask/conversations**", route => route.fulfill({json: {
     items: [], next_cursor: null,
   }}));
+  // TIP-037 composer capability probe. Shell-only tests must not fall through
+  // to the live Files API, where the mock identity is intentionally unknown.
+  await page.route("**/api/files/upload-targets", route => route.fulfill({json: {
+    items: [],
+  }}));
   // The Ask page treats an authorization failure from this capability probe
   // as session loss. Keep shell-only tests hermetic instead of allowing an
   // unmocked request to whichever API happens to be running locally.
