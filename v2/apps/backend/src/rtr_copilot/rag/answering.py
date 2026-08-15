@@ -974,6 +974,97 @@ def stabilize_grounded_answer(
     return candidate
 
 
+def recover_record_bound_extractive_answer(
+    output: ProviderAnswer,
+    *,
+    question: str,
+    query_plan: QueryPlan,
+    evidence: list[ProviderEvidence],
+    ontology: EnterpriseOntology,
+    max_chars: int,
+    presentation_labels: tuple[str, ...] = (),
+) -> ProviderAnswer | None:
+    """Recover one grounded entity answer from its selected governed record.
+
+    This lane is deliberately narrower than a general extractive fallback. It
+    runs only after a provider draft has passed grounding and failed final
+    answer relevance. The provider must already have selected the marker, and
+    that marker must point to an approved/current ontology-bound record for the
+    single answer subject. Exact evidence replaces the unusable draft; no model
+    prose or unselected context is carried forward.
+    """
+    targets = tuple(dict.fromkeys(query_plan.answer_entities))
+    if len(targets) != 1 or query_plan.completeness == "exhaustive":
+        return None
+    target = targets[0]
+    bound_record_keys = _answer_entity_record_keys(
+        query_plan,
+        ontology,
+        target,
+    )
+    if not bound_record_keys:
+        return None
+    selected_markers = set(output.used_markers) & set(MARKER_RE.findall(output.answer))
+    if not selected_markers:
+        return None
+    allowed_entities = {
+        normalize_query(entity)
+        for entity in (*query_plan.entities, *targets)
+    }
+    for item in evidence:
+        if (
+            item.marker not in selected_markers
+            or item.record_key not in bound_record_keys
+            or item.verification_state not in {"verified", "approved"}
+            or item.freshness_state != "current"
+            or not item.text.strip()
+        ):
+            continue
+        evidence_entities = {
+            normalize_query(entity)
+            for entity in resolve_entities(item.text, ontology)
+        }
+        if evidence_entities - allowed_entities:
+            continue
+        units = tuple(
+            MARKER_RE.sub("", unit).strip()
+            for unit in factual_units(item.text)
+            if MARKER_RE.sub("", unit).strip()
+        )
+        if not units:
+            continue
+        rendered = " ".join(f"{unit} [{item.marker}]" for unit in units)
+        candidate = output.model_copy(update={
+            "answer": f"{target}\n{rendered}".strip(),
+            "used_markers": [item.marker],
+            "follow_ups": [],
+            "review_state": "not_reviewed",
+        })
+        if len(candidate.answer) > max_chars:
+            continue
+        try:
+            verify_grounding(
+                candidate,
+                evidence,
+                max_chars=max_chars,
+                presentation_labels=presentation_labels,
+            )
+        except GroundingError:
+            continue
+        if answer_relevant(
+            question,
+            candidate.answer,
+            entities=query_plan.answer_entities,
+            intent=query_plan.intent,
+            support_terms=tuple(dict.fromkeys((
+                *query_plan.expansions,
+                *query_plan.retrieval_queries,
+            ))),
+        ):
+            return candidate
+    return None
+
+
 class AnswerService:
     def __init__(
         self,
@@ -1490,7 +1581,9 @@ class AnswerService:
                     "model": self.provider.model,
                     "latency_ms": latency,
                     "grounding_repair_reason": (
-                        grounding_error if self.provider.calls > 1 else None
+                        grounding_error
+                        if grounding_error != "grounding_failed"
+                        else None
                     ),
                     "coverage_state": coverage_state,
                     "provider_usage": provider_usage.audit_dict(),
@@ -1807,7 +1900,19 @@ class AnswerService:
                             *query_plan.retrieval_queries,
                         ))),
                     ):
-                        raise GroundingError("answer_irrelevant")
+                        recovered = recover_record_bound_extractive_answer(
+                            candidate,
+                            question=user_question or question,
+                            query_plan=query_plan,
+                            evidence=evidence,
+                            ontology=self.ontology,
+                            max_chars=self.settings.rag_answer_max_chars,
+                            presentation_labels=presentation_labels,
+                        )
+                        if recovered is None:
+                            raise GroundingError("answer_irrelevant")
+                        candidate = recovered
+                        grounding_error = "answer_irrelevant_extractive_recovery"
                     if (
                         query_plan.completeness == "exhaustive"
                         # TIP-029.1: certification needs a governed boundary.

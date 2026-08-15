@@ -6,6 +6,7 @@ facts (l3_facts) had ungrounded leading sentences and honest-nulled. The provide
 now cites every sentence.
 """
 import asyncio
+from dataclasses import replace
 
 import pytest
 
@@ -23,6 +24,7 @@ from rtr_copilot.rag.answering import (
     profile_facets_covered,
     profile_material_terms_covered,
     prune_uncited_units,
+    recover_record_bound_extractive_answer,
     stabilize_grounded_answer,
     verify_grounding,
     verify_with_semantic_review,
@@ -444,6 +446,193 @@ def test_entity_anchor_still_rejects_unplanned_foreign_entity() -> None:
         entities=plan.answer_entities,
         intent=plan.intent,
     )
+
+
+def test_record_bound_recovery_replaces_foreign_provider_shape_with_exact_evidence(
+) -> None:
+    """A grounded but off-subject draft can recover without another LLM call."""
+    ontology = load_ontology()
+    question = "CRM bên mình làm gì?"
+    plan = asyncio.run(plan_query(question, OfflineRewriter(), registry=ontology))
+    evidence = [ProviderEvidence(
+        marker="C1",
+        text=(
+            "RtR CRM là nền tảng nội bộ quản lý contacts, companies và "
+            "pipeline bán hàng."
+        ),
+        record_key="L3F.4.001",
+        provenance_level="claim",
+        verification_state="approved",
+        freshness_state="current",
+    )]
+    irrelevant = ProviderAnswer(
+        answer="HERA có pipeline nhiệm vụ. [C1]",
+        used_markers=["C1"],
+    )
+    labels = approved_presentation_labels(plan, ontology)
+
+    verify_grounding(
+        irrelevant,
+        evidence,
+        max_chars=12000,
+        presentation_labels=labels,
+    )
+    assert not answer_relevant(
+        question,
+        irrelevant.answer,
+        entities=plan.answer_entities,
+        intent=plan.intent,
+    )
+
+    recovered = recover_record_bound_extractive_answer(
+        irrelevant,
+        question=question,
+        query_plan=plan,
+        evidence=evidence,
+        ontology=ontology,
+        max_chars=12000,
+        presentation_labels=labels,
+    )
+
+    assert recovered is not None
+    assert recovered.answer.startswith("RtR CRM\n")
+    assert "pipeline bán hàng. [C1]" in recovered.answer
+    assert "HERA" not in recovered.answer
+    assert recovered.used_markers == ["C1"]
+    assert recovered.follow_ups == []
+    verify_grounding(
+        recovered,
+        evidence,
+        max_chars=12000,
+        presentation_labels=labels,
+    )
+
+
+@pytest.mark.parametrize(
+    ("record_key", "text", "verification_state", "freshness_state"),
+    [
+        ("UNBOUND.001", "RtR CRM quản lý pipeline.", "approved", "current"),
+        ("L3F.4.001", "HERA hỗ trợ pipeline nhiệm vụ.", "approved", "current"),
+        ("L3F.4.001", "RtR CRM quản lý pipeline.", "approved", "stale"),
+        ("L3F.4.001", "RtR CRM quản lý pipeline.", "pending", "current"),
+    ],
+)
+def test_record_bound_recovery_rejects_unsafe_evidence(
+    record_key: str,
+    text: str,
+    verification_state: str,
+    freshness_state: str,
+) -> None:
+    ontology = load_ontology()
+    plan = asyncio.run(plan_query(
+        "CRM bên mình làm gì?",
+        OfflineRewriter(),
+        registry=ontology,
+    ))
+    evidence = [ProviderEvidence(
+        marker="C1",
+        text=text,
+        record_key=record_key,
+        provenance_level="claim",
+        verification_state=verification_state,
+        freshness_state=freshness_state,
+    )]
+    output = ProviderAnswer(
+        answer="HERA xử lý pipeline. [C1]",
+        used_markers=["C1"],
+    )
+
+    assert recover_record_bound_extractive_answer(
+        output,
+        question="CRM bên mình làm gì?",
+        query_plan=plan,
+        evidence=evidence,
+        ontology=ontology,
+        max_chars=12000,
+        presentation_labels=approved_presentation_labels(plan, ontology),
+    ) is None
+
+
+def test_record_bound_recovery_uses_only_provider_selected_marker() -> None:
+    ontology = load_ontology()
+    question = "CRM bên mình làm gì?"
+    plan = asyncio.run(plan_query(question, OfflineRewriter(), registry=ontology))
+    evidence = [
+        ProviderEvidence(
+            marker="C1",
+            text="RtR CRM quản lý pipeline marker-one.",
+            record_key="L3F.4.001",
+            provenance_level="claim",
+            verification_state="approved",
+            freshness_state="current",
+        ),
+        ProviderEvidence(
+            marker="C2",
+            text="RtR CRM quản lý pipeline marker-two.",
+            record_key="L3F.4.001",
+            provenance_level="claim",
+            verification_state="approved",
+            freshness_state="current",
+        ),
+    ]
+    output = ProviderAnswer(
+        answer="HERA có pipeline nhiệm vụ. [C2]",
+        used_markers=["C2"],
+    )
+
+    recovered = recover_record_bound_extractive_answer(
+        output,
+        question=question,
+        query_plan=plan,
+        evidence=evidence,
+        ontology=ontology,
+        max_chars=12000,
+        presentation_labels=approved_presentation_labels(plan, ontology),
+    )
+
+    assert recovered is not None
+    assert "marker-two" in recovered.answer
+    assert "marker-one" not in recovered.answer
+    assert recovered.used_markers == ["C2"]
+
+
+def test_record_bound_recovery_rejects_multi_subject_and_exhaustive_contracts(
+) -> None:
+    ontology = load_ontology()
+    crm_plan = asyncio.run(plan_query(
+        "CRM bên mình làm gì?",
+        OfflineRewriter(),
+        registry=ontology,
+    ))
+    comparison_plan = asyncio.run(plan_query(
+        "so sánh HERA và VEGA",
+        OfflineRewriter(),
+        registry=ontology,
+    ))
+    evidence = [ProviderEvidence(
+        marker="C1",
+        text="RtR CRM quản lý pipeline.",
+        record_key="L3F.4.001",
+        provenance_level="claim",
+        verification_state="approved",
+        freshness_state="current",
+    )]
+    output = ProviderAnswer(
+        answer="HERA xử lý pipeline. [C1]",
+        used_markers=["C1"],
+    )
+    labels = approved_presentation_labels(crm_plan, ontology)
+
+    for plan in (comparison_plan, replace(crm_plan, completeness="exhaustive")):
+        assert recover_record_bound_extractive_answer(
+            output,
+            question="CRM bên mình làm gì?",
+            query_plan=plan,
+            evidence=evidence,
+            ontology=ontology,
+            max_chars=12000,
+            presentation_labels=labels,
+        ) is None
 
 
 def test_entity_anchor_fails_closed_for_unbound_evidence() -> None:

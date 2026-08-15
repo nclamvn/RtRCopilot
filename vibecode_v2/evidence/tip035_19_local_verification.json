@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "tip_id": "TIP-035.19",
+  "captured_at": "2026-08-15T02:58:21Z",
+  "base_candidate_sha": "2eedb195f2551320f4f37947df6cef9b69da178d",
+  "source_state": "uncommitted_local_remediation",
+  "source_patch_sha256": "572c43328b22fae8ffa178fde360f0e57da46ee8fa7a79b57336cc73ea22faf0",
+  "external_processing": {
+    "performed": false,
+    "provider_calls": 0,
+    "campaign_retried": false
+  },
+  "requirements": {
+    "implemented": 10,
+    "total": 10,
+    "coverage": 1.0
+  },
+  "scenarios": {
+    "passed": 7,
+    "failed": 0,
+    "untestable": 0
+  },
+  "gates": {
+    "focused_grounding": {
+      "passed": 12,
+      "failed": 0,
+      "deselected": 28
+    },
+    "backend": {
+      "passed": 701,
+      "failed": 0,
+      "conditional_skip": 131
+    },
+    "data_integration": {
+      "passed": 72,
+      "failed": 0,
+      "audit_assertion": "answer_irrelevant_extractive_recovery"
+    },
+    "migration_and_recovery": {
+      "status": "pass",
+      "migration_revisions": 12,
+      "revision_fixtures": 12,
+      "failing_ddl_rollback": 1,
+      "tip009_nonempty_restore": 1,
+      "runtime_denials": 27
+    },
+    "ruff": {
+      "status": "pass",
+      "errors": 0
+    },
+    "mypy": {
+      "status": "pass",
+      "source_files": 145,
+      "issues": 0
+    },
+    "diff_check": {
+      "status": "pass"
+    }
+  },
+  "runtime_mutated": false,
+  "corpus_mutated": false,
+  "ontology_mutated": false,
+  "release_state": "local_verified_commit_rebuild_recertification_pending"
+}

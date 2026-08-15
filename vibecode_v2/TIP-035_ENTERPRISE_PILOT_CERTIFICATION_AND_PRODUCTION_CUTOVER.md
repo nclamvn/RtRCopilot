@@ -201,3 +201,19 @@ manifest while preserving object-level checksums, sizes, ownership and restore
 metadata. The same 657-object archive then restored in 49 seconds with all row,
 checksum, audit and runtime-control gates green. This source change requires a
 new exact candidate before remaining release evidence can be accepted.
+
+## 16. Conversation anchor amendment — TIP-035.19
+
+The build-bound TIP-034 capture on candidate `2eedb195f255` again isolated
+`CHAT-004-T1`: the provider selected an approved CRM record but rendered a
+grounded foreign entity shape, after which final relevance failed. TIP-035.19
+adds a generic, record-bound extractive recovery lane for exactly one planned
+subject. It may use only provider-selected evidence that is current,
+approved/verified and ontology-bound, and it emits verbatim cited evidence
+under the governed canonical label. Unsafe, exhaustive and multi-subject cases
+remain fail-closed.
+
+The remediation is locally verified with 701 backend and 72 integration tests,
+including an append-only audit assertion, and made zero external calls. It is
+not build-bound until committed and rebuilt; all subsequent certification must
+name the new exact candidate.
