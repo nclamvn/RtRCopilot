@@ -1040,6 +1040,19 @@ def write_package(
     package_root.mkdir(parents=True, exist_ok=True)
 
     record_rows = [dict(item.record) for item in ready]
+    if revision > 1:
+        # Re-publish of a changed kernel: each record version must be strictly
+        # monotonic and supersede its own predecessor so the active v(N-1)
+        # closes atomically at publish (SOT gate: version_ordinal_not_monotonic
+        # / validity_overlap_unresolved). Brand-new records simply start at
+        # ordinal N; their supersedes pointer resolves to NULL server-side.
+        for row in record_rows:
+            row["version_ordinal"] = revision
+            row["supersedes_record_key"] = row["record_key"]
+            row["content_sha256"] = "0" * 64
+            row["content_sha256"] = record_content_sha(
+                PackageRecord.model_validate(row),
+            )
     evidence_rows = [dict(item.evidence) for item in ready if item.evidence is not None]
     source_hashes: dict[str, dict[str, str]] = {}
     for item in ready:
@@ -1122,6 +1135,7 @@ def emit_packages(
     out_root: Path,
     *,
     signing_secret: str | None = None,
+    revision: int = 1,
 ) -> dict[str, str]:
     """Emit one package per source key that has ready records.  Deterministic
     ordering.  Returns {source_key: staging_name}.
@@ -1137,7 +1151,8 @@ def emit_packages(
     for source_key in sorted(by_key):
         rows = sorted(by_key[source_key], key=lambda item: item.fact_id)
         staged[source_key] = write_package(
-            out_root, source_key, rows, signing_secret=signing_secret,
+            out_root, source_key, rows, revision=revision,
+            signing_secret=signing_secret,
         )
     return staged
 

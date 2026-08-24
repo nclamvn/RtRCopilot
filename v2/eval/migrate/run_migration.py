@@ -178,10 +178,13 @@ def build_report(
     *,
     overlay: CurationOverlay | None = None,
     signing_secret: str | None = None,
+    revision: int = 1,
 ) -> dict[str, Any]:
     registry = load_registry(kernel_root)
     result = convert_registry(registry, overlay=overlay)
-    staged = emit_packages(result, out_root, signing_secret=signing_secret)
+    staged = emit_packages(
+        result, out_root, signing_secret=signing_secret, revision=revision,
+    )
     summary = summarize(result)
     dry_run = run_dry_run(result, staged, out_root)
     return {
@@ -318,6 +321,17 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "ready set contains exactly this many records"
         ),
     )
+    parser.add_argument(
+        "--revision",
+        type=int,
+        default=1,
+        help=(
+            "SOT package revision to emit (default 1 for the initial migration; "
+            "re-publishing after a kernel change requires the next revision — "
+            "the publish gate enforces monotonicity and rejects checksum "
+            "conflicts on an existing revision)"
+        ),
+    )
     return parser
 
 
@@ -340,6 +354,7 @@ def main(argv: list[str] | None = None) -> int:
             return 2
     report = build_report(
         args.kernel_root, args.out, overlay=overlay, signing_secret=signing_secret,
+        revision=args.revision,
     )
     if emit:
         report["mode"] = "EMIT_SIGNED_PACKAGES"

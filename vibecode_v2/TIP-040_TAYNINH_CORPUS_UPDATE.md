@@ -1,6 +1,18 @@
 # TIP-040 · Cập nhật tri thức Tây Ninh vào RtR Copilot
 
-**Status:** PLANNED · Phase 1 cần xong TRƯỚC 25/8 (đoàn đi hiện trường)
+**Status:** Phase 1 + 2 DONE (24/08 · kernel f0ab59a · onboard rev3 activated 6/6 · reindex active, l3_facts 125 chunk, specs 11 chunk) · Phase 3 eval cases PENDING · Phase 4 chờ sau chuyến bay 29/8
+
+## Completion Phase 1+2 (24/08/2026)
+
+- Kernel commit `f0ab59a`: 4 file registry, 159 dòng thêm; backup `.bak-2026-08-24-tip040` cạnh từng file; nguồn copy vào `source_canonical/vanban_noibo/` + hash ghi sổ.
+- Harness migrate thêm cờ `--revision` (`run_migration.py` + `kernel_adapter.py`) vì tooling gốc ghim revision=1 cho migration lần đầu; ordinal record đi theo revision.
+- Onboard: dry-run 6/6 `planned_valid` → activate `revision 3`, `activated_count=6`, ledger `/tmp/tip040/ledger.json`. Revision 2 bị bỏ (tàn dư staged của lần apply fail đầu — vô hại, lifecycle staged).
+- Reindex: 6 generation mới ACTIVE rev3. `rtr.l3_facts` 125 chunk (+9), `rtr.specs` 11 chunk (+1).
+
+### Hai món nợ vận hành lộ ra (follow-up)
+
+1. **TIP-040.1 · Worker poison-pill fix:** `ReindexService` bốc hàng outbox cũ nhất; hàng mồ côi (không khớp revision active) ném `ReindexError` nhưng KHÔNG được đánh dấu → chặn đầu hàng đợi vĩnh viễn. Đã gặp và vá thủ công 2 lần bằng SQL (đánh dấu dispatched các hàng test/mồ côi). Bản vá code: mark-dispatched + skip hàng `outbox_not_current_active_revision`, đúng cơ chế đã vá cho `reembed_corpus` hồi TIP-014RE.
+2. **TIP-040.2 · Dev DB hygiene:** DB dev còn tàn dư nguồn integration-test 05/08 (outbox + generation active + record các nguồn `gapflip./eval./parity./bench.` v.v. — trước khi harness có clone DB cô lập). Dọn một thể trong gói hygiene riêng.
 **Date:** 24/08/2026
 **Nguồn mới:** `KnowledgeBase/TayNinh_UAV_2608/` (Bộ ghi hiện trường + khung báo cáo, bay thử nghiệm đợt 2, 25-29/8/2026)
 **Nền đã có trong kernel (commit b1a8a62, nạp 24/08):** L3F.REG.001-006 (QĐ 15393 ngày 21/8 + KH 4002 ngày 22/8 + vị thế RtR + guard 100 km), OBLIG.VN.TAYNINH.CHIENLUOC_UAV (loại CƠ_HỘI), OBLIG.VN.TAYNINH.BAYTHUNGHIEM_DOT2 (loại NHIỆM_VỤ, nguồn DỰ THẢO KH của Sở KH&CN chưa số chưa ngày ký)
