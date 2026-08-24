@@ -472,6 +472,8 @@ SYNONYMS = [
     # tên công ty khi hỏi về chính công ty mình.
     # Tài liệu viết "nền tảng", nhân viên nói "sản phẩm". Bắc cầu từ vựng, không bịa.
     ("san pham", ["nen", "tang", "platform"]),
+    ("bvlos", ["ngoai", "tam", "nhin", "truc", "quan"]),
+    ("100 km", ["100", "km", "ngoai", "tam", "nhin"]),
     # Viết tắt hành chính người Việt gõ hằng ngày · tài liệu viết đủ chữ.
     ("msdn", ["ma", "so", "doanh", "nghiep", "dkkd"]),
     ("mst", ["ma", "so", "thue", "doanh", "nghiep"]),
@@ -515,10 +517,12 @@ SYNONYMS = [
 ]
 
 NHOM_DONG_NGHIA = {}     # token gốc -> token thay thế · nạp lại mỗi lần expand
+TU_MAY_SINH = set()      # token do máy nở ra, KHÔNG phải người dùng gõ
 
 
 def expand(q_norm, q_tokens, q_raw=""):
     NHOM_DONG_NGHIA.clear()
+    TU_MAY_SINH.clear()
     out = correct_typos(q_tokens)                    # dung sai gõ sai trước, rồi mới nở đồng nghĩa
     q_raw = q_raw.lower()
     # "ai" nghĩa NGƯỜI NÀO khác "AI" nghĩa trí tuệ nhân tạo. Không tách thì "Sếp là ai?"
@@ -545,6 +549,7 @@ def expand(q_norm, q_tokens, q_raw=""):
             # chữ "thế" trong ("doi thu" → uu the).
             them = [a for a in adds if a not in out and DF.get(a, 0) > 0]
             out.extend(them)
+            TU_MAY_SINH.update(them)
             # Ghi lại token GỐC nào được thay bằng token nào. Độ phủ phải tính theo
             # Ý người dùng hỏi, không theo số token máy sinh ra: "đối thủ" khớp được
             # qua "cạnh tranh" thì là ĐÃ khớp, không phải trượt. Không có bảng này thì
@@ -576,6 +581,19 @@ def search(query, top=3):
     # giá vốn (BOM) chỉ nên DẪN khi hỏi đúng về giá vốn/chi phí; hỏi "X là gì" phải ra spec, không phải cost.
     q_cost = any(k in q_norm for k in ("gia von", "chi phi", "cost", "bom", "gia thanh", "gia linh kien"))
     q_dinh_nghia = la_cau_dinh_nghia(q_norm)
+    # Record miền pháp lý là văn bản NGOÀI nói VỀ RtR, không phải thông số của RtR.
+    # Nó nhắc lại spec nên khớp rất mạnh câu hỏi spec — và trả lời bằng con số người khác
+    # viết về mình thì tệ hơn honest-null, vì trông như nguồn chính thức.
+    # Ca thật 24/08/2026: "Tầm điều khiển Hera?" ra L3F.REG.006 (Chiến lược Tây Ninh ghi
+    # BVLOS 100 km) thay vì L3R.K.007 (15 km, CEO chốt). Cùng hình dạng với cổng cost/voice.
+    q_phap_ly = any(k in q_norm for k in (
+        "chien luoc", "quyet dinh", "nghi dinh", "thong tu", "ke hoach", "van ban",
+        "tinh ", "ubnd", "so khoa hoc", "phap ly", "chinh sach", "uu dai", "noi dia hoa",
+        "sandbox", "thu nghiem co kiem soat", "tay ninh", "nha dau tu chien luoc",
+        # Ai đã nghe con số 100 km ở đâu đó mà hỏi lại thì PHẢI nhận được câu trả lời
+        # kèm cảnh báo "chưa phải thông số chính thức". Để honest-null ở đây là đẩy họ
+        # đi tra thẳng văn bản tỉnh và lấy con số trần, không kèm gì cả.
+        "100 km", "100km", "bvlos", "ngoai tam nhin"))
     scored = []
     for r in RECORDS:
         score = sum(idf(t) for t in q_tokens if t in r["_tokens"])
@@ -585,6 +603,8 @@ def search(query, top=3):
         if r.get("domain") == "voice" and not q_voice:
             score *= 0.15
         if r.get("domain") == "cost" and not q_cost:
+            score *= 0.15
+        if r.get("domain") == "phap_ly" and not q_phap_ly:
             score *= 0.15
         # neo entity: hỏi đích danh sản phẩm nào thì record không nhắc sản phẩm đó bị phạt nặng
         if q_ents and not any(e in r["_tokens"] for e in q_ents):
@@ -661,7 +681,12 @@ def confident(question, top_rec):
     # HERA là gì?" khớp được [bien, loi, hera] hoàn toàn ngẫu nhiên ("biến thể", "lõi")
     # trong khi "nhuận" — từ mang cả ý câu hỏi — vắng mặt. Record tổng hợp càng dài thì
     # bề mặt va chạm càng lớn, nên luật này càng cần từ khi có record định nghĩa.
-    if any(t not in matched and idf(t) >= 4.0 for t in q_disc):
+    # CHỈ xét từ NGƯỜI DÙNG GÕ. Từ do bảng đồng nghĩa nở ra mà không khớp thì không phải
+    # bằng chứng record lạc đề — nó chỉ là một trong nhiều cầu nối không bắt được.
+    # Ca thật 24/08: "MST công ty mình?" nở ra "thuế" (idf 4.38), record ENT.001 viết
+    # "mã số doanh nghiệp" chứ không viết "thuế" → bị chính luật này chặn oan. Bảng đồng
+    # nghĩa càng giàu thì càng dễ tự bắn vào chân nếu không tách hai loại token.
+    if any(t not in matched and t not in TU_MAY_SINH and idf(t) >= 4.0 for t in q_disc):
         return False
     bo_sot = [t for t in q_disc if t not in matched and t not in ent_hoi and idf(t) >= 2.5]
     if any(e in matched for e in ent_hoi) and not bo_sot:

@@ -1191,6 +1191,53 @@ check("số ĐKKD có trong gói phục vụ và mang verified_primary",
       "0314718578" in cs.BY_ID["L3F.ENT.001"]["content"]
       and cs.BY_ID["L3F.ENT.001"].get("provenance_level") == "verified_primary")
 
+# --- Văn bản nhà nước NGOÀI nói VỀ RtR · nạp 24/08/2026 ---
+# Chiến lược UAV Tây Ninh (QĐ 15393/QĐ-UBND) ghi RtR "làm chủ công nghệ bay ngoài tầm
+# nhìn trực quan 100 km". Lâm chốt 24/08: mục tiêu ĐÃ ĐẠT nhưng CHƯA phải thông số
+# chính thức — tham khảo được, cam kết thì không. Ranh giới này phải khoá bằng code.
+check("gói có fact về Chiến lược UAV Tây Ninh",
+      all(i in cs.BY_ID for i in ("L3F.REG.001", "L3F.REG.004", "L3F.REG.006")))
+check("fact 100 km mang provenance claim, KHÔNG phải verified_primary",
+      cs.BY_ID["L3F.REG.006"].get("provenance_level") == "claim",
+      str(cs.BY_ID["L3F.REG.006"].get("provenance_level")))
+check("fact 100 km tự mang cảnh báo trong nội dung",
+      "CHƯA PHẢI" in cs.BY_ID["L3F.REG.006"]["content"].upper()
+      and "15 km" in cs.BY_ID["L3F.REG.006"]["content"])
+
+# CẤM · câu hỏi THÔNG SỐ tuyệt đối không được trả về 100 km. Trả con số người khác viết
+# về mình như thể thông số chính thức thì tệ hơn honest-null, vì nó trông có thẩm quyền.
+for _q in ["Tầm điều khiển Hera?", "Tầm bay HERA bao nhiêu?", "Hera bay xa bao nhiêu km?",
+           "Range của HERA?", "Payload Hera bao nhiêu?", "Spec HERA thế nào?"]:
+    check(f"CẤM: '{_q}' không được trả 100 km", "100 km" not in cs.mock_answer(_q),
+          cs.mock_answer(_q)[:110])
+check("câu hỏi tầm điều khiển vẫn ra đúng record 15 km",
+      cs.search("Tầm điều khiển Hera?", top=1)[0][1]["record"] == "L3R.K.007")
+
+# CHO · ai đã nghe con số 100 km mà hỏi lại thì PHẢI nhận được cảnh báo, không phải im lặng.
+# Honest-null ở đây là đẩy người ta đi tra thẳng văn bản tỉnh và lấy con số trần.
+for _q in ["BVLOS 100 km của RtR?", "100 km là sao?", "RtR bay được 100 km à?"]:
+    _a = cs.mock_answer(_q)
+    check(f"CHO: '{_q}' trả lời KÈM cảnh báo chưa chính thức",
+          "GAP:" not in _a and "CHƯA PHẢI" in _a.upper(), _a[:110])
+check("hỏi Chiến lược Tây Ninh viết gì về RtR → ra đúng record",
+      cs.search("Chiến lược Tây Ninh viết gì về RtR?", top=1)[0][1]["record"] == "L3F.REG.006")
+for _q, _e in [("Chiến lược UAV Tây Ninh là gì?", "L3F.REG.001"),
+               ("Nội địa hóa bao nhiêu phần trăm thì được hỗ trợ?", "L3F.REG.004"),
+               ("Tây Ninh cần bao nhiêu nhà đầu tư chiến lược?", "L3F.REG.003")]:
+    check(f"CHO: '{_q}' ra {_e}", cs.search(_q, top=1)[0][1]["record"] == _e,
+          cs.search(_q, top=1)[0][1]["record"])
+# Điều kiện 40% là ĐỀ XUẤT chưa ban hành · cảnh báo phải nằm trong CONTENT.
+# Trường note KHÔNG được exporter mang ra gói, nên cảnh báo để ở note là cảnh báo mà
+# người hỏi không bao giờ đọc được. Phát hiện 24/08 khi test này vỡ vì KeyError.
+_c004 = cs.BY_ID["L3F.REG.004"]["content"]
+check("cảnh báo 'chưa ban hành' nằm trong CONTENT, không phải note ẩn",
+      "CHƯA phải quy định đã ban hành" in _c004 and "không mặc nhiên áp dụng" in _c004)
+check("người hỏi nội địa hóa ĐỌC ĐƯỢC cảnh báo trong câu trả lời",
+      "chưa được cấp có thẩm quyền ban hành"
+      in cs.mock_answer("Nội địa hóa bao nhiêu phần trăm thì được hỗ trợ?"))
+check("trường note KHÔNG ra gói · cảnh báo phải nằm ở content",
+      "note" not in cs.BY_ID["L3F.REG.004"])
+
 # CỔNG · mọi mã record được TRÍCH trong nội dung phải có thật trong gói.
 # Trích một mã không tồn tại thì người dùng bấm vào chip citation là rơi vào hư không,
 # và cổng khoá fact của bộ sinh tài liệu cũng trỏ vào chỗ trống. Ba mã dưới đây là nợ

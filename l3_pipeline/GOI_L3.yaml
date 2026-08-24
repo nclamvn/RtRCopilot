@@ -8,8 +8,8 @@ luat_su_dung:
 - Mọi câu trả lời kèm mã record (NT-3)
 - Record label PROPOSED không được dùng cam kết với khách
 thong_ke:
-  tong_record: 137
-  approved: 85
+  tong_record: 143
+  approved: 91
   kernel_confirmed: 32
 records:
 - record: L3F.1.001
@@ -1005,7 +1005,7 @@ records:
   kernel_ref: null
   source: /Users/os/RtR/KnowledgeBase/RtR_Factsheet_GuiAnhDong.docx
   effective_date: null
-  provenance_level: null
+  provenance_level: claim
 - record: L3F.CMP.001
   content: 'Ưu thế cạnh tranh định lượng của HERA so với UAV tactical/thương mại thông thường (gồm lớp DJI): (1)
     Signature 1-4-14 — 1 chiến sĩ triển khai, 4 payload đồng thời một chuyến bay, 14 kg full-load (US: 30 lb); baseline
@@ -1099,6 +1099,90 @@ records:
   source: (tổng hợp trong kernel · không có nguồn ngoài mới)
   effective_date: null
   provenance_level: derived_from_verified
+- record: L3F.REG.001
+  content: Ủy ban nhân dân tỉnh Tây Ninh đã phê duyệt Chiến lược phát triển hệ sinh thái phương tiện không người
+    lái tỉnh Tây Ninh giai đoạn 2026-2030, tầm nhìn đến năm 2035, tại Quyết định số 15393/QĐ-UBND ngày 21/8/2026,
+    hiệu lực từ ngày ký. Phạm vi gồm phương tiện không người lái trên không, trên mặt đất và trên mặt nước; giai
+    đoạn 2026-2030 tập trung vào UAV. Cơ quan đầu mối chủ trì là Sở Khoa học và Công nghệ tỉnh Tây Ninh.
+  domain: phap_ly
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: kernel/source_canonical/vanban_nhanuoc/QD_15393_UBND_TayNinh_21-08-2026_PheDuyet_ChienLuoc_UAV.pdf
+  effective_date: '2026-08-21'
+  provenance_level: verified_primary
+- record: L3F.REG.002
+  content: 'Định vị chiến lược Tây Ninh chọn (QĐ 15393, mục I): tỉnh phát triển thành trung tâm thử nghiệm, triển
+    khai ứng dụng, đào tạo, vận hành và dịch vụ của hệ sinh thái phương tiện không người lái quốc gia, liên kết
+    vùng với TP. Hồ Chí Minh. Nguyên văn: tỉnh "không phát triển dàn trải, không cạnh tranh trực diện ở khâu nghiên
+    cứu và phát triển mà ưu tiên khu vực trung nguồn và hạ nguồn". Phát triển theo định hướng lưỡng dụng, bảo đảm
+    sẵn sàng chuyển hóa phục vụ quốc phòng, an ninh khi có yêu cầu.'
+  domain: phap_ly
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: kernel/source_canonical/vanban_nhanuoc/QD_15393_UBND_TayNinh_21-08-2026_PheDuyet_ChienLuoc_UAV.pdf
+  effective_date: '2026-08-21'
+  provenance_level: verified_primary
+- record: L3F.REG.003
+  content: 'Chỉ tiêu Chiến lược UAV Tây Ninh (QĐ 15393, mục II). Giai đoạn 2026-2027: 01 hành lang thử nghiệm đạt
+    chuẩn quốc tế; ít nhất 03 khu vực/đường bay có kiểm soát; tối thiểu 01 Trung tâm Thử nghiệm-Đào tạo-Sát hạch;
+    tối thiểu 05 doanh nghiệp đầu tiên trong chuỗi giá trị, trong đó ít nhất 01 nhà đầu tư chiến lược dẫn đầu về
+    công nghệ; đào tạo 300-400 nhân lực; tối thiểu 20 giải pháp ứng dụng và 05 bằng độc quyền giải pháp hữu ích.
+    Giai đoạn 2028-2030: công suất đào tạo tối thiểu 1.000 nhân lực/năm. Đến 2035: 8.000-10.000 lao động trực tiếp
+    và gián tiếp; tăng trưởng giá trị gia tăng bình quân dự kiến 1,3-1,5 lần GRDP tỉnh.'
+  domain: phap_ly
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: kernel/source_canonical/vanban_nhanuoc/QD_15393_UBND_TayNinh_21-08-2026_PheDuyet_ChienLuoc_UAV.pdf
+  effective_date: '2026-08-21'
+  provenance_level: verified_primary
+- record: L3F.REG.004
+  content: 'Điều kiện nội địa hóa trong Chiến lược UAV Tây Ninh: tỉnh nêu quan điểm không dùng ngân sách để mua
+    sắm phương tiện không người lái ngoại nhập mà dùng ngân sách để thưởng cho năng lực nội địa hóa. Đề xuất doanh
+    nghiệp chỉ được nhận hỗ trợ khi đạt tối thiểu 40% giá trị nội địa hóa đối với một số nhóm sản phẩm trọng điểm,
+    tăng dần theo lộ trình; ràng buộc này áp cho trợ cấp giờ bay, tài trợ R&D, hỗ trợ thử nghiệm, hỗ trợ thuê hạ
+    tầng và hỗ trợ thương mại hóa. Mức ưu đãi thuế thu nhập doanh nghiệp sâu nhất được nêu: thuế suất 10% trong
+    15 năm, miễn 4 năm, giảm 50% trong 9 năm. LƯU Ý BẮT BUỘC KHI TRÍCH: đây là ĐỀ XUẤT CHÍNH SÁCH nêu trong Chiến
+    lược, CHƯA phải quy định đã ban hành. Quyết định 15393 mục VI.3 ghi rõ "không mặc nhiên áp dụng các đề xuất,
+    hàm ý chính sách nêu trong Chiến lược khi chưa được cấp có thẩm quyền ban hành". Điều kiện thật nằm ở các văn
+    bản ban hành sau, không nằm ở đây.'
+  domain: phap_ly
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: kernel/source_canonical/vanban_nhanuoc/ChienLuoc_UAV_TayNinh_2026-2030_tamnhin_2035_FINAL.pdf
+  effective_date: '2026-08-21'
+  provenance_level: verified_primary
+- record: L3F.REG.005
+  content: 'Kế hoạch triển khai Chiến lược UAV Tây Ninh ban hành tại Kế hoạch số 4002/KH-UBND ngày 22/8/2026 (Phó
+    Chủ tịch Phạm Tấn Hòa ký), gồm 11 nhóm nhiệm vụ kèm phụ lục phân công cơ quan chủ trì và thời hạn. Các mốc gần
+    nhất: hoàn thiện Sách Chiến lược song ngữ Việt-Anh trước 15/9/2026 và xuất bản trong tháng 9/2026; Hội nghị
+    công bố Chiến lược gắn xúc tiến đầu tư trong tháng 9/2026 (Sở Tài chính chủ trì); danh mục dự án thu hút đầu
+    tư sản xuất, lắp ráp rà soát tháng 9/2026, lấy ý kiến tháng 10/2026, trình quý IV/2026; tiếp nhận hồ sơ thử
+    nghiệm có kiểm soát từ quý IV/2026. Các mốc này là nghĩa vụ của cơ quan nhà nước, không phải của RtR.'
+  domain: phap_ly
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: kernel/source_canonical/vanban_nhanuoc/KH_4002_UBND_TayNinh_22-08-2026_TrienKhai_ChienLuoc_UAV.pdf
+  effective_date: '2026-08-22'
+  provenance_level: verified_primary
+- record: L3F.REG.006
+  content: 'RtR được nêu đích danh trong Chiến lược UAV Tây Ninh, đứng đầu danh sách "Năng lực hiện hữu" của Việt
+    Nam, trước Tập đoàn Viettel và Tập đoàn FPT. Nguyên văn: "Công ty RtR Vietnam: Làm chủ công nghệ bay ngoài tầm
+    nhìn trực quan 100 km, sản phẩm Hera, camera AI, xuất khẩu sang Hoa Kỳ." Về con số 100 km: Lâm xác nhận 24/08/2026
+    đây là MỤC TIÊU ĐÃ ĐẠT nhưng CHƯA PHẢI THÔNG SỐ CHÍNH THỨC của sản phẩm — chỉ dùng để tham khảo và phải gắn
+    nguồn là văn bản này. KHÔNG dùng 100 km trong báo giá, chào thầu, fact-sheet, công văn hay bất kỳ cam kết nào
+    với khách. Thông số chính thức về tầm điều khiển HERA vẫn là 15 km, xem L3R.K.007.'
+  domain: phap_ly
+  tier: L3
+  status: approved
+  kernel_ref: null
+  source: kernel/source_canonical/vanban_nhanuoc/ChienLuoc_UAV_TayNinh_2026-2030_tamnhin_2035_FINAL.pdf
+  effective_date: '2026-08-21'
+  provenance_level: claim
 - record: CAND.1.005
   content: 'HERA có sức nâng tối đa 30 lbs (14 kg), gấp 10 lần drone cùng cỡ, theo key features trong brochure gốc.
 
