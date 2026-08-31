@@ -87,45 +87,14 @@ stage_trivy() { "$project_root/scripts/verify-container-vulnerabilities.sh"; }
 stage_data_integration() { "$project_root/scripts/verify-data-integration.sh"; }
 
 stage_browser() {
-  local port="${RTR_CI_WEB_PORT:-3100}"
-  local base="${PLAYWRIGHT_BASE_URL:-}"
-  local server_pid=""
-
   rtr_info "ensuring Playwright chromium is installed"
   if ! pnpm --filter @rtr/web exec playwright install chromium >/tmp/rtr-ci-pw-install.log 2>&1; then
     rtr_info "playwright install chromium failed (see /tmp/rtr-ci-pw-install.log)"
     rtr_die 60 "cannot install the Playwright browser in this environment"
   fi
 
-  if [[ -n "$base" ]] && curl -fsS -o /dev/null --max-time 3 "$base/api/status"; then
-    rtr_info "using existing web server at $base"
-  else
-    base="http://127.0.0.1:$port"
-    rtr_info "starting the production standalone web server on $base"
-    mkdir -p apps/web/.next/standalone/apps/web/.next
-    cp -R apps/web/.next/static apps/web/.next/standalone/apps/web/.next/
-    if [[ -d apps/web/public ]]; then
-      cp -R apps/web/public apps/web/.next/standalone/apps/web/
-    fi
-    ( cd "$project_root" && exec env HOSTNAME=127.0.0.1 PORT="$port" \
-        node apps/web/.next/standalone/apps/web/server.js ) \
-      >/tmp/rtr-ci-next.log 2>&1 &
-    server_pid=$!
-    # shellcheck disable=SC2064
-    trap "kill $server_pid 2>/dev/null || true" RETURN
-    local deadline=$((SECONDS + 60))
-    # The mocked browser suite intercepts all API edges. Readiness therefore
-    # probes the rendered app, not /api/status (which deliberately depends on
-    # a live backend and would make this hermetic stage spuriously fail).
-    until curl -fsS -o /dev/null --max-time 3 "$base/ask"; do
-      (( SECONDS < deadline )) || { cat /tmp/rtr-ci-next.log >&2 || true; rtr_die 61 "web server did not become ready on $base"; }
-      kill -0 "$server_pid" 2>/dev/null || { cat /tmp/rtr-ci-next.log >&2 || true; rtr_die 61 "web server exited before ready"; }
-      sleep 1
-    done
-    rtr_info "web server ready"
-  fi
-
-  PLAYWRIGHT_BASE_URL="$base" pnpm --filter @rtr/web test:browser
+  PLAYWRIGHT_PORT="${RTR_CI_WEB_PORT:-}" \
+    "$project_root/scripts/verify-browser-production.sh"
 }
 
 # ---------------------------------------------------------------------------

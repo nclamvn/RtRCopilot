@@ -12,13 +12,17 @@ import pytest
 
 from rtr_copilot.config import Settings
 from rtr_copilot.limits.breaker import ProviderUnavailable
+from rtr_copilot.observability import metrics as m
+from rtr_copilot.rag.ontology import load_ontology
 from rtr_copilot.rag.query_understanding import OfflineRewriter, RewriteResult
 from rtr_copilot.rag.rewrite_llm import (
     AnthropicRewriteClient,
     ExternalLLMRewriter,
     OpenAIRewriteClient,
+    _clear_runtime_rewriter_cache,
     _parse_rewrite,
     build_rewriter,
+    get_runtime_rewriter,
 )
 
 
@@ -163,11 +167,77 @@ class TestFallbackChain:
         rewriter = ExternalLLMRewriter(
             [client], timeout=1, cache_ttl_seconds=60, cache_max_entries=4,
         )
-        first = asyncio.run(rewriter.rewrite("HERA payload"))
-        second = asyncio.run(rewriter.rewrite("HERA payload"))
+        async def exercise() -> tuple[RewriteResult, RewriteResult, int, int, int]:
+            rewriter.begin_request_usage()
+            first = await rewriter.rewrite("HERA payload")
+            first_calls = rewriter.request_usage()
+            rewriter.begin_request_usage()
+            second = await rewriter.rewrite("HERA payload")
+            return (
+                first,
+                second,
+                first_calls,
+                rewriter.request_usage(),
+                rewriter.request_provider_usage().calls,
+            )
+
+        first, second, first_calls, second_calls, second_provider_calls = (
+            asyncio.run(exercise())
+        )
         assert first == second
+        assert first_calls == 1
         assert client.calls == 1
         assert rewriter.calls == 1
+        assert second_calls == 0
+        assert second_provider_calls == 0
+        assert rewriter.cache_entry_count == 1
+
+    def test_warm_cache_is_task_local_under_concurrency(self) -> None:
+        client = _FakeClient("openai", result=RewriteResult(entities=["HERA"]))
+        rewriter = ExternalLLMRewriter(
+            [client], timeout=1, cache_ttl_seconds=60, cache_max_entries=4,
+        )
+
+        async def exercise() -> list[int]:
+            await rewriter.rewrite("HERA endurance")
+
+            async def read_warm_plan() -> int:
+                rewriter.begin_request_usage()
+                await rewriter.rewrite("HERA endurance")
+                return rewriter.request_usage()
+
+            return list(await asyncio.gather(read_warm_plan(), read_warm_plan()))
+
+        assert asyncio.run(exercise()) == [0, 0]
+        assert client.calls == 1
+        assert rewriter.calls == 1
+
+    def test_cache_metrics_are_content_free_and_eviction_is_observable(self) -> None:
+        miss_before = m.QUERY_REWRITER_CACHE_MISSES._value.get()
+        hit_before = m.QUERY_REWRITER_CACHE_HITS._value.get()
+        eviction_before = m.QUERY_REWRITER_CACHE_EVICTIONS._value.get()
+        client = _FakeClient("openai")
+        rewriter = ExternalLLMRewriter(
+            [client], timeout=1, cache_ttl_seconds=60, cache_max_entries=1,
+        )
+
+        async def exercise() -> None:
+            await rewriter.rewrite("first governed question")
+            await rewriter.rewrite("first governed question")
+            await rewriter.rewrite("second governed question")
+
+        asyncio.run(exercise())
+        assert m.QUERY_REWRITER_CACHE_MISSES._value.get() == miss_before + 2
+        assert m.QUERY_REWRITER_CACHE_HITS._value.get() == hit_before + 1
+        assert m.QUERY_REWRITER_CACHE_EVICTIONS._value.get() == eviction_before + 1
+        assert rewriter.cache_entry_count == 1
+        for metric in (
+            m.QUERY_REWRITER_CACHE_HITS,
+            m.QUERY_REWRITER_CACHE_MISSES,
+            m.QUERY_REWRITER_CACHE_EVICTIONS,
+            m.QUERY_REWRITER_CACHE_ENTRIES,
+        ):
+            assert metric._labelnames == ()
 
     def test_primary_failure_falls_to_secondary(self) -> None:
         primary = _FakeClient("anthropic", error=RuntimeError("boom"))
@@ -281,6 +351,9 @@ class TestRealClients:
 
 
 class TestBuildRewriter:
+    def teardown_method(self) -> None:
+        _clear_runtime_rewriter_cache()
+
     def test_disabled_returns_offline(self) -> None:
         assert isinstance(build_rewriter(_settings()), OfflineRewriter)
 
@@ -323,3 +396,37 @@ class TestBuildRewriter:
             anthropic_api_key="k",
         )
         assert isinstance(build_rewriter(settings), OfflineRewriter)
+
+    def test_runtime_external_rewriter_is_reused_for_same_contract(self) -> None:
+        settings = _settings(
+            rag_rewrite_enabled=True,
+            rag_external_classification_allowlist="internal",
+            openai_api_key="key-a",
+        )
+        first = get_runtime_rewriter(settings, load_ontology())
+        second = get_runtime_rewriter(settings, load_ontology())
+        assert isinstance(first, ExternalLLMRewriter)
+        assert second is first
+
+    def test_runtime_rewriter_changes_with_relevant_configuration(self) -> None:
+        common = {
+            "rag_rewrite_enabled": True,
+            "rag_external_classification_allowlist": "internal",
+            "openai_api_key": "key-a",
+        }
+        first = get_runtime_rewriter(_settings(**common), load_ontology())
+        second = get_runtime_rewriter(
+            _settings(**common, rag_rewrite_openai_model="different-model"),
+            load_ontology(),
+        )
+        assert isinstance(first, ExternalLLMRewriter)
+        assert isinstance(second, ExternalLLMRewriter)
+        assert second is not first
+
+    def test_runtime_offline_rewriter_is_not_shared(self) -> None:
+        settings = _settings()
+        first = get_runtime_rewriter(settings, load_ontology())
+        second = get_runtime_rewriter(settings, load_ontology())
+        assert isinstance(first, OfflineRewriter)
+        assert isinstance(second, OfflineRewriter)
+        assert second is not first

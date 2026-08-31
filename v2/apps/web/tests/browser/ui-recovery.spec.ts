@@ -278,6 +278,7 @@ test("390 core shell and Ask controls meet the 44px touch contract", async ({pag
     ".pc-topbar button:visible",
     ".pc-dock a:visible",
     ".ask-form .action-row button:visible",
+    ".ask-attach-trigger:visible",
     ".ask-advanced > summary:visible",
   ].join(",")).evaluateAll(elements => elements.flatMap(element => {
     const rect = element.getBoundingClientRect();
@@ -286,6 +287,39 @@ test("390 core shell and Ask controls meet the 44px touch contract", async ({pag
       : [];
   }));
   expect(undersized).toEqual([]);
+  const composerGeometry = await page.locator(".ask-form").evaluate(form => {
+    const context = form.querySelector(".ask-composer-context")!.getBoundingClientRect();
+    const actions = form.querySelector(".action-row")!.getBoundingClientRect();
+    const controls = Array.from(form.querySelectorAll(
+      ".ask-chip, .ask-attach-trigger, .ask-advanced > summary",
+    )).map(element => {
+      const rect = element.getBoundingClientRect();
+      return {left: rect.left, right: rect.right};
+    });
+    return {contextRight: context.right, actionsLeft: actions.left, controls};
+  });
+  expect(composerGeometry.contextRight).toBeLessThanOrEqual(
+    composerGeometry.actionsLeft,
+  );
+  expect(composerGeometry.controls.every((control, index, controls) => (
+    index === 0 || control.left >= controls[index - 1].right
+  ))).toBe(true);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+  await page.getByRole("button", {
+    name: "Thông tin liên quan",
+    exact: true,
+  }).click();
+  const closeGeometry = await page.locator(
+    ".processing-inspector-close",
+  ).evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    return {width: rect.width, height: rect.height};
+  });
+  expect(closeGeometry.width).toBeGreaterThanOrEqual(44);
+  expect(closeGeometry.height).toBeGreaterThanOrEqual(44);
   await page.screenshot({path: "test-results/tip0245-ask-mobile-refined.png", fullPage: true});
 });
 

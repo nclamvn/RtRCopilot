@@ -18,8 +18,10 @@ import contextlib
 import hashlib
 import json
 import time
+import weakref
 from collections.abc import Callable
 from contextvars import ContextVar
+from threading import Lock
 from typing import Any, Protocol
 
 import httpx
@@ -28,6 +30,12 @@ from redis.exceptions import RedisError
 from rtr_copilot.config import Settings
 from rtr_copilot.limits.breaker import CircuitBreaker, ProviderUnavailable
 from rtr_copilot.limits.redis_support import open_redis
+from rtr_copilot.observability.metrics import (
+    QUERY_REWRITER_CACHE_ENTRIES,
+    QUERY_REWRITER_CACHE_EVICTIONS,
+    QUERY_REWRITER_CACHE_HITS,
+    QUERY_REWRITER_CACHE_MISSES,
+)
 from rtr_copilot.rag.ontology import EnterpriseOntology, load_ontology
 from rtr_copilot.rag.provider_usage import EMPTY_PROVIDER_USAGE, ProviderUsage
 from rtr_copilot.rag.query_understanding import (
@@ -40,6 +48,11 @@ ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
 ANTHROPIC_VERSION = "2023-06-01"
 OPENAI_URL = "https://api.openai.com/v1/responses"
 REWRITE_MAX_TOKENS = 768
+
+# Weak references keep the current-entry gauge process-wide without extending
+# any planner lifetime. Direct test instances disappear naturally; runtime
+# planners remain represented for exactly as long as the shared pool uses them.
+_active_rewriters: weakref.WeakSet[ExternalLLMRewriter] = weakref.WeakSet()
 
 
 def _rewrite_prompt_cache_key(model: str) -> str:
@@ -355,6 +368,12 @@ class ExternalLLMRewriter:
         self._cache_ttl_seconds = cache_ttl_seconds
         self._cache_max_entries = cache_max_entries
         self._cache: dict[str, tuple[float, RewriteResult]] = {}
+        _active_rewriters.add(self)
+
+    @property
+    def cache_entry_count(self) -> int:
+        """Return only the content-free cache size for telemetry and tests."""
+        return len(self._cache)
 
     def begin_request_usage(self) -> None:
         """Reset usage for only the current async request context."""
@@ -405,12 +424,17 @@ class ExternalLLMRewriter:
     async def rewrite(self, question: str) -> RewriteResult:
         cache_key = self._cache_key(question)
         now = time.monotonic()
-        cached = self._cache.get(cache_key)
-        if cached is not None:
-            expires_at, cached_result = cached
-            if expires_at > now:
-                return cached_result
-            self._cache.pop(cache_key, None)
+        cache_enabled = self._cache_ttl_seconds > 0 and self._cache_max_entries > 0
+        if cache_enabled:
+            cached = self._cache.get(cache_key)
+            if cached is not None:
+                expires_at, cached_result = cached
+                if expires_at > now:
+                    QUERY_REWRITER_CACHE_HITS.inc()
+                    return cached_result
+                self._cache.pop(cache_key, None)
+                QUERY_REWRITER_CACHE_EVICTIONS.inc()
+            QUERY_REWRITER_CACHE_MISSES.inc()
         catalog = self._registry.candidate_catalog(
             question,
             limit=self._candidate_limit,
@@ -450,19 +474,25 @@ class ExternalLLMRewriter:
             if breaker is not None:
                 with contextlib.suppress(RedisError):
                     await breaker.record_success()
-            if self._cache_ttl_seconds > 0 and self._cache_max_entries > 0:
+            if cache_enabled:
                 if len(self._cache) >= self._cache_max_entries:
                     oldest_key = min(
                         self._cache,
                         key=lambda key: self._cache[key][0],
                     )
                     self._cache.pop(oldest_key, None)
+                    QUERY_REWRITER_CACHE_EVICTIONS.inc()
                 self._cache[cache_key] = (
                     now + self._cache_ttl_seconds,
                     result,
                 )
             return result
         raise ProviderUnavailable("llm_rewrite", retry_after=0)
+
+
+QUERY_REWRITER_CACHE_ENTRIES.set_function(
+    lambda: float(sum(item.cache_entry_count for item in _active_rewriters)),
+)
 
 
 def build_rewriter(
@@ -528,3 +558,81 @@ def build_rewriter(
         cache_ttl_seconds=settings.rag_rewrite_cache_ttl_seconds,
         cache_max_entries=settings.rag_rewrite_cache_max_entries,
     )
+
+
+_RUNTIME_REWRITER_CACHE_LIMIT = 8
+_runtime_rewriter_cache: dict[str, ExternalLLMRewriter] = {}
+_runtime_rewriter_cache_lock = Lock()
+
+
+def _credential_digest(value: object) -> str:
+    """Fingerprint a configured secret without retaining it in a cache key."""
+    getter = getattr(value, "get_secret_value", None)
+    if not callable(getter):
+        return ""
+    secret = str(getter()).strip()
+    if not secret:
+        return ""
+    return hashlib.sha256(secret.encode()).hexdigest()
+
+
+def _runtime_rewriter_key(
+    settings: Settings,
+    registry: EnterpriseOntology,
+) -> str:
+    """Bind shared planner state to every setting that changes its behavior."""
+    payload = {
+        "ontology_digest": registry.digest,
+        "rewrite_enabled": settings.rag_rewrite_enabled,
+        "external_allowlist": sorted(
+            item.strip()
+            for item in settings.rag_external_classification_allowlist.split(",")
+            if item.strip()
+        ),
+        "openai_credential": _credential_digest(settings.openai_api_key),
+        "anthropic_credential": _credential_digest(settings.anthropic_api_key),
+        "openai_model": settings.rag_rewrite_openai_model,
+        "anthropic_model": settings.rag_rewrite_anthropic_model,
+        "timeout": settings.rag_rewrite_timeout_seconds,
+        "prompt_cache": settings.rag_prompt_cache_enabled,
+        "candidate_limit": settings.rag_query_candidate_limit,
+        "cache_ttl": settings.rag_rewrite_cache_ttl_seconds,
+        "cache_entries": settings.rag_rewrite_cache_max_entries,
+        "breaker_threshold": settings.limits_breaker_failure_threshold,
+        "breaker_cooldown": settings.limits_breaker_cooldown_seconds,
+        "redis": settings.redis_url,
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded.encode()).hexdigest()
+
+
+def get_runtime_rewriter(
+    settings: Settings,
+    registry: EnterpriseOntology,
+) -> QueryRewriter:
+    """Reuse only the expensive external planner across request services.
+
+    ``AnswerService`` and retrieval remain request-local. The external planner
+    is safe to share because request accounting uses ``ContextVar`` and its
+    bounded TTL cache is keyed by the governed ontology digest. Offline mode
+    deliberately returns a fresh stateless adapter.
+    """
+    key = _runtime_rewriter_key(settings, registry)
+    with _runtime_rewriter_cache_lock:
+        cached = _runtime_rewriter_cache.get(key)
+        if cached is not None:
+            return cached
+        rewriter = build_rewriter(settings, registry)
+        if not isinstance(rewriter, ExternalLLMRewriter):
+            return rewriter
+        if len(_runtime_rewriter_cache) >= _RUNTIME_REWRITER_CACHE_LIMIT:
+            oldest_key = next(iter(_runtime_rewriter_cache))
+            _runtime_rewriter_cache.pop(oldest_key, None)
+        _runtime_rewriter_cache[key] = rewriter
+        return rewriter
+
+
+def _clear_runtime_rewriter_cache() -> None:
+    """Hermetic test seam; production invalidation is configuration-bound."""
+    with _runtime_rewriter_cache_lock:
+        _runtime_rewriter_cache.clear()

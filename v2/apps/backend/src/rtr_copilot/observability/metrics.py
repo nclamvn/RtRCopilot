@@ -70,6 +70,25 @@ PROVIDER_CALL_FAILURES = Counter(
     "AI provider calls that raised or timed out, by provider.",
     ("provider",),
 )
+# TIP-043.2: the semantic query-plan cache is intentionally content-free.
+# These process-local series have no labels, so a scrape cannot disclose the
+# question, resolved entity, ontology content, credential or requesting user.
+QUERY_REWRITER_CACHE_HITS = Counter(
+    "rtr_query_rewriter_cache_hits_total",
+    "Semantic query-plan cache hits in this API process.",
+)
+QUERY_REWRITER_CACHE_MISSES = Counter(
+    "rtr_query_rewriter_cache_misses_total",
+    "Semantic query-plan cache misses in this API process.",
+)
+QUERY_REWRITER_CACHE_EVICTIONS = Counter(
+    "rtr_query_rewriter_cache_evictions_total",
+    "Semantic query-plan cache entries evicted by expiry or capacity.",
+)
+QUERY_REWRITER_CACHE_ENTRIES = Gauge(
+    "rtr_query_rewriter_cache_entries",
+    "Current semantic query-plan cache entries in this API process.",
+)
 # TIP-014RE: query-path embedding failures degrade retrieval to lexical-only
 # instead of failing the question; the degrade must stay observable.
 EMBEDDING_QUERY_DEGRADED = Counter(

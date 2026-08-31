@@ -69,7 +69,7 @@ from rtr_copilot.rag.relevance import (
     meaningful_terms,
 )
 from rtr_copilot.rag.retrieval import RetrievalService, scope_fingerprint
-from rtr_copilot.rag.rewrite_llm import build_rewriter
+from rtr_copilot.rag.rewrite_llm import get_runtime_rewriter
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.governance import GovernanceRepository
 
@@ -1090,7 +1090,10 @@ class AnswerService:
         # TIP-024.7: use the quality planner for every eligible Ask only when
         # feature flag, external-processing policy and a credential are all
         # present; otherwise preserve the deterministic trust path.
-        self._rewriter = rewriter or build_rewriter(self.settings, self.ontology)
+        self._rewriter = rewriter or get_runtime_rewriter(
+            self.settings,
+            self.ontology,
+        )
 
     async def _conversation(
         self,
@@ -2089,7 +2092,10 @@ class AnswerService:
             if active_ontology.digest != self.ontology.digest:
                 self.ontology = active_ontology
                 if not self._rewriter_override:
-                    self._rewriter = build_rewriter(self.settings, self.ontology)
+                    self._rewriter = get_runtime_rewriter(
+                        self.settings,
+                        self.ontology,
+                    )
         # Gate the whole ask on the daily cost budget before any DB writes so a
         # breach never leaves an orphaned answer_run (raises BudgetExhausted).
         budget_limits = await self._enforce_budget(subject, request_id=request_id)

@@ -5,6 +5,7 @@ export default defineConfig({
   testIgnore: "ai-surrogate.spec.ts",
   fullyParallel: true,
   reporter: "line",
+  outputDir: process.env.PLAYWRIGHT_OUTPUT_DIR ?? "test-results",
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000",
     trace: "retain-on-failure",
