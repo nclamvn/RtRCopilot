@@ -1,0 +1,22 @@
+schema_version: 1
+campaign: TIP-027
+root_label: KnowledgeBase delta 2026-09-03
+owner_boundary: >-
+  Curated internal operating-method and registry-status documents from the
+  Homeowner-authorized KnowledgeBase. Checksum-bound; leader/curator only due
+  to strategy, internal weaknesses and employee contact information.
+entries:
+  - manifest_key: knowledgebase.sales-gated-commitment-v1
+    path: RtR_Khung_Cam_Ket_Theo_Cong_v1.xlsx
+    sha256: 90822fac7233c1fb55680748ff41aeff0ee2c69649032d7f140c22018f360ebc
+    mime_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7
+  - manifest_key: knowledgebase.caolocmatch-status-2026-08-16
+    path: CaoLocMatch_PoC/CaoLocMatch_TrangThai_16082026.pdf
+    sha256: 306c2a424a3a43f0e07a3fb2df6e2134a2fead41e4df4e201b8e041c2ac97141
+    mime_type: application/pdf
+    classification: restricted
+    source_zone: private_context
+    owner_subject_id: 06796a25-5419-40fe-a1fe-e67c57ed53e7

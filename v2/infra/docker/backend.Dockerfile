@@ -63,6 +63,7 @@ RUN apt-get update \
       fonts-liberation=1:1.07.4-11 \
       fonts-noto-core=20201225-1 \
       libatomic1=12.2.0-14+deb12u1 \
+      libexpat1=2.5.0-1+deb12u3 \
       libreoffice-impress=4:7.4.7-1+deb12u14 \
       libreoffice-writer=4:7.4.7-1+deb12u14 \
       libseccomp2=2.5.4-1+deb12u1 \

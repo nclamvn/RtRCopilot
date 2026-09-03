@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "snapshot_date": "2026-08-11",
-  "runtime_cleanliness": "mixed_development",
+  "snapshot_date": "2026-09-03",
+  "runtime_cleanliness": "clean_canonical_only",
   "measurement_note": "Discovery counts are inventory, not trusted records. Default Ask uses only active SOT chunks and current document versions whose source is enterprise_approved, whose viewer state is ready, and whose resource lineage passes ACL policy.",
   "active_ask_rollup": {
-    "sot_chunks": 219,
+    "sot_chunks": 235,
     "enterprise_documents": 43,
     "enterprise_file_chunks": 9046,
-    "total_searchable_units": 9265,
+    "total_searchable_units": 9281,
     "note": "Research is intentionally excluded from this rollup until federated Ask routing is released."
   },
   "active_corpus": [
@@ -15,7 +15,7 @@
       "source_key": "rtr.company-kernel",
       "zone": "sot",
       "state": "active",
-      "trusted_records": 219,
+      "trusted_records": 235,
       "canonical_documents": 14,
       "gate": "curator publish + SOT reindex"
     },
@@ -84,6 +84,37 @@
       "gate": "Research label is mandatory; no silent promotion to SOT"
     }
   ],
+  "latest_delta_scan": {
+    "snapshot_date": "2026-09-03",
+    "baseline_snapshot_date": "2026-08-11",
+    "authorized_root": "/Users/os/RtR/KnowledgeBase",
+    "modified_files_discovered_outside_rtr_copilot": 75,
+    "high_value_files_assessed": 6,
+    "staged_documents": 2,
+    "runtime_activated_documents": 0,
+    "manifest": "knowledgebase_delta_manifest.yaml",
+    "manifest_fingerprint": "7ff5f5bfbcde411c0585bcd4333ddba5540eec2dbcf899800e495914e277366b",
+    "manifest_dry_run": "pass",
+    "disposition_registry": "knowledgebase_delta_2026-09-03.json",
+    "runtime_observation": {
+      "cleanliness": "clean_canonical_only",
+      "canonical_sot_sources": 6,
+      "canonical_sot_chunks": 235,
+      "all_active_sot_generations": 6,
+      "all_active_sot_chunks": 235,
+      "enterprise_documents": 43,
+      "enterprise_file_chunks": 9046,
+      "embedding_profiles": [
+        "rtr-offline-hash-embedding:1536"
+      ],
+      "cleanup_evidence": "primary_runtime_cleanup_2026-09-03.json",
+      "cleanup_fingerprint": "c71db1e4d0ac35fe7f27e63a10f832138326aee5d1b886b8af3e7efbeae74d6a",
+      "cleanup_audit_event_id": "d76e2e8b-adfc-4bca-93a0-a7181d9b126d",
+      "semantic_embedding_state": "pending_external_reembedding_approval"
+    },
+    "state": "staged_pending_external_embedding_approval",
+    "note": "Discovery is not admission. Draft, simulated, duplicated, stale, legally unbound and mixed-ACL material remains outside active Ask."
+  },
   "candidate_backlog": [
     {
       "source_key": "rtr.knowledgebase",

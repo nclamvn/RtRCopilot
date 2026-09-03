@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-09-03",
+  "baseline_snapshot_date": "2026-08-11",
+  "authorized_root": "/Users/os/RtR/KnowledgeBase",
+  "scan_policy": {
+    "repository_outputs_excluded": true,
+    "archives_and_bundles_excluded": true,
+    "generated_ui_artifacts_excluded": true,
+    "external_network_calls": 0,
+    "external_embeddings_calls": 0
+  },
+  "summary": {
+    "modified_files_discovered_outside_rtr_copilot": 75,
+    "high_value_files_assessed": 6,
+    "staged_for_admission": 2,
+    "deferred_for_curation": 4,
+    "runtime_activated": 0,
+    "reason_runtime_not_activated": "external_embedding_export_requires_separate_explicit_approval"
+  },
+  "sot_governance_updates": [
+    {
+      "path": "_Architecture/_queue/conflicts_pending.md",
+      "change": "added_CONF-11",
+      "subject": "Blue UAS list membership",
+      "state": "blocked_pending_primary_checksum_bound_source_and_owner_decision"
+    },
+    {
+      "path": "_Architecture/_index/change_log.md",
+      "change": "recorded_2026-09-03_delta_trust_audit"
+    }
+  ],
+  "runtime_observation": {
+    "cleanliness": "clean_canonical_only",
+    "canonical_sot_sources": 6,
+    "canonical_sot_chunks": 235,
+    "all_active_sot_generations": 6,
+    "all_active_sot_chunks": 235,
+    "enterprise_documents": 43,
+    "enterprise_file_chunks": 9046,
+    "embedding_profiles": [
+      "rtr-offline-hash-embedding:1536"
+    ],
+    "cleanup_evidence": "primary_runtime_cleanup_2026-09-03.json",
+    "cleanup_fingerprint": "c71db1e4d0ac35fe7f27e63a10f832138326aee5d1b886b8af3e7efbeae74d6a",
+    "cleanup_audit_event_id": "d76e2e8b-adfc-4bca-93a0-a7181d9b126d",
+    "semantic_embedding_state": "pending_external_reembedding_approval"
+  },
+  "staged_sources": [
+    {
+      "path": "RtR_Khung_Cam_Ket_Theo_Cong_v1.xlsx",
+      "sha256": "90822fac7233c1fb55680748ff41aeff0ee2c69649032d7f140c22018f360ebc",
+      "byte_size": 41170,
+      "modified_at": "2026-05-18T10:07:40Z",
+      "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "classification": "restricted",
+      "source_zone": "private_context",
+      "authority": "internal_operating_method",
+      "disposition": "staged_pending_embedding_approval",
+      "reason_codes": [
+        "new_checksum_not_in_active_manifests",
+        "new_checksum_not_in_primary_document_versions",
+        "explicit_internal_methodology",
+        "strategy_requires_role_acl"
+      ]
+    },
+    {
+      "path": "CaoLocMatch_PoC/CaoLocMatch_TrangThai_16082026.pdf",
+      "sha256": "306c2a424a3a43f0e07a3fb2df6e2134a2fead41e4df4e201b8e041c2ac97141",
+      "byte_size": 56446,
+      "modified_at": "2026-08-18T09:46:37Z",
+      "mime_type": "application/pdf",
+      "classification": "restricted",
+      "source_zone": "private_context",
+      "authority": "internal_signed_status_report",
+      "disposition": "staged_pending_embedding_approval",
+      "reason_codes": [
+        "new_checksum_not_in_active_manifests",
+        "new_checksum_not_in_primary_document_versions",
+        "dated_status_with_explicit_limitations",
+        "contains_internal_weaknesses_and_employee_contact"
+      ]
+    }
+  ],
+  "deferred_sources": [
+    {
+      "path": "RtR_Company_Knowledge_Base.docx",
+      "sha256": "b40ec7e53a3e36d75c0f4f472a2615a9a2b67429e1934f04b11afb036cc498b7",
+      "byte_size": 30970,
+      "modified_at": "2026-05-18T09:04:37Z",
+      "disposition": "defer_record_level_curation",
+      "reason_codes": [
+        "overlaps_canonical_company_kernel",
+        "contains_pricing_and_contact_data",
+        "contains_compliance_claims_requiring_freshness_review",
+        "document_level_acl_is_too_coarse"
+      ]
+    },
+    {
+      "path": "RtR_Ma_Tran_Nang_Luc.xlsx",
+      "sha256": "b3c47d0fe62a5ac1ae65d5209ccc3c22095f25e73295c8210f408a7d488a3a3c",
+      "byte_size": 42383,
+      "modified_at": "2026-05-25T08:55:18Z",
+      "disposition": "defer_sheet_and_record_acl_split",
+      "reason_codes": [
+        "source_declares_p2_confidential",
+        "contains_p3_strategic_rows",
+        "contains_stale_or_conflicting_product_values",
+        "mixed_access_levels_in_one_workbook"
+      ]
+    },
+    {
+      "path": "RtR_QD_AI_RuiRoCao_30-06-2026_Brief.pdf",
+      "sha256": "7fa3a6eae8cd6d87f9a4fca6bbe197bf0d6f1f08b8215cf3a8dacfd129267748",
+      "byte_size": 64865,
+      "modified_at": "2026-07-03T03:58:44Z",
+      "disposition": "defer_primary_legal_source",
+      "reason_codes": [
+        "legal_analysis_not_primary_authority",
+        "official_decision_source_not_bound_in_batch",
+        "legal_freshness_and_supersession_review_required"
+      ]
+    },
+    {
+      "path": "TayNinh_UAV_2608/BoGhiHienTruong_BayThuNghiem_TayNinh_25-29-08-2026.pdf",
+      "sha256": "085091c305320b89e5c29ef5514025e1fa2d6ac7f57097a2e815bfa25a5b1512",
+      "byte_size": 232267,
+      "modified_at": "2026-08-24T02:10:29Z",
+      "disposition": "defer_completed_field_record",
+      "reason_codes": [
+        "blank_or_pre_field_record_template",
+        "not_evidence_of_test_outcomes",
+        "completed_signed_record_required"
+      ]
+    }
+  ],
+  "directory_dispositions": [
+    {
+      "path": "RtR_Maintenance_CRM/RtR_Maintenance_Program/01-08_*.xlsx",
+      "disposition": "defer_status_aware_extraction",
+      "reason_codes": [
+        "maintenance_thresholds_and_prices_marked_proposed",
+        "contains_explicitly_simulated_customer_rows",
+        "master_program_is_already_active_in_tip024"
+      ]
+    },
+    {
+      "path": "Dataset_CongNgheChienLuoc",
+      "disposition": "research_only_pending_gates",
+      "reason_codes": [
+        "dataset_readme_reports_bites_not_run",
+        "must_not_promote_external_research_to_company_sot"
+      ]
+    },
+    {
+      "path": "DCMA submission compliance questions",
+      "disposition": "exclude_bulk_admission",
+      "reason_codes": [
+        "high_sensitivity",
+        "duplication_heavy",
+        "legal_owner_and_matter_acl_required",
+        "two_spec_workbooks_have_identical_content_hash"
+      ]
+    },
+    {
+      "path": "_archives and *.bundle/*.zip/generated HTML",
+      "disposition": "exclude_non_authoritative_artifacts",
+      "reason_codes": [
+        "archive_or_transport_artifact",
+        "generated_output_not_canonical_source"
+      ]
+    }
+  ],
+  "integrity": {
+    "duplicate_content_with_active_yaml_manifests": 0,
+    "duplicate_content_with_primary_document_versions": 0,
+    "manifest_file": "knowledgebase_delta_manifest.yaml",
+    "manifest_fingerprint": "7ff5f5bfbcde411c0585bcd4333ddba5540eec2dbcf899800e495914e277366b",
+    "manifest_dry_run": {
+      "status": "pass",
+      "file_count": 2,
+      "byte_size": 97616,
+      "external_calls": 0
+    },
+    "hermetic_verifier": {
+      "status": "pass",
+      "file": "verify_knowledgebase_delta.py",
+      "bites": {
+        "duplicate_content": "pass",
+        "checksum_drift": "pass",
+        "path_escape": "pass"
+      },
+      "external_calls": 0
+    },
+    "primary_runtime_hygiene": {
+      "status": "pass",
+      "command": "rtr_copilot.commands.retire_development_sot",
+      "evidence": "primary_runtime_cleanup_2026-09-03.json",
+      "fingerprint": "c71db1e4d0ac35fe7f27e63a10f832138326aee5d1b886b8af3e7efbeae74d6a",
+      "audit_event_id": "d76e2e8b-adfc-4bca-93a0-a7181d9b126d",
+      "retired_active_revisions": 47,
+      "retired_active_records": 74,
+      "retired_active_search_generations": 43,
+      "detached_retrievable_chunks": 50,
+      "immutable_chunks_deleted": 0,
+      "canonical_records_before_after": [235, 235],
+      "enterprise_documents_before_after": [43, 43],
+      "enterprise_chunks_before_after": [9046, 9046],
+      "external_calls": 0
+    },
+    "activation_requires": [
+      "explicit_external_embedding_approval_for_the_two_staged_documents",
+      "dry_run_manifest_pass",
+      "single_active_embedding_profile_without_offline_openai_mix",
+      "current_primary_runtime_build_binding",
+      "post_ingestion_acl_and_retrieval_regression"
+    ]
+  }
+}
