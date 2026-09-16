@@ -14,7 +14,19 @@ from rtr_copilot.rag.adapters import build_embedding_adapter, normalize_query
 from rtr_copilot.rag.dlp import ProviderPolicy
 from rtr_copilot.sot.package import canonical_json, sha256_bytes
 
-CHUNKER_VERSION = "rtr-evidence-chunker/1"
+CHUNKER_VERSION = "rtr-evidence-chunker/2"
+#: TIP-046.1 · a STRICT record (one that carries an evidence span) used to be
+#: chunked from the evidence quote ALONE, so the record label that names the
+#: fact ("Maximum payload capacity · HERA tải trọng tối đa: 14 kg") never
+#: entered the lexical/vector index and a Vietnamese question could not reach
+#: the spec record (observed live 16/09: tether/payload questions answered by
+#: unrelated prose).  The chunk now leads with the record label when that label
+#: is a short fact caption; long prose records (l3 facts) keep the verbatim
+#: span only so their text is not duplicated.  Bumping CHUNKER_VERSION changes
+#: every chunking fingerprint, so a reindex yields a NEW generation rather than
+#: an idempotent no-op.
+FACT_LABEL_MAX_CHARS = 400
+FACT_LABEL_SEPARATOR = " · Nguồn: "
 PIPELINE_VERSION = "rtr-reindex/1"
 BOUNDARY_RE = re.compile(r"\n{2,}|(?<=[.!?])\s+")
 
@@ -54,6 +66,26 @@ class ChunkCandidate:
     ordinal: int
     chunking_fingerprint: str
     embedding: list[float]
+
+
+def compose_chunk_base(searchable_text: str, evidence_text: str) -> str:
+    """Text a record is chunked from (TIP-046.1).
+
+    * soft record (no evidence span): the searchable text, unchanged.
+    * strict record whose searchable text is a short fact caption: the caption
+      first, then the verbatim evidence quote, so both the human-readable label
+      (bilingual key + value + unit) and the source wording are retrievable.
+    * strict record whose searchable text is long prose: the evidence quote
+      only (previous behaviour), to avoid indexing the prose twice.
+    Deterministic; the evidence quote is never altered, only prefixed.
+    """
+    label = " ".join(searchable_text.split())
+    evidence = " ".join(evidence_text.split())
+    if not evidence:
+        return label
+    if not label or len(label) > FACT_LABEL_MAX_CHARS or label == evidence:
+        return evidence
+    return f"{label}{FACT_LABEL_SEPARATOR}{evidence}"
 
 
 def stable_split(value: str, *, maximum: int, overlap: int) -> list[str]:
@@ -176,7 +208,10 @@ class ReindexService:
             "dimension": self.embedding.dimension,
         }))[:12]
         for row in rows:
-            base = str(row["evidence_text"] or row["searchable_text"]).strip()
+            base = compose_chunk_base(
+                str(row["searchable_text"] or ""),
+                str(row["evidence_text"] or ""),
+            )
             if not base:
                 continue
             if not self.index_dlp.inspect(
