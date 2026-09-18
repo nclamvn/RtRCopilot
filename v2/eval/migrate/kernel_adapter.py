@@ -102,7 +102,35 @@ VERIFIED_PROVENANCE_MAP: dict[str, tuple[str, str, str]] = {
     "verified_secondary": ("verified_secondary", "verified", "verified"),
     "approved_internal": ("approved_internal", "approved", "approved"),
     "derived_from_verified": ("verified_secondary", "verified", "verified"),
+    # TIP-048: hai tầng do người curate đặt. Chúng KHÔNG phải claim: đã được xác
+    # minh bằng lời chứng có người chịu trách nhiệm, chỉ chưa có tài liệu. Vì vậy
+    # chúng ready, nhưng mang use_class hẹp hơn (không vào được `attestation`),
+    # và luôn đeo cờ double-check để câu trả lời gắn nhãn đúng.
+    "attested_practice": ("attested_practice", "attested", "attested"),
+    "roadmap_commitment": ("roadmap_commitment", "committed", "committed"),
 }
+
+#: TIP-048 · tầng nào chỉ được vào ngữ cảnh nào. Ánh xạ của kernel, giữ nguyên tên
+#: để hai bên không lệch nhau khi doctrine đổi.
+TIP048_TIER_MAX_USE: dict[str, str] = {
+    "verified_primary": "attestation",
+    "verified_secondary": "attestation",
+    "approved_internal": "attestation",
+    "derived_from_verified": "attestation",
+    "attested_practice": "proposal",
+    "roadmap_commitment": "proposal",
+}
+TIP048_USE_CLASSES: tuple[str, ...] = ("sales", "proposal", "attestation")
+#: Khóa mang use_class vào record, cùng cơ chế với CONFIDENCE_SIGNAL_KEY (không đổi schema).
+USE_CLASS_KEY = "use_class"
+
+
+def allowed_use_classes_for(kernel_prov: str) -> list[str]:
+    """Ngữ cảnh mà một fact ở tầng này được phép vào."""
+    deepest = TIP048_TIER_MAX_USE.get(kernel_prov)
+    if not deepest:
+        return []
+    return list(TIP048_USE_CLASSES[: TIP048_USE_CLASSES.index(deepest) + 1])
 
 #: The V2 triple for a kernel ``claim`` -- recorded for reporting only; a claim is
 #: never emitted as a ready record in this relaxed-policy migration.
@@ -654,6 +682,12 @@ def _make_record(
     evidence_keys: list[str],
 ) -> dict[str, Any]:
     v2_provenance, verification_state, fact_state = prov_triple
+    # TIP-048: mọi record mang theo ngữ cảnh sử dụng được phép, để tầng trả lời
+    # lọc được mà không phải suy ngược từ provenance. Đi trong `value` (Any), nên
+    # không đổi schema hay gate, giống cách CONFIDENCE_SIGNAL_KEY đang làm.
+    _uses = allowed_use_classes_for(v2_provenance)
+    if _uses and isinstance(value_payload, dict) and USE_CLASS_KEY not in value_payload:
+        value_payload = {**value_payload, USE_CLASS_KEY: _uses}
     record_data: dict[str, Any] = {
         "record_key": fact_id,
         "version_ordinal": 1,
