@@ -103,12 +103,19 @@ VERIFIED_PROVENANCE_MAP: dict[str, tuple[str, str, str]] = {
     "approved_internal": ("approved_internal", "approved", "approved"),
     "derived_from_verified": ("verified_secondary", "verified", "verified"),
     # TIP-048: hai tầng do người curate đặt. Chúng KHÔNG phải claim: đã được xác
-    # minh bằng lời chứng có người chịu trách nhiệm, chỉ chưa có tài liệu. Vì vậy
-    # chúng ready, nhưng mang use_class hẹp hơn (không vào được `attestation`),
-    # và luôn đeo cờ double-check để câu trả lời gắn nhãn đúng.
-    "attested_practice": ("attested_practice", "attested", "attested"),
-    "roadmap_commitment": ("roadmap_commitment", "committed", "committed"),
+    # minh bằng lời chứng có người chịu trách nhiệm, chỉ chưa có tài liệu.
+    #
+    # Ánh xạ về `approved_internal` thay vì tự đặt giá trị mới, vì PackageRecord
+    # ràng buộc ba trường này bằng Literal: thêm giá trị mới sẽ phải đổi schema,
+    # đổi migration và đổi cả DB constraint. Phân biệt TIP-048 không mất đi, nó
+    # đi trong `value` qua SOT_TIER_KEY và USE_CLASS_KEY, đúng cơ chế mà
+    # CONFIDENCE_SIGNAL_KEY đang dùng, nên không đụng schema.
+    "attested_practice": ("approved_internal", "approved", "approved"),
+    "roadmap_commitment": ("approved_internal", "approved", "approved"),
 }
+
+#: Tầng kernel gốc, giữ lại trong payload vì ánh xạ ở trên làm mất phân biệt.
+SOT_TIER_KEY = "sot_tier"
 
 #: TIP-048 · tầng nào chỉ được vào ngữ cảnh nào. Ánh xạ của kernel, giữ nguyên tên
 #: để hai bên không lệch nhau khi doctrine đổi.
@@ -680,14 +687,21 @@ def _make_record(
     confidence: float,
     source_ref: str,
     evidence_keys: list[str],
+    kernel_tier: str | None = None,
 ) -> dict[str, Any]:
     v2_provenance, verification_state, fact_state = prov_triple
     # TIP-048: mọi record mang theo ngữ cảnh sử dụng được phép, để tầng trả lời
     # lọc được mà không phải suy ngược từ provenance. Đi trong `value` (Any), nên
     # không đổi schema hay gate, giống cách CONFIDENCE_SIGNAL_KEY đang làm.
-    _uses = allowed_use_classes_for(v2_provenance)
-    if _uses and isinstance(value_payload, dict) and USE_CLASS_KEY not in value_payload:
-        value_payload = {**value_payload, USE_CLASS_KEY: _uses}
+    _uses = allowed_use_classes_for(kernel_tier or v2_provenance)
+    if isinstance(value_payload, dict):
+        extra: dict[str, Any] = {}
+        if _uses and USE_CLASS_KEY not in value_payload:
+            extra[USE_CLASS_KEY] = _uses
+        if kernel_tier and SOT_TIER_KEY not in value_payload:
+            extra[SOT_TIER_KEY] = kernel_tier
+        if extra:
+            value_payload = {**value_payload, **extra}
     record_data: dict[str, Any] = {
         "record_key": fact_id,
         "version_ordinal": 1,
@@ -939,6 +953,7 @@ def convert_fact(
         record_data = _make_record(
             fact_id, classification, base_payload, searchable_text, prov_triple,
             CONFIDENCE_STRICT, source_ref, [f"{fact_id}.e1"],
+            kernel_tier=kernel_prov,
         )
         confidence_tier = TIER_STRICT
         needs_double_check = False
@@ -960,6 +975,7 @@ def convert_fact(
                 tier=confidence_tier, curation=curation_audit,
             ),
             searchable_text, prov_triple, confidence_value, source_ref, [],
+            kernel_tier=kernel_prov,
         )
         needs_double_check = True
 
