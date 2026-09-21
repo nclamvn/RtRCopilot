@@ -126,6 +126,7 @@ async def _ask_stream(
         require_verified=body.require_verified,
         conversation_id=body.conversation_id,
         request_id=request_id,
+        use_class=body.use_class,
         progress=publish,
     ))
     try:
@@ -267,6 +268,7 @@ async def ask(
             require_verified=body.require_verified,
             conversation_id=body.conversation_id,
             request_id=request_id,
+            use_class=body.use_class,
         )
     except RetrievalError as error:
         return _error(request, 413 if "budget" in error.code else 400, error.code)

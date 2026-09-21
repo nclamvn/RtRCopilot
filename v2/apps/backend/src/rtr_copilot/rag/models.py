@@ -64,6 +64,12 @@ class AskRequest(StrictModel):
     conversation_id: uuid.UUID | None = None
     filters: SearchFilters = Field(default_factory=SearchFilters)
     require_verified: bool = True
+    #: TIP-050: ngữ cảnh sử dụng câu trả lời, trục use_class của TIP-048.
+    #: Mặc định ``proposal`` theo mục 6 của packet TIP-048: ngữ cảnh chứng thực
+    #: phải được nêu tường minh, không bao giờ suy đoán, và mặc định không được
+    #: là mức rộng nhất. ``attestation`` là ngữ cảnh hồ sơ tuân thủ, nơi lời
+    #: chứng thực hành và cam kết lộ trình không đủ tư cách làm căn cứ.
+    use_class: Literal["sales", "proposal", "attestation"] = "proposal"
 
 
 class Citation(StrictModel):

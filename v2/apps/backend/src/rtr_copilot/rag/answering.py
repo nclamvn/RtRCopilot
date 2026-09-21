@@ -70,6 +70,9 @@ from rtr_copilot.rag.relevance import (
 )
 from rtr_copilot.rag.retrieval import RetrievalService, scope_fingerprint
 from rtr_copilot.rag.rewrite_llm import get_runtime_rewriter
+from rtr_copilot.rag.use_class import DEFAULT_USE_CLASS
+from rtr_copilot.rag.use_class import blocks as use_class_blocks
+from rtr_copilot.rag.use_class import null_message as use_class_null_message
 from rtr_copilot.repositories.audit import AuditRepository
 from rtr_copilot.repositories.governance import GovernanceRepository
 
@@ -1452,6 +1455,83 @@ class AnswerService:
             )
         return {row["version_id"] for row in rows if needs_double_check(row["value_payload"])}
 
+    async def _use_class_filtered(
+        self,
+        hits: list[RetrievalHit],
+        *,
+        use_class: str,
+        request_id: str,
+    ) -> tuple[list[RetrievalHit], list[str]]:
+        """TIP-050: bỏ hit mà trục ``use_class`` của TIP-048 không cho vào ngữ cảnh này.
+
+        TIP-048 dựng hai tầng mới và trục ba ngữ cảnh lồng nhau, kernel cưỡng
+        chế chúng khi curate, adapter mang chúng vào ``value_payload``, nhưng
+        tầng trả lời chưa đọc tới (deviation D3). Chỗ này đóng cổng đó, dùng
+        đúng cơ chế đọc payload chỉ-đọc của TIP-013B: không đổi schema, không
+        reindex, không đụng xếp hạng.
+
+        Đặt ngay sau cổng ``require_verified`` và trước khi hit thành bằng
+        chứng, nên một fact bị loại thì không có đường nào khác vào câu trả
+        lời. Loại hết thì luồng honest-null có sẵn tiếp quản, đúng doctrine:
+        thà không trả lời còn hơn trả lời bằng thứ không được phép dùng ở ngữ
+        cảnh đó.
+        """
+        version_ids = sorted({
+            item.citation.record_version_id
+            for item in hits
+            if item.citation.record_version_id is not None
+        })
+        if not version_ids:
+            return hits, []
+        async with self.uow.factory() as session:
+            rows = (
+                (
+                    await session.execute(
+                        text("""
+                SELECT version_id,value_payload,provenance_level
+                FROM record_versions
+                WHERE version_id=ANY(CAST(:version_ids AS uuid[]))
+            """),
+                        {"version_ids": version_ids},
+                    )
+                )
+                .mappings()
+                .all()
+            )
+        policy = {
+            row["version_id"]: (
+                row["value_payload"],
+                str(row["provenance_level"]),
+            )
+            for row in rows
+        }
+        kept: list[RetrievalHit] = []
+        denied: list[str] = []
+        for item in hits:
+            entry = policy.get(item.citation.record_version_id)
+            if entry is not None and use_class_blocks(
+                entry[0],
+                requested=use_class,
+                provenance_level=entry[1],
+            ):
+                denied.append(item.citation.record_key)
+                continue
+            kept.append(item)
+        if denied:
+            logger.info(
+                json.dumps(
+                    {
+                        "event": "use_class_filtered",
+                        "request_id": request_id,
+                        "use_class": use_class,
+                        "denied_count": len(denied),
+                        "denied_record_keys": sorted(set(denied))[:20],
+                    },
+                    ensure_ascii=True,
+                ),
+            )
+        return kept, sorted(set(denied))
+
     async def _persist_grounded(
         self,
         subject: Subject,
@@ -2070,6 +2150,7 @@ class AnswerService:
         require_verified: bool,
         conversation_id: uuid.UUID | None,
         request_id: str,
+        use_class: str = DEFAULT_USE_CLASS,
         progress: AskProgressSink | None = None,
     ) -> AskResponse:
         started = time.monotonic()
@@ -2219,6 +2300,18 @@ class AnswerService:
                 and item.citation.verification_state in {"verified", "approved"}
                 and item.citation.freshness_state == "current"
             ]
+        # TIP-050: cổng trên hỏi bằng chứng đã kiểm chưa; cổng dưới hỏi bằng
+        # chứng có được phép dùng trong ngữ cảnh đang hỏi không. Hai câu hỏi
+        # khác nhau, nên hai cổng tách bạch: require_verified=False vẫn giữ
+        # nguyên nghĩa là chấp nhận claim, còn use_class chỉ phân xử giữa các
+        # tầng dùng được.
+        use_class_denied: list[str] = []
+        if hits:
+            hits, use_class_denied = await self._use_class_filtered(
+                hits,
+                use_class=use_class,
+                request_id=request_id,
+            )
         progress_sources = [
             AskProgressSource(
                 marker=item.citation.marker,
@@ -2316,6 +2409,11 @@ class AnswerService:
                 ),
             )
         if not hits:
+            # TIP-050: im lặng ở đây là tệ nhất cho kinh doanh. Nếu bằng chứng
+            # bị trục use_class loại hết thì nói thẳng: ngữ cảnh này không nhận
+            # tầng đó, có bao nhiêu ghi nhận liên quan, và hỏi lại ở ngữ cảnh
+            # nào thì thấy. Không trích nội dung ghi nhận, vì trích ra tức là
+            # đã dùng nó làm căn cứ trong đúng ngữ cảnh vừa cấm.
             return await self._honest_null(
                 subject,
                 conversation_id=conversation_id,
@@ -2325,6 +2423,11 @@ class AnswerService:
                 reason="denied_or_unavailable",
                 started=started,
                 provider_calls=0,
+                answer_override=(
+                    use_class_null_message(use_class, use_class_denied)
+                    if use_class_denied
+                    else None
+                ),
             )
         evidence = [
             ProviderEvidence(
