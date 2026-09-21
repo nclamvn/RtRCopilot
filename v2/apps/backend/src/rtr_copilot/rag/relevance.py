@@ -193,12 +193,31 @@ def candidate_relevance_score(
             adjustment += 0.10
     if targets:
         matched = targets & mentions
+        # TIP-052: cổng "phải nhắc tên thực thể" làm mọi FACT NGUYÊN TỬ không
+        # lặp lại tên công ty trở nên vô hình với bất kỳ câu hỏi nào có nhắc
+        # tên công ty. Đo ngày 21/09: "Mật khẩu người dùng được băm bằng thuật
+        # toán nào?" trả đúng L3F.INF.014, nhưng thêm hai chữ "của RtR" thì
+        # bản ghi đó biến mất hoàn toàn, vì nội dung của nó không chứa chữ
+        # RtR. Chỉ những bản ghi mở đầu bằng "RtR có ..." sống sót, và đó là
+        # lý do câu hỏi kỹ thuật bị trả lời bằng bản kiểm kê tài liệu. Kernel
+        # càng được curate sạch thành fact ngắn gọn thì càng vô hình.
+        #
+        # Cứu bản ghi KHÔNG nhắc thực thể nào cả và trúng đủ từ quyết định của
+        # câu hỏi. Bản ghi nhắc một thực thể KHÁC vẫn bị loại nguyên như cũ,
+        # nên tính cách ly giữa HERA và VEGA không suy giảm: fact sản phẩm
+        # luôn mang tên sản phẩm trong khóa bản ghi nên vẫn tính là có nhắc.
+        unbound_but_specific = (
+            not mentions
+            and original_matches >= 2
+            and term_overlap >= 0.25
+        )
         if (
             not matched
             and not collection_anchor
             and not profile_anchor
             and not definition_anchor
             and not semantically_bridged
+            and not unbound_but_specific
         ):
             return None
         # Definition evidence must make the requested entity its subject.
@@ -211,9 +230,24 @@ def candidate_relevance_score(
         ):
             return None
         coverage = len(matched) / len(targets)
-        adjustment += coverage * 0.24
+        # TIP-052.1: thưởng cho việc NHẮC ĐÚNG TÊN thực thể phải tỉ lệ với độ
+        # trùng chủ đề, không được đứng độc lập. Đo ngày 21/09 bằng chính hàm
+        # này: với câu "Mật khẩu người dùng của RtR được băm bằng Argon2id",
+        # bản ghi đúng trúng 7/9 từ được 0,702 còn bản ghi kiểm kê tài liệu chỉ
+        # trúng 3/9 từ lại được 1,047, vì nó mở đầu bằng "RtR có ..." nên ăn
+        # trọn 0,62 tiền thưởng nhắc tên. Nhắc đúng tên đang đáng giá gần bằng
+        # trả lời đúng câu hỏi, và đó là lý do mọi câu có chữ RtR đều rơi vào
+        # bản ghi kiểm kê.
+        #
+        # Nhân hai khoản thưởng với độ trùng chủ đề: bản ghi vừa đúng tên vừa
+        # đúng chủ đề gần như không mất gì (fact sản phẩm giữ nguyên điểm 1,460
+        # trong phép đo), còn bản ghi đúng tên mà lạc đề mất gần hết. Ba biến
+        # thể đã được chấm trên cùng tập trước khi chọn cái này; chỉ cái này
+        # đúng cả ba case, xem eval/tip050/bonus_probe.py.
+        entity_weight = max(term_overlap, support_overlap)
+        adjustment += coverage * 0.24 * entity_weight
         if matched & primary:
-            adjustment += 0.38
+            adjustment += 0.38 * entity_weight
         if profile.intent == "definition":
             definition_terms = {
                 "drone", "heavy", "lifter", "multirotor", "platform", "tactical", "uav",

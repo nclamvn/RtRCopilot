@@ -81,6 +81,15 @@ logger = logging.getLogger("rtr_copilot.rag")
 MARKER_RE = re.compile(r"\[(C\d+)\]")
 CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 VERIFIED_WORDS = re.compile(r"(?i)\b(verified|xác minh|đã kiểm chứng)\b")
+
+#: TIP-051: intent mà bản ghi ĐỊNH NGHĨA thực thể có tư cách đứng đầu bằng chứng.
+#: Ràng buộc ontology dành một chỗ ở ĐẦU danh sách cho mọi bản ghi định nghĩa
+#: của thực thể được nhận ra, bất kể điểm số. Với câu hỏi "RtR là công ty gì"
+#: thì đó là hành vi đúng. Với "RtR có chứng nhận SOC 2 không" thì bản ghi tên
+#: pháp nhân chiếm mất chỗ C1 và trở thành câu trả lời, trong khi bản ghi đúng
+#: vẫn nằm trong chỉ mục và thắng điểm ở /search. Đo được ngày 21/09: 7 trong
+#: 16 câu hỏi bị trả lời bằng L3F.ENT.001 mà vẫn mang nhãn grounded.
+DEFINITION_AUTHORITY_INTENTS = frozenset({"definition", "enumeration"})
 FACT_UNIT_RE = re.compile(
     r"(?<=[.!?])\s+(?!\[C\d+\])|(?<=\])\s+(?=\S)",
 )
@@ -2273,7 +2282,17 @@ class AnswerService:
                 query_entities=query_plan.retrieval_entities,
                 query_collection_record_keys=query_plan.collection_record_keys,
                 query_intent=query_plan.intent,
-                query_definition_record_keys=query_plan.definition_record_keys,
+                # TIP-051: chỉ dành chỗ ưu tiên cho bản ghi định nghĩa khi câu
+                # hỏi thực sự hỏi về chính thực thể. Ở intent khác, bản ghi đó
+                # vẫn nằm trong nhóm ứng viên và vẫn được thu hồi, chỉ là phải
+                # cạnh tranh bằng điểm như mọi bản ghi khác. Facet hồ sơ không
+                # bị đụng tới vì ở intent lookup chúng đã được lọc theo đúng
+                # câu hỏi trước khi tới đây.
+                query_definition_record_keys=(
+                    query_plan.definition_record_keys
+                    if query_plan.intent in DEFINITION_AUTHORITY_INTENTS
+                    else ()
+                ),
                 query_profile_record_keys=query_plan.profile_record_keys,
                 ranking_query=relevance_question,
                 support_queries=tuple(dict.fromkeys((

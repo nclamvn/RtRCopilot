@@ -1,0 +1,823 @@
+{
+  "search": [
+    {
+      "label": "P1",
+      "query": "HeraSight Standard NETD",
+      "expected": "SPEC.HERASIGHT.STD.NETD",
+      "http_status": 200,
+      "verdict": "CÓ MẶT ở hạng 1",
+      "results": [
+        {
+          "record_key": "SPEC.HERASIGHT.STD.NETD",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.699999988079071,
+          "vector_score": 0.7454684972763115,
+          "fusion_score": 1.4625224736889224
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.STD.IR_LENS",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.6000000238418579,
+          "vector_score": 0.6639800868046244,
+          "fusion_score": 1.1407983913915298
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.STD.IR_FRAME_RATE",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.6000000238418579,
+          "vector_score": 0.6304882013215779,
+          "fusion_score": 1.1407765175357008
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.STD.LRF_PRECISION",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.6000000238418579,
+          "vector_score": 0.6206514465420587,
+          "fusion_score": 1.1398773713919894
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.STD.WEIGHT",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.6000000238418579,
+          "vector_score": 0.5809474837215265,
+          "fusion_score": 1.1387784702930883
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.STD.LRF_MAX",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.6000000238418579,
+          "vector_score": 0.4221574319694963,
+          "fusion_score": 1.1370515637494725
+        }
+      ]
+    },
+    {
+      "label": "P2",
+      "query": "HeraSight Standard có độ nhạy nhiệt NETD bao nhiêu?",
+      "expected": "SPEC.HERASIGHT.STD.NETD",
+      "http_status": 200,
+      "verdict": "CÓ MẶT ở hạng 1",
+      "results": [
+        {
+          "record_key": "SPEC.HERASIGHT.STD.NETD",
+          "provenance_level": "verified_primary",
+          "lexical_score": 1.0,
+          "vector_score": 0.700625044144694,
+          "fusion_score": 1.2169669193254598
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.NDAA.NETD",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.9000000357627869,
+          "vector_score": 0.5437615403915851,
+          "fusion_score": 1.0681646861159613
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.STD.LRF_PRECISION",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.800000011920929,
+          "vector_score": 0.47125357389450073,
+          "fusion_score": 0.7807814419735337
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.STD.IR_LENS",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.699999988079071,
+          "vector_score": 0.5558604001998901,
+          "fusion_score": 0.7714768794152225
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.STD.IR_FRAME_RATE",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.699999988079071,
+          "vector_score": 0.5348081866021055,
+          "fusion_score": 0.7712016076565748
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.STD.LRF_MAX",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.699999988079071,
+          "vector_score": 0.3331094483267627,
+          "fusion_score": 0.7685547189415746
+        }
+      ]
+    },
+    {
+      "label": "P3",
+      "query": "NETD 40 mK",
+      "expected": "SPEC.HERASIGHT.STD.NETD",
+      "http_status": 200,
+      "verdict": "CÓ MẶT ở hạng 1",
+      "results": [
+        {
+          "record_key": "SPEC.HERASIGHT.STD.NETD",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.5,
+          "vector_score": 0.4064938966330236,
+          "fusion_score": 0.8225224748810154
+        },
+        {
+          "record_key": "SPEC.HERASIGHT61.STD.NETD",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.5,
+          "vector_score": 0.39663798849130094,
+          "fusion_score": 0.8225224748810154
+        },
+        {
+          "record_key": "SPEC.HERASIGHT61.NDAA.NETD",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.30000001192092896,
+          "vector_score": 0.2842676341533661,
+          "fusion_score": 0.5550793662714579
+        },
+        {
+          "record_key": "SPEC.HERASIGHT.NDAA.NETD",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.30000001192092896,
+          "vector_score": 0.26043915096871517,
+          "fusion_score": 0.5545833345254263
+        },
+        {
+          "record_key": "L3R.1.015",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.20000000298023224,
+          "vector_score": 0.14760050177574158,
+          "fusion_score": 0.5441025644005874
+        },
+        {
+          "record_key": "SPEC.HERA.FLIGHT.MISSION_PAYLOAD",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.20000000298023224,
+          "vector_score": 0.10830605229067258,
+          "fusion_score": 0.2969696972677202
+        }
+      ]
+    },
+    {
+      "label": "P4",
+      "query": "VEGA RTK tích hợp sẵn",
+      "expected": "SPEC.VEGA.RTK",
+      "http_status": 200,
+      "verdict": "CÓ MẶT ở hạng 1",
+      "results": [
+        {
+          "record_key": "SPEC.VEGA.RTK",
+          "provenance_level": "approved_internal",
+          "lexical_score": 1.100000023841858,
+          "vector_score": 0.4424128899082108,
+          "fusion_score": 1.4927868852459016
+        },
+        {
+          "record_key": "L3R.K.001",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.30000001192092896,
+          "vector_score": 0.1545767301825618,
+          "fusion_score": 0.4383055567476485
+        },
+        {
+          "record_key": "L3R.1.021",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.20000000298023224,
+          "vector_score": 0.19462471370402545,
+          "fusion_score": 0.4283055558535788
+        },
+        {
+          "record_key": "tip024.xlsx.sales-brief",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.20000000298023224,
+          "vector_score": 0.0,
+          "fusion_score": 0.41995238125040424
+        },
+        {
+          "record_key": "tip024.pdf.evnnpt-executive",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.5,
+          "vector_score": 0.0,
+          "fusion_score": 0.3979508254302775
+        },
+        {
+          "record_key": "tip024.docx.rtr-factsheet",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.20000000298023224,
+          "vector_score": 0.0,
+          "fusion_score": 0.39247471156843344
+        }
+      ]
+    },
+    {
+      "label": "P5",
+      "query": "VEGA có RTK tích hợp sẵn hay chỉ tương thích?",
+      "expected": "SPEC.VEGA.RTK",
+      "http_status": 200,
+      "verdict": "CÓ MẶT ở hạng 1",
+      "results": [
+        {
+          "record_key": "SPEC.VEGA.RTK",
+          "provenance_level": "approved_internal",
+          "lexical_score": 1.7000000476837158,
+          "vector_score": 0.5857302793425249,
+          "fusion_score": 1.4927868852459016
+        },
+        {
+          "record_key": "L3F.REG.009",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.699999988079071,
+          "vector_score": 0.2274915115530204,
+          "fusion_score": 0.4630402918482001
+        },
+        {
+          "record_key": "tip024.pdf.evnnpt-executive",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.699999988079071,
+          "vector_score": 0.04079702488753423,
+          "fusion_score": 0.4196921963741204
+        },
+        {
+          "record_key": "tip027.project.quangninh-uav-ioc-v4",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.4000000059604645,
+          "vector_score": 0.040242383792542524,
+          "fusion_score": 0.38680025504897264
+        },
+        {
+          "record_key": "tip024.pptx.danang-uav",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.30000001192092896,
+          "vector_score": 0.0,
+          "fusion_score": 0.37245276622588497
+        },
+        {
+          "record_key": "L3R.2.028",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.4000000059604645,
+          "vector_score": 0.20387289318392265,
+          "fusion_score": 0.29352895208274443
+        }
+      ]
+    },
+    {
+      "label": "P6",
+      "query": "quy ước đánh số phiên bản phần cứng",
+      "expected": "L3F.STD.001",
+      "http_status": 200,
+      "verdict": "CÓ MẶT ở hạng 1",
+      "results": [
+        {
+          "record_key": "L3F.STD.001",
+          "provenance_level": "approved_internal",
+          "lexical_score": 2.4000000953674316,
+          "vector_score": 0.5291055440902748,
+          "fusion_score": 0.8727868852459016
+        },
+        {
+          "record_key": "L3F.CERT.003",
+          "provenance_level": "verified_secondary",
+          "lexical_score": 1.100000023841858,
+          "vector_score": 0.45757333202839,
+          "fusion_score": 0.6397580645161292
+        },
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "provenance_level": "approved_internal",
+          "lexical_score": 1.100000023841858,
+          "vector_score": 0.0,
+          "fusion_score": 0.6312626200443241
+        },
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "provenance_level": "approved_internal",
+          "lexical_score": 1.0,
+          "vector_score": 0.0,
+          "fusion_score": 0.6308173076923078
+        },
+        {
+          "record_key": "L3F.REG.005",
+          "provenance_level": "verified_primary",
+          "lexical_score": 0.9000000357627869,
+          "vector_score": 0.42962848301274603,
+          "fusion_score": 0.6275905013138353
+        },
+        {
+          "record_key": "tip024.pdf.vinatea-field-script",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.699999988079071,
+          "vector_score": 0.0,
+          "fusion_score": 0.5956218072522963
+        }
+      ]
+    },
+    {
+      "label": "P7",
+      "query": "Argon2id",
+      "expected": "L3F.INF.014",
+      "http_status": 200,
+      "verdict": "CÓ MẶT ở hạng 1",
+      "results": [
+        {
+          "record_key": "L3F.INF.014",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.10000000149011612,
+          "vector_score": 0.2449489904924953,
+          "fusion_score": 0.7027868853949133
+        }
+      ]
+    },
+    {
+      "label": "P8",
+      "query": "Mật khẩu người dùng được băm bằng thuật toán nào?",
+      "expected": "L3F.INF.014",
+      "http_status": 200,
+      "verdict": "CÓ MẶT ở hạng 2",
+      "results": [
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "provenance_level": "approved_internal",
+          "lexical_score": 1.0,
+          "vector_score": 0.03248772300816416,
+          "fusion_score": 0.7070008302200083
+        },
+        {
+          "record_key": "L3F.INF.014",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.800000011920929,
+          "vector_score": 0.6453979207693983,
+          "fusion_score": 0.6977868864379945
+        },
+        {
+          "record_key": "tip024.pdf.evnnpt-executive",
+          "provenance_level": "approved_internal",
+          "lexical_score": 1.2000000476837158,
+          "vector_score": 0.030579678754229622,
+          "fusion_score": 0.6300396825396826
+        },
+        {
+          "record_key": "tip024.pdf.vinatea-field-script",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.699999988079071,
+          "vector_score": 0.04184926796857913,
+          "fusion_score": 0.6003174591253675
+        },
+        {
+          "record_key": "tip024.pdf.vinatea-field-script",
+          "provenance_level": "approved_internal",
+          "lexical_score": 1.100000023841858,
+          "vector_score": 0.0336655954321865,
+          "fusion_score": 0.5525274725274725
+        },
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.9000000357627869,
+          "vector_score": 0.04869968526365254,
+          "fusion_score": 0.5453420433772738
+        }
+      ]
+    },
+    {
+      "label": "P9",
+      "query": "us-east-1",
+      "expected": "L3F.INF.002",
+      "http_status": 200,
+      "verdict": "CÓ MẶT ở hạng 1",
+      "results": [
+        {
+          "record_key": "L3F.INF.002",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.4000000059604645,
+          "vector_score": 0.1686624687112852,
+          "fusion_score": 0.7322664590920132
+        }
+      ]
+    },
+    {
+      "label": "P10",
+      "query": "Dữ liệu của RtR được lưu ở đâu?",
+      "expected": "L3F.INF.002",
+      "http_status": 200,
+      "verdict": "VẮNG MẶT",
+      "results": [
+        {
+          "record_key": "L3F.INF.025",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.6000000238418579,
+          "vector_score": 0.39339789748191833,
+          "fusion_score": 1.4517460341302173
+        },
+        {
+          "record_key": "L3F.INF.051",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.4000000059604645,
+          "vector_score": 0.4089564870544089,
+          "fusion_score": 1.4299069567325107
+        },
+        {
+          "record_key": "L3F.INF.068",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.4000000059604645,
+          "vector_score": 0.2745626218225927,
+          "fusion_score": 1.428083268467217
+        },
+        {
+          "record_key": "L3F.INF.064",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.4000000059604645,
+          "vector_score": 0.26687249340147046,
+          "fusion_score": 1.4278260875525681
+        },
+        {
+          "record_key": "L3F.INF.003",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.30000001192092896,
+          "vector_score": 0.24748741812891628,
+          "fusion_score": 1.1055787611079095
+        },
+        {
+          "record_key": "L3F.INF.043",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.30000001192092896,
+          "vector_score": 0.24965442721195075,
+          "fusion_score": 1.1055216705339868
+        }
+      ]
+    },
+    {
+      "label": "P11",
+      "query": "SOC 2",
+      "expected": "",
+      "http_status": 200,
+      "verdict": "không có bản ghi kỳ vọng",
+      "results": [
+        {
+          "record_key": "tip027.project.haiphong-uav-ioc-v4",
+          "provenance_level": "approved_internal",
+          "lexical_score": 1.0,
+          "vector_score": 0.0,
+          "fusion_score": 0.4712572373862696
+        },
+        {
+          "record_key": "tip024.image.skywatch-sensor",
+          "provenance_level": "approved_internal",
+          "lexical_score": 1.3000000715255737,
+          "vector_score": 0.0,
+          "fusion_score": 0.47064876177188697
+        },
+        {
+          "record_key": "tip027.project.haiphong-uav-ioc-v4",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.800000011920929,
+          "vector_score": 0.0,
+          "fusion_score": 0.4509235221156138
+        },
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.6000000238418579,
+          "vector_score": 0.0,
+          "fusion_score": 0.4327678595270429
+        },
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.6000000238418579,
+          "vector_score": 0.0,
+          "fusion_score": 0.43237762476180813
+        },
+        {
+          "record_key": "L3F.REG.016",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.4000000059604645,
+          "vector_score": 0.10725456471551675,
+          "fusion_score": 0.4210993255719384
+        }
+      ]
+    },
+    {
+      "label": "P12",
+      "query": "RtR có chứng nhận SOC 2 không?",
+      "expected": "",
+      "http_status": 200,
+      "verdict": "không có bản ghi kỳ vọng",
+      "results": [
+        {
+          "record_key": "L3F.CERT.002",
+          "provenance_level": "verified_secondary",
+          "lexical_score": 1.0,
+          "vector_score": 0.44894437156121203,
+          "fusion_score": 0.9565224748810153
+        },
+        {
+          "record_key": "L3F.REC.001",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.5,
+          "vector_score": 0.2802229774197629,
+          "fusion_score": 0.9411997079225994
+        },
+        {
+          "record_key": "L3F.2.039",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.5,
+          "vector_score": 0.2590358566088524,
+          "fusion_score": 0.9397260101010101
+        },
+        {
+          "record_key": "L3F.2.030",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.4000000059604645,
+          "vector_score": 0.37928372621536255,
+          "fusion_score": 0.9338773696038503
+        },
+        {
+          "record_key": "L3F.2.001",
+          "provenance_level": "approved_internal",
+          "lexical_score": 0.20000000298023224,
+          "vector_score": 0.18660646677017212,
+          "fusion_score": 0.8597503542385612
+        },
+        {
+          "record_key": "L3F.CERT.001",
+          "provenance_level": "verified_secondary",
+          "lexical_score": 0.800000011920929,
+          "vector_score": 0.497375339113197,
+          "fusion_score": 0.8565224760731083
+        }
+      ]
+    }
+  ],
+  "gate": [
+    {
+      "label": "G1",
+      "question": "Mật khẩu người dùng của RtR được băm bằng Argon2id phải không?",
+      "use_class": "proposal",
+      "http_status": 200,
+      "state": "grounded",
+      "reason_code": null,
+      "answer": "L3F.2.039: RtR có gói \"Em gửi anh Đông\" v1.0 (14/07/2026) tại KnowledgeBase/Gui_Anh_Dong/: bộ công cụ hướng dẫn người ngoài dùng AI viết bản thảo và kiểm chứng dữ liệu, gồm 4 tập PDF và 2 skill (ai-viet, loc-va-kiem-chung), license CC BY-SA 4.0, với nguyên tắc lõi mọi con số AI đưa ra phải kiểm chứng từ nguồn thứ hai và trách nhiệm cuối thuộc người ký tên. [C1]",
+      "citations": [
+        [
+          "L3F.2.039",
+          "approved_internal"
+        ]
+      ]
+    },
+    {
+      "label": "G2",
+      "question": "Mật khẩu người dùng của RtR được băm bằng Argon2id phải không?",
+      "use_class": "attestation",
+      "http_status": 200,
+      "state": "grounded",
+      "reason_code": null,
+      "answer": "L3F.2.039: RtR có gói \"Em gửi anh Đông\" v1.0 (14/07/2026) tại KnowledgeBase/Gui_Anh_Dong/: bộ công cụ hướng dẫn người ngoài dùng AI viết bản thảo và kiểm chứng dữ liệu, gồm 4 tập PDF và 2 skill (ai-viet, loc-va-kiem-chung), license CC BY-SA 4.0, với nguyên tắc lõi mọi con số AI đưa ra phải kiểm chứng từ nguồn thứ hai và trách nhiệm cuối thuộc người ký tên. [C1]",
+      "citations": [
+        [
+          "L3F.2.039",
+          "approved_internal"
+        ]
+      ]
+    },
+    {
+      "label": "G3",
+      "question": "Argon2id được RtR dùng để làm gì?",
+      "use_class": "proposal",
+      "http_status": 200,
+      "state": "grounded",
+      "reason_code": null,
+      "answer": "L3F.2.021: RtR có fact-sheet chính thức gửi báo chí (RtR_Factsheet_GuiAnhDong.docx, cập nhật 14/07/2026) tổng hợp thông tin công ty và sản phẩm phục vụ báo cáo về kinh tế tầm thấp, đầu mối là AI Officer Nguyễn Cảnh Lâm, dùng nội bộ cho công tác báo chí và không phổ biến ngoài phạm vi trao đổi. [C1]",
+      "citations": [
+        [
+          "L3F.2.021",
+          "approved_internal"
+        ]
+      ]
+    },
+    {
+      "label": "G4",
+      "question": "Argon2id được RtR dùng để làm gì?",
+      "use_class": "attestation",
+      "http_status": 200,
+      "state": "grounded",
+      "reason_code": null,
+      "answer": "L3F.2.021: RtR có fact-sheet chính thức gửi báo chí (RtR_Factsheet_GuiAnhDong.docx, cập nhật 14/07/2026) tổng hợp thông tin công ty và sản phẩm phục vụ báo cáo về kinh tế tầm thấp, đầu mối là AI Officer Nguyễn Cảnh Lâm, dùng nội bộ cho công tác báo chí và không phổ biến ngoài phạm vi trao đổi. [C1]",
+      "citations": [
+        [
+          "L3F.2.021",
+          "approved_internal"
+        ]
+      ]
+    },
+    {
+      "label": "G5",
+      "question": "RtR là công ty gì?",
+      "use_class": "proposal",
+      "http_status": 200,
+      "state": "grounded",
+      "reason_code": null,
+      "answer": "L3F.REC.001: RtR có các dấu công nhận và cột mốc công khai: (1) được Phó Thủ tướng Chính phủ công nhận là \"cánh chim đầu đàn\" của hệ sinh thái drone Việt Nam (phát biểu chính thức 2024, báo chí TW + địa phương); (2) Giải Vàng Bộ Khoa học & Công nghệ 12/2025; (3) là doanh nghiệp Việt Nam đầu tiên xuất khẩu UAV sang Mỹ và thị trường G7. [C1] Đây là các dấu công nhận công khai, dùng làm credential khi giới thiệu năng lực công ty. [C1]",
+      "citations": [
+        [
+          "L3F.REC.001",
+          "approved_internal"
+        ]
+      ]
+    }
+  ],
+  "dilution": [
+    {
+      "label": "D1 gốc",
+      "query": "Argon2id được RtR dùng để làm gì?",
+      "expected": "L3F.INF.014",
+      "rank": 0,
+      "results": [
+        {
+          "record_key": "L3F.2.021",
+          "lexical_score": 0.4000000059604645,
+          "fusion_score": 1.119009880772628
+        },
+        {
+          "record_key": "L3F.REG.006",
+          "lexical_score": 0.699999988079071,
+          "fusion_score": 1.1117780568154731
+        },
+        {
+          "record_key": "L3F.INF.030",
+          "lexical_score": 0.30000001192092896,
+          "fusion_score": 1.106257460697634
+        },
+        {
+          "record_key": "L3F.REC.001",
+          "lexical_score": 0.30000001192092896,
+          "fusion_score": 1.1036761009399212
+        },
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "lexical_score": 0.9000000357627869,
+          "fusion_score": 0.8353174638937388
+        }
+      ]
+    },
+    {
+      "label": "D1 nối tên chuẩn",
+      "query": "Argon2id được RtR dùng để làm gì? Real-time Robotics",
+      "expected": "L3F.INF.014",
+      "rank": 0,
+      "results": [
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "lexical_score": 1.600000023841858,
+          "fusion_score": 1.0312568306010927
+        },
+        {
+          "record_key": "tip024.docx.rtr-factsheet",
+          "lexical_score": 0.4000000059604645,
+          "fusion_score": 1.003469452106735
+        },
+        {
+          "record_key": "tip024.docx.rtr-factsheet",
+          "lexical_score": 0.5,
+          "fusion_score": 0.9323860727086534
+        },
+        {
+          "record_key": "tip024.pdf.evnnpt-executive",
+          "lexical_score": 1.100000023841858,
+          "fusion_score": 0.8274971941638608
+        },
+        {
+          "record_key": "L3F.1.020",
+          "lexical_score": 0.9000000357627869,
+          "fusion_score": 0.8161202221555137
+        }
+      ]
+    },
+    {
+      "label": "D2 gốc",
+      "query": "Mật khẩu người dùng của RtR được băm bằng Argon2id phải không?",
+      "expected": "L3F.INF.014",
+      "rank": 4,
+      "results": [
+        {
+          "record_key": "L3F.2.039",
+          "lexical_score": 0.5,
+          "fusion_score": 0.7514210996300549
+        },
+        {
+          "record_key": "tip024.pdf.vinatea-field-script",
+          "lexical_score": 0.699999988079071,
+          "fusion_score": 0.7438040599893417
+        },
+        {
+          "record_key": "L3F.REG.006",
+          "lexical_score": 0.800000011920929,
+          "fusion_score": 0.7416900105291611
+        },
+        {
+          "record_key": "L3F.INF.014",
+          "lexical_score": 0.9000000357627869,
+          "fusion_score": 0.7250091110444026
+        },
+        {
+          "record_key": "L3F.CERT.002",
+          "lexical_score": 0.5,
+          "fusion_score": 0.7114768806073153
+        }
+      ]
+    },
+    {
+      "label": "D2 nối tên chuẩn",
+      "query": "Mật khẩu người dùng của RtR được băm bằng Argon2id phải không? Real-time Robotics",
+      "expected": "L3F.INF.014",
+      "rank": 0,
+      "results": [
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "lexical_score": 1.0,
+          "fusion_score": 0.6698282362798491
+        },
+        {
+          "record_key": "tip027.project.quangninh-uav-ioc-v4",
+          "lexical_score": 1.0,
+          "fusion_score": 0.6683450947834508
+        },
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "lexical_score": 1.600000023841858,
+          "fusion_score": 0.6537960400255483
+        },
+        {
+          "record_key": "L3F.2.039",
+          "lexical_score": 0.5,
+          "fusion_score": 0.6501451131028596
+        },
+        {
+          "record_key": "L3F.1.020",
+          "lexical_score": 1.0,
+          "fusion_score": 0.6434315657901062
+        }
+      ]
+    },
+    {
+      "label": "D3 gốc",
+      "query": "Dữ liệu của RtR được lưu ở đâu?",
+      "expected": "L3F.INF.002",
+      "rank": 0,
+      "results": [
+        {
+          "record_key": "L3F.INF.025",
+          "lexical_score": 0.6000000238418579,
+          "fusion_score": 1.4517460341302173
+        },
+        {
+          "record_key": "L3F.INF.051",
+          "lexical_score": 0.4000000059604645,
+          "fusion_score": 1.4299069567325107
+        },
+        {
+          "record_key": "L3F.INF.068",
+          "lexical_score": 0.4000000059604645,
+          "fusion_score": 1.428083268467217
+        },
+        {
+          "record_key": "L3F.INF.064",
+          "lexical_score": 0.4000000059604645,
+          "fusion_score": 1.4278260875525681
+        },
+        {
+          "record_key": "L3F.INF.003",
+          "lexical_score": 0.30000001192092896,
+          "fusion_score": 1.1055787611079095
+        }
+      ]
+    },
+    {
+      "label": "D3 nối tên chuẩn",
+      "query": "Dữ liệu của RtR được lưu ở đâu? Real-time Robotics",
+      "expected": "L3F.INF.002",
+      "rank": 0,
+      "results": [
+        {
+          "record_key": "L3F.INF.025",
+          "lexical_score": 0.6000000238418579,
+          "fusion_score": 1.0365240665553088
+        },
+        {
+          "record_key": "tip024.pdf.hbc-executive",
+          "lexical_score": 1.5,
+          "fusion_score": 1.0287125220458553
+        },
+        {
+          "record_key": "tip024.docx.rtr-factsheet",
+          "lexical_score": 0.5,
+          "fusion_score": 1.0156838176486271
+        },
+        {
+          "record_key": "L3F.INF.051",
+          "lexical_score": 0.4000000059604645,
+          "fusion_score": 1.0136594208859016
+        },
+        {
+          "record_key": "L3F.INF.064",
+          "lexical_score": 0.4000000059604645,
+          "fusion_score": 1.0130968533173124
+        }
+      ]
+    }
+  ]
+}

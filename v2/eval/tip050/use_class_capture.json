@@ -1,0 +1,342 @@
+{
+  "subject": {
+    "user_id": "06796a25-5419-40fe-a1fe-e67c57ed53e7",
+    "email": "staff@rtrobotics.com",
+    "display_name": "Development Staff",
+    "roles": [
+      "staff"
+    ],
+    "groups": [],
+    "departments": [],
+    "projects": []
+  },
+  "results": [
+    {
+      "id": "BU-001",
+      "severity": "P0",
+      "use_class": "proposal",
+      "question": "RtR có thu hồi quyền truy cập khi nhân viên nghỉ việc không?",
+      "note": "Nguồn duy nhất là lời chứng thực hành L3F.INF.021/062.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "L3F.INF.062: RtR có quy trình nhận việc và nghỉ việc dạng văn bản: khi chuyển vị trí hoặc thăng chức thì quyền truy cập được rà soát và điều chỉnh theo vai trò mới; khi nghỉ việc thì mọi tài khoản gồm email, kho mã nguồn, đám mây và hệ thống nội bộ đều bị thu hồi. [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "L3F.INF.062",
+          "provenance_level": "approved_internal",
+          "source_label": "L3F.INF.062"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "BU-002",
+      "severity": "P0",
+      "use_class": "attestation",
+      "question": "RtR có thu hồi quyền truy cập khi nhân viên nghỉ việc không?",
+      "note": "Trục use_class phải loại lời chứng và nói rõ vì sao.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "L3F.CERT.002: Các chứng nhận RtR CHƯA có bản scan trong SOT, tính đến 18/09/2026: ISO 9001, MIL-STD-810 (đã thử nghiệm), DO-160G (đã thử nghiệm), FAA Part 107 compatible, ITAR controlled, IP54, FIPS 140-2 capable. [C4] Nguồn duy nhất hiện có là bảng certifications trong Company Knowledge Base v2.0 (L3F.1.037), là tài liệu nội bộ, không phải giấy chứng nhận. [C4] QUY TẮC: được nêu trong trao đổi bán hàng và giới thiệu năng lực; KHÔNG được đánh dấu là chứng nhận đã có trong văn bản cam đoan pháp lý (ví dụ ô 2.2 và 2.3 bộ câu hỏi New Jersey) cho tới khi nạp được bản scan. [C4] Việc cần làm: thu thập bản scan từng chứng nhận, nạp vào source_canonical, băm hash, rồi nâng từng dòng lên tầng có bằng chứng. [C4]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "L3F.CERT.002",
+          "provenance_level": "verified_secondary",
+          "source_label": "L3F.CERT.002"
+        }
+      ],
+      "failures": [
+        "state 'grounded' ngoài kỳ vọng ['honest_null']",
+        "thiếu 'chứng thực'",
+        "thiếu 'L3F.INF.'"
+      ],
+      "verdict": "FAIL"
+    },
+    {
+      "id": "BU-003a",
+      "severity": "P0",
+      "use_class": "proposal",
+      "question": "RtR có chứng nhận SOC 2 không?",
+      "note": "Registry không có fact nào nhắc SOC 2. Trả lời được hay không đều chấp nhận, nhưng tuyệt đối không ngụ ý có, và không được lấy bản ghi tên pháp nhân ra làm câu trả lời.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "L3F.CERT.002: Các chứng nhận RtR CHƯA có bản scan trong SOT, tính đến 18/09/2026: ISO 9001, MIL-STD-810 (đã thử nghiệm), DO-160G (đã thử nghiệm), FAA Part 107 compatible, ITAR controlled, IP54, FIPS 140-2 capable. [C1] Nguồn duy nhất hiện có là bảng certifications trong Company Knowledge Base v2.0 (L3F.1.037), là tài liệu nội bộ, không phải giấy chứng nhận. [C1] QUY TẮC: được nêu trong trao đổi bán hàng và giới thiệu năng lực; KHÔNG được đánh dấu là chứng nhận đã có trong văn bản cam đoan pháp lý (ví dụ ô 2.2 và 2.3 bộ câu hỏi New Jersey) cho tới khi nạp được bản scan. [C1] Việc cần làm: thu thập bản scan từng chứng nhận, nạp vào source_canonical, băm hash, rồi nâng từng dòng lên tầng có bằng chứng. [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "L3F.CERT.002",
+          "provenance_level": "verified_secondary",
+          "source_label": "L3F.CERT.002"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "BU-003b",
+      "severity": "P0",
+      "use_class": "attestation",
+      "question": "RtR có chứng nhận SOC 2 không?",
+      "note": "Như trên, ở ngữ cảnh chặt nhất.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "L3F.CERT.002: Các chứng nhận RtR CHƯA có bản scan trong SOT, tính đến 18/09/2026: ISO 9001, MIL-STD-810 (đã thử nghiệm), DO-160G (đã thử nghiệm), FAA Part 107 compatible, ITAR controlled, IP54, FIPS 140-2 capable. [C1] Nguồn duy nhất hiện có là bảng certifications trong Company Knowledge Base v2.0 (L3F.1.037), là tài liệu nội bộ, không phải giấy chứng nhận. [C1] QUY TẮC: được nêu trong trao đổi bán hàng và giới thiệu năng lực; KHÔNG được đánh dấu là chứng nhận đã có trong văn bản cam đoan pháp lý (ví dụ ô 2.2 và 2.3 bộ câu hỏi New Jersey) cho tới khi nạp được bản scan. [C1] Việc cần làm: thu thập bản scan từng chứng nhận, nạp vào source_canonical, băm hash, rồi nâng từng dòng lên tầng có bằng chứng. [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "L3F.CERT.002",
+          "provenance_level": "verified_secondary",
+          "source_label": "L3F.CERT.002"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "BU-004a",
+      "severity": "P0",
+      "use_class": "proposal",
+      "question": "Dữ liệu của RtR được lưu ở đâu?",
+      "note": "Phân xử 18/09: nêu region cụ thể. Dò 21/09 cho thấy L3F.INF.002 vắng mặt ngay ở /search với cách hỏi này, nên đây còn là phép thử độ thu hồi.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "L3F.INF.025: RtR không vận hành mạng nội bộ lưu dữ liệu khách hàng; dữ liệu nằm trên hạ tầng đám mây, không nằm trên mạng văn phòng. [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "L3F.INF.025",
+          "provenance_level": "approved_internal",
+          "source_label": "L3F.INF.025"
+        }
+      ],
+      "failures": [
+        "thiếu 'us-east-1'",
+        "trích ['L3F.INF.025'] thay vì ['L3F.INF.002']"
+      ],
+      "verdict": "FAIL"
+    },
+    {
+      "id": "BU-004b",
+      "severity": "P1",
+      "use_class": "attestation",
+      "question": "Dữ liệu của RtR được lưu ở đâu?",
+      "note": "Cư trú dữ liệu thuộc sàn cứng nhóm 3 nhưng nguồn duy nhất đang là lời chứng. Phát hiện F1 của TIP-050.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "L3F.2.039: RtR có gói \"Em gửi anh Đông\" v1.0 (14/07/2026) tại KnowledgeBase/Gui_Anh_Dong/: bộ công cụ hướng dẫn người ngoài dùng AI viết bản thảo và kiểm chứng dữ liệu, gồm 4 tập PDF và 2 skill (ai-viet, loc-va-kiem-chung), license CC BY-SA 4.0, với nguyên tắc lõi mọi con số AI đưa ra phải kiểm chứng từ nguồn thứ hai và trách nhiệm cuối thuộc người ký tên. [C7]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "L3F.2.039",
+          "provenance_level": "approved_internal",
+          "source_label": "L3F.2.039"
+        }
+      ],
+      "failures": [
+        "state 'grounded' ngoài kỳ vọng ['honest_null']",
+        "thiếu 'chứng thực'"
+      ],
+      "verdict": "FAIL"
+    },
+    {
+      "id": "BU-005",
+      "severity": "P0",
+      "use_class": "proposal",
+      "question": "HERA mang được tải trọng tối đa bao nhiêu?",
+      "note": "Canh luật mới không làm trôi số sản phẩm đã siết ở TIP-046.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "Maximum payload capacity · HERA tải trọng tối đa, payload mang được bao nhiêu kg: 14 kg · Nguồn: Maximum payloads weight: 30 lb(13.6 kg) [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "SPEC.HERA.PAYLOAD.MAX",
+          "provenance_level": "approved_internal",
+          "source_label": "HERA 2.0-MASTER-V1.0.1.xlsx · kernel specs"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "BU-006",
+      "severity": "P1",
+      "use_class": "proposal",
+      "question": "Bao giờ RtR có giải pháp quản lý thiết bị tập trung MDM?",
+      "note": "L3F.INF.090 là cam kết lộ trình, phải đọc ra là tương lai.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "L3F.INF.090: RtR sẽ triển khai giải pháp quản lý thiết bị tập trung (MDM) cho toàn bộ endpoint truy cập môi trường production. [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "L3F.INF.090",
+          "provenance_level": "approved_internal",
+          "source_label": "L3F.INF.090"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "UC-005",
+      "severity": "P0",
+      "use_class": null,
+      "question": "HERA mang được tải trọng tối đa bao nhiêu?",
+      "note": "Không nêu ngữ cảnh: mặc định proposal, kết quả phải y như BU-005.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "Maximum payload capacity · HERA tải trọng tối đa, payload mang được bao nhiêu kg: 14 kg · Nguồn: Maximum payloads weight: 30 lb(13.6 kg) [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "SPEC.HERA.PAYLOAD.MAX",
+          "provenance_level": "approved_internal",
+          "source_label": "HERA 2.0-MASTER-V1.0.1.xlsx · kernel specs"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "UC-007",
+      "severity": "P0",
+      "use_class": "attestation",
+      "question": "HERA mang được tải trọng tối đa bao nhiêu?",
+      "note": "Nguồn ở tầng đủ tư cách chứng thực, nên cổng mới KHÔNG được chặn.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "Maximum payload capacity · HERA tải trọng tối đa, payload mang được bao nhiêu kg: 14 kg · Nguồn: Maximum payloads weight: 30 lb(13.6 kg) [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "SPEC.HERA.PAYLOAD.MAX",
+          "provenance_level": "approved_internal",
+          "source_label": "HERA 2.0-MASTER-V1.0.1.xlsx · kernel specs"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "MS-009",
+      "severity": "P0",
+      "use_class": "proposal",
+      "question": "HeraSight Standard có độ nhạy nhiệt NETD bao nhiêu?",
+      "note": "TIP-049 tách NETD bốn biến thể. Dò 21/09: bản ghi này hạng 1 ở /search.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "HeraSight Standard thermal sensitivity (NETD) · HeraSight Standard độ nhạy nhiệt: 40 mK · Nguồn: ≤40 mK [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "SPEC.HERASIGHT.STD.NETD",
+          "provenance_level": "verified_primary",
+          "source_label": "HeraSight-Standard-MASTER-V1.0.xlsx · kernel specs"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "MS-010",
+      "severity": "P0",
+      "use_class": "proposal",
+      "question": "HeraSight61 NDAA có độ nhạy nhiệt NETD bao nhiêu?",
+      "note": "Lượt 21/09 PASS giả vì trích HC-001 mà vẫn có chữ 20.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "HeraSight61 NDAA thermal sensitivity (NETD) · HeraSight61 NDAA độ nhạy nhiệt: 20 mK · Nguồn: Professional: ≤20 mK [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "SPEC.HERASIGHT61.NDAA.NETD",
+          "provenance_level": "verified_primary",
+          "source_label": "HeraSight61-NDAA-MASTER-v1.0.xlsx · kernel specs"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "MS-011",
+      "severity": "P0",
+      "use_class": "proposal",
+      "question": "VEGA có RTK tích hợp sẵn hay chỉ tương thích?",
+      "note": "Phân xử 21/09: hỗ trợ cả hai. Dò 21/09: bản ghi này hạng 1 với lex 1,7.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "VEGA RTK-GNSS configuration options · VEGA cấu hình RTK-GNSS, tích hợp hay tương thích: Hỗ trợ cả hai: RTK-GNSS tích hợp sẵn hoặc chỉ tương thích, tùy yêu cầu khách hàng text · Nguồn: Supports multi-link: RF, Cellular, Starlink, Tether, Fiber Optic / Integrated RTK-GNSS [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "SPEC.VEGA.RTK",
+          "provenance_level": "approved_internal",
+          "source_label": "VEGA-MASTER-V1.0.xlsx · kernel specs"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "MS-012",
+      "severity": "P1",
+      "use_class": "proposal",
+      "question": "HERA có hỗ trợ RTK-GNSS không?",
+      "note": "Còn mở 049.1: HERA có cấu hình tích hợp sẵn như VEGA không.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "HERA RTK-GNSS support level · HERA mức hỗ trợ RTK-GNSS, tích hợp sẵn hay tương thích: Supports RTK-GNSS text · Nguồn: Supports multi-link: RF, Cellular, Starlink, Tether. [C1] / Supports RTK-GNSS [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "SPEC.HERA.RTK",
+          "provenance_level": "verified_primary",
+          "source_label": "HERA 2.0-MASTER-V1.0.1.xlsx · kernel specs"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    },
+    {
+      "id": "MS-013",
+      "severity": "P0",
+      "use_class": "proposal",
+      "question": "Quy ước đánh số phiên bản sản phẩm phần cứng của RtR là gì?",
+      "note": "Lượt 21/09 bị từ chối vì bộ lập kế hoạch ngữ nghĩa chưa sẵn sàng, không phải vì thiếu dữ liệu: /search xếp L3F.STD.001 hạng 1 với lex 2,4.",
+      "http_status": 200,
+      "state": "honest_null",
+      "answer": "Câu hỏi này cần LLM lập kế hoạch ngữ nghĩa và kiểm tra độ bao phủ trước khi trả lời. Dịch vụ chất lượng cao chưa sẵn sàng nên hệ thống từ chối thay vì trả một trích đoạn thiếu.",
+      "reason_code": "answer_quality_configuration_required",
+      "citations": [],
+      "failures": [
+        "state 'honest_null' ngoài kỳ vọng ['grounded']",
+        "thiếu '1.0'"
+      ],
+      "verdict": "FAIL"
+    },
+    {
+      "id": "MS-014",
+      "severity": "P1",
+      "use_class": "attestation",
+      "question": "RtR đã có bản scan chứng nhận ISO 9001 trong hệ thống chưa?",
+      "note": "L3F.CERT.002 tầng derived_from_verified, đủ tư cách chứng thực.",
+      "http_status": 200,
+      "state": "grounded",
+      "answer": "L3F.CERT.002: Các chứng nhận RtR CHƯA có bản scan trong SOT, tính đến 18/09/2026: ISO 9001, MIL-STD-810 (đã thử nghiệm), DO-160G (đã thử nghiệm), FAA Part 107 compatible, ITAR controlled, IP54, FIPS 140-2 capable. [C1] Nguồn duy nhất hiện có là bảng certifications trong Company Knowledge Base v2.0 (L3F.1.037), là tài liệu nội bộ, không phải giấy chứng nhận. [C1] QUY TẮC: được nêu trong trao đổi bán hàng và giới thiệu năng lực; KHÔNG được đánh dấu là chứng nhận đã có trong văn bản cam đoan pháp lý (ví dụ ô 2.2 và 2.3 bộ câu hỏi New Jersey) cho tới khi nạp được bản scan. [C1] Việc cần làm: thu thập bản scan từng chứng nhận, nạp vào source_canonical, băm hash, rồi nâng từng dòng lên tầng có bằng chứng. [C1]",
+      "reason_code": null,
+      "citations": [
+        {
+          "record_key": "L3F.CERT.002",
+          "provenance_level": "verified_secondary",
+          "source_label": "L3F.CERT.002"
+        }
+      ],
+      "failures": [],
+      "verdict": "PASS"
+    }
+  ]
+}

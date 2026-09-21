@@ -18,12 +18,21 @@ curl -s localhost:18000/health/ready
 
 ## 1. Cổng tĩnh, chạy trước khi động vào stack
 
+`.venv` trong `apps/backend` là venv dựng bên trong image Docker: `pyvenv.cfg` ghi `home = /usr/local/bin` và `bin/python` trỏ tới `/usr/local/bin/python3`, đường dẫn chỉ tồn tại trong container. Trên máy Homeowner nó là symlink gãy. Đường chạy đúng của repo này là `uv run`, như Makefile đang dùng ở target `eval` và `parity`.
+
 ```bash
 cd /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend
-.venv/bin/python -m pytest tests/test_tip050_use_class.py -q
-.venv/bin/python -m pytest -q
-.venv/bin/python -m mypy
-.venv/bin/python -m ruff check src tests
+uv run pytest tests/test_tip050_use_class.py -q
+uv run pytest -q
+uv run mypy
+uv run ruff check src tests
+```
+
+Chưa có `uv` thì `brew install uv`. Riêng bộ 16 test đơn vị chạy được không cần gì thêm, vì `use_class.py` không phụ thuộc thư viện ngoài nào:
+
+```bash
+cd /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend
+PYTHONPATH=src python3 -m pytest tests/test_tip050_use_class.py -q
 ```
 
 | Cổng | Đạt khi |
@@ -42,14 +51,18 @@ Cổng `use_class` nằm trong tiến trình api. Code mới không vào nếu c
 ```bash
 cd /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2
 docker compose build api worker && docker compose up -d api worker
-docker compose logs --tail 30 api | grep -i "started\|error"
+curl -s localhost:18000/health/ready; echo
 ```
+
+`health/ready` trả `{"ok":true,...}` là bằng chứng code mới nạp được: nối import sai thì tiến trình chết lúc khởi động. Container báo "Started" chưa nói lên điều đó.
 
 ## 3. Bàn thử tự động, 16 case
 
+Bàn thử chỉ dùng thư viện chuẩn, không cần `uv` và không cần venv của backend.
+
 ```bash
 cd /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2
-.venv/bin/python eval/tip050/capture_use_class.py --base http://127.0.0.1:18000
+python3 eval/tip050/capture_use_class.py --base http://127.0.0.1:18000
 ```
 
 Bảng in ra có PASS/FAIL từng case; bản ghi đầy đủ gồm câu trả lời và citation nằm ở `eval/tip050/use_class_capture.json`, đính kèm Verify report. Thoát 1 nghĩa là có case P0 hỏng.
