@@ -508,6 +508,8 @@ async def test_active_reindex_search_grounded_answer_and_citation(
     assert hits
     assert retrieval.trace.metadata_rows >= 1
     assert retrieval.trace.content_queries == 1
+    assert retrieval.trace.idf_stats_queries == 1
+    assert retrieval.trace.idf_terms > 0
     assert set(retrieval.trace.loaded_chunk_ids) == {item.chunk_id for item in hits}
     assert hits[0].citation.record_key == record_key
     assert hits[0].citation.locator == {"paragraph": 2}
@@ -538,8 +540,13 @@ async def test_active_reindex_search_grounded_answer_and_citation(
             SELECT generation_id FROM active_search_generations
             WHERE source_key=:source_key
         """), {"source_key": source_key})
+        term_stats = await session.scalar(text("""
+            SELECT count(*) FROM search_generation_term_stats
+            WHERE generation_id=:generation_id
+        """), {"generation_id": generation_id})
     assert persisted == len(response.citations)
     assert pointer == generation_id
+    assert int(term_stats or 0) > 0
 
 
 @pytest.mark.asyncio

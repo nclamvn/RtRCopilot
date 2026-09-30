@@ -21,6 +21,7 @@ from rtr_copilot.rag.adapters import (
     OpenAIEmbedding,
     build_embedding_adapter,
     lexical_query,
+    lexical_terms,
     normalize_query,
 )
 from rtr_copilot.rag.dlp import ProviderPolicy
@@ -28,6 +29,7 @@ from rtr_copilot.rag.models import Citation, RetrievalHit, SearchFilters
 from rtr_copilot.rag.query_understanding import QueryIntent
 from rtr_copilot.rag.relevance import (
     candidate_relevance_score,
+    corpus_idf_signals,
     is_procedure_row,
     profile_query,
 )
@@ -66,6 +68,8 @@ class RetrievalTrace:
     # TIP-014RE: True when a provider embedding failure degraded this request
     # to lexical-only ranking (observable, never fails the question).
     embedding_degraded: bool = False
+    idf_stats_queries: int = 0
+    idf_terms: int = 0
 
 
 class RetrievalService:
@@ -120,6 +124,56 @@ class RetrievalService:
                 self.trace.embedding_degraded = True
                 return None
         return self.embedding.embed(terms_text)
+
+    async def _active_corpus_idf(
+        self,
+        terms: tuple[str, ...],
+        *,
+        source_key: str | None,
+    ) -> dict[str, float]:
+        """Read frozen IDF weights for query lexemes from active generations."""
+        if not terms:
+            return {}
+        self.trace.idf_stats_queries += 1
+        async with self.uow.factory() as session:
+            rows = (await session.execute(text("""
+                WITH active AS (
+                  SELECT g.generation_id,g.chunk_count
+                  FROM active_search_generations ag
+                  JOIN search_generations g
+                    ON g.generation_id=ag.generation_id
+                   AND g.lifecycle='active'
+                  WHERE (CAST(:source_key AS text) IS NULL
+                    OR ag.source_key=CAST(:source_key AS text))
+                ), corpus AS (
+                  SELECT coalesce(sum(chunk_count),0)::double precision AS total
+                  FROM active
+                ), frequencies AS (
+                  SELECT query_term.term,
+                    coalesce(sum(stats.chunk_frequency),0)::double precision AS df
+                  FROM unnest(CAST(:terms AS text[])) AS query_term(term)
+                  LEFT JOIN search_generation_term_stats stats
+                    ON stats.term=query_term.term
+                   AND stats.generation_id IN (
+                     SELECT generation_id FROM active
+                   )
+                  GROUP BY query_term.term
+                )
+                SELECT frequencies.term,
+                  CASE WHEN corpus.total <= 0 THEN 0::double precision
+                  ELSE ln(
+                    (greatest(corpus.total,frequencies.df)+1.0)
+                    /(frequencies.df+1.0)
+                  )+1.0 END AS idf
+                FROM frequencies CROSS JOIN corpus
+                ORDER BY frequencies.term
+            """), {
+                "source_key": source_key,
+                "terms": list(terms),
+            })).mappings().all()
+        weights = {str(row["term"]): float(row["idf"]) for row in rows}
+        self.trace.idf_terms = len(weights)
+        return weights
 
     @staticmethod
     def _consume_background_result(task: asyncio.Task[Any]) -> None:
@@ -971,6 +1025,7 @@ class RetrievalService:
                 else query_collection_record_keys
             ),
         )
+        idf_query_terms = lexical_terms(normalize_query(ranking_query or query))
         # Query embedding is independent of metadata authorization. Start it
         # now and overlap provider latency with the bounded policy-only scan;
         # answer content is still loaded strictly after ACL admission.
@@ -1077,6 +1132,10 @@ class RetrievalService:
                     support_queries=support_queries,
                 )
             return []
+        idf_by_term = await self._active_corpus_idf(
+            idf_query_terms,
+            source_key=filters.source_key,
+        )
         # TIP-014RE: the vector arm embeds the RANKING profile (the user's
         # original wording), not the expanded recall soup. Lexical recall
         # still benefits from planner expansions, but concatenating them
@@ -1182,6 +1241,12 @@ class RetrievalService:
                 + 1.0 / (60 + int(row["vector_rank"]))
                 + min(float(row["lexical_score"]), 1.0) * 0.1
             )
+            idf_coverage, rare_idf_coverage = corpus_idf_signals(
+                idf_query_terms,
+                text=str(row["display_text"]),
+                record_key=str(row["record_key"]),
+                idf_by_term=idf_by_term,
+            )
             fusion = candidate_relevance_score(
                 query_profile,
                 text=str(row["display_text"]),
@@ -1192,6 +1257,8 @@ class RetrievalService:
                 support_queries=support_queries,
                 semantic_floor=self._semantic_floor,
                 allow_unbound_definition=filters.source_key is not None,
+                idf_coverage=idf_coverage,
+                rare_idf_coverage=rare_idf_coverage,
             )
             if fusion is not None:
                 ranked.append((fusion, row))

@@ -94,7 +94,7 @@ def _declared(payload: Any) -> tuple[str, ...]:
     declared = payload.get(USE_CLASS_KEY)
     if isinstance(declared, str):
         declared = [declared]
-    if not isinstance(declared, Sequence) or isinstance(declared, (bytes, bytearray)):
+    if not isinstance(declared, Sequence) or isinstance(declared, bytes | bytearray):
         return ()
     return tuple(item for item in USE_CLASSES if item in set(declared))
 

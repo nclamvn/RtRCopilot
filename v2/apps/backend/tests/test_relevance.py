@@ -3,6 +3,8 @@ from rtr_copilot.rag.relevance import (
     answer_relevant,
     candidate_relevance_score,
     collection_items_covered,
+    corpus_idf_coverage,
+    corpus_rare_term_coverage,
     evidence_relevant,
     is_procedure_row,
     profile_query,
@@ -28,6 +30,114 @@ def score(question: str, text: str, record_key: str) -> float | None:
         vector_score=0.25,
         min_vector_score=0.15,
     )
+
+
+def test_corpus_idf_coverage_fails_neutral_without_statistics() -> None:
+    assert corpus_idf_coverage(
+        ("argon2id", "nguoi", "dung"),
+        text="Mật khẩu người dùng được băm bằng Argon2id.",
+        record_key="L3F.INF.014",
+        idf_by_term={},
+    ) == 0.0
+
+
+def test_corpus_idf_lifts_rare_exact_fact_above_long_company_prose() -> None:
+    question = "Mật khẩu người dùng của RtR được băm bằng Argon2id phải không?"
+    profile = profile_query(question)
+    query_terms = (
+        "mat", "khau", "nguoi", "dung", "rtr", "bam", "bang", "argon2id", "phai",
+    )
+    idf = {
+        "argon2id": 6.301,
+        "bam": 5.608,
+        "khau": 4.429,
+        "phai": 4.050,
+        "mat": 3.949,
+        "nguoi": 3.858,
+        "bang": 3.356,
+        "dung": 2.760,
+        "rtr": 2.232,
+    }
+    fact_text = (
+        "Mật khẩu người dùng được băm bằng Argon2id với salt riêng cho từng "
+        "người dùng."
+    )
+    inventory_text = (
+        "RtR có kho tài liệu người dùng và các báo cáo được dùng trong vận hành."
+    )
+    fact_coverage = corpus_idf_coverage(
+        query_terms,
+        text=fact_text,
+        record_key="L3F.INF.014",
+        idf_by_term=idf,
+    )
+    inventory_coverage = corpus_idf_coverage(
+        query_terms,
+        text=inventory_text,
+        record_key="L3F.2.039",
+        idf_by_term=idf,
+    )
+    fact = candidate_relevance_score(
+        profile,
+        text=fact_text,
+        record_key="L3F.INF.014",
+        base_score=0.123,
+        vector_score=0.25,
+        min_vector_score=0.15,
+        idf_coverage=fact_coverage,
+        rare_idf_coverage=corpus_rare_term_coverage(
+            query_terms,
+            text=fact_text,
+            record_key="L3F.INF.014",
+            idf_by_term=idf,
+        ),
+    )
+    inventory = candidate_relevance_score(
+        profile,
+        text=inventory_text,
+        record_key="L3F.2.039",
+        base_score=0.083,
+        vector_score=0.25,
+        min_vector_score=0.15,
+        idf_coverage=inventory_coverage,
+        rare_idf_coverage=corpus_rare_term_coverage(
+            query_terms,
+            text=inventory_text,
+            record_key="L3F.2.039",
+            idf_by_term=idf,
+        ),
+    )
+    assert fact_coverage > inventory_coverage
+    assert fact is not None and inventory is not None and fact > inventory
+
+
+def test_rare_exact_anchor_beats_multiple_common_company_terms() -> None:
+    question = "Argon2id được RtR dùng để làm gì?"
+    profile = profile_query(question)
+    terms = ("argon2id", "rtr", "dung", "lam")
+    idf = {"argon2id": 6.301, "lam": 3.698, "dung": 2.760, "rtr": 2.232}
+    fact_text = "Mật khẩu người dùng được băm bằng Argon2id với salt riêng."
+    generic_text = "RtR dùng tài liệu này làm fact-sheet chính thức gửi báo chí."
+
+    def ranked(text: str, key: str, base: float) -> float | None:
+        return candidate_relevance_score(
+            profile,
+            text=text,
+            record_key=key,
+            base_score=base,
+            vector_score=0.25,
+            min_vector_score=0.15,
+            idf_coverage=corpus_idf_coverage(
+                terms, text=text, record_key=key, idf_by_term=idf,
+            ),
+            rare_idf_coverage=corpus_rare_term_coverage(
+                terms, text=text, record_key=key, idf_by_term=idf,
+            ),
+        )
+
+    fact = ranked(fact_text, "L3F.INF.014", 0.058)
+    generic = ranked(generic_text, "L3F.2.021", 0.105)
+    assert fact is not None and generic is not None and fact > generic
 
 
 def test_vega_definition_requires_vega_as_primary_subject() -> None:

@@ -445,6 +445,23 @@ class ReindexService:
                 """), {"generation_id": generation_id})
                 if int(count or 0) != len(candidates):
                     raise ReindexError("generation_count_mismatch")
+                # TIP-053: freeze lexical document frequency beside the
+                # immutable generation. This is intentionally inside the same
+                # transaction as the active-pointer swap: a generation can
+                # never become searchable without its complete IDF basis.
+                await session.execute(text("""
+                    INSERT INTO search_generation_term_stats(
+                      generation_id,term,chunk_frequency
+                    )
+                    SELECT c.generation_id,lexeme.term,count(*)::integer
+                    FROM chunks c
+                    CROSS JOIN LATERAL
+                      unnest(tsvector_to_array(c.lexical)) AS lexeme(term)
+                    WHERE c.generation_id=:generation_id
+                      AND c.lifecycle='active'
+                    GROUP BY c.generation_id,lexeme.term
+                    ON CONFLICT(generation_id,term) DO NOTHING
+                """), {"generation_id": generation_id})
                 await session.execute(text("""
                     UPDATE search_generations SET lifecycle='superseded'
                     WHERE source_key=:source_key AND lifecycle='active'

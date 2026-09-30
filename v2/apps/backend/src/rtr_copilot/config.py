@@ -74,7 +74,7 @@ class Settings(BaseSettings):
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86400)
     session_cookie_name: str = "rtr_session"
     session_cookie_secure: bool | None = None
-    expected_schema_revision: str = "0014_document_outbox_repair"
+    expected_schema_revision: str = "0015_generation_term_stats"
     sot_staging_root: Path = Path("/tmp/rtr-sot-staging")
     research_staging_root: Path = Path("/tmp/rtr-research-staging")
     sot_signing_secret: SecretStr = SecretStr(

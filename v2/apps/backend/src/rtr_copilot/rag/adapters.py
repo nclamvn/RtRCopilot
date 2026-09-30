@@ -64,6 +64,15 @@ QUERY_STOPWORDS = frozenset({
 })
 
 
+def lexical_terms(normalized: str) -> tuple[str, ...]:
+    """Return unique PostgreSQL ``simple``-dictionary query lexemes."""
+    seen: list[str] = []
+    for token in _LEX_TOKEN.findall(normalized):
+        if token not in QUERY_STOPWORDS and token not in seen:
+            seen.append(token)
+    return tuple(seen)
+
+
 def lexical_query(normalized: str) -> str:
     """Build an OR ``tsquery`` string ("a | b | c") from a normalized query.
 
@@ -73,11 +82,7 @@ def lexical_query(normalized: str) -> str:
     matching term contribute, while ``ts_rank_cd`` still ranks chunks that match
     more terms higher. Deterministic; tokens are already safe lexemes.
     """
-    seen: list[str] = []
-    for token in _LEX_TOKEN.findall(normalized):
-        if token not in QUERY_STOPWORDS and token not in seen:
-            seen.append(token)
-    return " | ".join(seen)
+    return " | ".join(lexical_terms(normalized))
 
 
 class EmbeddingAdapter(Protocol):

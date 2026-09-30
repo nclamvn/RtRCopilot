@@ -9,10 +9,14 @@ question/answer consistency check.  It never decides truth or bypasses policy.
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from rtr_copilot.rag.adapters import QUERY_STOPWORDS, normalize_query
+from rtr_copilot.rag.adapters import (
+    QUERY_STOPWORDS,
+    lexical_terms,
+    normalize_query,
+)
 from rtr_copilot.rag.models import ProviderEvidence
 from rtr_copilot.rag.query_understanding import (
     QueryIntent,
@@ -23,6 +27,13 @@ from rtr_copilot.rag.query_understanding import (
 _RECORD_PREFIX = re.compile(r"^[A-Za-z0-9_.-]+:\s*")
 _RECORD_KEY_SEPARATOR = re.compile(r"[._-]+")
 _PROCEDURE_ROW = re.compile(r"^(?:b|buoc|step)\s*\d{1,3}\b")
+CORPUS_IDF_WEIGHT = 0.08
+# On the measured 400-chunk active corpus this floor means a term occurs in at
+# most a handful of chunks (Argon2id=1, ``idf=6.30``; ``bam``=3, ``idf=5.61``).
+# An exact match on such an identifier is evidence on par with a governed
+# definition binding, but never bypasses that binding or any security gate.
+RARE_TERM_IDF_FLOOR = 5.0
+RARE_TERM_WEIGHT = 0.72
 
 
 def _record_key_text(record_key: str) -> str:
@@ -103,6 +114,81 @@ def primary_entities(text: str, record_key: str = "") -> set[str]:
     return primary
 
 
+def corpus_idf_signals(
+    query_terms: Sequence[str],
+    *,
+    text: str,
+    record_key: str,
+    idf_by_term: Mapping[str, float],
+) -> tuple[float, float]:
+    """Return weighted coverage and rare-anchor coverage in one tokenization.
+
+    Missing or stale statistics fail neutral (zero), never as a penalty or an
+    authority bypass. Candidate lexemes use the same tokenizer as PostgreSQL's
+    ``simple`` dictionary query path, including punctuation splitting.
+    """
+    weighted = {
+        term: max(0.0, float(idf_by_term.get(term, 0.0)))
+        for term in dict.fromkeys(query_terms)
+    }
+    denominator = sum(weighted.values())
+    if denominator <= 0:
+        return 0.0, 0.0
+    candidate_terms = set(lexical_terms(normalize_query(
+        f"{_record_key_text(record_key)} {text}",
+    )))
+    numerator = sum(
+        weight for term, weight in weighted.items() if term in candidate_terms
+    )
+    weighted_coverage = min(1.0, numerator / denominator)
+    rare = {
+        term: weight
+        for term, weight in weighted.items()
+        if weight >= RARE_TERM_IDF_FLOOR
+    }
+    rare_denominator = sum(rare.values())
+    if rare_denominator <= 0:
+        return weighted_coverage, 0.0
+    rare_coverage = min(
+        1.0,
+        sum(weight for term, weight in rare.items() if term in candidate_terms)
+        / rare_denominator,
+    )
+    return weighted_coverage, rare_coverage
+
+
+def corpus_idf_coverage(
+    query_terms: Sequence[str],
+    *,
+    text: str,
+    record_key: str,
+    idf_by_term: Mapping[str, float],
+) -> float:
+    """Weighted component of :func:`corpus_idf_signals`."""
+    return corpus_idf_signals(
+        query_terms,
+        text=text,
+        record_key=record_key,
+        idf_by_term=idf_by_term,
+    )[0]
+
+
+def corpus_rare_term_coverage(
+    query_terms: Sequence[str],
+    *,
+    text: str,
+    record_key: str,
+    idf_by_term: Mapping[str, float],
+) -> float:
+    """Coverage of genuinely rare exact anchors in the active corpus."""
+    return corpus_idf_signals(
+        query_terms,
+        text=text,
+        record_key=record_key,
+        idf_by_term=idf_by_term,
+    )[1]
+
+
 def candidate_relevance_score(
     profile: QueryProfile,
     *,
@@ -114,6 +200,8 @@ def candidate_relevance_score(
     support_queries: Sequence[str] = (),
     allow_unbound_definition: bool = False,
     semantic_floor: float | None = None,
+    idf_coverage: float = 0.0,
+    rare_idf_coverage: float = 0.0,
 ) -> float | None:
     """Return an adjusted rank, or ``None`` when evidence is ineligible.
 
@@ -170,6 +258,13 @@ def candidate_relevance_score(
     # recover synonyms, but cannot take semantic authority from the question.
     adjustment = term_overlap * 0.62 + min(original_matches, 3) * 0.04
     adjustment += support_overlap * 0.18
+    # TIP-053: rare exact terms are more discriminative than ubiquitous
+    # company prose. The bounded additive signal cannot outrank authority
+    # contracts by itself and is a no-op when corpus statistics are absent.
+    adjustment += min(1.0, max(0.0, idf_coverage)) * CORPUS_IDF_WEIGHT
+    adjustment += (
+        min(1.0, max(0.0, rare_idf_coverage)) * RARE_TERM_WEIGHT
+    )
     if profile.intent == "procedure":
         # Select the governing process/SOP before adjacent intake, quotation
         # and survey forms when document admission is metadata-only. Forms are
@@ -185,7 +280,13 @@ def candidate_relevance_score(
         # rows over covers, purpose statements and adjacent forms after the
         # document itself has passed entity and relevance gates.
         if is_procedure_row(text):
-            adjustment += 0.50
+            # The former 0.50 no longer offset the combined title-term and
+            # entity-primary bonus of a cover row (1.299 vs 1.043 in the
+            # invariant test), so the answer evidence could lead with the
+            # document cover rather than an executable step. A numbered row is
+            # already constrained to an admitted procedure document; make that
+            # structural signal decisive inside that document.
+            adjustment += 0.90
         elif text_terms & {
             "deadline", "form", "owner", "responsibility", "sla",
             "bieu", "mau", "thoi", "han", "trach", "nhiem",
