@@ -1,0 +1,662 @@
+{
+  "HEAD": "0e88f48588dc3228f1ae9eca7a7597d96589af8b",
+  "HEAD_diagnostic_policy": "git: warning: confstr() failed with code 5: couldn't get path of DARWIN_USER_TEMP_DIR; using /tmp instead",
+  "HEAD_witness": "Main baseline plus fixed read-only live HEAD match; dirty source bytes pinned",
+  "boundary_sha256": "66dff0f467b9cc7e7c4cd982580ba9101ee69e95d6be5f9c04c0a9ee439554f2",
+  "campaign_authority": false,
+  "effects": "DENY_THIS_BATCH",
+  "epoch": "r27_broker_http_e1",
+  "marker": "v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1/r19/r27-broker-launch.json",
+  "plan": {
+    "broker_identity_substitutions": {
+      "r27-runtime-campaign-launch.json": "r27-broker-launch.json",
+      "r27_runtime_http_e1": "r27_broker_http_e1",
+      "rtr_tip054_r27_engine_e1": "rtr_tip054_r27_broker_engine_e1",
+      "rtr_tip054_r27_local_e1": "rtr_tip054_r27_broker_local_e1"
+    },
+    "commands": [
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "exec",
+          "-w",
+          "/workspace/v2/apps/backend",
+          "tip054-4b-full-20261007-r5qa1-runner",
+          "env",
+          "-i",
+          "PATH=/app/.venv/bin:/usr/local/bin:/usr/bin:/bin",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "PYTHONPATH=/qa/packages:/workspace/v2/apps/backend/src:/workspace/v2/apps/backend/tests:/work/r21",
+          "APP_ENV=test",
+          "ACTION_EXECUTOR_ENABLED=false",
+          "POSTGRES_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_broker_local_e1",
+          "INTEGRATION_DATABASE_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_broker_local_e1",
+          "RAG_EMBEDDING_PROVIDER=offline",
+          "RAG_PROVIDER_MODE=local",
+          "OPENAI_API_KEY=",
+          "ANTHROPIC_API_KEY=",
+          "LIMITS_RATE_RENDER_MAX=30",
+          "LIMITS_RATE_DEFAULT_READ_MAX=120",
+          "LIMITS_RATE_WINDOW_SECONDS=60",
+          "ACTION_EXECUTOR_OPERATION_TIMEOUT_SECONDS=0.9",
+          "TMPDIR=/evidence/r19/r27_broker_http_e1/tmp",
+          "SOT_STAGING_ROOT=/evidence/r19/r27_broker_http_e1/tmp/staging",
+          "RESEARCH_STAGING_ROOT=/evidence/r19/r27_broker_http_e1/tmp/research",
+          "REDIS_URL=redis://tip054-redis:6379/0",
+          "S3_ENDPOINT=http://tip054-minio:9000",
+          "S3_ACCESS_KEY=rtr_tip054_local",
+          "S3_SECRET_KEY=rtr_tip054_synthetic_only",
+          "S3_BUCKET=rtr-tip054-synthetic",
+          "/app/.venv/bin/python",
+          "/work/r19/bounded.py",
+          "run",
+          "/evidence/r19/r27_broker_http_e1",
+          "http",
+          "load",
+          "/usr/bin/env",
+          "ACTION_EXECUTOR_ENABLED=true",
+          "ACTION_WORKFLOW_DSN=postgresql://rtr_tip054_engine:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_broker_engine_e1",
+          "LIMITS_RATE_RENDER_MAX=5000",
+          "LIMITS_RATE_DEFAULT_READ_MAX=5000",
+          "/app/.venv/bin/python",
+          "/work/r/run_phase_baseline.py",
+          "/evidence/r19/r27_broker_http_e1/run",
+          "off"
+        ],
+        "effects": "PREPARED_ONLY: original HTTP/SQL workload, never dispatched",
+        "label": "load",
+        "output_records": "original write calls; whole child stream HOLD",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 190,
+        "stderr_family": "load_stderr",
+        "stdout_family": "summary_stdout"
+      },
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "exec",
+          "-w",
+          "/workspace/v2/apps/backend",
+          "tip054-4b-full-20261007-r5qa1-runner",
+          "env",
+          "-i",
+          "PATH=/app/.venv/bin:/usr/local/bin:/usr/bin:/bin",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "PYTHONPATH=/qa/packages:/workspace/v2/apps/backend/src:/workspace/v2/apps/backend/tests:/work/r21",
+          "APP_ENV=test",
+          "ACTION_EXECUTOR_ENABLED=false",
+          "POSTGRES_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_broker_local_e1",
+          "INTEGRATION_DATABASE_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_broker_local_e1",
+          "RAG_EMBEDDING_PROVIDER=offline",
+          "RAG_PROVIDER_MODE=local",
+          "OPENAI_API_KEY=",
+          "ANTHROPIC_API_KEY=",
+          "LIMITS_RATE_RENDER_MAX=30",
+          "LIMITS_RATE_DEFAULT_READ_MAX=120",
+          "LIMITS_RATE_WINDOW_SECONDS=60",
+          "ACTION_EXECUTOR_OPERATION_TIMEOUT_SECONDS=0.9",
+          "TMPDIR=/evidence/r19/r27_broker_http_e1/tmp",
+          "SOT_STAGING_ROOT=/evidence/r19/r27_broker_http_e1/tmp/staging",
+          "RESEARCH_STAGING_ROOT=/evidence/r19/r27_broker_http_e1/tmp/research",
+          "REDIS_URL=redis://tip054-redis:6379/0",
+          "S3_ENDPOINT=http://tip054-minio:9000",
+          "S3_ACCESS_KEY=rtr_tip054_local",
+          "S3_SECRET_KEY=rtr_tip054_synthetic_only",
+          "S3_BUCKET=rtr-tip054-synthetic",
+          "/app/.venv/bin/python",
+          "/work/r19/bounded.py",
+          "run",
+          "/evidence/r19/r27_broker_http_e1",
+          "http",
+          "migration",
+          "/usr/bin/env",
+          "MIGRATION_DSN=postgresql://rtr_tip054_local:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_broker_local_e1",
+          "/app/.venv/bin/alembic",
+          "upgrade",
+          "0019_action_executor"
+        ],
+        "effects": "PREPARED_ONLY: database migration, never dispatched",
+        "label": "migration",
+        "output_records": "native whole streams HOLD",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "migration_streams",
+        "stdout_family": "migration_streams"
+      },
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "/work/r21/qualification.py",
+          "fixture",
+          "/work/r12/preflight_e1/fixture-preflight.json",
+          "/usr/local/bin/docker"
+        ],
+        "effects": "PREPARED_ONLY: Docker inspect",
+        "label": "fixture",
+        "output_records": "one original stdout/stderr stream each",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "fixture",
+        "stdout_family": "fixture"
+      },
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "exec",
+          "tip054-4b-full-20261007-r5qa1-pg",
+          "df",
+          "-k",
+          "/var/lib/postgresql/data"
+        ],
+        "effects": "PREPARED_ONLY: read-only Docker call, not executed",
+        "label": "capacity",
+        "output_records": "one original df output",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "disk",
+        "stdout_family": "disk"
+      },
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "exec",
+          "tip054-4b-full-20261007-r5qa1-pg",
+          "env",
+          "PGCONNECT_TIMEOUT=5",
+          "PGOPTIONS=-c statement_timeout=10000 -c lock_timeout=5000",
+          "psql",
+          "-X",
+          "-U",
+          "rtr_tip054_local",
+          "-d",
+          "postgres",
+          "-At",
+          "-v",
+          "ON_ERROR_STOP=1",
+          "-c",
+          "SELECT count(*) FROM pg_database WHERE datname='rtr_tip054_r27_broker_local_e1';"
+        ],
+        "effects": "PREPARED_ONLY: SQL read, no execution",
+        "label": "absence",
+        "output_records": "one original psql output per call",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "database_admin",
+        "stdout_family": "database_admin"
+      },
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "/work/r21/qualification.py",
+          "analyze",
+          "/evidence/r19/r27_broker_http_e1"
+        ],
+        "effects": "PREPARED_ONLY: original reconstruction CLI not executed",
+        "label": "reconstruction",
+        "output_records": "one original report/error",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "reconstruction",
+        "stdout_family": "reconstruction"
+      }
+    ],
+    "databases": [
+      "rtr_tip054_r27_broker_local_e1",
+      "rtr_tip054_r27_broker_engine_e1"
+    ],
+    "dispatch_surface": "NONE; namespace/commands not runtime qualified",
+    "docker_executable": "/usr/local/bin/docker PREPARED_ONLY resolution/identity unverified by runtime",
+    "effect_envelope": "serving executor OFF; synthetic queueing true; observer OFF; no worker/provider",
+    "epoch": "r27_broker_http_e1",
+    "future_raw_root": "raw/tip054-4b-full-20261007-r5qa1/r19/r27_broker_http_e1",
+    "historical_marker": "r19/r21-campaign-launch.json; preserved immutable, never deleted/reused",
+    "identity_substitutions": {
+      "r21-campaign-launch.json": "r27-broker-launch.json",
+      "r21_http_e1": "r27_broker_http_e1",
+      "rtr_tip054_r21_engine_e1": "rtr_tip054_r27_broker_engine_e1",
+      "rtr_tip054_r21_local_e1": "rtr_tip054_r27_broker_local_e1"
+    },
+    "load_seconds": 190,
+    "marker": "r19/r27-broker-launch.json; exclusive fresh marker; unknown launch consumed",
+    "native_admission": "cooperative pinned ports; unknown native writers DENY",
+    "platform_audit": "approved separate disclosed audit; not broker-owned or zero",
+    "resource_names": [
+      "tip054-4b-full-20261007-r5qa1-runner",
+      "tip054-4b-full-20261007-r5qa1-pg",
+      "tip054-4b-full-20261007-r5qa1-redis",
+      "tip054-4b-full-20261007-r5qa1-minio"
+    ],
+    "schema": "r27-runtime-command-preparation-v1",
+    "shared_cleanup_seconds": 10,
+    "sla": "unchanged admission p95<=500ms; submit/status/cancel p95<=1000ms; errors0, all100/cell",
+    "source_pins": [
+      {
+        "path": "v2/apps/backend/src/rtr_copilot/api/main.py",
+        "sha256": "a3a8f760b93a6804487eb4fdc4411537ee5ff500113651f273c4ee93cea9569b"
+      },
+      {
+        "path": "v2/apps/backend/src/rtr_copilot/auth/audit.py",
+        "sha256": "13e3da023c2b886725c6fa0270789c6297b58647dbcd8949ef5ad7474fe0fa8e"
+      },
+      {
+        "path": "v2/apps/backend/src/rtr_copilot/repositories/audit.py",
+        "sha256": "ed2b90e2e8e24fcb99efc0ccbb2263397c372a920bc719173674e9146e45ec8a"
+      },
+      {
+        "path": "v2/apps/backend/tests/sot_fixtures.py",
+        "sha256": "524e0f00a30b13b0d8844070556f0713ee9e4b7e22e72ac6b16bf9c8e8ccaacd"
+      },
+      {
+        "path": "v2/apps/backend/tests/test_context_memory_integration.py",
+        "sha256": "4cae35ed6a550eb03f3cbbe85c0e294ea32ef76970de2ac8f2d2175c570b0425"
+      },
+      {
+        "path": "v2/apps/backend/tests/test_tip054_baseline_integration.py",
+        "sha256": "9f459c198ecfe749bd738574ff9b296c27a6ad22c13cea24a1a3dfbeee162181"
+      },
+      {
+        "path": "v2/experiments/action_executor/latency_probe.py",
+        "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+      },
+      {
+        "path": "v2/experiments/action_executor/r/run_phase_baseline.py",
+        "sha256": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7"
+      },
+      {
+        "path": "v2/experiments/action_executor/r18/gate.py",
+        "sha256": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1"
+      },
+      {
+        "path": "v2/experiments/action_executor/r19/bounded.py",
+        "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+      },
+      {
+        "path": "v2/experiments/action_executor/r19/qualification.py",
+        "sha256": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11"
+      },
+      {
+        "path": "v2/experiments/action_executor/r21/contract.json",
+        "sha256": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c"
+      },
+      {
+        "path": "v2/experiments/action_executor/r21/qualification.py",
+        "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+      },
+      {
+        "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+      },
+      {
+        "path": "v2/experiments/action_executor/r21/source-binding-e1.json",
+        "sha256": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc"
+      },
+      {
+        "path": "v2/experiments/action_executor/r23/budget.json",
+        "sha256": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41"
+      },
+      {
+        "path": "v2/experiments/action_executor/r23/model.py",
+        "sha256": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024"
+      }
+    ],
+    "substitution_status": "PREPARED_ONLY; unchanged original R21 guard would not admit new names; no new effects qualified",
+    "whole_record_cap_bytes": 10485760,
+    "workload": "original one signed synthetic SOTref; c1/10/25/50; 100 cases/cell; four API operations"
+  },
+  "routing": {
+    "effects": "DENY_THIS_BATCH",
+    "families": [
+      {
+        "code": 1,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 65536,
+            "max_records": 2,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "frozen_copies",
+        "local_scope": "exact original frozen copy bytes through producer ports",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 2,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 512,
+            "max_records": 1,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "literal_controls",
+        "local_scope": "original pure controls expression; engine/runpy NOT_RUN",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 3,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 256,
+            "max_records": 1,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "literal_scope",
+        "local_scope": "exact original scope literal through broker",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 4,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 1024,
+            "max_records": 3,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "launch_review",
+        "local_scope": "review line adapted; real campaign marker NOT_CONSUMED",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 5,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 512,
+            "max_records": 3200,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "journal",
+        "local_scope": "exact retain body, original encoder/append/flush on static control data",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 6,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 2097152,
+            "max_records": 1,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "final_samples",
+        "local_scope": "exact source finally write expression through logical facade",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 7,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 16384,
+            "max_records": 3,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "summary_stdout",
+        "local_scope": "exact summary/write/print/oracle; fixed raw EOF stream in separate control epoch",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 8,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 512,
+            "max_records": 4096,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "load_stderr",
+        "local_scope": "actual audit sink scoped rendered writes; fixed raw stderr EOF in separate epoch",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 9,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 512,
+            "max_records": 512,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "migration_streams",
+        "local_scope": "migration stdout/stderr QUALIFYING, PREPARED_NOT_RUN; unknown native writers DENY",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 10,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 1024,
+            "max_records": 8,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "owner_process",
+        "local_scope": "actual R19 owner/result expressions +cleanup overwrite; no Linux group qualification",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 11,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 1024,
+            "max_records": 64,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "supervisor_stop",
+        "local_scope": "exact fixed owned child/drain/reap; original Linux group/descendants NOT_RUN",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 12,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 2048,
+            "max_records": 32,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "source_cap_child",
+        "local_scope": "source/preflight/recovery controlled; original effectful CLI channels NOT_RUN",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 13,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 8192,
+            "max_records": 8,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "fixture",
+        "local_scope": "full pure signedfixture five files/six writes/stat/read; publish/SQL NOT_RUN",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 14,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 2048,
+            "max_records": 64,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "database_admin",
+        "local_scope": "SQL/admin stdout/stderr QUALIFYING but PREPARED_NOT_RUN",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 15,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 4096,
+            "max_records": 8,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "disk",
+        "local_scope": "disk command streams QUALIFYING but PREPARED_NOT_RUN",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 16,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 65536,
+            "max_records": 2,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "reconstruction",
+        "local_scope": "strict broker recovery; original load analysis CLI PREPARED_NOT_RUN",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 17,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 256,
+            "max_records": 32,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "returncodes",
+        "local_scope": "source-connected exact label/code line; original shell lifecycle PREPARED_NOT_RUN",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 18,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 65536,
+            "max_records": 16,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "ephemeral",
+        "local_scope": "logical temp namespace copy/overwrite/delete; native unknown path writers DENY",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 19,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 32,
+            "max_records": 40000,
+            "name": "data"
+          },
+          {
+            "code": 2,
+            "max_payload_bytes": 1810,
+            "max_records": 1,
+            "name": "framing"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "future_observer",
+        "local_scope": "observer OFF; no observer activation or native monitor",
+        "tested": "see exact local controls/XML"
+      },
+      {
+        "code": 20,
+        "domain": [
+          {
+            "code": 1,
+            "max_payload_bytes": 1024,
+            "max_records": 128,
+            "name": "data"
+          }
+        ],
+        "full_original_runtime": "NOT_RUN",
+        "id": "outer_transcript",
+        "local_scope": "shell/host admitted artifact streams QUALIFYING; Codex/platform transcript separate disclosed audit",
+        "tested": "see exact local controls/XML"
+      }
+    ],
+    "native_scope": "pinned cooperative ports/exact finite child only",
+    "platform_audit_bytes_claimed_zero": false,
+    "platform_audit_controlled": false,
+    "platform_boundary": "APPROVED_AND_PINNED",
+    "schema": "r27-broker-routing-v1"
+  },
+  "runtime_prerequisites": "NOT_RUN: live fixture/capacity/DB/SQL/Linux group",
+  "schema": "r27-broker-candidate-v1",
+  "sources": {
+    "v2/apps/backend/src/rtr_copilot/api/main.py": "a3a8f760b93a6804487eb4fdc4411537ee5ff500113651f273c4ee93cea9569b",
+    "v2/apps/backend/src/rtr_copilot/auth/audit.py": "13e3da023c2b886725c6fa0270789c6297b58647dbcd8949ef5ad7474fe0fa8e",
+    "v2/apps/backend/src/rtr_copilot/repositories/audit.py": "ed2b90e2e8e24fcb99efc0ccbb2263397c372a920bc719173674e9146e45ec8a",
+    "v2/apps/backend/src/rtr_copilot/sot/models.py": "de4d7d642629f4eb68de217ac6994777a5865dadeb0d8343e93846138a42f2a9",
+    "v2/apps/backend/src/rtr_copilot/sot/package.py": "320391cc732e568c1a9e57b8d0c59045e2a6756faa2341ff8516613661f06e24",
+    "v2/apps/backend/tests/sot_fixtures.py": "524e0f00a30b13b0d8844070556f0713ee9e4b7e22e72ac6b16bf9c8e8ccaacd",
+    "v2/apps/backend/tests/test_context_memory_integration.py": "4cae35ed6a550eb03f3cbbe85c0e294ea32ef76970de2ac8f2d2175c570b0425",
+    "v2/apps/backend/tests/test_tip054_baseline_integration.py": "9f459c198ecfe749bd738574ff9b296c27a6ad22c13cea24a1a3dfbeee162181",
+    "v2/experiments/action_executor/latency_probe.py": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2",
+    "v2/experiments/action_executor/r/run_phase_baseline.py": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7",
+    "v2/experiments/action_executor/r18/gate.py": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1",
+    "v2/experiments/action_executor/r19/bounded.py": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb",
+    "v2/experiments/action_executor/r19/qualification.py": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11",
+    "v2/experiments/action_executor/r21/contract.json": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c",
+    "v2/experiments/action_executor/r21/qualification.py": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef",
+    "v2/experiments/action_executor/r21/run-http-qualification.sh": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1",
+    "v2/experiments/action_executor/r21/source-binding-e1.json": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc",
+    "v2/experiments/action_executor/r23/budget.json": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41",
+    "v2/experiments/action_executor/r23/model.py": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024",
+    "v2/experiments/action_executor/r25/contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "v2/experiments/action_executor/r27/broker/SCOPE.md": "7dc21bff55537e5e1101ead159bb86f1aa3b4eef3e687939a7d1af774f97c0a9",
+    "v2/experiments/action_executor/r27/broker/adapter.py": "490cba655511dcf3b34d20d3e6964c4e8bfa46a92d77af248c4c4d1c773da925",
+    "v2/experiments/action_executor/r27/broker/adapter.pyi": "e7155087836ebf6758fd6979eab129f2646aef5e322be236684f9d267d9f443e",
+    "v2/experiments/action_executor/r27/broker/boundary.json": "66dff0f467b9cc7e7c4cd982580ba9101ee69e95d6be5f9c04c0a9ee439554f2",
+    "v2/experiments/action_executor/r27/broker/broker.py": "7712e62bb248399428928963feb8f109963849e60629484492cb3658c5be5c63",
+    "v2/experiments/action_executor/r27/broker/checks.py": "dc828da31a4acb6efc647da1718c673f3c036f9755f335da431b10f1c3c4e431",
+    "v2/experiments/action_executor/r27/broker/integration.py": "745a56eff4e576dd9fb2bd002ce470705722d2370ae334e098a26a7c11691718",
+    "v2/experiments/action_executor/r27/broker/preflight.py": "6fe488212f432e15448fd25a50c1a6657dedf88cfa133f8b2e9a13fb77cb77ba",
+    "v2/experiments/action_executor/r27/broker/routing.py": "2c0b173cb329c80856e0b830026bd0c21c08cd69359514a3dde091a675ae5fa6",
+    "v2/experiments/action_executor/r27/broker/supervisor.py": "f3ba15585462084636b864f103636c28e447ffd633e380f2e32c609d812379d4",
+    "v2/experiments/action_executor/r27/broker/test_broker.py": "92aed25f4ba705b03ad55938941ef677f9ad2bd35657a1219c2429c328d99190",
+    "v2/experiments/action_executor/r27/broker/test_integration.py": "a74516fbc8d2fd6095ac38fb3cb80a615225fefe4867903ed0d789dc08b37e14",
+    "v2/experiments/action_executor/r27/runtime/launcher.py": "d7d1ff030bafa22b58227e4648c63cae0a7dbd242af508432fea44a185781773",
+    "v2/experiments/action_executor/r27/runtime/raw_child.py": "11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f"
+  }
+}

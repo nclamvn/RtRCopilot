@@ -1,0 +1,26 @@
+Actual eight grouped controls after cleanup repair, before active-token integration. Exit 1
+......F.                                                                 [100%]
+=================================== FAILURES ===================================
+_______ test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap _______
+
+owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-9krymp6b')
+
+    def test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap(owned: Path) -> None:
+        root = owned / "spawn"
+        broker = Broker(root)
+        original = OSError("exact spawn failed")
+        async def fail_spawn(*_args: object, **_keywords: object) -> asyncio.subprocess.Process:
+            raise original
+        with patch("supervisor.asyncio.create_subprocess_exec", fail_spawn), pytest.raises(OSError) as caught:
+            asyncio.run(owned_child(broker))
+>       assert caught.value is original and isinstance(original.__cause__, RuntimeError)
+E       AssertionError: assert (OSError('exact spawn failed') is OSError('exact spawn failed') and False)
+E        +  where OSError('exact spawn failed') = <ExceptionInfo OSError('exact spawn failed') tblen=9>.value
+E        +  and   False = isinstance(OSError('exact spawn failed'), RuntimeError)
+E        +    where OSError('exact spawn failed') = OSError('exact spawn failed').__cause__
+
+v2/experiments/action_executor/r27/broker/test_integration.py:270: AssertionError
+- generated xml file: /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/peer-e6-tests.xml -
+=========================== short test summary info ============================
+FAILED v2/experiments/action_executor/r27/broker/test_integration.py::test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap
+1 failed, 7 passed in 1.99s

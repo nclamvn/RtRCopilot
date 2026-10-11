@@ -1,0 +1,33 @@
+{
+  "schema": "r27-retention-source-v1",
+  "anchors": {
+    "v2/experiments/action_executor/r27/input-binding.json": "b8d761511ba1ff5b7ee81852a2542eff10f8e0a5a2f9663ac292485e3bab63d3"
+  },
+  "direct": {
+    "v2/experiments/action_executor/r27/retention/adapter.py": "260d7bec194b05a9f7368ddea9f60b5b706a707f6dfce6d417a6ecdf1a1ba441",
+    "v2/experiments/action_executor/r27/retention/envelope.py": "5a450b5454ed34165530ccdf43af89c6da75c7968e9bf5798855d9978b2f4dfb",
+    "v2/experiments/action_executor/r27/retention/producers.py": "fb46e50e5562a01a0f2c46510d44c1f44aba542ceb52d84e376d52c5503b2d75",
+    "v2/experiments/action_executor/r27/retention/pipes.py": "01bc850a07380c90d3c074f3be7d51edc63b7b6b493d2302f365191ec4fb92ae",
+    "v2/experiments/action_executor/r27/retention/raw_child.py": "11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f",
+    "v2/experiments/action_executor/r27/retention/test_retention.py": "8667ced0365884f0bdd2ec8d3203a6b679e612f44f794e156aad8c1de82adfe3",
+    "v2/experiments/action_executor/r27/retention/checks.py": "8f7f27f3b30253d5eef571fc0db6287116a5fc8910f7848e0ccfeb7352825f53",
+    "v2/experiments/action_executor/r27/retention/routing.json": "dc5051241cba06aa34070d785e5918e479c13a39987ff8e76956829cd657c205",
+    "v2/experiments/action_executor/r27/retention/SCOPE.md": "3c55585711feb2d1d2c1c415cf9a38b2074523f86762ab0d3554386669ebc757",
+    "v2/experiments/action_executor/r27/retention/SCAN.md": "a648b8030c236234caa849ba77bf4942760d6a8478fe460c37e22422f5eeae89",
+    "v2/experiments/action_executor/r27/retention/main-before.json": "7d606f8cdcaadfedf8e53e1de139449b23eeada7b01a524367d884d327dabe04",
+    "v2/experiments/action_executor/r27/retention/main-runtime-controls.json": "c45786b2ea548a30948aeb134dbf1d953b4156c0e1b3a8b51409146fc33a71fb",
+    "v2/experiments/action_executor/r27/retention/runtime-unit.xml": "dde2478e06dffc7ba4e546e05fd052a715bf8c62fc27aca454b6fb0a6b2875a9",
+    "v2/experiments/action_executor/r27/author-feedback.json": "8dad39912484c69c2cd2a6b0db946cfabef68f23fded64cb5f9a633ab307dc59",
+    "v2/experiments/action_executor/r27/main-feedback.json": "b1df8b695f2e17a4e27cffe9aafd61491578d597b6725075a9fab1ad61c238c9",
+    "v2/experiments/action_executor/r27/main-after-check.json": "a6be461b1e5a3b7a34b4e7498a12f5f48c23cf6cc883ebf126650fe995bba337",
+    "v2/experiments/action_executor/r27/main-structural-check.json": "a5d27f8324d9bdd216a44aef0250ca70916385b717cc79b0ea761c150d2006bd",
+    "v2/experiments/action_executor/r27/main-tool-record.json": "017947b7a634b19b62f02548b90ebc5b6a04e0cec9a3f53885ebec5e982d3220",
+    "vibecode_v2/TIP-054.4b-R27_BUILDER_COMPLETION_REPORT.md": "0d2a8c2b53da439d5c7cbdb074925900efe940235fab860ca5e7321957140b09",
+    "vibecode_v2/R27_REVIEW_REPORT.md": "5bbaa3d83c5a59463a8921a401817e4567199aa5fd3d4c1bb108bae055ff7d98",
+    "v2/experiments/action_executor/r27/retention/input-binding-initial.json": "3b5deb2cc7f3d57db4cfd15b294b45617969b3a6b9f518edb7533237d6532d33",
+    "v2/experiments/action_executor/r27/retention/author-first-failure.json": "9edd180ee0a4baf848bf8e4c92a4161a00d3d2947697207f43ab1fdc54fb2cb6"
+  },
+  "retention_adoption": "APPROVED isolated only; SCOPE.md source-pinned",
+  "measurement_admission": "HOLD",
+  "scope": "Preserve frozen R27/prior graph and complete204 product/192 tests; new scoped physical/log/pipe/output-producer retention, no full campaign grant."
+}

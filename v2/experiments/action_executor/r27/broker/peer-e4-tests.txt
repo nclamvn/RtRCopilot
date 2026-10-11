@@ -1,0 +1,4 @@
+Actual eight grouped controls, current peer epoch. Exit 0
+........                                                                 [100%]
+- generated xml file: /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/peer-e4-tests.xml -
+8 passed in 3.28s

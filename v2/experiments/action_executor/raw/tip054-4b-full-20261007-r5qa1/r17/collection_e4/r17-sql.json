@@ -1,0 +1,11 @@
+{
+  "command": "docker exec -w /workspace/v2/apps/backend tip054-4b-full-20261007-r5qa1-runner env -i PATH=/app/.venv/bin:/usr/local/bin:/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/qa/packages:/workspace/v2/apps/backend/src:/workspace/v2/apps/backend/tests:/work/r12:/work/r9:/work/r15:/work/r17 APP_ENV=test ACTION_EXECUTOR_ENABLED=false POSTGRES_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r17_local_e1 REDIS_URL=redis://tip054-redis:6379/0 S3_ENDPOINT=http://tip054-minio:9000 S3_ACCESS_KEY=rtr_tip054_local S3_SECRET_KEY=rtr_tip054_synthetic_only S3_BUCKET=rtr-tip054-synthetic RAG_EMBEDDING_PROVIDER=offline RAG_PROVIDER_MODE=local /app/.venv/bin/python -m pytest -c /workspace/v2/apps/backend/pyproject.toml --collect-only -q -p no:cacheprovider -o asyncio_default_test_loop_scope=session /work/r17/test_r17_sql.py",
+  "scope": "collection-only; no test/fixture/SQL/campaign execution; explicit existing backend config",
+  "actual": {
+    "chunk_id": "b6375b",
+    "wall_time_seconds": 3.836868083,
+    "exit_code": 0,
+    "original_token_count": 227,
+    "output": "::test_canonical_legacy_equivalence\n::test_creation_reuse_overflow_and_isolation\n::test_cancel_query_close_fault_attribution_and_restoration\n\n=============================== warnings summary ===============================\n<frozen importlib._bootstrap>:488\n<frozen importlib._bootstrap>:488\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute\n\n<frozen importlib._bootstrap>:488\n<frozen importlib._bootstrap>:488\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute\n\n<frozen importlib._bootstrap>:488\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type swigvarlink has no __module__ attribute\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3 tests collected in 2.80s\nsys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute\n"
+  }
+}

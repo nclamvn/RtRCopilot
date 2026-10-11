@@ -1,0 +1,65 @@
+{
+  "kind": "Builder same-frozen-e1 offline/static feedback",
+  "binding_sha256": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc",
+  "prior_unfrozen_overlap": {
+    "tests": 6,
+    "elapsed_seconds": 0.662,
+    "exit_code": 0,
+    "chunk_id": "29219f",
+    "output": "Ran 6 tests in 0.662s; OK",
+    "bash_chunk_id": "5d0505",
+    "bash_exit_code": 0
+  },
+  "records": [
+    {
+      "cmd": "python3 -B v2/experiments/action_executor/r21/qualification.py source v2/experiments/action_executor/r21/source-binding-e1.json",
+      "result": {
+        "chunk_id": "5ca8d3",
+        "wall_time_seconds": 0.15707125,
+        "exit_code": 0,
+        "original_token_count": 4,
+        "output": "R21_PASS source\n"
+      }
+    },
+    {
+      "cmd": "python3 -B -m unittest discover -s v2/experiments/action_executor/r21 -p test_r21_offline.py -v",
+      "result": {
+        "chunk_id": "059b5b",
+        "wall_time_seconds": 0.682412083,
+        "exit_code": 0,
+        "original_token_count": 239,
+        "output": "test_exact_caller_and_derived_envelopes_before_effects (test_r21_offline.R21Controls.test_exact_caller_and_derived_envelopes_before_effects) ... ok\ntest_fixture_db_closure_and_readiness_scope (test_r21_offline.R21Controls.test_fixture_db_closure_and_readiness_scope) ... ok\ntest_linked_source_history_and_one_use_admission (test_r21_offline.R21Controls.test_linked_source_history_and_one_use_admission) ... ok\ntest_original_rows_order_missing_and_quantile_conservation (test_r21_offline.R21Controls.test_original_rows_order_missing_and_quantile_conservation) ... ok\ntest_packet_summary_controls_oracle_and_corruption (test_r21_offline.R21Controls.test_packet_summary_controls_oracle_and_corruption) ... ok\ntest_supervisor_dispatch_and_shell_ownership_failclosed (test_r21_offline.R21Controls.test_supervisor_dispatch_and_shell_ownership_failclosed) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.665s\n\nOK\n"
+      }
+    },
+    {
+      "cmd": "python3 -B -c 'from pathlib import Path; p=Path(\"v2/experiments/action_executor/r21\"); names=(\"qualification.py\",\"test_r21_offline.py\",\"test_r21_envelope.py\"); [compile((p/n).read_text(), str(p/n), \"exec\") for n in names]; print(\"SYNTAX_3_PASS\")'",
+      "result": {
+        "chunk_id": "c0d84d",
+        "wall_time_seconds": 0.000008375,
+        "exit_code": 0,
+        "original_token_count": 4,
+        "output": "SYNTAX_3_PASS\n"
+      }
+    },
+    {
+      "cmd": "bash -n v2/experiments/action_executor/r21/run-http-qualification.sh",
+      "result": {
+        "chunk_id": "b9f48a",
+        "wall_time_seconds": 0.000007375,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "cmd": "python3 -B v2/experiments/action_executor/r21/qualification.py source v2/experiments/action_executor/r21/source-binding-e1.json",
+      "result": {
+        "chunk_id": "bb1758",
+        "wall_time_seconds": 0.162756416,
+        "exit_code": 0,
+        "original_token_count": 4,
+        "output": "R21_PASS source\n"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+base_executor OFF; domain fixtures use isolated enabled settings overrides; no worker/native/provider

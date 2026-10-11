@@ -1,0 +1,365 @@
+"""Eight real local IPC/filesystem/lifecycle controls; no SQL/HTTP qualification."""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import os
+import tempfile
+import threading
+import time
+from collections.abc import Iterator
+from pathlib import Path
+from unittest.mock import patch
+
+import adapter
+import finite
+import pytest
+from finite import run_child
+from host import HostPort, OwnedBroker
+from ports import PortFile
+from transport import FRAME_CAP, HEADER, HostIPC, decode, encode
+from writer import recover
+
+HERE = Path(__file__).absolute().parent
+
+
+@pytest.fixture
+def owned() -> Iterator[Path]:
+    with tempfile.TemporaryDirectory(prefix=".real-path-core-", dir=HERE) as temporary:
+        yield Path(temporary)
+
+
+def incomplete(broker: OwnedBroker, root: Path) -> None:
+    with pytest.raises((OSError, ValueError)):
+        broker.finish()
+    assert not (root / "packet/seal.bin").exists()
+    broker.abandon()
+
+
+async def child(server: HostIPC, mode: str = "ok") -> tuple[bytes, bytes, int]:
+    result = await run_child(server, mode)
+    assert result.reaped and result.tasks_joined
+    with pytest.raises(ProcessLookupError):
+        os.kill(result.pid, 0)  # Existence check only, never an arbitrary signal.
+    return result.stdout, result.stderr, result.code
+
+
+def joined() -> None:
+    assert not [
+        task
+        for task in asyncio.all_tasks()
+        if task.get_name().startswith("r27-") and not task.done()
+    ]
+
+
+def test_real_finite_child_ack_raw_copy_text_and_recovery(owned: Path) -> None:
+    root = owned / "capture"
+    broker = OwnedBroker(root)
+
+    async def run() -> None:
+        async with HostIPC(broker, owned / "channel.sock") as server:
+            stdout, stderr, code = await child(server)
+            assert code == 0 and stderr == b""
+            assert json.loads(stdout)["status"] == "OK"
+            assert str(root).encode() not in stdout
+            with pytest.raises(adapter.PacketError, match="unjoined"):
+                broker.finish()
+            # Separate epoch below proves successful finish; active-server finish is sticky.
+        joined()
+
+    asyncio.run(run())
+    incomplete(broker, root)
+    clean = owned / "clean"
+    success = OwnedBroker(clean)
+
+    async def clean_run() -> None:
+        async with HostIPC(success, owned / "second.sock") as server:
+            stdout, stderr, code = await child(server)
+            assert code == 0 and stderr == b""
+        with HostPort(success) as port:
+            assert port.read("child/raw") == port.read("child/copy") == b"\x00\xff\n"
+            assert port.read("child/text") == "Đ".encode()
+            port.write("child/stdout.raw", "outer_transcript", stdout, "x")
+            port.write("child/stderr.raw", "outer_transcript", stderr, "x")
+        joined()
+
+    asyncio.run(clean_run())
+    recovered = success.finish()
+    assert recovered["prototype_complete"] and recovered["charge"] > recovered["stored_bytes"]
+    assert recover(clean)["physical_attempt_bytes"] == recovered["physical_attempt_bytes"]
+    for mode in ("overflow", "cancel"):
+        failed = owned / mode
+        failure = OwnedBroker(failed)
+
+        async def faulty_run(case: str = mode, owner: OwnedBroker = failure) -> None:
+            started = asyncio.Event()
+            processes: list[asyncio.subprocess.Process] = []
+            original_output = finite.output
+            fault = ValueError("whole stream overflow")
+
+            async def blocked(reader: asyncio.StreamReader) -> bytes:
+                started.set()
+                if case == "overflow":
+                    raise fault
+                await asyncio.sleep(0.1)
+                return await original_output(reader)
+
+            async with HostIPC(owner, owned / (case + ".sock")) as server:
+                with patch("finite.output", blocked):
+                    task = asyncio.create_task(
+                        run_child(server, observe=processes.append), name="r27-test-child"
+                    )
+                    await started.wait()
+                    if case == "cancel":
+                        task.cancel("first")
+                        await asyncio.sleep(0)
+                        task.cancel("repeated")
+                    with pytest.raises((ValueError, asyncio.CancelledError)) as caught:
+                        await task
+                    assert owner.first_fault is caught.value
+                    if case == "overflow":
+                        assert caught.value is fault
+                assert processes and all(p.returncode is not None for p in processes)
+                for process in processes:
+                    with pytest.raises(ProcessLookupError):
+                        os.kill(process.pid, 0)
+            joined()
+
+        asyncio.run(faulty_run())
+        incomplete(failure, failed)
+
+
+def test_auth_replay_partial_oversize_shape_before_retained_io(owned: Path) -> None:
+    for mode in ("auth", "replay", "partial", "oversize", "shape"):
+        root = owned / mode
+        broker = OwnedBroker(root)
+
+        async def run(case: str = mode, owner: OwnedBroker = broker) -> None:
+            async with HostIPC(owner, owned / (case + ".sock")) as server:
+                reader, writer = await asyncio.open_unix_connection(server.address)
+                request = {"token": server.token, "seq": 0, "op": "namespace", "args": {}}
+                if case == "auth":
+                    request["token"] = "0" * 64
+                elif case == "shape":
+                    request["extra"] = True
+                if case == "oversize":
+                    writer.write(HEADER.pack(FRAME_CAP + 1))
+                elif case == "partial":
+                    writer.write(HEADER.pack(8) + b"{")
+                    await writer.drain()
+                    writer.close()
+                else:
+                    writer.write(encode(request))
+                    await writer.drain()
+                    if case == "replay":
+                        length = HEADER.unpack(await reader.readexactly(4))[0]
+                        assert decode(await reader.readexactly(length))["ok"] is True
+                        writer.write(encode(request))
+                if case != "partial":
+                    await writer.drain()
+                    length = HEADER.unpack(await reader.readexactly(4))[0]
+                    assert decode(await reader.readexactly(length))["ok"] is False
+                    writer.close()
+                await writer.wait_closed()
+            joined()
+
+        asyncio.run(run())
+        assert not tuple((root / "files").iterdir())
+        incomplete(broker, root)
+
+
+def test_lost_ack_after_charge_is_consumed_never_replayed(owned: Path) -> None:
+    root = owned / "lost"
+    broker = OwnedBroker(root)
+
+    async def run() -> None:
+        async with HostIPC(broker, owned / "lost.sock") as server:
+            server.drop_ack_once = True
+            stdout, _, code = await child(server, "lost_ack")
+            assert code == 0 and json.loads(stdout)["status"] == "STOP"
+        joined()
+
+    asyncio.run(run())
+    assert (root / "files/child/raw").read_bytes() == b"\x00\xff\n"
+    assert len(broker._payloads()) == 1 and broker._physical == 3
+    incomplete(broker, root)
+
+def test_snapshot_stale_cached_iterator_foreign_close_and_native_denial(owned: Path) -> None:
+    for mode in ("stale", "foreign", "native", "decode"):
+        root = owned / mode
+        broker = OwnedBroker(root)
+        with HostPort(broker) as port:
+            path = port.path("raw")
+            path.write_bytes(b"first\nsecond\n" if mode != "decode" else b"\xff")
+            snap = path.snapshot()
+            stream = snap.open("rb")
+            iterator = iter(stream)
+            if mode == "stale":
+                path.write_bytes(b"changed\n")
+                with pytest.raises(ValueError, match="stale"):
+                    next(iterator)
+            elif mode == "foreign":
+                errors: list[BaseException] = []
+                primary = ValueError("first producer fault")
+                broker.capture_fault(primary)
+
+                def foreign(
+                    port_file: PortFile = stream, received: list[BaseException] = errors
+                ) -> None:
+                    try:
+                        port_file.close()
+                    except BaseException as error:
+                        received.append(error)
+
+                tasks = [threading.Thread(target=foreign) for _ in range(2)]
+                for task in tasks:
+                    task.start()
+                for task in tasks:
+                    task.join()
+                assert len(errors) == 2 and not stream.closed
+                assert broker.first_fault is primary
+            elif mode == "native":
+                with pytest.raises(TypeError):
+                    os.open(path, os.O_WRONLY)
+            else:
+                with pytest.raises(UnicodeDecodeError):
+                    path.read_text()
+            stream.close()  # Owner release remains possible under the first sticky fault.
+        incomplete(broker, root)
+
+
+def test_operative_capacity_and_rpc_storage_fault_identity(owned: Path) -> None:
+    root = owned / "capacity"
+    broker = OwnedBroker(root)
+    with HostPort(broker) as port:
+        for index in range(32):
+            port.path(f"file-{index}", "journal").write_bytes(b"a")
+        with pytest.raises(adapter.PacketError, match="metadata"):
+            port.path("file-33", "journal").write_bytes(b"b")
+        assert not (root / "files/file-33").exists()
+    incomplete(broker, root)
+    faulty = owned / "storage"
+    broken = OwnedBroker(faulty, {"native_write": "raise"})
+
+    async def run() -> None:
+        async with HostIPC(broken, owned / "storage.sock") as server:
+            stdout, _, code = await child(server, "lost_ack")
+            assert code == 0 and json.loads(stdout)["status"] == "STOP"
+        joined()
+
+    asyncio.run(run())
+    assert isinstance(broken.first_fault, OSError)
+    original = broken.first_fault
+    with pytest.raises((OSError, adapter.PacketError)):
+        broken.finish()
+    assert broken.first_fault is original
+    broken.abandon()
+
+
+def test_live_clients_are_bounded_and_server_close_joins_partial_reader(owned: Path) -> None:
+    root = owned / "clients"
+    broker = OwnedBroker(root)
+
+    async def run() -> None:
+        async with HostIPC(broker, owned / "clients.sock") as server:
+            clients = [await asyncio.open_unix_connection(server.address) for _ in range(4)]
+            await asyncio.sleep(0)
+            assert len(server._tasks) <= 4
+            for _, writer in clients:
+                writer.write(HEADER.pack(100) + b"{")
+            with pytest.raises(adapter.PacketError):
+                broker.finish()
+        for _, writer in clients:
+            writer.close()
+            await writer.wait_closed()
+        joined()
+
+    asyncio.run(run())
+    assert not (owned / "clients.sock").exists()
+    incomplete(broker, root)
+
+
+def test_entry_and_unlink_cleanup_faults_preserve_primary_and_lease(owned: Path) -> None:
+    root = owned / "entry"
+    broker = OwnedBroker(root)
+    fault = OSError("original chmod failure")
+
+    async def enter_failure() -> None:
+        with patch.object(Path, "chmod", side_effect=fault), pytest.raises(OSError) as caught:
+            async with HostIPC(broker, owned / "entry.sock"):
+                raise AssertionError("never entered")
+        assert caught.value is fault and not (owned / "entry.sock").exists()
+        joined()
+
+    asyncio.run(enter_failure())
+    incomplete(broker, root)
+    cleanup_root = owned / "unlink"
+    cleanup_broker = OwnedBroker(cleanup_root)
+    cleanup_fault = OSError("original unlink failure")
+
+    async def unlink_failure() -> None:
+        server = HostIPC(cleanup_broker, owned / "unlink.sock")
+        await server.__aenter__()
+        with (
+            patch.object(Path, "unlink", side_effect=cleanup_fault),
+            pytest.raises(OSError) as caught,
+        ):
+            await server.close()
+        assert caught.value is cleanup_fault and server._lease is not None
+        assert cleanup_broker.first_fault is cleanup_fault
+        await server.close()  # Same persisted deadline, no renewed10s grace.
+        assert server._lease is None
+        joined()
+
+    asyncio.run(unlink_failure())
+    incomplete(cleanup_broker, cleanup_root)
+    for mode in ("join_timeout", "context_cancel"):
+        fault_root = owned / mode
+        fault_owner = OwnedBroker(fault_root)
+
+        async def cleanup_case(case: str = mode, owner: OwnedBroker = fault_owner) -> None:
+            server = HostIPC(owner, owned / (case + ".sock"))
+            await server.__aenter__()
+            if case == "join_timeout":
+                release = asyncio.Event()
+
+                async def delayed_join() -> None:
+                    await release.wait()
+
+                assert server._server is not None
+                server._deadline = time.monotonic() + 0.01
+                with patch.object(server._server, "wait_closed", delayed_join):
+                    with pytest.raises(TimeoutError):
+                        await server.close()
+                join = server._server_join
+                deadline = server._deadline
+                assert join is not None and not join.done() and server._lease is not None
+                release.set()
+                await join
+                await server.close()
+                assert server._server_join is join and server._deadline == deadline
+            else:
+                primary = asyncio.CancelledError("original context cancellation")
+                await server.__aexit__(None, primary, None)
+                assert owner.first_fault is primary
+            assert server._lease is None
+            joined()
+
+        asyncio.run(cleanup_case())
+        incomplete(fault_owner, fault_root)
+
+
+def test_real_child_local_preio_fault_marks_host_and_raw_unicode_char_returns(owned: Path) -> None:
+    root = owned / "encode"
+    broker = OwnedBroker(root)
+
+    async def run() -> None:
+        async with HostIPC(broker, owned / "encode.sock") as server:
+            stdout, _, code = await child(server, "bad_encode")
+            assert code == 0 and json.loads(stdout)["status"] == "STOP"
+        joined()
+
+    asyncio.run(run())
+    assert not (root / "files/child/raw").exists()
+    incomplete(broker, root)

@@ -1,0 +1,7 @@
+{
+  "errors": 0,
+  "failures": 0,
+  "passed": true,
+  "tests": 11,
+  "tests_include": "positive control; raw/view tamper; invented span; false source independence; missing scope; inference; claim budget; exact overlong quotation; denominator; engine integrity"
+}

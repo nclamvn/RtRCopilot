@@ -1,0 +1,13 @@
+{
+  "exit_code": 0,
+  "reason": "completed",
+  "original_exit_code": 0,
+  "group_drained": true,
+  "wall_seconds": 20.848916633985937,
+  "owner": {
+    "group": 9528,
+    "token": "6648be211cff43818d33bca057537d75",
+    "supervisor": 9522,
+    "supervisor_start": "13955635"
+  }
+}

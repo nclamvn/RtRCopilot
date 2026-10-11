@@ -1,0 +1,20 @@
+{
+  "schema": "r27-retention-main-preservation-v1",
+  "command": "v2/apps/backend/.venv/bin/python -B -c 'import sys,json; sys.path.insert(0,\"v2/experiments/action_executor/r27\"); import checks; print(json.dumps(checks.preserve(),sort_keys=True))'",
+  "tool_chunk": "3d6711",
+  "exit_code": 0,
+  "result": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13884596,
+    "prior_bytes": 13826460,
+    "prior_pins": 1829,
+    "scope_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "total_pins": 1839
+  }
+}

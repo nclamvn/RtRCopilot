@@ -1,0 +1,49 @@
+{
+  "actor": "Builder",
+  "scope": "Explicitly authorized e5 host feedback after one-newline control assembly repair; e4 failure preserved, no product/runtime retry",
+  "binding_sha256": "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4",
+  "commands": {
+    "source_before": "python3 -B v2/experiments/action_executor/r19/qualification.py source v2/experiments/action_executor/r19/source-binding-e5.json",
+    "syntax": "python3 -B -c 'import sys; from pathlib import Path; [compile(Path(p).read_text(),p,\"exec\") for p in sys.argv[1:]]; print(\"SYNTAX_3_PASS\")' v2/experiments/action_executor/r19/qualification.py v2/experiments/action_executor/r19/bounded.py v2/experiments/action_executor/r19/test_r19_offline.py",
+    "bash": "/bin/bash -n v2/experiments/action_executor/r19/run-http-qualification.sh",
+    "offline": "python3 -B v2/experiments/action_executor/r19/test_r19_offline.py",
+    "source_after": "python3 -B v2/experiments/action_executor/r19/qualification.py source v2/experiments/action_executor/r19/source-binding-e5.json"
+  },
+  "actual": {
+    "source_before": {
+      "chunk_id": "d1f4d4",
+      "wall_time_seconds": 0.065182792,
+      "exit_code": 0,
+      "original_token_count": 53,
+      "output": "{\"files\": 1105, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+    },
+    "syntax": {
+      "chunk_id": "a7e2c5",
+      "wall_time_seconds": 0.000007916,
+      "exit_code": 0,
+      "original_token_count": 4,
+      "output": "SYNTAX_3_PASS\n"
+    },
+    "bash": {
+      "chunk_id": "b63304",
+      "wall_time_seconds": 0.000007292,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    },
+    "offline": {
+      "chunk_id": "bc0812",
+      "wall_time_seconds": 0,
+      "exit_code": 1,
+      "original_token_count": 1305,
+      "output": "test_cell_quantile_and_missing_conservation (__main__.OfflineControls.test_cell_quantile_and_missing_conservation) ... ok\ntest_contract_source_and_one_shot_admission (__main__.OfflineControls.test_contract_source_and_one_shot_admission) ... ok\ntest_fixture_db_cleanup_and_readiness_ledger (__main__.OfflineControls.test_fixture_db_cleanup_and_readiness_ledger) ... ok\ntest_oracle_abort_and_original_summary_agreement (__main__.OfflineControls.test_oracle_abort_and_original_summary_agreement) ... ok\ntest_owned_process_deadline_cap_and_shell_failclosed (__main__.OfflineControls.test_owned_process_deadline_cap_and_shell_failclosed) ... ERROR\ntest_raw_schema_identity_and_corruption (__main__.OfflineControls.test_raw_schema_identity_and_corruption) ... ok\n\n======================================================================\nERROR: test_owned_process_deadline_cap_and_shell_failclosed (__main__.OfflineControls.test_owned_process_deadline_cap_and_shell_failclosed)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/bounded.py\", line 152, in supervise\n    cleanup_group()\n    ~~~~~~~~~~~~~^^\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/bounded.py\", line 127, in cleanup_group\n    drain(owner, deadline=cleanup_deadline)\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py\", line 1176, in __call__\n    return self._mock_call(*args, **kwargs)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py\", line 1180, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py\", line 1247, in _execute_mock_call\n    result = effect(*args, **kwargs)\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/test_r19_offline.py\", line 409, in fault_drain\n    return real_drain(item, deadline=deadline)\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/bounded.py\", line 71, in drain\n    require(not group_members(owner), \"owned group did not drain; no DB cleanup admission\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r18/gate.py\", line 145, in require\n    raise ValueError(message)\nValueError: owned group did not drain; no DB cleanup admission\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/test_r19_offline.py\", line 370, in test_owned_process_deadline_cap_and_shell_failclosed\n    self.supervisor_faults()\n    ~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/test_r19_offline.py\", line 436, in supervisor_faults\n    bounded.supervise(target, \"http\", \"load\", [sys.executable, \"-c\", script]),\n    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/bounded.py\", line 161, in supervise\n    cleanup_group()\n    ~~~~~~~~~~~~~^^\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/bounded.py\", line 127, in cleanup_group\n    drain(owner, deadline=cleanup_deadline)\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py\", line 1176, in __call__\n    return self._mock_call(*args, **kwargs)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py\", line 1180, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py\", line 1247, in _execute_mock_call\n    result = effect(*args, **kwargs)\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/test_r19_offline.py\", line 409, in fault_drain\n    return real_drain(item, deadline=deadline)\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/bounded.py\", line 60, in drain\n    signal_owned(owner, signal.SIGTERM)\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/bounded.py\", line 55, in signal_owned\n    os.killpg(owner[\"group\"], signum)\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\nPermissionError: [Errno 1] Operation not permitted\n\n----------------------------------------------------------------------\nRan 6 tests in 0.651s\n\nFAILED (errors=1)\n"
+    },
+    "source_after": {
+      "chunk_id": "27f70f",
+      "wall_time_seconds": 0.116571417,
+      "exit_code": 0,
+      "original_token_count": 53,
+      "output": "{\"files\": 1105, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+    }
+  }
+}

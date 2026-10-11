@@ -1,0 +1,13 @@
+Actual Builder first safe unit batch, 2026-10-10, hermetic env and existing venv.
+Command: env -i PATH=venv:/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=runtime:backend/src:backend/tests APP_ENV=test ACTION_EXECUTOR_ENABLED=false OPENAI_API_KEY= ANTHROPIC_API_KEY= RAG_PROVIDER_MODE=local RAG_EMBEDDING_PROVIDER=offline python -B -m pytest -q -rs -p no:cacheprovider -c backend/pyproject.toml --junitxml=runtime/launcher-unit-e1.xml runtime/test_launcher.py
+Actual exit_code=1; pytest: 2 failed, 6 passed in 2.48s; 0 skip.
+Both failures are candidate()->live_head() "live HEAD differs from Main baseline".
+Passed actual safe source-copy/literal/returncode, fixed rawchild+R19metadata,
+sticky preparation/eval/writefault+primary/cleanup, excess+canceljoin,
+native cached-fd17byte precharge counterexample, exact commands/twenty-familyDENY.
+Failed methods:
+test_readonly_source_bound_preflight_and_untrusted_grant
+test_preflight_rejects_marker_parent_symlink_without_creation
+No effects: Docker/SQL/admin/migration/HTTP/load/original full launcher not executed.
+The eight temporary fixtures were automatically removed; unit XML retained unchanged.
+Source-only diagnosis follows before fresh repair epoch; do not call this8PASS.

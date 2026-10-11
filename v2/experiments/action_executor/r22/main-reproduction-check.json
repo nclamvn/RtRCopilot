@@ -1,0 +1,10 @@
+{
+  "actor": "Main",
+  "result": {
+    "chunk_id": "715299",
+    "wall_time_seconds": 0.000008833,
+    "exit_code": 0,
+    "original_token_count": 97,
+    "output": "{\n  \"actor\": \"Main\",\n  \"exact_output_bytes_equal\": true,\n  \"builder_and_main_output_bytes\": 30897,\n  \"output_sha256\": \"d54c7c9cfb028e02212475f6244c9a65cced2ad2bd5f5586ca3202abdebd869d\",\n  \"all_16_cells_and_additional_cohort_counters_equal_independent_Main\": true,\n  \"input_binding_sha256\": \"1ae53ce15d2bab4f76df11dd9297640cda2e6af9477b116fd7664d78104e93ab\",\n  \"no_new_runtime\": true\n}\n"
+  }
+}

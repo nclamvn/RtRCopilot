@@ -1,0 +1,11 @@
+{
+  "scope": "Read-only default DENY; expected CLI exit2 is HOLD, not campaign permission",
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=v2/apps/backend/src v2/apps/backend/.venv/bin/python -B v2/experiments/action_executor/r27/broker/preflight.py /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/candidate.json",
+  "result": {
+    "chunk_id": "5eb449",
+    "wall_time_seconds": 0.24091425,
+    "exit_code": 2,
+    "original_token_count": 112,
+    "output": "{\"boundary_match\": true, \"candidate_sha256\": \"dcb1ef5978fb776c4c466250b083df32f7831d17942cd572af97eb2c55d8dbe7\", \"effect_dispatch_allowed\": false, \"effects\": \"DENY_THIS_BATCH\", \"grant\": \"untrusted local data, never authority\", \"grant_supplied\": false, \"marker\": \"ABSENT\", \"marker_written\": false, \"native_unsupported\": \"CAPABILITY_DENY\", \"platform_audit\": \"APPROVED_SEPARATE_DISCLOSED\", \"runtime_prerequisites\": \"NOT_RUN\", \"source_match\": true}\n"
+  }
+}

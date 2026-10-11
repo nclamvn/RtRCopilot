@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://learn.microsoft.com/en-us/agent-framework/workflows/functional",
+      "retrieved_at": "2026-10-06T02:15:31.954598+00:00",
+      "source_family": "Microsoft",
+      "status": "failed"
+    },
+    {
+      "bytes": 69493,
+      "content_type": "text/html",
+      "http_status": 200,
+      "read_view_characters": 16355,
+      "read_view_sha256": "e5bb4400c5342eae73e12255dc85f6f732cdbd3e7d0df874fc99ac4541e3e85c",
+      "requested_url": "https://learn.microsoft.com/en-us/agent-framework/workflows/functional",
+      "resolved_url": "https://learn.microsoft.com/en-us/agent-framework/concepts/workflows/functional",
+      "retrieved_at": "2026-10-06T02:15:59.385853+00:00",
+      "sha256": "9c4d9dbe8299660ebfab1bd3bfa157efe90e706b665a15b662e6bb3b3979c0e1",
+      "snapshot": "microsoft-functional.html",
+      "source_family": "Microsoft",
+      "status": "usable"
+    }
+  ],
+  "entity": "Microsoft functional workflows",
+  "id": "microsoft-functional",
+  "selected": {
+    "bytes": 69493,
+    "content_type": "text/html",
+    "http_status": 200,
+    "read_view_characters": 16355,
+    "read_view_sha256": "e5bb4400c5342eae73e12255dc85f6f732cdbd3e7d0df874fc99ac4541e3e85c",
+    "requested_url": "https://learn.microsoft.com/en-us/agent-framework/workflows/functional",
+    "resolved_url": "https://learn.microsoft.com/en-us/agent-framework/concepts/workflows/functional",
+    "retrieved_at": "2026-10-06T02:15:59.385853+00:00",
+    "sha256": "9c4d9dbe8299660ebfab1bd3bfa157efe90e706b665a15b662e6bb3b3979c0e1",
+    "snapshot": "microsoft-functional.html",
+    "source_family": "Microsoft",
+    "status": "usable"
+  }
+}

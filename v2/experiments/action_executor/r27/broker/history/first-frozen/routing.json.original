@@ -1,0 +1,316 @@
+{
+  "effects": "DENY_THIS_BATCH",
+  "families": [
+    {
+      "code": 1,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 65536,
+          "max_records": 2,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "frozen_copies",
+      "local_scope": "exact original frozen copy bytes through producer ports",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 2,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 512,
+          "max_records": 1,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "literal_controls",
+      "local_scope": "original pure controls expression; engine/runpy NOT_RUN",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 3,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 256,
+          "max_records": 1,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "literal_scope",
+      "local_scope": "exact original scope literal through broker",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 4,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 1024,
+          "max_records": 3,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "launch_review",
+      "local_scope": "review line adapted; real campaign marker NOT_CONSUMED",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 5,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 512,
+          "max_records": 3200,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "journal",
+      "local_scope": "exact retain body, original encoder/append/flush on static control data",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 6,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 2097152,
+          "max_records": 1,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "final_samples",
+      "local_scope": "exact source finally write expression through logical facade",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 7,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 16384,
+          "max_records": 3,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "summary_stdout",
+      "local_scope": "exact summary/write/print/oracle; fixed raw EOF stream in separate control epoch",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 8,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 512,
+          "max_records": 4096,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "load_stderr",
+      "local_scope": "actual audit sink scoped rendered writes; fixed raw stderr EOF in separate epoch",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 9,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 512,
+          "max_records": 512,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "migration_streams",
+      "local_scope": "migration stdout/stderr QUALIFYING, PREPARED_NOT_RUN; unknown native writers DENY",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 10,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 1024,
+          "max_records": 8,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "owner_process",
+      "local_scope": "actual R19 owner/result expressions +cleanup overwrite; no Linux group qualification",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 11,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 1024,
+          "max_records": 64,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "supervisor_stop",
+      "local_scope": "exact fixed owned child/drain/reap; original Linux group/descendants NOT_RUN",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 12,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 2048,
+          "max_records": 32,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "source_cap_child",
+      "local_scope": "source/preflight/recovery controlled; original effectful CLI channels NOT_RUN",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 13,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 8192,
+          "max_records": 8,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "fixture",
+      "local_scope": "full pure signedfixture five files/six writes/stat/read; publish/SQL NOT_RUN",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 14,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 2048,
+          "max_records": 64,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "database_admin",
+      "local_scope": "SQL/admin stdout/stderr QUALIFYING but PREPARED_NOT_RUN",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 15,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 4096,
+          "max_records": 8,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "disk",
+      "local_scope": "disk command streams QUALIFYING but PREPARED_NOT_RUN",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 16,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 65536,
+          "max_records": 2,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "reconstruction",
+      "local_scope": "strict broker recovery; original load analysis CLI PREPARED_NOT_RUN",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 17,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 256,
+          "max_records": 32,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "returncodes",
+      "local_scope": "source-connected exact label/code line; original shell lifecycle PREPARED_NOT_RUN",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 18,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 65536,
+          "max_records": 16,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "ephemeral",
+      "local_scope": "logical temp namespace copy/overwrite/delete; native unknown path writers DENY",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 19,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 32,
+          "max_records": 40000,
+          "name": "data"
+        },
+        {
+          "code": 2,
+          "max_payload_bytes": 1810,
+          "max_records": 1,
+          "name": "framing"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "future_observer",
+      "local_scope": "observer OFF; no observer activation or native monitor",
+      "tested": "see exact local controls/XML"
+    },
+    {
+      "code": 20,
+      "domain": [
+        {
+          "code": 1,
+          "max_payload_bytes": 1024,
+          "max_records": 128,
+          "name": "data"
+        }
+      ],
+      "full_original_runtime": "NOT_RUN",
+      "id": "outer_transcript",
+      "local_scope": "shell/host admitted artifact streams QUALIFYING; Codex/platform transcript separate disclosed audit",
+      "tested": "see exact local controls/XML"
+    }
+  ],
+  "native_scope": "pinned cooperative ports/exact finite child only",
+  "platform_audit_bytes_claimed_zero": false,
+  "platform_audit_controlled": false,
+  "platform_boundary": "APPROVED_AND_PINNED",
+  "schema": "r27-broker-routing-v1"
+}

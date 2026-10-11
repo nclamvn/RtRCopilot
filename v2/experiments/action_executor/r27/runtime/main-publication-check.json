@@ -1,0 +1,43 @@
+{
+  "schema": "r27-runtime-main-publication-v1",
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src v2/apps/backend/.venv/bin/python -B - <<'PY'\nimport hashlib,json,re,sys\nfrom pathlib import Path\nR=Path('/Users/os/RtR/KnowledgeBase/RtR_Copilot'); H=R/'v2/experiments/action_executor/r27/runtime'\nsys.path.insert(0,str(H)); import checks\npreserved=checks.preserve()\nexpected={\n'input-binding.json':'192974e7042b8c3d0aa966732fa23ea2760c69a785cd5f79dfe87a6ff57264d0',\n'candidate.json':'3c3feb38f12c94c116a63eb2e9f868aaa62d62af90cb41b2ac23f240f6ec4e40',\n'COMPLETION.md':'b42ae1096db41e00f98d4dcce643e742ac1c88853b27ca991dd94965c1404f86'}\nfor name,value in expected.items(): assert hashlib.sha256((H/name).read_bytes()).hexdigest()==value\nreview=R/'vibecode_v2/R27_RUNTIME_REVIEW_REPORT.md'\nassert hashlib.sha256(review.read_bytes()).hexdigest()=='4ab2e191567a85eef31fa9b970d87cab28ef4576a901cf22dcc466465e44cb42'\nreport=R/'vibecode_v2/TIP-054.4b-R27_VERIFY_REPORT.md'\nlinks=re.findall(r'\\]\\(([^)]+)\\)',report.read_text())\nmissing=[p for p in links if not (report.parent/p).exists()]\nassert not missing\ndocs=['vibecode_v2/TIP-054.4b-R27_VERIFY_REPORT.md','docs/enterprise-os/IMPLEMENTATION_STATUS.md','docs/enterprise-os/TASK_GRAPH.md','vibecode_v2/03_TASK_GRAPH.md']\nfor name in docs:\n text=(R/name).read_text()\n assert '16' in text and '13' in text and 'HOLD' in text\nprint(json.dumps({'publication':'PASS','preservation':preserved,'frozen_hashes':expected,'review_sha256':hashlib.sha256(review.read_bytes()).hexdigest(),'report_sha256':hashlib.sha256(report.read_bytes()).hexdigest(),'report_local_links':len(links),'missing_links':missing,'static_scope':'13 own/interface surfaces, codec body excluded','measurement':'HOLD','serving':'OFF','new_campaign':'NOT_RUN','git_write':'NONE','source_and_old_reports':'UNCHANGED'},indent=2,sort_keys=True))\nPY",
+  "result": {
+    "chunk_id": "c24089",
+    "wall_time_seconds": 0.722506334,
+    "exit_code": 0,
+    "original_token_count": 287,
+    "output": "{\n  \"frozen_hashes\": {\n    \"COMPLETION.md\": \"b42ae1096db41e00f98d4dcce643e742ac1c88853b27ca991dd94965c1404f86\",\n    \"candidate.json\": \"3c3feb38f12c94c116a63eb2e9f868aaa62d62af90cb41b2ac23f240f6ec4e40\",\n    \"input-binding.json\": \"192974e7042b8c3d0aa966732fa23ea2760c69a785cd5f79dfe87a6ff57264d0\"\n  },\n  \"git_write\": \"NONE\",\n  \"measurement\": \"HOLD\",\n  \"missing_links\": [],\n  \"new_campaign\": \"NOT_RUN\",\n  \"preservation\": {\n    \"digests\": {\n      \"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\",\n      \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"\n    },\n    \"input_bytes\": 14504089,\n    \"prior_bytes\": 14169693,\n    \"prior_pins\": 1869,\n    \"scope_counts\": {\n      \"product\": 204,\n      \"tests\": 192\n    },\n    \"total_pins\": 1909\n  },\n  \"publication\": \"PASS\",\n  \"report_local_links\": 22,\n  \"report_sha256\": \"676b356724d20f2d83ea91230c0627b0fc39b257c9e099e0dfe05d6c2cb84f5c\",\n  \"review_sha256\": \"4ab2e191567a85eef31fa9b970d87cab28ef4576a901cf22dcc466465e44cb42\",\n  \"serving\": \"OFF\",\n  \"source_and_old_reports\": \"UNCHANGED\",\n  \"static_scope\": \"13 own/interface surfaces, codec body excluded\"\n}\n"
+  },
+  "feedback": {
+    "frozen_hashes": {
+      "COMPLETION.md": "b42ae1096db41e00f98d4dcce643e742ac1c88853b27ca991dd94965c1404f86",
+      "candidate.json": "3c3feb38f12c94c116a63eb2e9f868aaa62d62af90cb41b2ac23f240f6ec4e40",
+      "input-binding.json": "192974e7042b8c3d0aa966732fa23ea2760c69a785cd5f79dfe87a6ff57264d0"
+    },
+    "git_write": "NONE",
+    "measurement": "HOLD",
+    "missing_links": [],
+    "new_campaign": "NOT_RUN",
+    "preservation": {
+      "digests": {
+        "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+        "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+      },
+      "input_bytes": 14504089,
+      "prior_bytes": 14169693,
+      "prior_pins": 1869,
+      "scope_counts": {
+        "product": 204,
+        "tests": 192
+      },
+      "total_pins": 1909
+    },
+    "publication": "PASS",
+    "report_local_links": 22,
+    "report_sha256": "676b356724d20f2d83ea91230c0627b0fc39b257c9e099e0dfe05d6c2cb84f5c",
+    "review_sha256": "4ab2e191567a85eef31fa9b970d87cab28ef4576a901cf22dcc466465e44cb42",
+    "serving": "OFF",
+    "source_and_old_reports": "UNCHANGED",
+    "static_scope": "13 own/interface surfaces, codec body excluded"
+  }
+}

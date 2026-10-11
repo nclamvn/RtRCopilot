@@ -1,0 +1,24 @@
+{
+  "actor": "Main",
+  "stage": "http",
+  "epoch": "http_e1",
+  "binding_sha256": "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4",
+  "source_review_sha256": "c481427cb0f8df1ed309e6aa5716d889fa31c985e658273e0f6b1d02048d350e",
+  "pre_review_sha256": "b917c877f19d043ae85cffe1504cc9d0b84f040c9a6e03ef7c3fed71b19171ed",
+  "actual_pre": "pre_e1 eight children exit0, exact six controls PASS2.06s; source/fixture/catalog/cap closure PASS",
+  "fresh_fixture": {
+    "chunk_id": "e6f37f",
+    "wall_time_seconds": 0.159458416,
+    "exit_code": 0,
+    "original_token_count": 7,
+    "output": "R19_ADMISSION_PASS fixture\n"
+  },
+  "scope": "Once fixed original OFF campaign;190s load/10s sharedcleanup/10MiB;1600 requested/16cells/500ms admission/1000ms others;no retry/cherrypick",
+  "databases": [
+    "rtr_tip054_r19_local_e1",
+    "rtr_tip054_r19_engine_e1"
+  ],
+  "serving_executor": "OFF",
+  "tip054_5": "BLOCKED",
+  "prelaunch_note": "One orchestration script SyntaxError before any nested tool execution; corrected read-only report/fixture check; no campaign/SQL launch from that failed script. Wrapper rechecks role/absence/per-CREATE capacity; persistent launch marker consumes the sole allowance."
+}

@@ -1,0 +1,35 @@
+{
+  "kind": "unfrozen author feedback",
+  "records": [
+    {
+      "name": "qualification.py",
+      "result": {
+        "chunk_id": "451ffc",
+        "wall_time_seconds": 0.000008625,
+        "exit_code": 1,
+        "original_token_count": 92,
+        "output": "[\n  {\n    \"cell\": null,\n    \"code\": \"E501\",\n    \"end_location\": {\n      \"column\": 105,\n      \"row\": 71\n    },\n    \"filename\": \"/work/r21/qualification.py\",\n    \"fix\": null,\n    \"location\": {\n      \"column\": 101,\n      \"row\": 71\n    },\n    \"message\": \"Line too long (104 > 100)\",\n    \"noqa_row\": 71,\n    \"url\": \"https://docs.astral.sh/ruff/rules/line-too-long\"\n  }\n]"
+      }
+    },
+    {
+      "name": "test_r21_offline.py",
+      "result": {
+        "chunk_id": "d861d3",
+        "wall_time_seconds": 0.000008875,
+        "exit_code": 1,
+        "original_token_count": 93,
+        "output": "[\n  {\n    \"cell\": null,\n    \"code\": \"E501\",\n    \"end_location\": {\n      \"column\": 110,\n      \"row\": 284\n    },\n    \"filename\": \"/work/r21/test_r21_offline.py\",\n    \"fix\": null,\n    \"location\": {\n      \"column\": 101,\n      \"row\": 284\n    },\n    \"message\": \"Line too long (109 > 100)\",\n    \"noqa_row\": 284,\n    \"url\": \"https://docs.astral.sh/ruff/rules/line-too-long\"\n  }\n]"
+      }
+    },
+    {
+      "name": "test_r21_envelope.py",
+      "result": {
+        "chunk_id": "f89d19",
+        "wall_time_seconds": 0.000009166,
+        "exit_code": 0,
+        "original_token_count": 1,
+        "output": "[]"
+      }
+    }
+  ]
+}

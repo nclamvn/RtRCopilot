@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="3.455" timestamp="2026-10-09T15:09:12.955378+00:00" hostname="cb30f7e2244c"><testcase classname="" name="test_same_unchanged_dependency_chain_owned_seed_bootstrap" time="3.412" /></testsuite></testsuites>

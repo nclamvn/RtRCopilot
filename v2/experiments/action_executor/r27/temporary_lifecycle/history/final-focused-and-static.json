@@ -1,0 +1,10 @@
+{
+  "focused_controls": {"passed": 5, "failed": 0, "elapsed_seconds": 1.71, "raw_terminal_summary": "5 passed in 1.71s", "coverage_count_note": "Development repeats of the same five outer controls, not additional coverage."},
+  "nominal": {"bridge_attempts": 282, "events": 122, "identity_observations": 77, "metadata_bytes": 57776, "charge": 1582422, "physical_attempt_bytes": 734645, "synthetic_writes": 35, "synthetic_bytes": 733169, "nested_pytest_expected_exit": 1, "nested_pytest_cases": 2, "xml_parts": [38, 635], "stdout_bytes": 679, "stderr_bytes": 21},
+  "fault_outputs": {"xml_source_accepted_bytes": 38, "whole_xml_requested_native_retained_bytes": 673, "stdout_bytes": 20, "stderr_bytes": 21, "charge": 115578, "physical_retention_note": "Verified under live owned root, then the fixture removes the root; not a long-term raw archive."},
+  "capacity_cleanup": {"bridge_attempts": 455, "events": 28, "selected_fd_peak": 8},
+  "failure_references": "Escaping-prefix raw retained; role overflow and prospective failure-META pressure reject before chunk acceptance; admitted prefix physically survives with first fault and complete FD drain.",
+  "ruff": "All checks passed!",
+  "format": "7 files already formatted",
+  "strict_raw": "Success: no issues found in 7 source files\n"
+}

@@ -1,0 +1,35 @@
+{
+  "actor": "Main",
+  "stage": "initial offline preservation",
+  "complete_current_inventories": {
+    "product": {
+      "files": 204,
+      "digest": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641"
+    },
+    "tests": {
+      "files": 192,
+      "digest": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    }
+  },
+  "prior_evidence_seals": {
+    "r19": {
+      "entries": 220,
+      "sha256": "f99638aa32e497220eb6240f9e9147184bf93d350014ab40801c49e4d7e771cd"
+    },
+    "r20": {
+      "entries": 202,
+      "sha256": "f8c3f11790ec4c624845e8151c0ee9beebb709b26d00acdef2f732ca011fb1af"
+    },
+    "r21": {
+      "entries": 222,
+      "sha256": "1cf5eaf9f88f03655b8d93a34c93bb75fb18f0e06f9bf54a489c06d8478bc756"
+    }
+  },
+  "r21_downstream": {
+    "vibecode_v2/TIP-054.4b-R21_VERIFY_REPORT.md": "070afa18ac1fbb64a837349fd265f65c901c4591407445a02a802523ad29449b",
+    "vibecode_v2/TIP-054.4b-R21_FINAL_RESULT_REVIEW.md": "4170df87118ff73d2fac1de2ff1d810b8cc6a656bc70be0aac02d1186201a45f",
+    "v2/experiments/action_executor/r21/main-final-closure.json": "8c70df801f6484597eda54df66d88da1d83b4f87b3d2ff052c3d4b6b3fb721ef",
+    "v2/experiments/action_executor/r21/main-publication-check.json": "f3f4b51301394b816af8c4730f6c6e306f4febc8fc28d6d4eb2af4f59f2d740c"
+  },
+  "runtime_calls": 0
+}

@@ -1,0 +1,43 @@
+{
+  "strict": {
+    "command": [
+      "v2/apps/backend/.venv/bin/mypy",
+      "--strict",
+      "--follow-imports=silent",
+      "--cache-dir=/dev/null",
+      "--config-file=v2/apps/backend/pyproject.toml",
+      "v2/experiments/action_executor/r27/real_path/composition.py",
+      "v2/experiments/action_executor/r27/real_path/controller.py",
+      "v2/experiments/action_executor/r27/real_path/routing.py",
+      "v2/experiments/action_executor/r27/real_path/test_runtime_path.py"
+    ],
+    "returncode": 0
+  },
+  "ruff": {
+    "command": [
+      "v2/apps/backend/.venv/bin/ruff",
+      "check",
+      "--no-cache",
+      "--config=v2/apps/backend/pyproject.toml",
+      "v2/experiments/action_executor/r27/real_path/composition.py",
+      "v2/experiments/action_executor/r27/real_path/controller.py",
+      "v2/experiments/action_executor/r27/real_path/routing.py",
+      "v2/experiments/action_executor/r27/real_path/test_runtime_path.py"
+    ],
+    "returncode": 0
+  },
+  "format": {
+    "command": [
+      "v2/apps/backend/.venv/bin/ruff",
+      "format",
+      "--check",
+      "--no-cache",
+      "--config=v2/apps/backend/pyproject.toml",
+      "v2/experiments/action_executor/r27/real_path/composition.py",
+      "v2/experiments/action_executor/r27/real_path/controller.py",
+      "v2/experiments/action_executor/r27/real_path/routing.py",
+      "v2/experiments/action_executor/r27/real_path/test_runtime_path.py"
+    ],
+    "returncode": 0
+  }
+}

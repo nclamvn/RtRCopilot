@@ -1,0 +1,28 @@
+{
+  "schema": "r27-runtime-main-preflight-v1",
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src v2/apps/backend/.venv/bin/python -B v2/experiments/action_executor/r27/runtime/preflight.py /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/runtime/candidate.json /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1/r19/r27-runtime-campaign-launch.json",
+  "result": {
+    "chunk_id": "545901",
+    "wall_time_seconds": 0.000009125,
+    "exit_code": 2,
+    "original_token_count": 209,
+    "output": "{\n  \"blockers\": [\n    \"unbrokered native/cached-fd temporary writes can occur before Capture accounting\",\n    \"Codex/platform-owned outer transcript is outside interpreter prewrite ownership\",\n    \"original effectful launcher/Docker/SQL/admin/migration/HTTP routes prepared, not executed\",\n    \"Linux original owned-group supervisor not runtime qualified by fixed local child\"\n  ],\n  \"candidate_sha256\": \"3c3feb38f12c94c116a63eb2e9f868aaa62d62af90cb41b2ac23f240f6ec4e40\",\n  \"effect_dispatch_allowed\": false,\n  \"grant_status\": \"MISSING_SEPARATE_GRANT\",\n  \"human_authority_status\": \"NOT_ESTABLISHED_BY_UNTRUSTED_LOCAL_JSON\",\n  \"marker_status\": \"ABSENT_NOT_CONSUMED\",\n  \"ready_to_request_measurement\": false,\n  \"runtime_prerequisites\": \"NOT_EXECUTED: fixture current identity/capacity/idle/database absence\",\n  \"source_matches\": true\n}\n"
+  },
+  "scope": "Actual fixed read-only CLI; expected exit2 HOLD, no grant/campaign/marker write.",
+  "feedback": {
+    "blockers": [
+      "unbrokered native/cached-fd temporary writes can occur before Capture accounting",
+      "Codex/platform-owned outer transcript is outside interpreter prewrite ownership",
+      "original effectful launcher/Docker/SQL/admin/migration/HTTP routes prepared, not executed",
+      "Linux original owned-group supervisor not runtime qualified by fixed local child"
+    ],
+    "candidate_sha256": "3c3feb38f12c94c116a63eb2e9f868aaa62d62af90cb41b2ac23f240f6ec4e40",
+    "effect_dispatch_allowed": false,
+    "grant_status": "MISSING_SEPARATE_GRANT",
+    "human_authority_status": "NOT_ESTABLISHED_BY_UNTRUSTED_LOCAL_JSON",
+    "marker_status": "ABSENT_NOT_CONSUMED",
+    "ready_to_request_measurement": false,
+    "runtime_prerequisites": "NOT_EXECUTED: fixture current identity/capacity/idle/database absence",
+    "source_matches": true
+  }
+}

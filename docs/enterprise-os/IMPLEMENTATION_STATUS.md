@@ -1,0 +1,700 @@
+# Enterprise OS implementation status
+
+Date: 2026-10-11. Blueprint approved by Homeowner. Local sequence is approved;
+external company-evidence processing, real connector activation and production
+operations retain their own scope boundaries.
+
+## Executed milestones
+
+**TIP-054.4b-R27 — genuine tempfile/pytest H1–H5 accepted 5/5; full PARTIAL / NOT_READY.**
+2026-10-11: selected unchanged original setUp/body/doCleanups and genuine tempfile/
+safe-fd shutil plus private pytest tmp_path/JUnit lifecycle now execute on owned
+native storage, including declared failure paths. Seven sibling modules; no old
+HTTP/PRE contract, product/test or dependency source edits.
+Original35 whole writes/733,169B; genuine XML38+635B, stdout679B/stderr21B.
+Typed recovery checks actual frames, FD/inode/size/permission/link/generation history.
+Partial XML/source-error streams remain physical while roots live; sticky fault,
+no seal and bounded cleanup. Explicit injected controls are not spontaneous OS faults.
+Same10MiB/no-refund: actual charge1,582,422B; closed maximum2,725,881B; META64KiB.
+Main38/38 PASS (unchanged33+five),15.972221916017588s; Builder same38 overlap,
+30.05733162499382s. These are local verification times, not repaired executor SLA.
+All7 strict follow-imports=silent/no-incremental, Ruff/format/syntax clean; review5/5.
+First tested38 epoch retained: stronger typing found25 errors and implicit
+faulthandler FD; narrow type/plugin/debug correction was rebound and reverified.
+2,347 bound repo-root files/18,777,645B; new14 direct+64 history; product204/tests192/
+HEAD preserved. Completion/review separately pinned; no post-test candidate mutation.
+Source/preservation/caches equal; generated roots cleaned. Preflight exit2 DENY/
+effects NOT_RUN. Two outer config warnings retained. Fixed clean-env checked entry
+only; factory snapshots are not independent authorization or a hostile-process sandbox.
+Default pytest user/lock/PID/atexit, arbitrary writers/children, uncontrolled GC,
+general CLI alias modes, other platforms and full six-suite/launcher PRE unqualified.
+Next: complete PRE/launcher producer/output inventory against genuine source, then
+select remaining finite integration seams; no count-only expansion or output omission.
+No campaign, SQL/Docker, external, install, Git write, rebuild or activation.
+R27-001/002 PARTIAL,003/004 PENDING,005 reporting PASS.
+R21 SLA FAILED/P1; EXE-009 OPEN/P1; candidate NOT_READY; executor OFF; .5 BLOCKED.
+[R27 Verify](../../vibecode_v2/TIP-054.4b-R27_VERIFY_REPORT.md) ·
+[Current independent review](../../vibecode_v2/R27_TEMPORARY_LIFECYCLE_REVIEW_REPORT.md).
+
+R26 and earlier entries are historical scoped milestones, not current runtime certification.
+
+**TIP-054.4b-R26 — Owned file adapter: VERIFIED4/4;
+isolated prototype READY-with-deferred, actual capture HOLD.**
+2026-10-10: concrete stdlib writer/recovery reader implemented; seven unique real-file
+groups PASS, Main same-seven overlap, syntax3/3 and independent review accepted.
+Raw fidelity, exclusive ownership, serialized calls, strict recovery and injected
+write/flush/fsync/seal/invalidation faults covered. Logical maximum9,778,880B
+includes264B controls, spare706,880 under10MiB. Immutable committed-epoch semantics
+and fail-closed unseal-before-unlock are verified locally; power/process-death,
+hostile writes and real-path async/cleanup/latency remain deferred.1,809 prior pins,
+full product204/tests192 preserved;1,814 total bound pins. All test roots removed.
+No core/runtime/campaign/external/Git change. R25 contract adoption is prototype-only.
+Next: separately scope default-OFF producer routing and fidelity/transparency checks
+before measurement, not another broad design or automatic campaign. R21 SLA
+FAILED/P1, EXE-009 OPEN/P1, candidate NOT_READY, executor OFF and .5 BLOCKED remain.
+[R26 Verify](../../vibecode_v2/TIP-054.4b-R26_VERIFY_REPORT.md) ·
+[Review](../../vibecode_v2/R26_REVIEW_REPORT.md).
+
+R25 and earlier entries are historical scoped milestones; their adoption statements
+refer to their own epoch, not fresh runtime permission.
+
+**TIP-054.4b-R25 — Bounded producer envelope design: VERIFIED 4/4;
+scoped READY-with-deferred; adoption NOT AUTHORIZED, actual capture HOLD.**
+2026-10-10: six unique memory-only groups PASS, Main same-six overlap; syntax3/3
+and independent review/arithmetic agree. The new20-family contract proposes
+48,182 records:9,778,276 normal bytes +340 closure metadata =9,778,616 total,
+707,144 spare under10MiB. Limits are proposed domains, not current producer proof.
+Shared pre-write reservations, explicit family receipts, no refunds and absorbing
+terminal/crash states are modeled; real durability/recovery/bypass/quiescence and
+async equivalence remain unproved.1,787 prior pins and full product204/tests192
+sets preserved; final linked graph1,794 pins/13,692,658B. No core/runtime/campaign
+or external/Git change. Next authority: R26 owned envelope adapter plus offline
+fidelity/recovery tests after explicit adoption of the finite experimental contract;
+no measured integration or activation. R21 SLA FAILED/P1, EXE-009 OPEN/P1,
+candidate NOT_READY, serving executor OFF and .5 BLOCKED remain.
+[R25 Verify](../../vibecode_v2/TIP-054.4b-R25_VERIFY_REPORT.md) ·
+[Independent review](../../vibecode_v2/R25_REVIEW_REPORT.md).
+
+R24 and earlier entries below are historical scoped milestones, not current
+runtime certification or contract adoption.
+
+**TIP-054.4b-R24 — Whole capture budget analysis: VERIFIED4/4;
+scoped delivery READY-with-deferred, budget NOT CLOSED / HOLD.**
+2026-10-10: six unique memory-only groups PASS (Main same-six overlap), syntax2/2;
+independent review/source arithmetic agrees.20 producer families reconcile all63
+historical HTTP-root files943,953B plus separate sibling marker287B. Fixed subtotal
+6046B only; whole upper bound null. Direct streams, error domains, live temporary
+data and post-cap cleanup writes lack complete pre-write bounds.1,762 prior pins /
+13,498,377B and complete product204/tests192 inventories preserved. No core,
+runtime, observer, SQL/Docker, campaign, external or Git writes. Next proposal:
+R25 bounded-producer envelope DESIGN, requiring approval of any narrowed future
+experimental retention/error contract; not automatic implementation/capture.
+R21 SLA FAILED/P1, EXE-009 OPEN/P1, candidate NOT_READY, serving OFF, .5 BLOCKED.
+[R24 Verify](../../vibecode_v2/TIP-054.4b-R24_VERIFY_REPORT.md) ·
+[Independent review](../../vibecode_v2/R24_REVIEW_REPORT.md).
+
+R23 and earlier entries below are historical scoped milestones, not current
+runtime certification or a newly closed capture budget.
+
+**TIP-054.4b-R23 — Minimal phase attribution design: CLOSED / VERIFIED6/6,
+READY-with-deferred; capture HOLD.**
+2026-10-09: six unique memory-only groups PASS; Main same-six overlap PASS,
+compile/import surface3PASS. Independent source/hash/wire arithmetic agrees:
+closed nominal paths40,000×32B +1,810B framing =1,281,810B observer-only.
+Original-output maxima and real async/branch/SQL/checkout/restoration plus
+error/fallback/repeated-cancel coverage remain unproved; complete capture stays
+HOLD, no installed observer or allowance. Broad model-restoration issue fixed,
+failed negative-premise epoch retained.1,750 source/evidence pins13,451,571B and
+complete product204/tests192 sets preserved; no core/runtime/SQL/Docker/Git change.
+Next proposal: R24 offline whole-capture budget closure before separately scoped
+actual-path transparency and any capture. R21 SLA FAILED/P1, EXE-009 OPEN,
+candidate NOT_READY, serving executor OFF, TIP-054.5 BLOCKED.
+[R23 Verify](../../vibecode_v2/TIP-054.4b-R23_VERIFY_REPORT.md) ·
+[Independent review](../../vibecode_v2/R23_REVIEW_REPORT.md).
+
+The R22 entry below is the preceding diagnosis; it is not fresh runtime proof.
+
+**TIP-054.4b-R22 — Offline tail diagnosis: CLOSED / DIAGNOSTIC VERIFIED6/6.**
+2026-10-09: filesystem-only analysis reproduces all16 original R21 cells and
+1,440 raw↔middleware IDs;87 timeouts/160 missing descendants/10 passing cells
+remain failures. Five unique pure controls PASS, Main same-five overlap PASS;
+two-source syntax/import surface PASS. Frozen Builder/Main output byte-identical
+30,897B; independently reconstructed all fields. Linked1,722 unique pins/13,274,883B
+preserve product204/tests192 and prior source/evidence/markers/final R21 reports.
+Admission has no executor0.9s route timeout; cancel has no global audit append;
+nominal queued cancel10SQL/4checkouts versus trusted status3/1 is source structure,
+not measured phase cost. Pool/audit/scheduling/cleanup dominance remains unproved.
+Four options compared; select minimal default-OFF experiment phase-attribution
+DESIGN, preserving guarded method/factory identity and full authority/commit/cleanup
+semantics. Future byte-fit proof and offline transparency controls are required
+before any separately admitted capture; no tuning, pool/timeout increase or new
+campaign in R22. No core/SQL/Docker/external/Git/build change or scratch/runtime
+resources created. EXE-009 OPEN/P1, whole candidate NOT_READY, serving OFF, TIP-054.5 BLOCKED.
+[R22 Verify](../../vibecode_v2/TIP-054.4b-R22_VERIFY_REPORT.md) ·
+[Independent review](../../vibecode_v2/R22_REVIEW_REPORT.md).
+
+The R21 entries below retain the actual failed qualification; diagnosis does not
+replace or retry it.
+
+**TIP-054.4b-R21 — Mandatory observer-OFF qualification: CLOSED / SLA FAILED (P1).**
+2026-10-09: frozen e1 linked source and explicit caller/derived environment pass;
+seven unique PRE tests PASS with zero failures/errors/skips, ten completed/drained
+groups, five retained SWIG warnings. One original OFF load completes in36.572s
+with original exit1:1,440/1,600 observations,87 HTTP503 action_operation_timeout,
+160 missing status/cancel descendants of80 failed c50 submits; no duplicates.
+Only10/16 cells PASS. Admission p95 c25=963.14ms/c50=1840.41ms exceeds500ms;
+c25 cancel has3 errors; c50 submit p95=1126.46ms and80 errors, status/cancel only
+20 samples each with1/3 errors. JSONL/final JSON/full original oracle and independent
+nearest-rank reconstruction agree: integrity PASS is not SLA PASS. No retries,
+threshold changes, preseed, observer, worker/native/provider or serving activation.
+Post-drain engine user-tables0 and domain charged calls/attempts/receipts/source
+effects/active owner-or-lease0; both acknowledged owned DBs dropped in reverse,
+fresh live catalog empty, original fixture idle/unchanged. Raw PRE14,712B +
+HTTP943,953B; product204/tests192 and all R19/R20 evidence unchanged. New evidence
+seal222 entries/1,185,952B; Main parser's initial guessed-state assertion and
+truncated display are retained as diagnostic limitations, not workload retries.
+Host74GiB/PG1,476,564KiB free; image prune0B, no containers/volumes removed.
+No Git writes/rebuild/external. EXE-009 OPEN, whole candidate NOT_READY,
+serving executor OFF, TIP-054.5 BLOCKED. Next proposal: bounded offline
+admission/submit/cancel tail and timeout analysis on retained evidence, followed
+by a narrowly reviewed design; pool/audit root cause is not yet established.
+[R21 Verify](../../vibecode_v2/TIP-054.4b-R21_VERIFY_REPORT.md) ·
+[Final review](../../vibecode_v2/TIP-054.4b-R21_FINAL_RESULT_REVIEW.md).
+
+The R20/R19/R18 entries below are historical and retain their original scope.
+
+**TIP-054.4b-R20 — Synthetic Fixture Bootstrap Closure: CLOSED / VERIFIED6/6.**
+2026-10-09: explicit caller POSTGRES/INTEGRATION DSNs are guarded before effects;
+present workflow key rejected. Main runs one frozen-e4 local sequence:8 unique
+tests PASS (6 controls/1 fresh missing-import no-SQL negative/1 real signed seed
+positive), zero failures/errors/skips; exact XML/collection,12 completed/drained
+owner-matching groups. Original principals→signed SOT→capability admission and
+persisted roles/version/hash/owned ACL/audit/pending outbox pass, actions0.
+Canonical5+5/pre-ping, default quotas/timeout preserved. One acknowledged owned
+DB migrated0019 then dropped; wrapper/live catalog0, original fixture idle and
+unchanged. Raw24513B, source39 direct plus linkedR19 source1105/evidence220 pins,
+new seal202 entries all independently checked (overlaps not summed). Author
+style failures/non-atomic e3 remain; frozen e4 alone certifies runtime. Five SWIG
+deprecation warnings retained. Host76GiB/PG1476596KiB free, prune0B/no containers
+or volumes removed. Product204/tests192 unchanged. No HTTP/load, R19 retry/reset,
+provider, engine DB, worker/native, Git or rebuild. Executor OFF, candidate
+NOT_READY, EXE-009 open/.5 blocked. Next: separately design/admit R21 mandatory
+observer-OFF qualification with the proved environment; not automatically run.
+[R20 Verify](../../vibecode_v2/TIP-054.4b-R20_VERIFY_REPORT.md) ·
+[Final review](../../vibecode_v2/TIP-054.4b-R20_FINAL_RESULT_REVIEW.md).
+
+The R19/R18 entries below remain historical, unchanged evidence.
+
+**TIP-054.4b-R19 — Mandatory observer-OFF HTTP qualification: CLOSED FAILED BOOTSTRAP.**
+2026-10-09: finite pre passes six unique controls/zero failures-errors-skips,
+eight completed/drained child groups; Main same-six permissioned overlap passes.
+The sole consumed HTTP attempt aborts before requests: R19 env-i omitted
+INTEGRATION_DATABASE_DSN required by unchanged transitive synthetic_settings,
+which passes explicit empty postgres_dsn and raises URL validation. Main and
+independent source review missed this prerequisite; accepted reports and failed
+epochs remain preserved. Actual 0/1,600 observed, 1,600 missing, all16 cells
+unmeasured; no product latency failure or speedup claim. Migration0/load1/analysis1;
+both child groups drained, two owned DBs dropped/fresh catalog empty, original
+fixture idle/unchanged, source1105 and evidence220 pins match. Host82GiB/PG1460228KiB
+free, image prune0B/no containers-volumes removed. Product/tests unchanged;
+no retry/marker reset/provider/Git/rebuild/activation. Executor OFF, candidate
+NOT READY/.5 blocked/EXE-009 open. Next: R20 local fixture-bootstrap contract and
+positive/negative proof before any separately admitted new campaign.
+[R19 Verify](../../vibecode_v2/TIP-054.4b-R19_VERIFY_REPORT.md) ·
+[Main closure](../../v2/experiments/action_executor/r19/main-final-closure.json).
+
+**TIP-054.4b-R18 — Candidate qualification preparation: CLOSED / 6/6 VERIFIED.**
+2026-10-09: 52 unique selections PASS: 46 product regressions (17 pure + 29 SQL)
+and six admission controls; zero failures/errors/skips, no regression retry.
+Exact collection preserves old 33 IDs plus 13 additions and six controls. Main
+repeats the same six as overlap. Independent source, pre and final result review
+accept the scoped preparation; all 665 source and 385 raw pins match. Product
+and original tests unchanged. Explicit new recipe: product 204 files, b28e70d19059;
+tests 192 files, 5039c2a6a47f. Historical R17 4a0b label is not equated across recipes.
+Harness-only cleanup defects were held and repaired before runtime; original
+failed style/HOLD epochs remain. Ten pre / six SQL child groups completed/drained;
+two owned synthetic databases dropped, final live absence zero. Original fixture
+unchanged/idle; host 83 GiB, PG 1,460,228 KiB free; image prune 0 B, no containers
+or volumes removed. No provider/Git/rebuild/HTTP load/native activation. Executor
+OFF, whole candidate NOT READY, .5 blocked. Next: separately reviewed R19 mandatory
+observer-OFF 16-cell / 1,600-observation HTTP qualification, original limits intact.
+[R18 Verify](../../vibecode_v2/TIP-054.4b-R18_VERIFY_REPORT.md) ·
+[Main closure](../../v2/experiments/action_executor/r18/main-final-closure.json).
+
+**TIP-054.4b-R17 — Checkout lifecycle diagnostic: CLOSED / VERIFIED6/6.**
+2026-10-09:44 unique local correctness controls PASS (33 unchanged+11 new),
+0failure/error/skip; Main same8 overlap PASS. Exactly one800-call c25 campaign
+PASS,8/8 gates,0errors/timeouts/missing/leaks;12063 events/81 lag/21 observed
+generations, independent full raw lifecycle reconstruction. New cell p95:
+minimal105.70/107.36ms, detailed111.18/113.82ms; legacy128.01–148.83ms.
+R15 adverse304.49ms not reproduced here, not erased/root-caused or a causal
+speedup claim. Acquisition/connect/scheduling composites observed; no pure queue/
+CPU attribution. Prior source/static/pre/SQL harness failures preserved; reviewed
+repairs change only experiment/test controls, never product/pool/authority.
+Product4a0bb4921ed0 unchanged;251 R17/4 R16/five selected R12 pins and evidence
+hashes match. All task-owned R15/R17 DBs dropped, finalabsence0; original fixture
+idle/noOOM/restarts, PGfree1443844KiB/host84GiB, imageprune0B; generated cache removed.
+No provider/Git/rebuild/native activation; broader candidate NOT READY/defaultOFF,
+.5blocked/R12 wider failed gate still open. Main next selection: same-source whole-
+candidate local qualification planning, no automatic new load or further status
+tuning; optional offline correlation deferred. [R17 Verify](../../vibecode_v2/TIP-054.4b-R17_VERIFY_REPORT.md)
+· [Main closure](../../v2/experiments/action_executor/r17/main-final-closure.json).
+
+**TIP-054.4b-R16 — Offline status tail analysis: CLOSED / DIAGNOSTIC VERIFIED6/6.**
+2026-10-09: Exactly14 frozen inputs/564033B; all800 requests/1600 holds retained,
+328 cohort-stat records,400 ordinal pairs and30 tail rows independently reconstructed.
+Eight unique stdlib tests PASS,0failure/error/skip; Main repeats same8 as overlap.
+Builder/Main three outputs byte-identical. c25 p95 still140.99→304.49ms (+115.97%);
+all0/2/100 receipt cohorts worsen, worst15 new requests concentrate early. Slowest
+response405.14ms holds its own connection13.20ms; remainder unclassified, not pool
+wait/CPU/corrected latency. Root cause unresolved; no inferred factory fix.
+Product4a0bb4921ed0 unchanged;32 R15/4 R16/five selected protected R12 pins match.
+No new app tests/SQL/Docker/load/provider/Git/build/activation; no scratch/cleanup.
+Broader candidate NOT READY/defaultOFF/.5blocked. Next single proposal: bounded
+attempt-tagged checkout/connect/query/cleanup/loop-lag instrumentation with explicit
+order/observer controls, before another comparison; not implemented or run.
+[R16 Verify](../../vibecode_v2/TIP-054.4b-R16_VERIFY_REPORT.md) ·
+[Main JSON](../../v2/experiments/action_executor/r16/main-verification.json).
+
+**TIP-054.4b-R15 — Standard status factory: LOCALLY VERIFIED / PERFORMANCE MIXED.**
+2026-10-09: Canonical runtime status now obtains a private explicit-RC factory
+sharing the existing pool; writer factories/global engine construction stay
+unchanged. Strict current-origin/config-cache guard retains legacy for unsupported
+or mutated origins. Product content fingerprint4a0bb4921ed0 (not Git SHA), two
+product files changed; archived-original substitution reconstructs exact R14
+baseline50c8ca.33/33 correctness selections PASS (old25+new8),0error/failure/skip;
+static5/scoped type2 PASS. One comparator800/800 success,0timeout/missing/leak:
+status4SQL/3checkouts→3/1. P95 old/new ms: c1 9.29/4.08, c10 105.56/94.55,
+c25 140.99/304.49 (**+115.97% worse**), c50 363.46/242.65. All eight diagnostic
+1000ms gates pass; performance is not uniformly improved or causally certified.
+Same32 source pins, independent raw reconstruction and8/8 scoped criteria PASS.
+New task DB cleaned eachSQL/compare stage; finalcount0, retained fixture idle,
+imageprune0B. No serving/Git/external/native activation. Broader candidate remains
+NOT READY/defaultOFF/.5blocked; R12 wider failed readiness remains open. Next
+proposal: bounded offline c25 hold/tail analysis before wider certification,
+not an automatic new load/retry. [R15 Verify](../../vibecode_v2/TIP-054.4b-R15_VERIFY_REPORT.md)
+· [local JSON](../../v2/experiments/action_executor/r15/local-verification-summary.json).
+
+**TIP-054.4b-R14 — Status read-phase fusion: LOCAL SLICE VERIFIED / DEFAULT LEGACY.**
+2026-10-09: Only execution.py product source changed; supported existing explicit-RC
+plain factory with identical authority origin now proves3application SQL/1checkout.
+Default/unsupported/mismatched configurations keep4SQL/3checkouts; no global
+isolation/default-runtime optimization. Current product content fingerprint
+`50c8ca0fc522ede75664e226babe39bea1278972df6f4cb06e6276f6c05c405a` (not Git SHA).
+25/25 unique selections PASS (new16+old9), errors/failures/skips0; local criteria8/8.
+Syntax/lint/format3 PASS; scoped type1 PASS. Original preflight exit127/missingps
+and authoring style findings retained; narrow harness-only repair independently
+reviewed, fresh pre_e2 unit11 and sql_e1 SQL14 PASS. Five SWIG warnings per pytest
+output retained. Exact new synthetic DB migrated0019 then dropped; final count0,
+PGfree1378324KiB; fixture idle/noOOM/restarts.19pins/current source and old R12
+focused evidence preserved; only execution hash differs from prior product56fa.
+No serving rebuild/Git/provider/load/native activation. Latency benefit unmeasured,
+broader candidate NOT READY; executor defaultOFF and .5 blocked. Next requires
+separate runtime-factory decision and measurement approval, not automatic promotion.
+[R14 Verify](../../vibecode_v2/TIP-054.4b-R14_VERIFY_REPORT.md) ·
+[local JSON](../../v2/experiments/action_executor/r14/local-verification-summary.json).
+
+**TIP-054.4b-R13 — Execution checkout optimization: DESIGN CLOSED / ACCEPTED CONDITIONAL; NOT IMPLEMENTED.**
+2026-10-09: Current-source scan, three-option comparison and independent design
+review select status-only read-phase fusion. Source-derived target4SQL/3holds →
+3SQL/1checkout, not measured improvement. Create/submit two leases/three fresh
+phases, audit, commit, post-wait authority, metadata/content separation and joined
+cleanup remain unchanged. Before future code, a reviewed narrow factory/authority/
+isolation/cleanup admission addendum must prove supported READ COMMITTED and
+exclude mismatched injected policy origins/custom factories; otherwise legacy+STOP.
+Eight future proof groups and a separately approved bounded comparison are planned,
+not executed. Contractor verifies13 focused source/evidence pins unchanged; no
+fresh whole-product/runtime certification claimed. No code/tests/SQL/load/provider/
+Docker/Git/rebuild/activation; executor defaultOFF/NOT READY and .5 blocked.
+R12 failed readiness baseline remains. [R13 design](../../vibecode_v2/TIP-054.4b-R13_EXECUTION_CHECKOUT_DESIGN.md)
+· [R13 Verify](../../vibecode_v2/TIP-054.4b-R13_VERIFY_REPORT.md).
+
+**TIP-054.4b-R12 — Minimal observer and complete measurement budget: CLOSED / DIAGNOSTIC VERIFIED6/6.**
+2026-10-08: Actual reproducible offline budget,12 unique local controls (8 structural
++4 real SQL; zero skips), scoped lint/format/imports/type174 PASS. Main personally
+verified the same8 structural controls as overlap. New selected observer retains
+281179 records with all6 fault counters0, fixed800000/128MiB/180s caps unchanged;
+643-event audit chain and source/resource gates PASS. Nested helpers omitted only
+as separate measurements, not claimed zero cost. One ON SLA FAIL:4/16 cells PASS,
+1266 samples/205 timeouts/334 missing calls. Mandatory unchanged OFF SLA FAIL:
+10/16 PASS,1456 samples/84 timeouts/144 missing; all concurrency50 cells fail.
+One Builder/independent/Main host analysis each yields4 byte-identical outputs;
+all2722 requests/289 errors/32 original cells preserved and1266 exposure masks
+verified independently/personally. Outer wall coverage is not CPU, critical path,
+HTTP-window union or corrected SLA. Product repair/cause UNRESOLVED.
+Final all-source/history/raw/retained-fixture closure PASS, independently checked
+against current bytes by Main.199 new raw files/84,099,815 bytes,12 analysis files
+across3 runs and frozen9 sources sealed; preserved product56fa/protected R11 and
+prior history. Exact retained fixture idle/no OOM/restart, final PGfree1361948KiB.
+No core/provider/serving/Git/rebuild change; executor defaultOFF/NOT READY and .5
+block remain. Six accepted diagnostic requirements are not product release gates.
+[R12 Verify](../../vibecode_v2/TIP-054.4b-R12_VERIFY_REPORT.md).
+[R12 TIP](../../vibecode_v2/TIP-054.4b-R12_MINIMAL_OBSERVER_AND_BUDGET.md).
+
+**TIP-054.4b-R11 — Bounded observer exposure comparator: CLOSED PARTIAL / INTEGRITY STOP.**
+2026-10-08: Twelve unique controls PASS (eight structural/four real SQL), zero
+skips; Contractor personally executes the same eight structural controls as
+overlap. Final syntax/lint/format/imports PASS and mypy0 issues/174 sources.
+Prior author/static/SQL failures and explicit new-QA corrections remain retained.
+Exactly one ON:800000 rows hit the fixed cap,17506 dropped; other five fault
+counters zero. Original oracle7/16 cells PASS,121 timeouts/1394 samples/206 missing
+downstream calls. Original R9 integrity and708-event audit chain PASS, but not new
+measurement completeness. Integrity STOP: OFF and paired analyzer NOT RUN; no
+retry/cap increase/core tuning. Accepted requirements3/6 (50%), not12 controls
+converted to full acceptance. Product repair/cause UNRESOLVED.
+Actual final Technical closure and Contractor current-byte verification preserve
+product56fa/old400/73/current8/all7666raw/92analysis/R10new44/E3eight; exact retained
+fixture idle, PGfree1386756KiB. No core, provider, serving, rebuild, Git or release
+change. Executor defaultOFF/NOT READY and .5 block remain. No next diagnostic loop
+automatically authorized.
+[R11 Verify](../../vibecode_v2/TIP-054.4b-R11_VERIFY_REPORT.md) ·
+[R11 TIP](../../vibecode_v2/TIP-054.4b-R11_OBSERVER_EXPOSURE_COMPARATOR.md).
+
+**TIP-054.4b-R10 — Offline critical-path/cohort and cost falsification: CLOSED / OFFLINE VERIFIED6/6.**
+Exact55 selected inputs (48,484,234 bytes), product56fa/old400/73 archives/current8,
+frozen3 and7666raw/92analysis unchanged in actual final host seal. Twenty declared
+offline groups PASS; three actual analyses produce six byte-identical outputs.
+Independent raw reconstruction and Contractor personal oracle/partition checks
+PASS: all2974 requests/all147 errors/all32 original cells retained, missing216/10
+remain FAIL, OFF internals unobserved. At admission c50 queue coverage>=half in
+6/6 tail requests versus c10 0/6; costs/source scans remain partial/untimed,
+causality UNRESOLVED. No new load/core/runtime/release action. Executor remains
+NOT READY/default OFF, .5 blocked. Exactly one next proposal: bounded unchanged-
+product observer-overhead measurement comparator; no silent reference-helper
+timing change and no implementation authority from this diagnosis.
+[R10 Verify/design](../../vibecode_v2/TIP-054.4b-R10_VERIFY_AND_DESIGN_REPORT.md).
+
+**TIP-054.4b-R9M — Cache maintenance / R9 diagnosis: COMPLETE / VERIFIED, executor NOT READY.**
+Exact six approved generated mypy caches removed (524008 KiB recovered); no
+database/evidence/pytest/SDK-cache deletion or caps change. Harness-only no-cache
+typing and strict 26-ID collection normalization independently reviewed. Mypy
+174/lint/format/imports PASS; 26 unique controls (16 structural + ten SQL) PASS,
+zero skips; Contractor personally repeated four SQL controls PASS (overlap).
+Exactly one ON: integrity/chain PASS but latency FAIL (4/16 cells PASS, 133 errors,
+1384 observations). Mandatory unchanged OFF: FAIL (12/16 cells PASS, 14 errors,
+1590 observations); all concurrency50 cells fail, admission p95 1060.570 ms >500.
+Concurrency1/10/25 pass in this single OFF population, not repeated certification.
+Independent/personal analyzer replays match all four outputs; original OFF oracle
+reproduced. Final product56fa/400 bindings/73 archives/history/current8 and retained
+idle fixture PASS. No core/serving/provider/commit/push change; defaultOFF/.5 block
+remain. Diagnostic criteria4/4 maintenance and8/8 R9, not product readiness.
+Next proposal only: offline critical-path/cohort and observer-cost falsification,
+before selecting a bounded optimization. Sole cause and causal ON/OFF differences
+remain unresolved; no automatic further runtime or implementation authority.
+[R9M TIP](../../vibecode_v2/TIP-054.4b-R9M_CACHE_MAINTENANCE_AND_RESUMPTION.md).
+[R9M Verify](../../vibecode_v2/TIP-054.4b-R9M_VERIFY_REPORT.md).
+
+**Historical first R9 epoch — PARTIAL / RUNTIME BLOCKED (superseded by approved R9M above).**
+Homeowner approved bounded diagnosis; product stays `56fa5d71fc61`, no core change.
+New observer/driver/analyzer and16 structural+10SQL cases authored/source-reviewed.
+First pre-SQL stopped before tests: new lint/format issues (source-only corrections
+made) and runner512MiB `/tmp` full from generated mypy caches. Exact SDK imports
+and400 old bindings PASS; type/collection/structural runtime not certified. No
+SQL/CREATE, personalSQL, ON/OFF or external operation occurred. Cleanup/capacity
+expansion is not authorized; next proposal is exact-cache QA maintenance then
+resumption of the unused finite stages. R7 OFF failure/defaultOFF/.5 block remain.
+Final new-only Ruff/format PASS; old history/current helper/fixture seals PASS,
+runner idle and retained. Diagnostic criteria fully verified1/8 (closure only),
+seven partial/blocked; source style is not actual runtime acceptance.
+[R9 TIP](../../vibecode_v2/TIP-054.4b-R9_POOL_BOUNDARY_FALSIFICATION.md).
+[R9 Verify](../../vibecode_v2/TIP-054.4b-R9_VERIFY_REPORT.md).
+
+**TIP-054.4b-R8 — Offline Residual Contention Diagnosis: VERIFIED (6/6 diagnostic criteria).**
+Frozen35d77 analyzer,20 declared selfcheck groups (21 primitive checks),277 input
+hashes and five byte-identical outputs across independent/personal replays.
+All64 original cells reproduced;3060 ON request intervals and ALL19 candidate ON
+failures retained. Admission50 tail6 connect unions799–1225ms versus closed
+holds126–159ms prioritize acquisition-boundary investigation; not pure queue,
+sole audit cause or a speed-up guarantee. Full product56fa/source/test/helper/
+archive/raw history unchanged, no runtime/load/external operation. Next proposal:
+TIP054.4b-R9 same-candidate queue/pre-ping/terminal/scheduling boundary telemetry,
+approved in R9's bounded diagnostic epoch above. R7 OFF failure/defaultOFF and .5 block
+remain; diagnostic acceptance does not certify product readiness.
+[R8 Verify/design](../../vibecode_v2/TIP-054.4b-R8_VERIFY_AND_DESIGN_REPORT.md).
+[R8 TIP](../../vibecode_v2/TIP-054.4b-R8_RESIDUAL_CONTENTION_DIAGNOSIS.md).
+
+**TIP-054.4b-R7 — Two-Lease Comparator: FINAL PARTIAL / NOT READY.**
+Current product content fingerprint `56fa5d71fc61` (not Git SHA). Private helper
+uses two physical leases/three fresh Sessions/root transactions; old generations
+revoked, final state/authority fresh.416 unique cases PASS (324SQL+92pure), zero
+failures/errors/skips; Root personally reran16 overlapping controls PASS. All386
+old IDs active,29 originals archived before five approved modules/11 observation
+and fault-premise adaptations. Full lint/types/import/collection and400 bindings
+PASS. Exactly one diagnostic ON: overall FAIL,10/16 cells PASS,6 FAIL; mandatory
+unchanged OFF: overall FAIL,12/16 PASS,4 FAIL,8 timeout503 responses. All four concurrency50 cells
+fail: admission p95841.666ms>500; submit4/status1/cancel3 errors, downstream96/100
+samples. Serial improvement over fresh baseline is not causal gain or SLA acceptance.
+Final coverage6/8: TLC006FAIL P1,007STOPPED/UNVERIFIED; current broader/native/
+build/migration/restore proofs not run. Final integrity/history/resources PASS;
+four-container isolated fixture retained idle, cleanup not authorized. Default
+OFF, uncommitted, no serving/provider/rebuild/deploy activation. .5 still blocked.
+[R7 final Verify](../../vibecode_v2/TIP-054.4b-R7_VERIFY_REPORT.md).
+[R7 TIP](../../vibecode_v2/TIP-054.4b-R7_TWO_LEASE_COMPARATOR.md).
+
+Historical diagnostic milestone: **TIP-054.4b-R6 OFFLINE VERIFIED (6/6 OTD criteria)**,
+not a product fix. Frozen analyzer12 selfchecks and independent/personal reruns
+match all four outputs;252 selected inputs stable, all four original load gates
+remain FAIL. All32 candidate ON failed audited-COMMIT submits classified:28
+cancelled final reacquisitions before view SQL,4 later-view SQL cancellations.
+Its proposed two-physical-lease/three-fresh-TX comparator subsequently received
+separate implementation/load approval and is closed in R7 above. No R6 product/runtime/provider change.
+[R6 Verify/design](../../vibecode_v2/TIP-054.4b-R6_VERIFY_AND_DESIGN_REPORT.md).
+
+Historical previous product candidate: **TIP-054.4b-R5 PARTIAL / NOT READY**, product content fingerprint
+`624f4a7f666e` (not Git SHA). Approved three transaction-scoped physical leases
+implemented;386 unique controls PASS (306 realSQL+80pure), Root personally reran
+11 overlapping controls PASS,396 source/test/helper bindings and full lint/types/
+imports PASS. All356 old IDs remain active;22 originals archived before four
+approved observation/scaffold adaptations;30 new IDs retained, no skips/waivers.
+Actual unchanged OFF **overall FAIL:10/16 cells PASS,6 FAIL**: admission10/25/50 p95632.117/864.136/4170.878ms
+exceeds500ms; submit50 has82 timeouts, leaving18/100 downstream status/cancel
+samples each. ON overall FAIL:11/16 cells PASS,5 FAIL; no latency gain established. Broad/native/
+build/migration-cycle/restore/live/wheel gates STOPPED/UNVERIFIED; executor default
+OFF, uncommitted/no serving/provider/rebuild/deploy activation. Acceptance6/8
+(75%):TPL006FAIL P1,007UNVERIFIED. Four-container isolated fixture retained;
+idle, final post-load bindings/history/resource integrity PASS. R6 offline
+comparison is now closed above; no automatic tuning or .5 activation follows.
+[R5 TIP](../../vibecode_v2/TIP-054.4b-R5_TRANSACTION_SCOPED_LEASES.md).
+[Final Verify](../../vibecode_v2/TIP-054.4b-R5_FINAL_VERIFY_REPORT.md).
+
+TIP-054.4b-R4 offline diagnosis/design selection is complete, not a code fix.
+Frozen560174 and immutable R3 traces: admission50 closed-hold p95206→500ms,
+status acquisition envelope463→884ms; direct audit waits observed, but neither
+audit nor coalesced ownership is proven the sole cause. Contractor independently
+replayed the frozen analyzer:8 selfchecks PASS, four output files byte-identical,
+57 input hashes unchanged. Selected next proposal: three transaction-scoped
+physical leases, retain current guards/audit/29–22 SQL and truthful postcommit
+outcomes; R5 implementation/test-budget epoch was approved in the following turn. No product/test/
+helper changes, new load/fixture, serving/provider/commit operations. R3 latency
+failures below remain authoritative; product NOT READY.
+[Diagnosis TIP](../../vibecode_v2/TIP-054.4b-R4_LEASE_AND_AUDIT_DIAGNOSIS.md).
+[Design/Verify](../../vibecode_v2/TIP-054.4b-R4_DESIGN_AND_VERIFY_REPORT.md).
+
+Historical local milestone: TIP-054.4b-R3 connection lifecycle/commit outcome.
+Its product path/content fingerprint (not Git SHA) was `56017430e711`.
+The approved Action-only physical owner with three fresh logical transactions is
+implemented. Fresh focused checks: 290 unique SQL cases (260 historical active
+cases in the explicitly adapted regression epoch, 8 Builder and 22 Reviewer)
+and 66 pure-unit controls PASS, zero failures/errors/skips. Contractor personally
+reran the 22 critical cases in a new database: PASS, overlapping coverage only.
+All 370 bindings unchanged; Ruff/types (174 sources)/exact imports PASS.
+Actual ON ordinary admission/submit checkouts fell3→1 (SQL29/22 unchanged), but
+unchanged OFF FAIL12/16: admission25/50 p95566.832/977.284ms exceeds500ms;
+status50 has14 and cancel50 has9 caller timeouts. Same-day old-e6 OFF had
+393.545/778.576ms and zero errors, so overall tail improvement is not established.
+Whole candidate/native/restore/build gates STOPPED/UNVERIFIED. Pool/timeout/
+permission rules unchanged; default OFF, no serving/commit/external operation.
+Final scoped Verify6/8 (75%):006FAIL,007UNVERIFIED. Exact-owned synthetic
+4 containers/1 network removed; all900 current and4319 historical evidence
+files preserved with unchanged hashes, unrelated25/12/115/57 inventory retained.
+Synthetic tmpfs database is not exact-restore recoverable.
+[Verify](../../vibecode_v2/TIP-054.4b-R3_VERIFY_REPORT.md).
+[TIP](../../vibecode_v2/TIP-054.4b-R3_CONNECTION_LIFECYCLE_AND_OUTCOME.md).
+
+**Historical TIP-054.4b-R2 candidatee6e9bfe8: PARTIAL / NOT READY.**
+Fresh260 SQL cases/39 units pass; Contractor personally reran33 overlapping
+critical cases, all pass.346-entry bindings/full lint/types/import match. Actual
+admission29SQL/3 checkouts and submit22/3 reduce checkout churn from7 each.
+New-plan audit postgrant SQL11→5 (12→6 including first grant); c1 client-tail
+p95 4.984→3.781ms, but submit3.279→5.522ms worsened. Unchanged OFF still fails:
+admission25/50 p95 561.428/955.479ms;32 submit50 timeouts,68 downstream samples
+and2 status/1 cancel failures. Whole-current broad/native/build/populated
+migration/restore/wheel certification STOPPED.6/8 local criteria verified (75%);
+exact-owned4 containers/1 network cleaned, all host evidence/unrelated state
+retained; synthetic tmpfs is not restore-recoverable. All prior trials retained,
+defaultOFF/serving unchanged. Scope and controls:
+[TIP](../../vibecode_v2/TIP-054.4b-R2_CHECKOUT_AND_AUDIT_TAIL.md),
+[Contractor Verify](../../vibecode_v2/TIP-054.4b-R2_VERIFY_REPORT.md).
+
+**Prior TIP-054.4b-R candidate85bf88a9: PARTIAL / NOT READY.**
+Fresh234 focused SQL cases pass; Contractor independently reran71 overlapping
+cases, all pass. Ruff0/mypy173 files0/exact-pin imports0 and339-file bindings
+match. Ordinary R0 admission/submit queries fell101→29 and62→21, but unchanged
+OFF load still fails: admission25/50 p95 531.345/1,147.614ms;14 submit50 timeouts
+and only86 downstream samples. Broad/native/migration/restore/source-wheel
+certification on these new bytes is STOPPED, not inherited from4c446.
+See [current Contractor Verify](../../vibecode_v2/TIP-054.4b-R_VERIFY_REPORT.md).
+Local RQB coverage6/8 (75%), not global completion: latency FAIL and current
+broad/native build proof UNVERIFIED. Exact4 disposable containers/1 network
+cleaned after independent verification; all host evidence and unrelated services
+retained. Synthetic tmpfs state has no exact restore guarantee.
+
+**Historical TIP-054.4b: implemented, correctness verified; PARTIAL / NOT READY because
+EXE-009 load fails.** DBOS 3.2.0 is admitted against unchanged serving
+SQLAlchemy 2.0.43/psycopg 3.2.9. Schema is now 0019; execution remains opt-in,
+default OFF with separate engine database/identity. Real R0/R1 canonical
+Documents execution, immutable attempts/receipts, current output authority,
+process recovery, cold joint restore, bounded pause/resume/deadline and
+two-live-worker fencing have finite synthetic proofs. No serving rebuild,
+company/LLM/MCP/connector effect, commit/push or production operation occurred.
+
+Historical frozen product `4c4463d2a35a035c1111189000bcaa131a6b1d43d56acae599a0795154b0f5f1`:
+**1,095 backend passed / 17 explicit skips** (825 unit + 270 integration,
+25 fresh module databases); Ruff, strict mypy over 169 source files, exact
+serving-pin imports and source wheel pass. Contractor independently reran
+64 focused cases, all pass with matching source/helpers; overlap, not 1,159
+passes. Populated migration/grants, six native process profiles, two-live-owner
+fencing and cold joint restore all pass on these exact bytes. Restore preserves
+76 domain tables/60 rows plus 13 SDK tables/12 rows; no production DR claim.
+Actual MinIO DOCX generation/download verifies bytes and then denies access
+after ACL loss. Renderer death after staging intentionally yields truthful
+partial failure without a generated artifact, not automatic file success.
+
+EXE-009 remains failed after narrow A/B/C lock/duplicate-validation/metadata
+repairs: historical25/50-concurrency admission p95 768.3/1,511.3 ms, with67/100
+submit timeouts at50. All four operations pass at1/10; submit/status/cancel pass
+at25, but this does not waive the gate. No raised timeout/lower load is accepted.
+This baseline led to dedicated query-budget/batching work above, not TIP-054.5. See
+[.4b TIP](../../vibecode_v2/TIP-054.4b_DURABLE_ACTION_EXECUTOR.md) and
+[Contractor Verify](../../vibecode_v2/TIP-054.4b_VERIFY_REPORT.md).
+
+**TIP-054.4a: finite local bake-off verified; DBOS selected with deferred
+integration gates.** Actual DBOS 3.2.0 and Temporal SDK 1.34.0/CLI 1.9.1 on
+Python 3.12.4; frozen synthetic source, no company/LLM/connector calls. Both
+matched matrices pass 63/63 source-oracle profiles with 1,200 timed samples
+each. Native final suites 9/9 each, both cold joint restores and actual
+two-process source fencing pass. Contractor independently reran the matrix in
+reverse order, DBOS native 9/9 and the same 14 unit/oracle cases; counts overlap.
+
+DBOS meets extra-p95 ≤1,000 ms at 1/10/25/50 in both orders. Temporal misses
+50 at 1,178.849/1,065.760 ms, preserved. These are local service-slot measurements
+excluding queue/cold startup, not production-equivalent storage or company
+scale. DBOS's first synchronous waiter failure is retained: persisted native
+cancel/no effect does not certify prompt caller termination. Serving dependency
+compatibility and bounded async waiter/drain are mandatory .4b gates. Neither
+SDK was admitted to the app during .4a; app source fingerprint was unchanged
+in that historical milestone. DBOS admission is separate .4b evidence above.
+Fresh isolated Ruff/syntax/unit/validator pass; no fresh broad app/UI/type gate.
+See [ADR](RUNTIME_SELECTION.md) and
+[.4a Contractor Verify](../../vibecode_v2/TIP-054.4a_VERIFY_REPORT.md).
+
+**TIP-054.2/.3: locally verified with explicit deferred scope.** Context now
+resolves permitted current signed SOT and active ontology into bounded labelled
+packets. Memory has owner/team scope, purpose, TTL, revision correction and
+redaction; every reuse revalidates authority/source. Action Kernel persists
+host-owned versions, immutable plans, exact approval binding, redacted events
+and bounded parent reservations. No executor or Ask/UI orchestration exists yet.
+
+Latest application frozen-source gates (.2/.3): **1,024 backend passed / 17 explicit skips**
+(818 unit + 206 integration across 21 fresh module DBs); **220 web passed**;
+lint/types/build pass. Populated `16→17→18→17→16→17→18` preserves original
+rows across 16 legacy tables and audit, and checks eight new tables' actual
+runtime rights. Contractor independently reran 130 overlapping new cases,
+full backend lint/types and the populated cycle. Do not add overlap to totals.
+
+Historical .2/.3 source: baseline `0e88f48588dc3228f1ae9eca7a7597d96589af8b` plus
+uncommitted changes, schema **0018_action_contracts**. No commit/push/serving
+rebuild, company-source admission or external provider call. Seventeen skips
+are 15 live ingress and two absent real-kernel fixtures, not exercised tests.
+Full evidence: [.2/.3 Verify](../../vibecode_v2/TIP-054.2_054.3_VERIFY_REPORT.md).
+
+**TIP-054.1: locally verified.** Existing Documents now uses persisted pending
+work rather than Redis as its sole dispatch authority. Claims, bounded leases,
+canonical retries, cancellation and publication fencing handle tested loss and
+duplicate races. Publication rechecks current rights/facts. Recovery UI explains
+safe failure and retry without leaking raw errors or reviving stale requests.
+
+Historical .1 gates: 894 backend passes / 17 explicit out-of-scope skips;
+220 web passes; five mocked browser cases; lint/types/build and disposable
+migration cycle pass. Contractor independently reran the 29 new backend cases,
+full backend lint/types and all 220 web tests. These overlap the aggregate and
+are not extra coverage counts.
+
+Historical .1 source was baseline `0e88f48588dc3228f1ae9eca7a7597d96589af8b`
+plus uncommitted changes, schema 0016. No bound serving runtime was available. No commit, push,
+serving rebuild, private environment change, real SOT admission or external
+LLM/embedding call occurred.
+
+Full evidence and limitations:
+[TIP-054.1 Verify](../../vibecode_v2/TIP-054.1_VERIFY_REPORT.md).
+
+## Next approved work
+
+| Milestone | Status | Required proof |
+|---|---|---|
+| TIP-054.2 company context and scoped memory | Locally verified, SOT/API slice | 9/9 criteria; company-wide/live-source/Ask integration still missing |
+| TIP-054.3 capability and Action Kernel contracts | Locally verified, domain admission only | 9/9 criteria; executor/actual effects/configured R2/R3 workflows still missing |
+| TIP-054.4a durable runtime selection | Locally verified, DBOS selected with deferred integration proof | Both retained matrices/native/restore/fencing; explicit local-only limits and failed trials |
+| TIP-054.4b executor / active R27 | Selected genuine tempfile/pytest H1–H5 accepted5/5;38unique groups PASS(33old+5new);strong strict/Ruff/format/syntax7 clean; preflight DENY, NOT_READY/OFF | EXE-009 OPEN/P1; full PRE/launcher/default-user/plugin/native-child routes and Linux/SQL/livefixture/measurement unqualified; selected same-budget local stage only adopted; R21 SLA still fails |
+| TIP-054.4b-R19 HTTP qualification | One consumed attempt, 0/1,600 observed; no valid latency result; failed evidence retained | Missing transitive integration DSN must not be mistaken for product latency failure or retried |
+| TIP-054.4b-R20 fixture bootstrap | CLOSED / VERIFIED6/6; eight unique tests PASS, actual signed seed and environment proved | No HTTP/native or whole-candidate claim; immutable closure retained |
+| TIP-054.4b-R21 OFF qualification | CLOSED / SLA FAILED: 1,440 observed,87 timeouts,160 missing;10/16 cells PASS; integrity PASS | Preserve consumed allowance; offline diagnosis/design before any separately admitted new qualification |
+| TIP-054.4b-R22 offline diagnosis | CLOSED / DIAGNOSTIC VERIFIED6/6; five controls, exact original16cell reconstruction; four options compared | R23 minimal phase-attribution design + byte-fit/transparency proofs before any separate capture; no core repair or measured cause yet |
+| TIP-054.4b-R query budget and batching | Prior PARTIAL / NOT READY:85bf234/71 overlapping proofs, query budgets pass but OFF fails | R2 continuation below; older evidence does not certify current build |
+| TIP-054.4b-R2 checkout/audit-tail | PARTIAL / NOT READY:260 SQL/39 units/33 overlapping reruns pass; measured checkout and audit-statement targets met, OFF fails | Separate remaining connection-lifecycle/round-trip design; unchanged load before broad/native certification |
+| TIP-054.5 artifact workflow / UX | Planned, blocked by complete .4b qualification | Complete Ask-to-file workflow and verified format/layout/formula quality |
+| TIP-054.6…9 integrations/proactivity/full acceptance | Planned | Governed fake-adapter tests, SOT deltas, durable watches and build-bound quality/cost/latency |
+
+## Carry-forward debt
+
+Current R27 decision: stage-specific whole synthetic-input and selected genuine
+tempfile/pytest lifecycle are adopted for bounded local verification only, within
+SAME10MiB/no-refund. Actual ownership/raw/native conservation and fault cleanup
+pass; complete PRE/launcher domain, default user/lock/atexit, uncontrolled callbacks/
+children, unknown writers/plugins and Linux/physical SQL remain unqualified.
+Known139 names are a lower bound, not a complete admitted inventory. Next close
+the full source-derived producer/output inventory without dropping outputs or
+growing counts alone. Full runtime capture remains HOLD; original PRE DENY.
+No new qualification, inherited campaign allowance or activation follows from38PASS.
+Strong corrected typing and immutable evidence replace the unaccepted first
+tested epoch, not its retained history. Latency repair is still unmeasured.
+R20 closed the bootstrap prerequisite; R19 remains a
+consumed historical pre-request failure, while R21 is an actual local SLA failure.
+EXE-009 remains OPEN:10/16 passing cells and integrity acceptance cannot close it.
+No pool/audit causal attribution, native admission, new load or retry is implied.
+All other original EXE IDs remain partial/pending as described in the R18 ledger;
+R17/R18 narrow passes do not certify the whole candidate or erase any failure.
+Older remediation descriptions below are historical, not current certification.
+
+TIP-054.4b-R measured and repaired fresh full authority, leaf/lineage/source
+batching and bounded evidence fencing. Fixed pools, timeouts and load thresholds
+remain unchanged; no cross-checkpoint permission cache. Scoped equivalence/
+temporal proofs pass, but EXE-009 remains failed. R2 has implemented/measured
+checkout/audit-tail changes without closing the latency gate. Next requires a
+separate measured connection-lifecycle/admission-scheduling design, not more
+source edits inferred from this report. The4c446 full packet above remains
+historical, not currente6 certification.
+
+R remediation checkpoint: earlier candidate2067 passed185 focused cases but
+failed a new legal evidence-lifecycle race (actual false submit admission and
+success audit). That failure remains retained. Bounded active-evidence witness
+repair in candidate85bf88a9 passed fresh234 SQL cases and independent71 reruns;
+latency failed and current broad/full-build proof was stopped. No old candidate
+results certify this freeze. Existing host
+manifest/history final-return timing is a separate UNVERIFIED P1 risk for .5;
+Action checkpoint coverage is not blanket disclosure/release readiness.
+
+Earlier approved implementation instructions:
+[TIP-054.2](../../vibecode_v2/TIP-054.2_COMPANY_CONTEXT_AND_MEMORY.md) and
+[TIP-054.3](../../vibecode_v2/TIP-054.3_ACTION_KERNEL_CONTRACTS.md). Builders own
+product changes; shared verification integrates routers/schema and exercises
+only disposable synthetic fixtures. No Ask/UI integration or effect executor
+is inferred from domain/API completion.
+
+Caller-selected purpose contracts must precede new generalized context/action
+use of direct Search and Intelligence. New Context/Actions use purpose-safe
+SOT revalidation and R1 pinned bindings; they do not close the existing direct
+Documents endpoint purpose-contract debt or certify output inheritance. Conservative expired
+render attempts leave uncertain staging quarantined: retention-aware
+reconciliation remains. Sequential/synchronous rendering needs measured
+isolation/throughput work, not a claim of tail-latency closure. Old workers
+must be drained before schema upgrade; rolling compatibility is not certified.
+Memory expiry is not physical deletion or a production retention policy.
+Downgrade intentionally drops new-domain rows: re-upgrade is not restore.
+R2/R3 approval tests are contract-only, not production financial/legal quorum.
+
+The research registry and 96-scenario Enterprise OS acceptance catalog remain
+planning evidence. Current finite offline regression does not certify real
+LLM usefulness, full company knowledge, production readiness or all 32 EOS
+requirements. Existing source applications remain connection-ready only until
+their owners supply authoritative contracts.
+
+The .4a isolated source does not implement the product executor. Public package
+OSV results do not certify binary/base-image security. Multi-host workflow
+failover, live version migration, production recovery and real adapter effects
+must not be inferred from single-executor finite crash/cold-restore proofs.
+
+New action-linked output disclosure conservatively requires the original actor's
+pinned snapshot as well as current caller/source authority. Corporate sharing/
+offboarding continuity after actor-security changes is not certified; review
+that explicit policy in .5 rather than assuming general company-wide usability.

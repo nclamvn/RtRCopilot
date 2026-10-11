@@ -1,0 +1,23 @@
+{
+  "strict_command": "backend mypy --config-file v2/apps/backend/pyproject.toml --strict --follow-imports=silent --no-incremental --cache-dir=/dev/null all seven new .py",
+  "strict_result": {
+    "chunk_id": "962c04",
+    "wall_time_seconds": 0.000007,
+    "exit_code": 0,
+    "original_token_count": 11,
+    "output": "Success: no issues found in 7 source files\n"
+  },
+  "focused_final_chunk": {
+    "chunk_id": "3a0c7a",
+    "wall_time_seconds": 0.000007625,
+    "exit_code": 0,
+    "original_token_count": 663,
+    "output": "{\"H4_cleanup\": {\"cleanup_errors\": [\"[Errno 5] injected rmdir\"], \"errors\": [\"Traceback (most recent call last):\\n  File \\\"/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/tempfile.py\\\", line 954, in cleanup\\n    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)\\n  File \\\"/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/tempfile.py\\\", line 934, in _rmtree\\n    _shutil.rmtree(name, onexc=onexc)\\n  File \\\"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/genuine.py\\\", line 105, in cleanup\\n    return original_rmtree(*args, **kwargs)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/shutil.py\\\", line 759, in rmtree\\n    _rmtree_safe_fd(stack, onexc)\\n  File \\\"/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/shutil.py\\\", line 703, in _rmtree_safe_fd\\n    onexc(func, path, err)\\n  File \\\"/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/shutil.py\\\", line 662, in _rmtree_safe_fd\\n    os.rmdir(name, dir_fd=dirfd)\\n  File \\\"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/native.py\\\", line 1096, in rmdir\\n    self.event(\\\"rmdir\\\", name, action, cleanup=True, recoverable=True)\\n  File \\\"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/native.py\\\", line 494, in event\\n    raise error\\nOSError: [Errno 5] injected rmdir: '/r27-owned/8461840a733f47aba1698fe4624ab384/candidates/TMPDIR/codex-tmp-r21-controls-20261009-h7c_c7nv/r21_http_e1/run'\\n\"], \"failures\": [], \"first_owner_fault\": \"[Errno 5] injected rmdir: '/r27-owned/8461840a733f47aba1698fe4624ab384/candidates/TMPDIR/codex-tmp-r21-controls-20261009-h7c_c7nv/r21_http_e1/run'\", \"genuine_doCleanups_results\": [false], \"successful\": false, \"testsRun\": 1}, \"H4_short\": \"sliced-input control: source requested4, native input1, actual returned1; full source blat retained, not spontaneous OS short write\"}\n.{\"H4_output_failure\": \"injected genuine second XML source write error, accepted38B vs whole requested raw retained\", \"charge\": 115578, \"outputs\": {\"reports/result.xml\": 673, \"reports/stderr.txt\": 21, \"reports/stdout.txt\": 20}, \"source_error\": \"[Errno 5] injected xml_source\"}\n.{\"H1_H4_capacity\": \"natural bridge admission exhaustion with active preadmitted outputs/finalizer/file, genuine bounded cleanup still drained\", \"attempts_after_cleanup\": 455, \"events\": 28, \"selected_fd_peak\": 8}\n.\n5 passed in 1.85s\n"
+  },
+  "distinct_outer_controls": 5,
+  "ruff": "All checks passed!",
+  "format": "7 files already formatted",
+  "changes": "Narrow typed variable names and redundant bytes-cast removal; private nested/frozen outer pytest exclude faulthandler/pastebin; private configure verifies eight writer plugins blocked; checked entry rejects PYTEST_DEBUG before imports.",
+  "previous_tested_epoch": "history/tested38-epoch1 (byte-exact 24 files + snapshot.json; author/Main38 PASS but strong strict25 errors and ambient faulthandler route made epoch non-final)",
+  "claim": "No new roles/cap/authority/domain, old33 unchanged; follow-imports=skip health not used as final strong-type claim."
+}

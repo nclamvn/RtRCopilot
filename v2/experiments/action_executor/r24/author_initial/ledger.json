@@ -1,0 +1,617 @@
+{
+  "schema": "R24-closed-producers-v1",
+  "cap_bytes": 10485760,
+  "boundary": "HTTP polling-root all files including live tmp and optional failure outputs, plus separately accounted sibling marker. PRE has separate10MiB root. Outer Main/shell transcripts excluded from root and unbounded if included in whole packet. Frozen downstream seals are offline provenance, not repeated load output.",
+  "producers": [
+    {
+      "id": "frozen_copies",
+      "classification": "fixed",
+      "max_bytes": 5646,
+      "count_domain": "2 files; each pinned R21 target copied once",
+      "byte_domain": "Exact source-binding + contract bytes, no reserialization",
+      "assumptions": "Only these frozen targets; not arbitrary future bindings.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 44,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/source-binding-e1.json",
+          "line": 1,
+          "sha256": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/contract.json",
+          "line": 1,
+          "sha256": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c"
+        }
+      ],
+      "historical_files": [
+        "binding.json",
+        "contract.json"
+      ],
+      "historical_bytes": 5646
+    },
+    {
+      "id": "literal_controls",
+      "classification": "fixed",
+      "max_bytes": 283,
+      "count_domain": "One OFF controls file",
+      "byte_domain": "Literal dict + indent=2, no newline",
+      "assumptions": "AST-derived without import; old ON profiler/PG monitor not admitted.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r/run_phase_baseline.py",
+          "line": 26,
+          "sha256": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7"
+        }
+      ],
+      "historical_files": [
+        "run/r-controls.json"
+      ],
+      "historical_bytes": 283
+    },
+    {
+      "id": "literal_scope",
+      "classification": "fixed",
+      "max_bytes": 117,
+      "count_domain": "One printf file",
+      "byte_domain": "Fixed ASCII including LF",
+      "assumptions": "Pinned wrapper literal, not runtime observation proof.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 196,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "historical_files": [
+        "executor-scope.txt"
+      ],
+      "historical_bytes": 117
+    },
+    {
+      "id": "launch_review",
+      "classification": "conditional",
+      "max_bytes": null,
+      "count_domain": "One review pin, one mark CLI ACK; sibling consumed JSON marker also retained",
+      "byte_domain": "CLI literal + variable review path; successful marker fixed epoch/hash/meaning",
+      "assumptions": "Sibling marker lies outside polling root. No global caller path-length contract; mark success conditional.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 46,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 131,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 228,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        }
+      ],
+      "historical_files": [
+        "launch-marker.txt",
+        "review-pin.txt"
+      ],
+      "historical_bytes": 171
+    },
+    {
+      "id": "journal",
+      "classification": "conditional",
+      "max_bytes": null,
+      "count_domain": "1600 distinct attempts max only if recorder succeeds; abort omits descendants",
+      "byte_domain": "Compact JSON + LF; state/error_code/exception_type lack finite string contracts",
+      "assumptions": "Append precedes write/flush; failure can append a second exception row to one slot. Validator acceptance is not evidence of long values emitted.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 39,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        },
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 54,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/qualification.py",
+          "line": 216,
+          "sha256": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11"
+        }
+      ],
+      "historical_files": [
+        "run/samples.jsonl"
+      ],
+      "historical_bytes": 200076
+    },
+    {
+      "id": "final_samples",
+      "classification": "conditional",
+      "max_bytes": null,
+      "count_domain": "One pretty array when finally completes; duplicates in-memory journal records",
+      "byte_domain": "indent=2 includes array/object framing/whitespace",
+      "assumptions": "Same unknown domain/cardinality as journal; hard kill can omit file; partial writes retained.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 101,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        }
+      ],
+      "historical_files": [
+        "run/samples.json"
+      ],
+      "historical_bytes": 277838
+    },
+    {
+      "id": "summary_stdout",
+      "classification": "conditional",
+      "max_bytes": null,
+      "count_domain": "16 cells on completed oracle; summary file once + stdout copy + LF",
+      "byte_domain": "indent=2, fixed metadata + dynamic counts/floats; stdout may contain additional import/library output",
+      "assumptions": "Oracle abort can omit summary. No complete error-path numeric/serialization/stream domain.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 87,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        },
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 96,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        }
+      ],
+      "historical_files": [
+        "run/latency-summary.json",
+        "load.stdout.txt"
+      ],
+      "historical_bytes": 9779
+    },
+    {
+      "id": "load_stderr",
+      "classification": "unknown",
+      "max_bytes": null,
+      "count_domain": "Nominal request logs + seed audit; all logger/warning/error counts unknown",
+      "byte_domain": "Request/audit JSON, httpx/logging text, exception/notes/tracebacks/import diagnostics",
+      "assumptions": "190 seconds does not bound bytes/second or messages. Historical size is not a maximum; no third-party proof assumed.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 106,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        },
+        {
+          "path": "v2/apps/backend/src/rtr_copilot/api/main.py",
+          "line": 88,
+          "sha256": "a3a8f760b93a6804487eb4fdc4411537ee5ff500113651f273c4ee93cea9569b"
+        },
+        {
+          "path": "v2/apps/backend/src/rtr_copilot/auth/audit.py",
+          "line": 27,
+          "sha256": "13e3da023c2b886725c6fa0270789c6297b58647dbcd8949ef5ad7474fe0fa8e"
+        },
+        {
+          "path": "v2/apps/backend/src/rtr_copilot/repositories/audit.py",
+          "line": 242,
+          "sha256": "ed2b90e2e8e24fcb99efc0ccbb2263397c372a920bc719173674e9146e45ec8a"
+        }
+      ],
+      "historical_files": [
+        "load.stderr.txt"
+      ],
+      "historical_bytes": 432499
+    },
+    {
+      "id": "migration_streams",
+      "classification": "unknown",
+      "max_bytes": null,
+      "count_domain": "One migration child, two streams; emissions not bounded",
+      "byte_domain": "Alembic/driver diagnostics and failure tracebacks",
+      "assumptions": "120 seconds is a time limit, not a byte-rate/domain limit.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 191,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 106,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        }
+      ],
+      "historical_files": [
+        "migration.stdout.txt",
+        "migration.stderr.txt"
+      ],
+      "historical_bytes": 3373
+    },
+    {
+      "id": "owner_process",
+      "classification": "conditional",
+      "max_bytes": null,
+      "count_domain": "2 owners + 2 terminal results; each result copies owner; first deadline rewrites owner",
+      "byte_domain": "JSON PID/group/start/token/code/reason/wall/deadline; token32 fixed, platform numeric domains unspecified",
+      "assumptions": "Finite files for migration/load, but live/error-path serialized maxima not proved.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 113,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 163,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 76,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        }
+      ],
+      "historical_files": [
+        "load.owner.json",
+        "load.process.json",
+        "migration.owner.json",
+        "migration.process.json"
+      ],
+      "historical_bytes": 903
+    },
+    {
+      "id": "supervisor_stop",
+      "classification": "unknown",
+      "max_bytes": null,
+      "count_domain": "4 nominal supervisor streams; optional active-label stop stdout/stderr/proof",
+      "byte_domain": "Empty success historical only; ownership/drain/process exceptions can print tracebacks",
+      "assumptions": "Shared10s prevents renewal, not byte growth. Stop errors retained.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 64,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 133,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 181,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        }
+      ],
+      "historical_files": [
+        "load-supervisor.stderr.txt",
+        "load-supervisor.stdout.txt",
+        "migration-supervisor.stderr.txt",
+        "migration-supervisor.stdout.txt"
+      ],
+      "historical_bytes": 0
+    },
+    {
+      "id": "source_cap_child",
+      "classification": "conditional",
+      "max_bytes": null,
+      "count_domain": "6 source ACKs + 5 cap files + 2 child ACKs on complete HTTP flow; optional stop proof above",
+      "byte_domain": "Source prints R21_PASS source (not full snapshot); cap decimal live sum + ACK; child ACK",
+      "assumptions": "Failed/partial files and outer stderr possible; live sum no ex-ante domain; final writers follow cap.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 101,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 127,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 364,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 397,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/qualification.py",
+          "line": 177,
+          "sha256": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11"
+        }
+      ],
+      "historical_files": [
+        "cap-after.txt",
+        "load-cap-after.txt",
+        "load-cap-before.txt",
+        "load-child-proof.txt",
+        "load-source-after.txt",
+        "load-source-before.txt",
+        "migration-cap-after.txt",
+        "migration-cap-before.txt",
+        "migration-child-proof.txt",
+        "migration-source-after.txt",
+        "migration-source-before.txt",
+        "source-after.txt",
+        "source-before.txt"
+      ],
+      "historical_bytes": 222
+    },
+    {
+      "id": "fixture",
+      "classification": "unknown",
+      "max_bytes": null,
+      "count_domain": "2 checks, 3 redirected files; before stderr outer channel",
+      "byte_domain": "Success ACK fixed; Docker/inspect/assertion/traceback failures unbounded by source contract",
+      "assumptions": "Outer shell/Main transcript is excluded from root, not silently zero if wider packet requested.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 57,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 119,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 102,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r18/gate.py",
+          "line": 409,
+          "sha256": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1"
+        }
+      ],
+      "historical_files": [
+        "fixture-before.txt",
+        "fixture-after.txt",
+        "fixture-after.stderr.txt"
+      ],
+      "historical_bytes": 34
+    },
+    {
+      "id": "database_admin",
+      "classification": "unknown",
+      "max_bytes": null,
+      "count_domain": "2 CREATE pairs + 2 role outputs + 2 grants + 2 postload pairs + 2 DROP pairs + closure; absence capture",
+      "byte_domain": "Normal tags/zero values finite; PostgreSQL/Docker/client error output not producer-capped",
+      "assumptions": "connect5/statement10/lock5 time budgets only. Uncertain ownership retains DB; unredirected stderr outer transcript.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 55,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 81,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 179,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 202,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 104,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "historical_files": [
+        "database-closure.txt",
+        "domain-create.stderr.txt",
+        "domain-create.stdout.txt",
+        "domain-no-worker-effects.stderr.txt",
+        "domain-no-worker-effects.txt",
+        "domain-role-login.txt",
+        "engine-create.stderr.txt",
+        "engine-create.stdout.txt",
+        "engine-role-login.txt",
+        "engine-user-tables.stderr.txt",
+        "engine-user-tables.txt",
+        "rtr_tip054_r21_engine_e1-drop.stderr.txt",
+        "rtr_tip054_r21_engine_e1-drop.stdout.txt",
+        "rtr_tip054_r21_engine_e1-grants.txt",
+        "rtr_tip054_r21_local_e1-drop.stderr.txt",
+        "rtr_tip054_r21_local_e1-drop.stdout.txt",
+        "rtr_tip054_r21_local_e1-grants.txt"
+      ],
+      "historical_bytes": 241
+    },
+    {
+      "id": "disk",
+      "classification": "unknown",
+      "max_bytes": null,
+      "count_domain": "6 files: host + PG before2 CREATEs and final",
+      "byte_domain": "df paths/device/numbers, Docker errors lack byte schema",
+      "assumptions": "Free space threshold is not an output upper bound.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 90,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "historical_files": [
+        "domain-host-disk.txt",
+        "domain-pg-disk.txt",
+        "engine-host-disk.txt",
+        "engine-pg-disk.txt",
+        "final-host-disk.txt",
+        "final-pg-disk.txt"
+      ],
+      "historical_bytes": 915
+    },
+    {
+      "id": "reconstruction",
+      "classification": "conditional",
+      "max_bytes": null,
+      "count_domain": "One JSON + stderr; 16 cells/cohorts/missing descendant IDs or failure report",
+      "byte_domain": "Pretty JSON duplicates stats/IDs; error=str(error), rejection traceback text",
+      "assumptions": "No raw repair; nominal typed IDs finite but failure paths/stderr not bounded.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 208,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 307,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 387,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        }
+      ],
+      "historical_files": [
+        "reconstructed.json",
+        "reconstructed.stderr.txt"
+      ],
+      "historical_bytes": 11693
+    },
+    {
+      "id": "returncodes",
+      "classification": "conditional",
+      "max_bytes": null,
+      "count_domain": "Fixed labels + up to2 drops in nominal branch; terminal flags appended",
+      "byte_domain": "LF framing; fixed labels, complete shell failure-state domain unproved",
+      "assumptions": "Appends after cap can grow capture; posthoc failure is not prewrite guarantee.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 86,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 99,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 110,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 138,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 206,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "historical_files": [
+        "returncodes.txt"
+      ],
+      "historical_bytes": 163
+    },
+    {
+      "id": "ephemeral",
+      "classification": "unknown",
+      "max_bytes": null,
+      "count_domain": "TMPDIR/SOT/research/pytest staging + seed signed-package temp files; interrupted residue",
+      "byte_domain": "All nested files counted while live; one-record normal fixture only conditional",
+      "assumptions": "Polling includes live files not merely historical final63; no bootstrap/workload run here.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 31,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 43,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 46,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        },
+        {
+          "path": "v2/apps/backend/tests/sot_fixtures.py",
+          "line": 148,
+          "sha256": "524e0f00a30b13b0d8844070556f0713ee9e4b7e22e72ac6b16bf9c8e8ccaacd"
+        },
+        {
+          "path": "v2/apps/backend/tests/test_context_memory_integration.py",
+          "line": 98,
+          "sha256": "4cae35ed6a550eb03f3cbbe85c0e294ea32ef76970de2ac8f2d2175c570b0425"
+        }
+      ],
+      "historical_files": [],
+      "historical_bytes": 0
+    },
+    {
+      "id": "future_observer",
+      "classification": "model",
+      "max_bytes": null,
+      "count_domain": "Nominal40000 events + framing; not installed; original OFF zero observer files",
+      "byte_domain": "R23 nominal wire1281810B; real fallback/error/cancel paths unproved",
+      "assumptions": "No legacy ON admission. Async/path/restore and complete record coverage remain separate.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r23/model.py",
+          "line": 1,
+          "sha256": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024"
+        },
+        {
+          "path": "v2/experiments/action_executor/r23/budget.json",
+          "line": 1,
+          "sha256": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41"
+        }
+      ],
+      "historical_files": [],
+      "historical_bytes": 0
+    },
+    {
+      "id": "outer_transcript",
+      "classification": "unknown",
+      "max_bytes": null,
+      "count_domain": "One Main launch transcript and retained tool records outside HTTP root; finite command sites, unrestricted error emissions.",
+      "byte_domain": "Unredirected source/review/PRE gate ACKs, shell/admin/Docker errors and stop-proof/source-check tracebacks; source snapshot CLI is not invoked.",
+      "assumptions": "Excluded from polling root, explicitly not given zero bytes in a wider complete packet. The sibling marker is separately identified in launch_review; post-stage provenance artifacts have their own retention.",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 12,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 194,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "historical_files": [],
+      "historical_bytes": 0
+    }
+  ]
+}

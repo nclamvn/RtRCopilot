@@ -1,0 +1,15 @@
+{
+  "schema": "R25-wording-only-correction-v1",
+  "reason": "Main requested reserve label clarify metadata is not actual cleanup proof; no model/test/contract/runner changes.",
+  "old_scan_sha256": "392092edffec40222a142cfc77e5703bc944e462049cacb3f99093d1a36f9486",
+  "new_scan_sha256": "2fe87facf9789ca992fbf02aee5ea3e62e9c024b05ed343b70451470fbc1a69c",
+  "actual_feedback_binding_sha256": "2d6e8c19f6cb11045746d0c0f5b80d44636e425b77be0017a9bef449f1d0c643",
+  "preserved_actual_feedback_sha256": "dd74d1dc35af7fc24bf798770e12c4ecb5193d88cb7cb0acf5c7386c35ce53a9",
+  "unchanged_code": {
+    "v2/experiments/action_executor/r25/model.py": "5912d03f4d8f02235ee7d320c8fdd8b4e753a2b9b8b06230bf866dfefdf2a43d",
+    "v2/experiments/action_executor/r25/test_model.py": "7962d5ffd77985edca90ce8434d6e941951f911e081d08e82bef4e552176d00c",
+    "v2/experiments/action_executor/r25/checks.py": "0475446e0f89f0ad5a895d3e40cd0fa8268003f799f87a2e91b2a79f19c818da",
+    "v2/experiments/action_executor/r25/contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc"
+  },
+  "control_identity": "Same six actual memory tests/syntax3; existing feedback source binding is pre-wording context. Final binding/source preservation checked separately; no tests reclassified."
+}

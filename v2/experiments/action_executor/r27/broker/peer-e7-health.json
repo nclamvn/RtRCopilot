@@ -1,0 +1,46 @@
+{
+  "scope": "current repaired peer five authored modules; actual eight grouped controls; no effects",
+  "reviewRepair": "always attempt owned joins under same deadline; observe reaping/join/EOF and no Linux group claim; active operation token blocks seal until observed resolved; e4/e5static/e6 history preserved",
+  "results": [
+    {
+      "name": "mypy",
+      "chunk_id": "d93ce5",
+      "wall_time_seconds": 2.531049334,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 5 source files\n"
+    },
+    {
+      "name": "ruff",
+      "chunk_id": "e37aea",
+      "wall_time_seconds": 0.000008166,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    },
+    {
+      "name": "syntax",
+      "chunk_id": "cbbe60",
+      "wall_time_seconds": 0.000008542,
+      "exit_code": 0,
+      "original_token_count": 8,
+      "output": "syntax zero: five source files\n"
+    },
+    {
+      "name": "source_binding",
+      "chunk_id": "9057dc",
+      "wall_time_seconds": 0.000010958,
+      "exit_code": 0,
+      "original_token_count": 154,
+      "output": "cd56a42cb0c4c194d12d61219e7479c6e467e72b05b6480d754a4580b2ef9136  v2/experiments/action_executor/r27/broker/integration.py\n3b1c010b67ef0a5ebadd5f93ac4be38c63c964719fa39febaf29b71a403800b4  v2/experiments/action_executor/r27/broker/supervisor.py\n8056250b380f7d373284de6e21718d063930bca5942c7cb2bd79b1df37fb0ea4  v2/experiments/action_executor/r27/broker/routing.py\nacf57b5b4b2319c6ef2bf3fcdb7848c8373477f92165c406fbebfe5ead292133  v2/experiments/action_executor/r27/broker/preflight.py\nd7dda4f5eb7f9f3caafbfcf0817c510b3b80a2e4c8a42ccf18d76bc3ca98f22d  v2/experiments/action_executor/r27/broker/test_integration.py\n"
+    },
+    {
+      "name": "xml_inventory",
+      "chunk_id": "477e02",
+      "wall_time_seconds": 0.000008208,
+      "exit_code": 0,
+      "original_token_count": 126,
+      "output": "[\"test_exact_driver_journal_summary_final_and_known_oracle\", \"test_full_pure_fixture_copy_temp_and_cached_native_denial\", \"test_original_shell_copy_literals_and_actual_audit_restoration\", \"test_scoped_fault_stale_foreign_and_close_restore_primary\", \"test_exact_owned_child_whole_eof_and_no_root_delivery\", \"test_child_repeated_cancel_one_deadline_and_overflow\", \"test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap\", \"test_frozen_preflight_readonly_fresh_namespace_untrusted_grant_deny\"]\n"
+    }
+  ]
+}

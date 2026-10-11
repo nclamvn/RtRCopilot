@@ -1,0 +1,8 @@
+::OfflineControls::test_cell_quantile_and_missing_conservation
+::OfflineControls::test_contract_source_and_one_shot_admission
+::OfflineControls::test_fixture_db_cleanup_and_readiness_ledger
+::OfflineControls::test_oracle_abort_and_original_summary_agreement
+::OfflineControls::test_owned_process_deadline_cap_and_shell_failclosed
+::OfflineControls::test_raw_schema_identity_and_corruption
+
+6 tests collected in 0.04s

@@ -1,0 +1,31 @@
+{
+  "cohort": "24 explicitly evaluated documentation topics; not global market coverage",
+  "max_bytes": 3000000,
+  "timeout_seconds": 25,
+  "sources": [
+    {"id":"mcp-authorization","family":"MCP","entity":"MCP authorization","category":"protocol-security","url":"https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization","fallback":"https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization"},
+    {"id":"mcp-security","family":"MCP","entity":"MCP security practices","category":"protocol-security","url":"https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices","fallback":"https://modelcontextprotocol.io/docs/tutorials/security/security_best_practices"},
+    {"id":"mcp-tools","family":"MCP","entity":"MCP tools","category":"protocol-tools","url":"https://modelcontextprotocol.io/specification/2026-07-28/server/tools","fallback":"https://modelcontextprotocol.io/specification/2025-11-25/server/tools"},
+    {"id":"mcp-tasks","family":"MCP","entity":"MCP tasks","category":"protocol-tasks","url":"https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html","fallback":"https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks"},
+    {"id":"pydantic-durable","family":"Pydantic","entity":"PydanticAI durable execution","category":"agent-durability","url":"https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/","fallback":"https://ai.pydantic.dev/durable_execution/overview/"},
+    {"id":"pydantic-mcp","family":"Pydantic","entity":"PydanticAI MCP","category":"agent-protocol","url":"https://pydantic.dev/docs/ai/mcp/overview/","fallback":"https://ai.pydantic.dev/mcp/overview/"},
+    {"id":"pydantic-deferred","family":"Pydantic","entity":"PydanticAI deferred tools","category":"human-approval","url":"https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/","fallback":"https://ai.pydantic.dev/deferred-tools/"},
+    {"id":"dbos-workflows","family":"DBOS","entity":"DBOS workflows","category":"durable-workflow","url":"https://docs.dbos.dev/python/tutorials/workflow-tutorial"},
+    {"id":"dbos-steps","family":"DBOS","entity":"DBOS steps","category":"durable-step","url":"https://docs.dbos.dev/python/tutorials/step-tutorial"},
+    {"id":"dbos-queues","family":"DBOS","entity":"DBOS queues","category":"workflow-queue","url":"https://docs.dbos.dev/python/tutorials/queue-tutorial"},
+    {"id":"dbos-architecture","family":"DBOS","entity":"DBOS architecture","category":"durable-architecture","url":"https://docs.dbos.dev/architecture"},
+    {"id":"temporal-workflows","family":"Temporal","entity":"Temporal workflows","category":"durable-workflow","url":"https://docs.temporal.io/workflows"},
+    {"id":"temporal-activities","family":"Temporal","entity":"Temporal activities","category":"durable-step","url":"https://docs.temporal.io/activities"},
+    {"id":"langgraph-persistence","family":"LangChain","entity":"LangGraph persistence","category":"agent-state","url":"https://docs.langchain.com/oss/python/langgraph/persistence"},
+    {"id":"langgraph-interrupts","family":"LangChain","entity":"LangGraph interrupts","category":"human-approval","url":"https://docs.langchain.com/oss/python/langgraph/interrupts"},
+    {"id":"restate-services","family":"Restate","entity":"Restate services","category":"durable-workflow","url":"https://docs.restate.dev/foundations/services"},
+    {"id":"microsoft-durable","family":"Microsoft","entity":"Microsoft durable agents","category":"agent-durability","url":"https://learn.microsoft.com/en-us/azure/durable-task/sdks/durable-agents-microsoft-agent-framework"},
+    {"id":"microsoft-functional","family":"Microsoft","entity":"Microsoft functional workflows","category":"workflow-composition","url":"https://learn.microsoft.com/en-us/agent-framework/workflows/functional"},
+    {"id":"anthropic-agents","family":"Anthropic","entity":"Anthropic agent design","category":"agent-methodology","url":"https://www.anthropic.com/engineering/building-effective-agents"},
+    {"id":"anthropic-context","family":"Anthropic","entity":"Anthropic context engineering","category":"agent-methodology","url":"https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"},
+    {"id":"anthropic-tools","family":"Anthropic","entity":"Anthropic tool design","category":"agent-methodology","url":"https://www.anthropic.com/engineering/writing-tools-for-agents"},
+    {"id":"anthropic-evals","family":"Anthropic","entity":"Anthropic agent evaluations","category":"agent-evaluation","url":"https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents"},
+    {"id":"w3c-prov","family":"W3C","entity":"W3C PROV","category":"provenance-standard","url":"https://www.w3.org/TR/prov-overview/"},
+    {"id":"otel-genai","family":"OpenTelemetry","entity":"OpenTelemetry GenAI conventions","category":"observability-conventions","url":"https://opentelemetry.io/docs/specs/semconv/gen-ai/","migration_marker":"This page has moved and is no longer maintained in this repository."}
+  ]
+}

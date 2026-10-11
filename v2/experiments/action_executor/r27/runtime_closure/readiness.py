@@ -1,0 +1,282 @@
+"""Exact source topology/serializer forecast, never a runtime or capacity grant."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from collections import Counter
+from collections.abc import Callable
+from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
+
+from writer import Broker, Entry, canonical, witnesses
+
+HERE = Path(__file__).absolute().parent
+ROOT = HERE.parents[4]
+REFERENCE = HERE.parent / "real_path"
+R21 = ROOT / "v2/experiments/action_executor/r21/run-http-qualification.sh"
+R21_SHA = "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+LABELS = (
+    "syntax",
+    "pins",
+    "ruff",
+    "format",
+    "collection",
+    "inventory",
+    "offline",
+    "offline-xml",
+    "envelope",
+    "envelope-xml",
+)
+GLOBALS = (
+    "binding.json",
+    "contract.json",
+    "review-pin.txt",
+    "source-before.txt",
+    "fixture-before.txt",
+    "source-after.txt",
+    "fixture-after.txt",
+    "fixture-after.stderr.txt",
+    "database-closure.txt",
+    "final-host-disk.txt",
+    "final-pg-disk.txt",
+    "cap-after.txt",
+    "returncodes.txt",
+)
+SUFFIXES = (
+    "stdout.txt",
+    "stderr.txt",
+    "supervisor.stdout.txt",
+    "supervisor.stderr.txt",
+    "owner.json",
+    "process.json",
+    "source-before.txt",
+    "source-after.txt",
+    "cap-before.txt",
+    "cap-after.txt",
+    "child-proof.txt",
+)
+SEED = (
+    "records.jsonl",
+    "evidence.jsonl",
+    "source_hashes.json",
+    "publish_attestation.json",
+    "manifest.json",
+)
+
+
+def sha(raw: bytes) -> str:
+    return hashlib.sha256(raw).hexdigest()
+
+
+def bounded(path: Path, maximum: int = 262144) -> bytes:
+    if not path.is_file() or any(p.is_symlink() for p in (path, *path.parents)):
+        raise ValueError("source regular/canonical path")
+    if path.stat().st_size > maximum:
+        raise ValueError("source byte bound")
+    with path.open("rb") as stream:
+        value = stream.read(maximum + 1)
+    if len(value) > maximum:
+        raise ValueError("source grew")
+    return value
+
+
+def family(name: str, *, pre: bool = False) -> str:
+    if name in {"binding.json", "contract.json"}:
+        return "frozen_copies"
+    if name in {"review-pin.txt", "launch-marker.txt", "campaign-launch.json"}:
+        return "launch_review"
+    if name == "executor-scope.txt":
+        return "literal_scope"
+    if name == "returncodes.txt":
+        return "returncodes"
+    if name.startswith("fixture-"):
+        return "fixture"
+    if name.endswith(("host-disk.txt", "pg-disk.txt")):
+        return "disk"
+    if name.startswith("reconstructed."):
+        return "reconstruction"
+    if name.endswith((".owner.json", ".process.json")):
+        return "owner_process"
+    if "supervisor." in name or "-stop." in name or name.endswith("-stop-proof.txt"):
+        return "supervisor_stop"
+    if name.startswith("run/"):
+        return {
+            "run/samples.jsonl": "journal",
+            "run/samples.json": "final_samples",
+            "run/latency-summary.json": "summary_stdout",
+            "run/r-controls.json": "literal_controls",
+        }[name]
+    if name.startswith("tmp/seed/"):
+        return "ephemeral"
+    if name == "load.stderr.txt":
+        return "load_stderr"
+    if name == "load.stdout.txt":
+        return "summary_stdout"
+    if name in {"migration.stdout.txt", "migration.stderr.txt"}:
+        return "migration_streams"
+    if name.startswith(("domain-", "engine-", "rtr_tip054_")) or name == "database-closure.txt":
+        return "database_admin"
+    if pre or name.startswith(("source-", "cap-", "load-", "migration-")):
+        return "source_cap_child"
+    raise ValueError("unmapped original producer: " + name)
+
+
+def topology() -> dict[str, object]:
+    shell = bounded(R21).decode()
+    if sha(shell.encode()) != R21_SHA:
+        raise ValueError("original launcher source drift")
+    fixed = tuple(
+        line.strip().split()[1]
+        for line in shell.splitlines()
+        if line.strip().startswith("checked ") and not line.strip().startswith('checked "')
+    )
+    if fixed[:6] != LABELS[:6] or "for group in offline envelope; do" not in shell:
+        raise ValueError("exact PRE fixed/grouped source layout")
+    for suffix in SUFFIXES:
+        if suffix in {"stdout.txt", "stderr.txt", "owner.json", "process.json"}:
+            continue  # R19 child writer source is separately pinned in the candidate.
+        if f"$label-{suffix}" not in shell and f"$label.{suffix}" not in shell:
+            raise ValueError("checked output template drift: " + suffix)
+    historical_path = ROOT / "v2/experiments/action_executor/r24/main-historical-coverage.json"
+    historical = json.loads(bounded(historical_path))
+    sizes = historical["file_sizes"]
+    if type(sizes) is not dict or len(sizes) != 63:
+        raise ValueError("historical exact inventory")
+    http = dict.fromkeys(sizes, None)
+    prefix = "tmp/seed/package-" + "0" * 36 + "/"
+    http.update(dict.fromkeys((prefix + n for n in SEED), None))
+    http["campaign-launch.json"] = None
+    pre = {
+        f"{label}.{suffix}"
+        if suffix.startswith(("stdout", "stderr", "owner", "process"))
+        else f"{label}-{suffix}"
+        for label in LABELS
+        for suffix in SUFFIXES
+    }
+    pre.update(GLOBALS)
+    pre.update(("offline.xml", "envelope.xml"))
+    http_union = set(http) | {
+        f"{label}-stop.{stream}.txt"
+        for label in ("load", "migration")
+        for stream in ("stdout", "stderr")
+    }
+    http_union.update(f"{label}-stop-proof.txt" for label in ("load", "migration"))
+    pre_union = pre | {
+        f"{label}-stop.{stream}.txt" for label in LABELS for stream in ("stdout", "stderr")
+    }
+    pre_union.update(f"{label}-stop-proof.txt" for label in LABELS)
+    source_pins = witnesses()
+    for path in sorted([*HERE.glob("*.py"), HERE / "SCOPE.md"]):
+        source_pins[path.relative_to(ROOT).as_posix()] = sha(bounded(path))
+
+    def forecast(names: set[str], is_pre: bool) -> dict[str, object]:
+        counters: Counter[str] = Counter()
+        entries: dict[str, Entry] = {}
+        directories = {""}
+        tombstones: list[list[str | int]] = []
+        for name in sorted(names):
+            domain = family(name, pre=is_pre)
+            seq = counters[domain]
+            counters[domain] += 1
+            entries[name] = {
+                "family": domain,
+                "segments": [[seq, seq + 1, "w"]],
+                "exists": not name.startswith("tmp/seed/"),
+            }
+            directories.update(p.as_posix() for p in Path(name).parents if p.as_posix() != ".")
+            if name.startswith("tmp/seed/"):
+                tombstones.append([name, seq + 1])
+            if name.endswith("samples.jsonl"):
+                entries[name]["segments"] = [[0, 1, "w"], [1, 1600, "a"]]
+        serializer = cast(Callable[..., dict[str, object]], Broker._manifest)
+        owner = SimpleNamespace(_source=source_pins, _physical=0, _charge=16988)
+        manifest = serializer(owner, entries, directories, tombstones, ceiling=True)
+        encoded = canonical(manifest)
+        return {
+            "files": len(names),
+            "names": sorted(names),
+            "filename_family": {n: family(n, pre=is_pre) for n in sorted(names)},
+            "artifact_records_lower_bound": dict(counters),
+            "source_cap_child_plus_closure_lower_bound": counters["source_cap_child"] + 1,
+            "actual_serializer_forecast_bytes": len(encoded),
+            "source_hashes_count": len(source_pins),
+            "metadata16KiB_forecast_fit": len(encoded) <= 16384,
+            "forecast_assumptions": (
+                "one range/file except contiguous journal; source hashes included; "
+                "five deleted seed files; interleaving/overwrite/error histories may add ranges"
+            ),
+            "universal_upper_bound_proved": False,
+        }
+
+    single_stops = []
+    for label in LABELS:
+        paths = pre | {
+            f"{label}-stop.stdout.txt",
+            f"{label}-stop.stderr.txt",
+            f"{label}-stop-proof.txt",
+        }
+        single_stops.append(forecast(paths, True))
+    maximum_single = max(
+        single_stops, key=lambda f: cast(int, f["actual_serializer_forecast_bytes"])
+    )
+    return {
+        "schema": "r27-runtime-closure-capacity-v1",
+        "serializer_scope": (
+            "unchanged Broker._manifest/canonical on hypothetical enlarged source inventory; "
+            "operative reused Broker seal witnesses remain frozen real_path only; "
+            "external continuation binding supplies separate before/after new-code proof"
+        ),
+        "source_sha256": sha(shell.encode()),
+        "pre_labels": LABELS,
+        "historical_http_bytes_not_upper": sum(sizes.values()),
+        "http_nominal": forecast(set(http), False),
+        "http_all_stop_path_union": forecast(http_union, False),
+        "pre_nominal": forecast(pre, True),
+        "pre_all_stop_path_union": forecast(pre_union, True),
+        "pre_single_active_stop_pathwise_files": len(pre) + 3,
+        "pre_single_stop_max_serializer": maximum_single,
+        "original_unconnected_PRE_testwriters": (
+            "test_r21_offline.py WritePacket repeated final_samples/journal/control/"
+            "mutation writes; "
+            "test_r21_envelope.py tmp_path and pytest basetemp/native fixture ownership. "
+            "Final_samples max1 and ephemeral max16x65KiB may not admit these unchanged writers. "
+            "No family reclassification, temporary-output exclusion or raised capacity authorized."
+        ),
+        "operative": "32entries/PRE32; proposed96/PRE64 NOT_ADOPTED and insufficient",
+        "aggregate": "10MiB prewrite STOP remains; historical bytes not full-domain fit proof",
+        "exhaustive_full_PRE": False,
+        "remaining": (
+            "actual R21offline/envelope temporary test/mutation/native pytest writers excluded; "
+            "range/interleaving metadata upper and native/plugin failure inputs unproved; "
+            "no automatic capacity adoption or full capture qualification"
+        ),
+    }
+
+
+def dependencies() -> dict[str, bool]:
+    """Filesystem presence only; NOT importability/version/identity qualification."""
+    site = ROOT / "v2/apps/backend/.venv/lib/python3.12/site-packages"
+    return {
+        name: (site / name).exists() or (site / (name + ".py")).is_file()
+        for name in (
+            "pytest",
+            "pytest_asyncio",
+            "sqlalchemy",
+            "asyncpg",
+            "httpx",
+            "fastapi",
+            "redis",
+            "alembic",
+            "starlette",
+            "anyio",
+            "httpcore",
+            "h11",
+            "dbos",
+        )
+    }
+
+
+def dispatch(_: object = None) -> None:
+    raise PermissionError("DENY: no local report/JSON grants SQL/Linux/HTTP/campaign authority")

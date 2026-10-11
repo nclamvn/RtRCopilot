@@ -1,0 +1,48 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+      "retrieved_at": "2026-10-06T02:15:31.914505+00:00",
+      "source_family": "MCP",
+      "status": "failed"
+    },
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://modelcontextprotocol.io/specification/2025-11-25/server/tools",
+      "retrieved_at": "2026-10-06T02:15:31.919009+00:00",
+      "source_family": "MCP",
+      "status": "failed"
+    },
+    {
+      "bytes": 889288,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 19879,
+      "read_view_sha256": "2d9222fa04a797586fc885c2ea2fe630cb1b5ab6d50e084ae4f6a721a727d2d0",
+      "requested_url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+      "resolved_url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+      "retrieved_at": "2026-10-06T02:15:51.964563+00:00",
+      "sha256": "eb97c57f759d27c35cd767d7f5dd3ce47703d7b4a938c0d960b15309cbe3a8c7",
+      "snapshot": "mcp-tools.html",
+      "source_family": "MCP",
+      "status": "usable"
+    }
+  ],
+  "entity": "MCP tools",
+  "id": "mcp-tools",
+  "selected": {
+    "bytes": 889288,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 19879,
+    "read_view_sha256": "2d9222fa04a797586fc885c2ea2fe630cb1b5ab6d50e084ae4f6a721a727d2d0",
+    "requested_url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+    "resolved_url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+    "retrieved_at": "2026-10-06T02:15:51.964563+00:00",
+    "sha256": "eb97c57f759d27c35cd767d7f5dd3ce47703d7b4a938c0d960b15309cbe3a8c7",
+    "snapshot": "mcp-tools.html",
+    "source_family": "MCP",
+    "status": "usable"
+  }
+}

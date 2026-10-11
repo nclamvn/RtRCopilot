@@ -1,0 +1,114 @@
+{
+  "actor": "Main",
+  "date": "2026-10-09",
+  "status": "expanded_regressions_and_resource_closure_pass_candidate_not_ready",
+  "head": "0e88f48588dc3228f1ae9eca7a7597d96589af8b",
+  "source": {
+    "binding": "source-binding-e3.json",
+    "sha256": "5bb847ef6bee176454cc14ae4bd35024b847aef8f969d7f12f0c877a87f7b0f5",
+    "files": 665,
+    "product_files": 204,
+    "test_files": 192,
+    "product_digest": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+    "test_digest": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1",
+    "recipe": "SHA256 of sorted UTF8 content_SHA256 + two spaces + repository-relative POSIX path + newline",
+    "historical_r17_label_attributed_only": "4a0bb4921ed0e310e6064070d945aab16837ab3de5ac525eb14bc15f8fc88708",
+    "product_changed": false,
+    "original_tests_changed": false,
+    "prior_r17_pins": 251,
+    "unchanged_before_after": true
+  },
+  "actual_execution": {
+    "pre_epoch": "pre_e1",
+    "sql_epoch": "sql_e1",
+    "collection_unique": 52,
+    "product_regressions": 46,
+    "pure": 17,
+    "old_sql": 17,
+    "new_sql": 12,
+    "admission_controls": 6,
+    "passed": 52,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "retries": 0,
+    "main_personal_same_six_overlap": 6,
+    "additional_unique_from_overlap": 0,
+    "pure_reported_seconds": 2.44,
+    "offline_reported_seconds": 1.02,
+    "old_sql_reported_seconds": 19.13,
+    "new_sql_reported_seconds": 17.26,
+    "pre_child_groups": 10,
+    "sql_child_groups": 6,
+    "all_process_records_completed_and_drained": true,
+    "pre_returncode": 0,
+    "sql_returncode": 0
+  },
+  "scope": {
+    "serving_executor": "OFF",
+    "tip054_5": "blocked",
+    "broader_candidate": "NOT_READY",
+    "http_load_runs": 0,
+    "http_allowance_consumed": 0,
+    "native_runs": 0,
+    "external_provider_calls": 0,
+    "rebuilds": 0,
+    "git_writes": false,
+    "sql_fixture_overrides": "scoped enabled settings with uncontacted synthetic workflow URL; no worker or engine DB"
+  },
+  "actual_evidence_bytes": {
+    "pre_final_read": 155945,
+    "sql_final_read": 261561,
+    "pre_cap": 10485760,
+    "sql_cap": 20971520
+  },
+  "preserved_findings": [
+    "e1 lint 27 and format 3 failures",
+    "e2 source HOLD conditional-errexit and second-grace path",
+    "e3 non-atomic authoring style observations; final same-binding checks all zero"
+  ],
+  "read_check_corrections": [
+    "Main first jq slurp display labelled all process rows with last filename; corrected non-slurp actual per-file read",
+    "PRE review prospective SQL child prose says seven; actual six required and executed"
+  ],
+  "actual_final_live_checks": {
+    "actor": "Main",
+    "date": "2026-10-09",
+    "fixture": {
+      "chunk_id": "5d61bd",
+      "wall_time_seconds": 0.170874834,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "R18_ADMISSION_PASS fixture\n"
+    },
+    "catalog": {
+      "chunk_id": "7e1932",
+      "wall_time_seconds": 0.000010042,
+      "exit_code": 0,
+      "original_token_count": 8,
+      "output": " datname \n---------\n(0 rows)\n\n"
+    },
+    "host_disk": {
+      "chunk_id": "f51eec",
+      "wall_time_seconds": 0.000007875,
+      "exit_code": 0,
+      "original_token_count": 38,
+      "output": "Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s1s1   460Gi    13Gi    83Gi    14%    484k  869M    0%   /\n"
+    },
+    "pg_disk": {
+      "chunk_id": "250578",
+      "wall_time_seconds": 0.00000825,
+      "exit_code": 0,
+      "original_token_count": 33,
+      "output": "Filesystem     1K-blocks    Used Available Use% Mounted on\ntmpfs            3145728 1685500   1460228  54% /var/lib/postgresql/data\n"
+    },
+    "dangling_image_prune": {
+      "chunk_id": "4ffa72",
+      "wall_time_seconds": 0.000007959,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "Total reclaimed space: 0B\n"
+    }
+  },
+  "next": "separately reviewed single mandatory observer-OFF ASGI HTTP qualification; broad/native/restore/package gates remain pending"
+}

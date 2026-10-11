@@ -1,0 +1,18 @@
+{
+  "actor": "Main",
+  "scope": "read-only final author style before runtime",
+  "lint": {
+    "chunk_id": "b755f1",
+    "wall_time_seconds": 0.015028959,
+    "exit_code": 0,
+    "original_token_count": 5,
+    "output": "All checks passed!\n"
+  },
+  "format": {
+    "chunk_id": "e6ced8",
+    "wall_time_seconds": 0.000012375,
+    "exit_code": 1,
+    "original_token_count": 25,
+    "output": "Would reformat: /work/r20/env_contract.py\n1 file would be reformatted, 2 files already formatted\n"
+  }
+}

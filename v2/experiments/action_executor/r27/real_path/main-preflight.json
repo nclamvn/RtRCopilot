@@ -1,0 +1,15 @@
+{
+  "verification_actor": "Contractor/Main",
+  "date": "2026-10-10",
+  "execution_scope": "Local bounded Unix IPC/finite owned child, parser/log/controller controls only; no SQL/HTTP/Docker/load/provider/Git/rebuild/serving",
+  "actual": {
+    "cmd": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=v2/apps/backend/src:v2/experiments/action_executor/r27/real_path v2/apps/backend/.venv/bin/python -B v2/experiments/action_executor/r27/real_path/checks.py --preflight",
+    "result": {
+      "chunk_id": "5b2a6d",
+      "wall_time_seconds": 0.599047834,
+      "exit_code": 2,
+      "original_token_count": 164,
+      "output": "{\"capacity\": \"operative32/PRE32;96/PRE64_NOT_ADOPTED\", \"effects\": \"NOT_RUN\", \"execution_admission\": \"DENY\", \"marker\": \"ABSENT_NOT_CONSUMED_THIS_BATCH\", \"prerequisites\": [\"httpx/dependency surface\", \"pytest XML/Alembic writer seams\", \"native/Linux/SQL/fixture/resource qualification\", \"capacity decision\"], \"preservation\": {\"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}, \"input_bytes\": 16438294, \"prior_bytes\": 15440912, \"prior_pins\": 2011, \"scope_counts\": {\"product\": 204, \"tests\": 192}, \"total_pins\": 2117}, \"source_matches\": true}\n"
+    }
+  }
+}

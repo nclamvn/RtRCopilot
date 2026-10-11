@@ -1,0 +1,14 @@
+{
+  "tool_chunk": "d42763",
+  "exit_code": 0,
+  "status": "PASS",
+  "sealed_entries": 21,
+  "sealed_bytes": 108978,
+  "sealed_sha256": "b3c9c76e7a329d222b9010630810a00e2ce0b1a71ae29ad5e1a023310d383a5e",
+  "published_files": 5,
+  "closure_sha256": "2637de5a6e213fef82019caf88c0c9d29692939b687527e4457aac51c5bf1b4e",
+  "git_head": "0e88f48588dc3228f1ae9eca7a7597d96589af8b",
+  "capture_admission": "HOLD",
+  "serving_executor": "OFF",
+  "no_global_ready_claim": true
+}

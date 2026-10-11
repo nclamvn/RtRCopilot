@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+      "retrieved_at": "2026-10-06T02:15:31.960297+00:00",
+      "source_family": "Anthropic",
+      "status": "failed"
+    },
+    {
+      "bytes": 196350,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 22184,
+      "read_view_sha256": "65e0d253421fd3e3a41ea9234fb30c94d7c82f7b750c6c762077a469825f19ae",
+      "requested_url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+      "resolved_url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+      "retrieved_at": "2026-10-06T02:16:00.507470+00:00",
+      "sha256": "f83127ce19cee63889b375de1734143cd1b2d9d9c90da4a3ea68ba5c6994f624",
+      "snapshot": "anthropic-tools.html",
+      "source_family": "Anthropic",
+      "status": "usable"
+    }
+  ],
+  "entity": "Anthropic tool design",
+  "id": "anthropic-tools",
+  "selected": {
+    "bytes": 196350,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 22184,
+    "read_view_sha256": "65e0d253421fd3e3a41ea9234fb30c94d7c82f7b750c6c762077a469825f19ae",
+    "requested_url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+    "resolved_url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+    "retrieved_at": "2026-10-06T02:16:00.507470+00:00",
+    "sha256": "f83127ce19cee63889b375de1734143cd1b2d9d9c90da4a3ea68ba5c6994f624",
+    "snapshot": "anthropic-tools.html",
+    "source_family": "Anthropic",
+    "status": "usable"
+  }
+}

@@ -1,0 +1,317 @@
+{
+  "capacity": {
+    "operative_entries": 32,
+    "operative_PRE_records": 32,
+    "original_PRE_53": "historical incomplete premise superseded",
+    "producer_record_lower_bound": 75,
+    "with_closure_lower_bound": 76,
+    "pre_nominal_names": 125,
+    "pre_single_stop_names": 128,
+    "pre_all_stop_union_names": 155,
+    "full_PRE_exhaustive": false,
+    "capacity_adoption": "NONE; conditional native/test scratch writes still unqualified"
+  },
+  "effects": "DENY_THIS_BATCH",
+  "families": [
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 65536,
+          "max_records": 2,
+          "name": "data"
+        }
+      ],
+      "code": 1,
+      "full_runtime": "NOT_RUN",
+      "id": "frozen_copies",
+      "local_scope": "ACTUAL_LOCAL: exact pinned original binding/contract byte copies"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 512,
+          "max_records": 1,
+          "name": "data"
+        }
+      ],
+      "code": 2,
+      "full_runtime": "NOT_RUN",
+      "id": "literal_controls",
+      "local_scope": "PREPARED: complete baseline original controls AST; engine assertions NOT_RUN"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 256,
+          "max_records": 1,
+          "name": "data"
+        }
+      ],
+      "code": 3,
+      "full_runtime": "NOT_RUN",
+      "id": "literal_scope",
+      "local_scope": "ACTUAL_LOCAL: original shell scope literal"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 1024,
+          "max_records": 3,
+          "name": "data"
+        }
+      ],
+      "code": 4,
+      "full_runtime": "NOT_RUN",
+      "id": "launch_review",
+      "local_scope": "PARTIAL_LOCAL: exclusive broker local marker control; real marker NOT_CONSUMED"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 512,
+          "max_records": 3200,
+          "name": "data"
+        }
+      ],
+      "code": 5,
+      "full_runtime": "NOT_RUN",
+      "id": "journal",
+      "local_scope": "PREPARED: full unchanged driver original append/flush algorithm; load NOT_RUN"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 2097152,
+          "max_records": 1,
+          "name": "data"
+        }
+      ],
+      "code": 6,
+      "full_runtime": "NOT_RUN",
+      "id": "final_samples",
+      "local_scope": "PARTIAL_LOCAL: exact original final JSON writer control; load NOT_RUN"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 16384,
+          "max_records": 3,
+          "name": "data"
+        }
+      ],
+      "code": 7,
+      "full_runtime": "NOT_RUN",
+      "id": "summary_stdout",
+      "local_scope": "PARTIAL_LOCAL: exact original summary/print/oracle block; not HTTP observations"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 512,
+          "max_records": 4096,
+          "name": "data"
+        }
+      ],
+      "code": 8,
+      "full_runtime": "NOT_RUN",
+      "id": "load_stderr",
+      "local_scope": "ACTUAL_LOCAL: whole rendered root/audit/httpx-style LogRecords; HTTP NOT_RUN"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 512,
+          "max_records": 512,
+          "name": "data"
+        }
+      ],
+      "code": 9,
+      "full_runtime": "NOT_RUN",
+      "id": "migration_streams",
+      "local_scope": "ACTUAL_LOCAL stdlib fileConfig and genuine configured StreamHandler.emit whole rendered record <=512; Alembic module/migrations NOT_RUN"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 1024,
+          "max_records": 8,
+          "name": "data"
+        }
+      ],
+      "code": 10,
+      "full_runtime": "NOT_RUN",
+      "id": "owner_process",
+      "local_scope": "ACTUAL_LOCAL: original begin_cleanup persists one deadline; real process owner NOT_RUN"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 1024,
+          "max_records": 64,
+          "name": "data"
+        }
+      ],
+      "code": 11,
+      "full_runtime": "NOT_RUN",
+      "id": "supervisor_stop",
+      "local_scope": "PREPARED_NOT_RUN: full pinned Linux proc/group/killpg functions; no group claim"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 2048,
+          "max_records": 32,
+          "name": "data"
+        }
+      ],
+      "code": 12,
+      "full_runtime": "NOT_RUN",
+      "id": "source_cap_child",
+      "local_scope": "ACTUAL_LOCAL genuine installed LogXML full pipeline: two source text writes staged <=2048 bytes, one whole physical commit plus packet; fixture/capacity/test scratch full PRE remains unqualified"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 8192,
+          "max_records": 8,
+          "name": "data"
+        }
+      ],
+      "code": 13,
+      "full_runtime": "NOT_RUN",
+      "id": "fixture",
+      "local_scope": "NOT_RUN: original external fixture-check outputs; seed is ephemeral, not fixture family"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 2048,
+          "max_records": 64,
+          "name": "data"
+        }
+      ],
+      "code": 14,
+      "full_runtime": "NOT_RUN",
+      "id": "database_admin",
+      "local_scope": "PREPARED_NOT_RUN: all original SQL/admin commands remain qualifying"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 4096,
+          "max_records": 8,
+          "name": "data"
+        }
+      ],
+      "code": 15,
+      "full_runtime": "NOT_RUN",
+      "id": "disk",
+      "local_scope": "ACTUAL_LOCAL exact source-bound /bin/df -k /; concurrent whole stdout/stderr EOF <=4096 each, including empty stderr; two local records, NOT original eight-record whole-stage fit"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 65536,
+          "max_records": 2,
+          "name": "data"
+        }
+      ],
+      "code": 16,
+      "full_runtime": "NOT_RUN",
+      "id": "reconstruction",
+      "local_scope": "PREPARED_NOT_RUN: original analyzer unchanged"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 256,
+          "max_records": 32,
+          "name": "data"
+        }
+      ],
+      "code": 17,
+      "full_runtime": "NOT_RUN",
+      "id": "returncodes",
+      "local_scope": "ACTUAL_LOCAL: exact checked label/returncode line"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 65536,
+          "max_records": 16,
+          "name": "data"
+        }
+      ],
+      "code": 18,
+      "full_runtime": "NOT_RUN",
+      "id": "ephemeral",
+      "local_scope": "ACTUAL_LOCAL: full original signed fixture + genuine parser through logical snapshot"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 32,
+          "max_records": 40000,
+          "name": "data"
+        },
+        {
+          "code": 2,
+          "max_payload_bytes": 1810,
+          "max_records": 1,
+          "name": "framing"
+        }
+      ],
+      "code": 19,
+      "full_runtime": "NOT_RUN",
+      "id": "future_observer",
+      "local_scope": "OFF: original observer remains off; no monitor activation"
+    },
+    {
+      "bounds_unchanged": [
+        {
+          "code": 1,
+          "max_payload_bytes": 1024,
+          "max_records": 128,
+          "name": "data"
+        }
+      ],
+      "code": 20,
+      "full_runtime": "NOT_RUN",
+      "id": "outer_transcript",
+      "local_scope": "APPROVED_BOUNDARY: shell/admin admitted artifacts qualify; platform transcript separate disclosed audit"
+    }
+  ],
+  "platform_boundary": "APPROVED_SEPARATE_DISCLOSED_AUDIT_NOT_ZERO",
+  "readiness_blockers": [
+    "current capacity below full historical paths/PRE",
+    "missing httpx/fastapi/redis",
+    "pytest explicit XML endpoint",
+    "Alembic logger seam",
+    "Linux owned-group execution",
+    "live fixture/capacity/absent owned databases",
+    "human effect authority"
+  ],
+  "schema": "r27-runtime-closure-routing-v1",
+  "shared_local_flow": "Full unchanged pure signed fixture/PackageParser -> genuine pytest plugin -> genuine fileConfig LogRecord -> genuine source-bound host df -> broker close/recovery",
+  "full_runtime": "DENY; SQL/Docker/HTTP/native arbitrary commands/PRE fixture temp writers not qualified",
+  "platform_audit": "Approved separate platform transcript outside qualifying packet; no new approval required"
+}

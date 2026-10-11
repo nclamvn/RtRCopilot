@@ -1,0 +1,88 @@
+{
+  "schema": "r27-builder-feedback-v1",
+  "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -B v2/experiments/action_executor/r27/checks.py",
+  "initial_tool": {
+    "chunk_id": "773c00",
+    "wall_time_seconds": 1.001664292,
+    "session_id": 73465,
+    "original_token_count": 0,
+    "output": ""
+  },
+  "completion_tool": {
+    "chunk_id": "6a0a06",
+    "wall_time_seconds": 0.000008417,
+    "exit_code": 0,
+    "original_token_count": 1013,
+    "output": "{\n  \"actual_capture_admission\": \"HOLD\",\n  \"after\": {\n    \"digests\": {\n      \"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\",\n      \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"\n    },\n    \"input_bytes\": 13884596,\n    \"prior_bytes\": 13826460,\n    \"prior_pins\": 1829,\n    \"scope_counts\": {\n      \"product\": 204,\n      \"tests\": 192\n    },\n    \"total_pins\": 1839\n  },\n  \"before\": {\n    \"digests\": {\n      \"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\",\n      \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"\n    },\n    \"input_bytes\": 13884596,\n    \"prior_bytes\": 13826460,\n    \"prior_pins\": 1829,\n    \"scope_counts\": {\n      \"product\": 204,\n      \"tests\": 192\n    },\n    \"total_pins\": 1839\n  },\n  \"compiled_files\": 6,\n  \"errors\": 0,\n  \"failures\": 0,\n  \"not_run\": [\n    \"lint/types (unavailable)\",\n    \"full app/SQL/lease integration\",\n    \"arbitrary/hanging child safety\",\n    \"power loss/process death\",\n    \"hostile same UID/root\",\n    \"Docker/HTTP/measured/external\"\n  ],\n  \"sandboxes_after\": [],\n  \"sandboxes_before\": [],\n  \"seconds\": 0.33714483299991116,\n  \"skips\": 0,\n  \"source_after\": {\n    \"adapter.py\": \"237222bf6e510def30cad2696e1e2c315e38bdf7eb30f9e7c0610ae1b8e7ca42\",\n    \"checks.py\": \"68bccfd9af40b7021167132288650a22057fed0ec8b2023c68097d8c33eacfeb\",\n    \"derivation.json\": \"310608fcc9fcab8be19f18d9735c5542277ab66a743da106075ec2d40da4b25b\",\n    \"input-binding.json\": \"b8d761511ba1ff5b7ee81852a2542eff10f8e0a5a2f9663ac292485e3bab63d3\",\n    \"integration.py\": \"d43d3679afd6fa189e377dc3db50860439bf7a6a001e6a0eafe9ea7992931b93\",\n    \"pipe_source.py\": \"559bf1fa824a8ed95f834fe445b5942efdb2aa7666766efbe6dc025ca509c044\",\n    \"routing.json\": \"8aabc3697bc88e567341fbe50af8dab02bbb7a78bb274196663d704c4e66320e\",\n    \"source_subset.py\": \"661265dc78e7e0e032c05c24a578095d42e66b68af775ed4b1d01fa2843cdc58\",\n    \"test_integration.py\": \"a96b38ec860f224085ca264e60001205fd7b5b811d8313e91b4548e110c1cc3d\"\n  },\n  \"source_before\": {\n    \"adapter.py\": \"237222bf6e510def30cad2696e1e2c315e38bdf7eb30f9e7c0610ae1b8e7ca42\",\n    \"checks.py\": \"68bccfd9af40b7021167132288650a22057fed0ec8b2023c68097d8c33eacfeb\",\n    \"derivation.json\": \"310608fcc9fcab8be19f18d9735c5542277ab66a743da106075ec2d40da4b25b\",\n    \"input-binding.json\": \"b8d761511ba1ff5b7ee81852a2542eff10f8e0a5a2f9663ac292485e3bab63d3\",\n    \"integration.py\": \"d43d3679afd6fa189e377dc3db50860439bf7a6a001e6a0eafe9ea7992931b93\",\n    \"pipe_source.py\": \"559bf1fa824a8ed95f834fe445b5942efdb2aa7666766efbe6dc025ca509c044\",\n    \"routing.json\": \"8aabc3697bc88e567341fbe50af8dab02bbb7a78bb274196663d704c4e66320e\",\n    \"source_subset.py\": \"661265dc78e7e0e032c05c24a578095d42e66b68af775ed4b1d01fa2843cdc58\",\n    \"test_integration.py\": \"a96b38ec860f224085ca264e60001205fd7b5b811d8313e91b4548e110c1cc3d\"\n  },\n  \"stdout\": \"test_cancelled_real_child_join_and_source_restoration (test_integration.AsyncControls.test_cancelled_real_child_join_and_source_restoration) ... ok\\ntest_exact_terminal_body_result_error_owner_and_repeated_cancel (test_integration.AsyncControls.test_exact_terminal_body_result_error_owner_and_repeated_cancel) ... ok\\ntest_actual_retain_virtual_copy_and_raw_pipe_routing (test_integration.LocalControls.test_actual_retain_virtual_copy_and_raw_pipe_routing) ... ok\\ntest_default_off_real_original_stream (test_integration.LocalControls.test_default_off_real_original_stream) ... ok\\ntest_error_cleanup_identity_and_unconnected_measurement_gate (test_integration.LocalControls.test_error_cleanup_identity_and_unconnected_measurement_gate) ... ok\\ntest_raw_journal_errors_flush_and_append_before_failure (test_integration.LocalControls.test_raw_journal_errors_flush_and_append_before_failure) ... ok\\ntest_real_pipe_whole_record_rejection_and_partial_output (test_integration.LocalControls.test_real_pipe_whole_record_rejection_and_partial_output) ... ok\\n\\n----------------------------------------------------------------------\\nRan 7 tests in 0.337s\\n\\nOK\\n\",\n  \"tests_run\": 7\n}\n"
+  },
+  "result": {
+    "actual_capture_admission": "HOLD",
+    "after": {
+      "digests": {
+        "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+        "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+      },
+      "input_bytes": 13884596,
+      "prior_bytes": 13826460,
+      "prior_pins": 1829,
+      "scope_counts": {
+        "product": 204,
+        "tests": 192
+      },
+      "total_pins": 1839
+    },
+    "before": {
+      "digests": {
+        "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+        "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+      },
+      "input_bytes": 13884596,
+      "prior_bytes": 13826460,
+      "prior_pins": 1829,
+      "scope_counts": {
+        "product": 204,
+        "tests": 192
+      },
+      "total_pins": 1839
+    },
+    "compiled_files": 6,
+    "errors": 0,
+    "failures": 0,
+    "not_run": [
+      "lint/types (unavailable)",
+      "full app/SQL/lease integration",
+      "arbitrary/hanging child safety",
+      "power loss/process death",
+      "hostile same UID/root",
+      "Docker/HTTP/measured/external"
+    ],
+    "sandboxes_after": [],
+    "sandboxes_before": [],
+    "seconds": 0.33714483299991116,
+    "skips": 0,
+    "source_after": {
+      "adapter.py": "237222bf6e510def30cad2696e1e2c315e38bdf7eb30f9e7c0610ae1b8e7ca42",
+      "checks.py": "68bccfd9af40b7021167132288650a22057fed0ec8b2023c68097d8c33eacfeb",
+      "derivation.json": "310608fcc9fcab8be19f18d9735c5542277ab66a743da106075ec2d40da4b25b",
+      "input-binding.json": "b8d761511ba1ff5b7ee81852a2542eff10f8e0a5a2f9663ac292485e3bab63d3",
+      "integration.py": "d43d3679afd6fa189e377dc3db50860439bf7a6a001e6a0eafe9ea7992931b93",
+      "pipe_source.py": "559bf1fa824a8ed95f834fe445b5942efdb2aa7666766efbe6dc025ca509c044",
+      "routing.json": "8aabc3697bc88e567341fbe50af8dab02bbb7a78bb274196663d704c4e66320e",
+      "source_subset.py": "661265dc78e7e0e032c05c24a578095d42e66b68af775ed4b1d01fa2843cdc58",
+      "test_integration.py": "a96b38ec860f224085ca264e60001205fd7b5b811d8313e91b4548e110c1cc3d"
+    },
+    "source_before": {
+      "adapter.py": "237222bf6e510def30cad2696e1e2c315e38bdf7eb30f9e7c0610ae1b8e7ca42",
+      "checks.py": "68bccfd9af40b7021167132288650a22057fed0ec8b2023c68097d8c33eacfeb",
+      "derivation.json": "310608fcc9fcab8be19f18d9735c5542277ab66a743da106075ec2d40da4b25b",
+      "input-binding.json": "b8d761511ba1ff5b7ee81852a2542eff10f8e0a5a2f9663ac292485e3bab63d3",
+      "integration.py": "d43d3679afd6fa189e377dc3db50860439bf7a6a001e6a0eafe9ea7992931b93",
+      "pipe_source.py": "559bf1fa824a8ed95f834fe445b5942efdb2aa7666766efbe6dc025ca509c044",
+      "routing.json": "8aabc3697bc88e567341fbe50af8dab02bbb7a78bb274196663d704c4e66320e",
+      "source_subset.py": "661265dc78e7e0e032c05c24a578095d42e66b68af775ed4b1d01fa2843cdc58",
+      "test_integration.py": "a96b38ec860f224085ca264e60001205fd7b5b811d8313e91b4548e110c1cc3d"
+    },
+    "stdout": "test_cancelled_real_child_join_and_source_restoration (test_integration.AsyncControls.test_cancelled_real_child_join_and_source_restoration) ... ok\ntest_exact_terminal_body_result_error_owner_and_repeated_cancel (test_integration.AsyncControls.test_exact_terminal_body_result_error_owner_and_repeated_cancel) ... ok\ntest_actual_retain_virtual_copy_and_raw_pipe_routing (test_integration.LocalControls.test_actual_retain_virtual_copy_and_raw_pipe_routing) ... ok\ntest_default_off_real_original_stream (test_integration.LocalControls.test_default_off_real_original_stream) ... ok\ntest_error_cleanup_identity_and_unconnected_measurement_gate (test_integration.LocalControls.test_error_cleanup_identity_and_unconnected_measurement_gate) ... ok\ntest_raw_journal_errors_flush_and_append_before_failure (test_integration.LocalControls.test_raw_journal_errors_flush_and_append_before_failure) ... ok\ntest_real_pipe_whole_record_rejection_and_partial_output (test_integration.LocalControls.test_real_pipe_whole_record_rejection_and_partial_output) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.337s\n\nOK\n",
+    "tests_run": 7
+  }
+}

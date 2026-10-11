@@ -1,0 +1,12 @@
+{
+  "source_binding": "v2/experiments/action_executor/r17/source-binding-e4.sha256",
+  "command": "PYTHONDONTWRITEBYTECODE=1 python3 -c 'import sys; from pathlib import Path; [compile(Path(p).read_text(), p, \"exec\") for p in sys.argv[1:]]; print(\"SYNTAX_6_PASS\")' v2/experiments/action_executor/r17/diagnostic.py v2/experiments/action_executor/r17/observer.py v2/experiments/action_executor/r17/gate.py v2/experiments/action_executor/r17/test_r17_offline.py v2/experiments/action_executor/r17/test_r17_sql.py v2/experiments/action_executor/r17/test_r17_campaign.py",
+  "scope": "host offline/read-only only",
+  "actual": {
+    "chunk_id": "c4173e",
+    "wall_time_seconds": 0.000012834,
+    "exit_code": 0,
+    "original_token_count": 4,
+    "output": "SYNTAX_6_PASS\n"
+  }
+}

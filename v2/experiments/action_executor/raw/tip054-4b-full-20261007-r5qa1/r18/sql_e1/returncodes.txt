@@ -1,0 +1,9 @@
+old-migration 0
+old-sql 0
+old-xml 0
+database_cleanup rtr_tip054_r15_local_e1 0
+new-migration 0
+new-sql 0
+new-xml 0
+database_cleanup rtr_tip054_r18_local_e1 0
+stage sql exit 0

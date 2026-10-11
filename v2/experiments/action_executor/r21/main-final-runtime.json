@@ -1,0 +1,48 @@
+{
+  "actor": "Main",
+  "scope": "fresh post-drain post-owned-cleanup closure; no containers or volumes removed",
+  "records": {
+    "source": {
+      "chunk_id": "84aa38",
+      "wall_time_seconds": 0.215871458,
+      "exit_code": 0,
+      "original_token_count": 4,
+      "output": "R21_PASS source\n"
+    },
+    "fixture": {
+      "chunk_id": "a60104",
+      "wall_time_seconds": 0.265672208,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "R21_PASS fixture\n"
+    },
+    "catalog": {
+      "chunk_id": "d7049a",
+      "wall_time_seconds": 0.000008667,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    },
+    "pg_disk": {
+      "chunk_id": "63e964",
+      "wall_time_seconds": 0.000009125,
+      "exit_code": 0,
+      "original_token_count": 33,
+      "output": "Filesystem     1K-blocks    Used Available Use% Mounted on\ntmpfs            3145728 1669164   1476564  54% /var/lib/postgresql/data\n"
+    },
+    "host_disk": {
+      "chunk_id": "05b48a",
+      "wall_time_seconds": 0.000009709,
+      "exit_code": 0,
+      "original_token_count": 38,
+      "output": "Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s1s1   460Gi    13Gi    74Gi    15%    484k  782M    0%   /\n"
+    },
+    "image_prune": {
+      "chunk_id": "dc139b",
+      "wall_time_seconds": 0.0000085,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "Total reclaimed space: 0B\n"
+    }
+  }
+}

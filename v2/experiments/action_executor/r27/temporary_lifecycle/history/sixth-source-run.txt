@@ -1,0 +1,7 @@
+{
+  "chunk_id": "8948b5",
+  "wall_time_seconds": 0.77440675,
+  "exit_code": 0,
+  "original_token_count": 71,
+  "output": "ORIGINAL {'testsRun': 1, 'failures': [], 'errors': [], 'successful': True, 'first_owner_fault': None, 'cleanup_errors': []}\nPYTEST {'exit_code': 1, 'tests': 2, 'intentional_failures': 1, 'xml_source_parts': [38, 635], 'stdout_bytes': 679, 'stderr_bytes': 21}\nCOUNTS 282 122 77 58224\n"
+}

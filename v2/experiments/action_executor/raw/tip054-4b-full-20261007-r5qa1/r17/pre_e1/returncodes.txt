@@ -1,0 +1,8 @@
+syntax 0
+pins 0
+ruff 0
+format 0
+collection 0
+campaign-collection 0
+inventory 1
+stage pre exit 1

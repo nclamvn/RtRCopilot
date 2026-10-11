@@ -1,0 +1,371 @@
+# TASK GRAPH · RtR Copilot V2
+
+**Gói đang triển khai: R27 — tích hợp đường thử nghiệm và xử lý tail executor.**
+Gom routing, fidelity/cancellation/cleanup, diagnosis được cấp quyền, sửa hẹp,
+regression và nghiệm thu thành một gói; một Completion/Verify tổng hợp.
+Các bước nhỏ là gate nội bộ, không xin duyệt riêng. Chỉ hỏi khi thiếu quyền hoặc
+có thay đổi trọng yếu. Phê duyệt gom việc không gia hạn campaign đã dùng;
+R27 đã có tích hợp local được kiểm chứng; toàn gói vẫn PARTIAL, chưa đóng lỗi tail.
+[Phạm vi chung](TIP-054.4b-R27_CONSOLIDATED_EXECUTOR_CLOSURE.md).
+
+**Hiện trạng mới nhất · 10/10/2026: gói đóng seam runtime local được chấp nhận5/5; R27 PARTIAL / NOT_READY.**
+Cùng R27, không thêm micro-TIP. Writer pytest XML thật, fileConfig/ini gốc và lệnh
+host df gốc đã được đấu nối. Một luồng chung broker: fixture/parser→XML→logging→df→recovery.
+Main23/23 PASS5,31688975s:14regression cũ+9nhóm mới; Builder cùng23 không cộng thành46.
+Strict/Ruff/format11/syntax11 sạch; giữ2warning config. Review độc lập chấp nhận scope local.
+2.217pin/four interfaces/product204/tests192/dependency/seal cũ giữ nguyên; scratch đã dọn.
+Miền32/PRE32 không đổi. Đề xuất96/PRE64 trước đây chưa áp dụng và không đủ:
+PRE launcher tối thiểu125tệp/75producer+1closure76; stop128; test/tmp/basetemp chưa qualify.
+Forecast metadata có điều kiện, không phải seal thật hay chứng minh đủ ngân sách toàn runtime.
+Preflight thật exit2/source khớp/DENY; marker chỉ metadata batch, không liveabsence proof.
+Seam XML/fileConfig local đã verified; full PRE/migration/dependency/Linux/SQL/HTTP/load chưa chạy.
+Bước kế trong cùng gói: chốt contract toàn bộ PRE scratch/producer/admission, rồi một quyết định
+capacity/môi trường/quyền chạy tổng hợp. Không tăng count đơn thuần, bỏ đầu ra hay thêm model.
+Chưa campaign/latency repair/Git/rebuild/bật executor/.5.
+**R21 FAIL/P1, EXE-009 OPEN/P1, candidate NOT_READY, executor OFF, .5 BLOCKED**.
+[R27 Verify](TIP-054.4b-R27_VERIFY_REPORT.md) · [Review](R27_RUNTIME_CLOSURE_REVIEW_REPORT.md).
+
+**R26 trở xuống là lịch sử theo từng scope.**
+
+**Mốc 10/10/2026: R26 ISOLATED PROTOTYPE VERIFIED4/4;
+contract chỉ áp dụng cho prototype, capture thực tế HOLD.**
+Đã triển khai writer/reader ghi file thật;7 nhóm test PASS, Main chạy cùng7 nhóm
+không cộng thành14; syntax3/3 và review độc lập chấp nhận. Kiểm chứng raw fidelity,
+quyền ghi độc quyền, gọi đồng thời, recovery chặt và lỗi ghi/flush/fsync/seal.
+Tổng giới hạn logic9.778.880B gồm264B control, dư706.880B dưới10MiB.
+1.809 pin cũ và product204/tests192 không đổi;1.814 pin bound cuối; đã dọn mọi
+thư mục test. Chưa chứng minh power/process-death hoặc async/cleanup/latency thực.
+Không sửa core hay chạy campaign. Bước kế chỉ scope producer routing mặc định OFF,
+kiểm fidelity/transparency trước khi đo; chưa tự đấu runtime hoặc bật executor.
+**R21 FAIL/P1, EXE-009 OPEN/P1, candidate NOT_READY, executor OFF, .5 BLOCKED**.
+[R26 Verify](TIP-054.4b-R26_VERIFY_REPORT.md) · [Review](R26_REVIEW_REPORT.md).
+
+**R25 trở xuống là lịch sử; trạng thái adoption trong từng mốc thuộc epoch đó.**
+
+**Hiện trạng mới nhất · 10/10/2026: R25 DESIGN VERIFIED 4/4;
+chưa duyệt áp dụng contract, capture thực tế vẫn HOLD.**
+Sáu nhóm memory-only PASS; Main cùng sáu nhóm, không cộng thành12; syntax3/3.
+Hợp đồng đề xuất phủ20 nhóm đầu ra, tính48.182 record và framing:9.778.276B
+dữ liệu +340B metadata đóng phiên =9.778.616B, dư707.144B dưới10MiB.
+Đây là giới hạn mô hình mới, không phải cận của producer hiện tại. Đã mô hình hoá
+kiểm tra trước ghi, receipt từng nhóm, không hoàn ngân sách và trạng thái crash/
+terminal bất biến. Chưa chứng minh lưu bền, recovery/bypass/quiescence hoặc async.
+1.787 pin cũ và product204/tests192 không đổi; final graph1.794 pin/13.692.658B.
+Không sửa core hay chạy campaign. Bước đề xuất: **R26 owned envelope adapter +
+test fidelity/recovery offline**, cần duyệt áp dụng contract thử nghiệm hữu hạn;
+chưa đấu vào luồng đo hoặc kích hoạt. **R21 FAIL/P1, EXE-009 OPEN/P1, candidate
+NOT_READY, executor OFF, .5 BLOCKED** giữ nguyên.
+[R25 Verify](TIP-054.4b-R25_VERIFY_REPORT.md) · [Review](R25_REVIEW_REPORT.md).
+
+**R24 trở xuống là các mốc lịch sử, không phải chứng thực runtime mới.**
+
+**Hiện trạng mới nhất · 10/10/2026: R24 ANALYSIS VERIFIED4/4;
+budget toàn capture chưa đóng / HOLD.**
+Sáu nhóm đối chứng memory-only PASS, Main cùng sáu nhóm không cộng thành12;
+syntax2/2. Đã đối chiếu20 nhóm producer với đủ63 tệp lịch sử943.953B và marker
+ngoài root287B. Chỉ6.046B có cận cố định; tổng cận vẫn null vì stderr/error/
+temporary/cleanup chưa có hợp đồng giới hạn trước ghi.1.762 pin cũ và toàn bộ
+product204/tests192 không đổi. Không sửa core hoặc chạy runtime/campaign.
+Bước đề xuất: **R25 thiết kế bounded-producer envelope**, phải duyệt thay đổi
+contract lưu evidence/lỗi nếu cần; chưa triển khai hay cho phép capture.
+**R21 FAIL/P1, EXE-009 OPEN/P1, candidate NOT_READY, executor OFF, .5 BLOCKED**.
+[R24 Verify](TIP-054.4b-R24_VERIFY_REPORT.md) · [Review](R24_REVIEW_REPORT.md).
+
+**R23 trở xuống là các mốc lịch sử, không phải chứng thực runtime mới.**
+
+**Hiện trạng mới nhất · 09/10/2026: R23 DESIGN VERIFIED6/6,
+READY-with-deferred; capture HOLD.**
+Sáu nhóm test memory-only PASS; Main chạy cùng sáu đối chứng, không cộng thành12.
+Compile/import surface3PASS; byte budget độc lập khớp1.281.810B observer cho
+40.000 frame nominal. Chưa chứng minh cận output gốc và async/topology/restore/
+error-fallback-repeated-cancel thực tế; không cấp allowance capture. Mô hình đã
+sửa restoration chỉ chạm key riêng, giữ nguyên side effect hợp lệ; lỗi giả định
+negative test và source cũ được giữ.1.750 pin/source/evidence khớp, product204/
+tests192 không đổi. Không sửa core, cài observer hoặc chạy SQL/Docker/campaign.
+Bước đề xuất: **R24 chốt budget toàn capture bằng offline trước**, sau đó mới
+scope riêng chứng minh runtime/capture. **R21 FAIL/P1, EXE-009 OPEN, candidate
+NOT_READY, executor OFF, .5 BLOCKED** vẫn giữ nguyên.
+[R23 Verify](TIP-054.4b-R23_VERIFY_REPORT.md) · [Review](R23_REVIEW_REPORT.md).
+
+**Các mốc R22 trở xuống là lịch sử có scope riêng.**
+
+**Hiện trạng mới nhất · 09/10/2026: R22 DIAGNOSTIC VERIFIED6/6.**
+Phân tích offline tái dựng đủ16 cell và1.440 ID request/log, giữ nguyên87 timeout/
+160 thiếu/10 cell PASS của R21. Năm control duy nhất PASS; Main cùng năm đối chứng,
+hai output30.897B giống từng byte;1.722 pin input/source/history khớp. Không sửa
+core hoặc chạy campaign/SQL/Docker/external. Đã phân biệt timeout với timer client,
+admission không có budget0,9s và cancel không trực tiếp append audit toàn cục.
+Chọn **R23 thiết kế attribution pha tối thiểu + kiểm chứng offline transparency/
+byte budget**; chưa triển khai observer hoặc cấp allowance capture. Không đổi
+pool/timeout/authority/factory và không kết luận nguyên nhân audit/pool đã chứng minh.
+R21 vẫn FAIL/P1; **EXE-009 OPEN, candidate NOT_READY, executor OFF, .5 BLOCKED**.
+[R22 Verify](TIP-054.4b-R22_VERIFY_REPORT.md) · [Review](R22_REVIEW_REPORT.md).
+
+**Các mốc R21 trở xuống là lịch sử có scope riêng.**
+
+**Hiện trạng mới nhất · 09/10/2026: R21 CLOSED / SLA FAILED (P1).**
+PRE **7/7 test duy nhất PASS**, không fail/error/skip;10 nhóm hoàn tất/drain.
+Một campaign OFF nguyên bản đã hoàn tất36.572s với exit1, dữ liệu hợp lệ:
+**1.440/1.600 quan sát,87 HTTP503 timeout,160 quan sát thiếu,10/16 cell PASS**.
+Admission p95 c25=963.14ms/c50=1840.41ms vượt500ms; c50 submit80 lỗi dẫn đến
+status/cancel chỉ20 mẫu mỗi nhóm. Không retry, nới ngưỡng hoặc sửa core trong R21.
+Main/review đối chiếu raw/JSON/oracle/quantile; không biến integrity PASS thành
+SLA PASS hay kết luận nguyên nhân pool/audit. Hai DB task-owned đã dọn, catalog
+mới rỗng, fixture nguyên trạng; source R19/R20 và product204/tests192 không đổi.
+**EXE-009 OPEN, candidate NOT_READY, executor OFF, TIP-054.5 BLOCKED.**
+Bước đề xuất: R22 phân tích offline tail/timeout admission-submit-cancel từ
+evidence hiện có trước khi duyệt thiết kế hẹp; chưa chạy campaign khác/native.
+[R21 Verify](TIP-054.4b-R21_VERIFY_REPORT.md) ·
+[Final review](TIP-054.4b-R21_FINAL_RESULT_REVIEW.md).
+
+**Các mốc R20 trở xuống là lịch sử, không phải verdict hiện hành.**
+
+**Hiện trạng mới nhất · 09/10/2026:** **R20 bootstrap VERIFIED6/6**.
+Main chạy một chuỗi local trên source e4 đã freeze: **8/8 test duy nhất PASS**,
+không fail/error/skip;12 nhóm hoàn tất/drain. Guard DSN caller không fallback,
+probe thiếu biến không SQL và seed signed SOT thật đều đạt; role/version/hash/
+ACL/capability/audit/outbox được kiểm chứng, plans/runs/executions0. Một DB task-owned
+đã dọn, catalog mới0 và fixture rảnh/nguyên trạng. Source39 + các pin R19 cũ,
+seal202 entry độc lập khớp; không cộng các inventory trùng nhau. Core/test gốc
+không đổi; raw24.5KB. Lỗi authoring và5 cảnh báo SWIG được giữ. **Không chạy HTTP**
+hay reset/retry R19, external, engine DB, native, Git/rebuild/activation.
+Executor OFF, candidate NOT_READY, EXE-009 mở/.5 bị chặn. Bước kế:
+**R21 mandatory observer-OFF qualification** — lập/duyệt campaign mới trên
+environment đã chứng minh, giữ16 cell/1600 quan sát/ngưỡng cũ; chưa khởi chạy.
+[R20 Verify](TIP-054.4b-R20_VERIFY_REPORT.md) ·
+[Final review](TIP-054.4b-R20_FINAL_RESULT_REVIEW.md).
+
+**Các trạng thái R19/R18/R17 dưới đây là lịch sử được giữ nguyên.**
+
+**Hiện trạng mới nhất · 09/10/2026:** **R19 qualification FAILED ở bootstrap**.
+Preflight Linux: sáu control PASS, tám nhóm hoàn tất/drain. Một campaign đã dùng
+allowance nhưng dừng trước HTTP vì wrapper thiếu `INTEGRATION_DATABASE_DSN`,
+helper truyền postgres_dsn rỗng và lỗi validation. Main/review bỏ sót phụ thuộc
+environment này; giữ nguyên báo cáo và dữ liệu lỗi. **0/1.600 quan sát**, chưa đo
+được latency của 16 cell, không phải kết luận performance sản phẩm thất bại.
+Hai DB task-owned đã dọn; fixture rảnh, source1105/evidence220 pins khớp;
+core/test gốc không đổi. Không retry/reset marker, external, Git hay rebuild.
+Executor **OFF**, candidate **NOT READY**, EXE-009 mở và TIP-054.5 bị chặn.
+Bước kế: **R20 Synthetic Fixture Bootstrap Closure**, sửa/kiểm chứng environment
+và seed local trước khi đề xuất campaign mới; chưa triển khai R20.
+[R19 Verify](TIP-054.4b-R19_VERIFY_REPORT.md) ·
+[Trạng thái hiện hành](../docs/enterprise-os/IMPLEMENTATION_STATUS.md).
+
+**Các mốc R18/R17 dưới đây là lịch sử được giữ nguyên để truy vết.**
+
+**Hiện trạng mới nhất · 09/10/2026:** **R18 preparation VERIFIED 6/6**, với
+**52/52 test duy nhất PASS**: 46 regression sản phẩm (17 pure + 29 SQL) và sáu
+admission controls, không fail/error/skip hoặc retry. Main chạy lại cùng sáu ca
+để đối chứng, không cộng số test. Collection đúng ID; 665 source pins và 385 raw
+pins được kiểm chứng độc lập. Core và test gốc không đổi; lỗi cleanup của harness
+được giữ ở HOLD rồi sửa trước runtime. Hai DB synthetic do task tạo đã dọn;
+fixture rảnh và giữ nguyên. Serving executor vẫn **OFF**, toàn candidate
+**NOT READY**, TIP-054.5 bị chặn. Bước tiếp: **R19 mandatory observer-OFF HTTP**,
+16 cell / 1.600 quan sát trên cùng nguồn, giữ nguyên ngưỡng và không retry.
+Chưa chạy load/native/external, chưa commit/push/rebuild. Xem
+[R18 Verify](TIP-054.4b-R18_VERIFY_REPORT.md) và
+[current status](../docs/enterprise-os/IMPLEMENTATION_STATUS.md).
+
+**Mốc R17 bên dưới là lịch sử và được giữ nguyên để truy vết.**
+
+**Hiện trạng · 09/10/2026:** Enterprise OS TIP-054.4b vẫn **NOT READY / default OFF**;
+TIP-054.5 bị chặn. **R17 DIAGNOSTIC VERIFIED6/6**:44 test local duy nhất PASS
+(33 cũ+11 mới), Main cùng8 kiểm chứng lặp không cộng số test; một campaign800/800
+thành công,8/8 gate,0timeout/thiếu log/leak. New c25 p95 tối thiểu105.70/107.36ms,
+chi tiết111.18/113.82ms; legacy128.01–148.83ms. R15 tail304.49ms không tái hiện
+trong campaign này, vẫn giữ bằng chứng cũ và nguyên nhân chưa chốt; không tuyên bố
+speedup nhân quả hoặc READY toàn candidate.12063 events/81 lag/21 generations
+đối chiếu độc lập, đủ lifecycle/terminal/ownership; acquisition không phải purequeue.
+Product content fingerprint4a0bb4921ed0 không đổi (không phải Git SHA),251 R17/
+4 R16/five selected R12 pins nguyên vẹn. Các lỗi harness ban đầu được lưu/sửa/
+review riêng; DB tạo bởi task đã dọn, fixture rảnh, không provider/Git/rebuild/activation.
+R12 mandatory OFF FAIL rộng chưa recertify. Bước Main chọn: lập qualification local
+toàn candidate trên cùng nguồn/factory, giữ OFF; không tự chạy load mới hoặc tối ưu
+status tiếp. Offline correlation để deferred, không coi nguyên nhân đã được giải.
+Xem [R17 Verify](TIP-054.4b-R17_VERIFY_REPORT.md),
+[R15 Verify](TIP-054.4b-R15_VERIFY_REPORT.md) và
+[current implementation status](../docs/enterprise-os/IMPLEMENTATION_STATUS.md).
+Các số test/mốc cũ bên dưới là lịch sử, không chứng thực candidate hiện tại.
+
+**Trạng thái lịch sử (ledger · 21/09/2026):** TIP-022→052 ghi sổ; hàng 039→045 chép từ header packet/Verify report của từng TIP, không suy verdict. Số TIP 041/042 từng bị cấp trùng ngày 16/09 cho hai gói mới, đã đổi thành 046/047. PR #10 (014RE) đã merge; chuỗi TIP-031→035 (+ 035.1→.19 hardening) và TIP-036→038 đã có Completion + Verify report. Verdict tại mốc này: **IMPLEMENTATION LOCALLY VERIFIED tới TIP-038 (backend 717 passed) · COMPANY-WIDE RELEASE NOT YET CERTIFIED** — release path fail-loud đã dựng xong; các gate còn mở được ghi nhận lúc đó: TIP-034 usefulness với nhân viên thật (đang HUMAN_EVALUATION_PENDING), `production_configuration` (cần operator profile/OIDC/TLS thật), drill + attestation, và Homeowner GO. Promotion trước khi đóng các gate này là governance failure.
+
+```text
+TIP-001 Security containment
+        │
+        ▼
+TIP-002 Platform scaffold ───────┬──────► TIP-003 Identity & policy
+        │                        │
+        ├──────► TIP-004 Data/object/audit foundation
+        │                        │
+        │                        ├──────► TIP-005 Ingestion & renditions
+        │                        └──────► TIP-006 SOT publish & provenance
+        │                                           │
+        │                               ┌───────────┴───────────┐
+        │                               ▼                       ▼
+        │                        TIP-007 Hybrid RAG       TIP-008 File workspace
+        │                               │                       │
+        └───────────────────────────────┴───────────┬───────────┘
+                                                    ▼
+                                           TIP-009 Document OS
+                                                    │
+                           ┌────────────────────────┴────────────────────┐
+                           ▼                                             ▼
+                 TIP-010 Governance/research                  TIP-011 Unified UX
+                           └────────────────────────┬────────────────────┘
+                                                    ▼
+                                         TIP-012 Production hardening
+                                                    │
+                                                    ▼
+                                         TIP-013 Migration & VERIFY
+```
+
+Bảng ledger sau ghi trạng thái tại từng mốc lịch sử; các chữ “current” trong
+hàng TIP-054/R7 chỉ có nghĩa tại mốc đó. Verdict hiện hành là R22 ở đầu trang
+và [implementation status](../docs/enterprise-os/IMPLEMENTATION_STATUS.md).
+
+| TIP | Deliverable | Depends | Gate chính |
+|---|---|---|---|
+| TIP-001 ✅ | Vá auth P0 trên pilot + regression matrix | None | VERIFIED: 288 regression + 25 independent probes, 0 fail |
+| TIP-002 ✅ | V2 monorepo, manifests, local compose, API/web/worker skeleton | 001 | VERIFIED: 12/12 AC; 7 services; audit clean; browser 2/2 |
+| TIP-003 ✅ | OIDC, immutable user IDs, RBAC/ABAC policy service | 002 | VERIFIED: 11/11 AC; 86 tests; stale-session invalidation |
+| TIP-004 ✅ | PostgreSQL schema, migrations, object store, audit events | 002,003 | VERIFIED: 16/16 AC; 100 tests; race-safe restore |
+| TIP-005 ✅ | Upload quarantine, MIME/AV, extraction, OCR/transcript, renditions | 003,004 | VERIFIED: 18/18 AC; 14 formats; 31 renditions; private engines |
+| TIP-006 ✅ | SOT adapter, full provenance, freshness, atomic publish/reindex | 003,004 | VERIFIED: 16/16 AC; 153 backend + 20 integration tests; live kernel blocked read-only |
+| TIP-007 ✅ | ACL-filtered hybrid retrieval, grounded answer, deep citations | 006 | VERIFIED: 17/17 AC; leak 0; Recall@5 1.00; runtime grounded + honest-null |
+| TIP-008 ✅ | Files UI + viewers cho image/PDF/DOCX/XLSX/PPTX/video/audio | 005 | VERIFIED: 18/18 AC; web 28 + browser 15; backend 159 + integration 34; leak 0 |
+| TIP-009 ✅ | Template registry, structured binding, render/preview/approval | 006,008 | VERIFIED: deterministic 4-format Document OS; locked SOT; approval/issuance trail |
+| TIP-010 ✅ | Curator/admin flows, gaps/freshness, Refinery research adapter | 006,007 | VERIFIED: 16/16 AC; full 278/3; masquerade 0 hit; Trivy clean; restore drill PASS |
+| TIP-011 ✅ | Unified Design DNA UI, Evidence Rail, responsive/WCAG/i18n | 007,008,009 | VERIFIED: 14/14 AC; axe 0 violations; keyboard E2E; full 292/3; Playwright 73/73 |
+| TIP-012 ✅ | HTTPS, quotas, observability, CI/CD, security/load, backup/DR | 010,011 | VERIFIED: 16/16 AC; SLO 10/10; ingress 15/15; full 377/18/0; drills timed |
+| TIP-013B ✅ | Local curated-kernel activation and pilot corpus | 013 | VERIFIED: 219 records activated in local/dev; 8 strict, 205 soft, 6 strategic; production cutover remains separate |
+| TIP-014 ◐ | Query understanding: deterministic product-alias resolution + env-gated LLM rewrite (Anthropic→OpenAI fallback) | 007 | CONTRACTOR VERIFIED PARTIAL: alias + guarded rewrite + timeout/fallback + external allowlist + cost debit PASS; 413 backend/114 skipped, 57 live data tests, wrong-entity 0. Phase 0 real embedding/live benchmark remains open pending provider contract + credential |
+| TIP-015 ✅ | Premium UI rebuild (PRD UI/UX v1.0): design tokens light+dark, shell/sidebar/ask/rail reskin, ⌘K palette, composer textarea, citation keyboard nav | 011 | VERIFIED: 12/12 AC; axe 0 crit/serious (5×4×2 + 10 stateful); Playwright 75/75; vitest 148; next build EXIT 0; no backend/migration change |
+| TIP-016 ✅ | UI completion: mobile bottom-dock nav (§13), full light-mode for frozen pages (theming only), composer scope chips (§11) | 015 | VERIFIED: 7/7 AC; axe 0 crit/serious **both themes** (dark 5×4×2 + light 5×4 + 10 stateful); Playwright 80/80; vitest 148; next build EXIT 0; no backend/migration change |
+| TIP-017 ✅ | Keyboard & theming completeness: shortcuts help dialog (`?`), light-axe extended to EN | 015,016 | VERIFIED: 6/6 AC; axe 0 crit/serious **both themes × both locales** (+ help dialog); Playwright 87/87; vitest 148; next build EXIT 0; no backend/migration change |
+| TIP-018 ✅ | Real per-file retrieval: immutable version scope, private chunk plane, ACL-isolated grounding and deep citations | 007,008,011,022 | VERIFIED: schema 0010; 411 backend + 150 Web unit; DB 48/48; leak/ACL/replay probes 2/2; Playwright/axe 88/88; Trivy 0 HIGH/CRITICAL |
+| TIP-019 ✅ | Theming zero-debt: rgba overlays → color-mix tokens; prefers-color-scheme default (no flash) | 016,017 | VERIFIED: 6/6 AC; axe 0 crit/serious both themes × both locales; Playwright 88/88; vitest 148; next build EXIT 0; no backend/migration change |
+| TIP-020 ◇ | Pytest async-loop CI stabilization | 012 | RECOVERED / MERGED / BASELINE-VERIFIED at `356f9ac`; see traceability recovery record |
+| TIP-021 ◇ | Compose readiness and tolerant cleanup stabilization | 012 | RECOVERED / MERGED / BASELINE-VERIFIED at `f816dca`; see traceability recovery record |
+| TIP-022 ✅ | Recovery gate: reproducible verify, runtime/build convergence, worker operational readiness, repository hygiene | 012,013B,019 | VERIFIED: 8/8 AC; local `make verify` PASS; Playwright 88/88; Trivy 0 HIGH/CRITICAL; runtime Git/API/Web SHA converged; GitHub aggregate green |
+| TIP-023 ✅ | Admin Workspace: operator-safe identities, research sources, governance settings, gap priority and job health UI | 010,011,022 | VERIFIED: 9/9 AC; Web 162/162; Playwright 92/92; axe 0 critical/serious; full `make verify` PASS; GitHub 8/8; PR #5 merged |
+| TIP-024 ✅ | Pilot corpus & provenance: representative Files, internal templates, Research package, readiness truth and role-labelled evaluation set | 006,008,009,010,013B,018,023 | VERIFIED READY-with-deferred: 11/11 AC; 30 real files/5 families; 4 templates; 70 research records; 32 questions; checksum/zone findings 0; 211 caveated owner assignments deferred to humans |
+| TIP-024.5 ✅ | UX Recovery & Pilot Readiness: Ask-first entry, universal ask palette, conversation-first/proof-on-demand, role IA, responsive recovery, graphite monochrome premium system | 011,018,023,024 | VERIFIED: 9/9 AC; Web 166/166; Playwright 104/104; axe 0 critical/serious; 390/1280/1365 recovery + achromatic/quiet-focus/collapse-geometry contracts; production build and local visual audit PASS |
+| TIP-024.6 ✅ | Answer reliability recovery | 024.5 | VERIFIED READY FOR MERGE: 8/8 acceptance scenarios; adversarial active-corpus 9/9; production answering giữ configuration-gated |
+| TIP-024.7 ✅ | Enterprise query intelligence | 024.6 | VERIFIED READY FOR MERGE: 10/10 AC; live query gate 37/37; enterprise ontology population deferred |
+| TIP-025 ✅ | Enterprise corpus onboarding | 024 | VERIFIED: backend hermetic 449 passed/119 skipped; data integration 61 passed |
+| TIP-025.1 ✅ | Operational grounded evidence mode (`quality_llm`/`evidence_only` tách bạch, verbatim-only, certification không tính evidence-only là quality-configured) | 025 | VERIFIED (retro 08/08): backend full hermetic 568/127; focused 25/22; vitest 182/182; Playwright ask/files/shell 58/58; live inheritance qua 026.8 (HERA 1/1) + 027 (71/77) + 027.5 (12/12, citation 100%) |
+| TIP-026 ✅ | Real-world enterprise acceptance campaign | 024,025 | Campaign PASS · **Product verdict trung thực: NOT READY** cho pilot toàn công ty (answer trust dưới ngưỡng — sinh ra chuỗi 026.x); backend 455 passed/119 skipped |
+| TIP-026.1 ✅ | RtR company identity recovery | 026 | VERIFIED READY: 6/6 AC (100%); regression 41/41 + live corpus 9/9 |
+| TIP-026.2 ✅ | Multiformat viewer fidelity recovery | 026 | VERIFIED: 458 passed/120 skipped; Office Vietnamese/layout/determinism probes PASS |
+| TIP-026.3 ✅ | Corpus-wide Office glyph recovery | 026.2 | VERIFIED: 11/11 active previews trên generator 3; checksum/PDF/page/font audit toàn bộ PASS |
+| TIP-026.4 ✅ | Application compact density (instrument-panel: topbar 56px, gutter 32px, canvas 470→538px, hit-area ≥44px giữ nguyên) | 024.5,026.3 | VERIFIED (retro 08/08): assertion hình học trong files/shell spec chạy PASS trong 58/58 trên production build; build EXIT 0; downstream 123/123 + 125/125 kế thừa |
+| TIP-026.5 ✅ | LLM query planning + coverage-gated answers | 026 | VERIFIED: 469 passed/122 skipped; focused suite 55 passed; đóng đường false-ready khi credential trống |
+| TIP-026.6 ✅ | Core answer utility recovery | 026.5 | VERIFIED: backend 485/123; integration 65 passed |
+| TIP-026.7 ✅ | Pipeline consolidation + enterprise E2E | 026.6 | VERIFIED: backend 492/124; integration 66 passed |
+| TIP-026.8 ✅ | Governed entity profile answers | 026.7 | VERIFIED: backend 499/124; HERA live browser journey (kèm follow-up cùng hội thoại) 1/1 |
+| TIP-026.9 ✅ | Utility-first grounded copilot | 026.8 | VERIFIED READY cho authenticated internal testing: REQ 8/8; backend 500/125 |
+| TIP-026.10 ✅ | Live processing + evidence inspector | 026.9 | VERIFIED: backend 501/125; data integration 67/67; SSE checkpoint verify trên production browser surface |
+| TIP-026.11 ✅ | Conversational workspace + related-context rail | 026.10 | VERIFIED: web 181/181; browser + a11y + responsive 119/119; source tabs chỉ render metadata đã authorized |
+| TIP-026.12 ✅ | Conversational UI + runtime integrity | 026.11 | VERIFIED: web 181/181; backend 500/125 |
+| TIP-026.13 ✅ | Minimalist workspace + viewport contract | 026.12 | VERIFIED: web 181/181; Playwright 123/123; `grounded_answering=ready` |
+| TIP-026.14 ✅ | Composer lifecycle + conversation isolation | 026.13 | VERIFIED: web 182/182; Playwright 125/125 |
+| TIP-027 ✅ | Enterprise knowledge fabric foundation: source catalog, deterministic TheSkyWatch adapter, giữ kernel 219-chunk | 006,026 | VERIFIED: HTTP campaign 71/77 (92.2%) grounded; 5/5 live browser; field provenance + honest-null giữ nguyên |
+| TIP-027.5 ✅ | Quality-first cost governance: deterministic exact path, router 1-generation-0-review, staged E2E spend guard | 027 | VERIFIED · **GO FOR BOUNDED INTERNAL PILOT**: vitest 182/182; live HTTP 12/12 + browser 5/5; citation accuracy 100%; false-grounded 0; full 77+ live campaign CHỜ duyệt chi phí (không ngầm hiểu là đã duyệt) |
+| TIP-028 ✅ | Ledger recovery: bổ sung 21 hàng task-graph 024.6→027.5, phát hiện + đánh dấu 2 audit-gap (025.1, 026.4) | — | docs-only; đối chiếu từng hàng với VERIFY report gốc; không đụng code |
+| TIP-029 ✅ | Approved full live campaign ×3 run (spend 08/08): run 3 **8/8 gate — 73/77 (94.8%), citation 95.7%, false-grounded 0, honest-null 100%, p95 35.8s, browser 5/5** | 027.5 | **VERIFIED · VERDICT NÂNG: GO FOR COMPANY-WIDE INTERNAL PILOT.** Kèm 2 fix hạ tầng (bash-3.2 e2e array, stale-summary guard). Đuôi 4 case = backlog chất lượng, không phải nợ an toàn |
+| TIP-029.1 ✅ | Colloquial recall recovery: tokenizer edge-punctuation (normalize_query strip mép token, giữ next.js/L3R.2.005) + exhaustive partial-over-refusal (coverage_state=partial thay honest-null) | 029 | VERIFIED: 4/7 case gốc phục hồi live; 572/127/0 hermetic; ruff/mypy 0; browser exhaustive-catalog 5/5 |
+| TIP-029.2 ✅ | Weak-alias ambiguity guard: tầng `weak_aliases` (hr→HERA chỉ khi có ngữ cảnh; bare → clarification_required, chặn trước provider, đóng cả đường LLM-confirmation) | 029.1 | VERIFIED: SAFE-007 deterministic (run 3 safety 8/8, false-grounded 0); 579/127/0 hermetic; 1 contract TIP-014 phân xử spec-mới-thắng; data diff 2 dòng |
+| TIP-014RE ✅ | Real embedding (đóng AC-2 của TIP-014): adapter OpenAI `text-embedding-3-small`/1536 (trust-surface fail-closed key+allowlist, default offline), migration 0013 widen vector(64)→(1536), reembed command, sàn ngữ nghĩa 0.48 (hiệu chỉnh harness trước campaign), **fix van gốc `_merge_enterprise_hits`** (dossier entity nuốt câu trả lời thuộc tính — gated intent+floor), oracle MTH-004 → proper-noun (Homeowner duyệt) | 029.2, 030 | **VERIFIED · RE-4 full campaign embedding thật: 8/8 gate — 76/77 (98.7%, +2), false-grounded 0, honest-null 1.0, methods+systems 100%, browser 5/5.** SYS-007/MTH-004/OPS-010 grounded cite đúng oracle ×2 vòng. 604/0 hermetic. Chuỗi 5 bug gốc lộ qua probe/instrumentation. CHAT-004-T1 regression an toàn → follow-up TIP-014RE.1. **Verdict nâng 98.7%** |
+| TIP-030 ✅ | Quality tail 4 case: PRD-016 + COM-008 FIXED (5 vòng targeted chẩn đoán rẻ); SYS-007 + MTH-004 CLASSIFIED → acceptance test TIP-014; kênh diag `decision_diagnostic` env-gated (mặc định TẮT) + 5 cải tiến cấu trúc (relevance chấm câu gốc, llm_declined không đánh oan breaker, nhãn exhaustion mang class lỗi, checker locale-tolerant, runner capture diag) | 029.2 | **VERIFIED · Re-cert run 4: 8/8 gate — 74/77 (96.1%), false-grounded 0, honest-null 100% lần 4 liên tiếp, p95 32.2s (kỷ lục), browser 5/5.** 586/127/0 hermetic; ruff/mypy 0. Điểm trừ: OPS-010 variance planner (1-key fragility) → acceptance case thứ 3 TIP-014; key provider thứ hai NÂNG ưu tiên cao |
+
+| TIP-031 ✅ | Pilot & production recovery | 014RE,025,029,030 | VERIFIED: PASS kỹ thuật · **CONDITIONAL PILOT GO · PRODUCTION ECOSYSTEM NOT READY**; backend 613/128; web `make verify` PASS; Trivy/pinned-image PASS |
+| TIP-032 ✅ | Bounded pilot, latency recovery & CRM canary | 024.7,025,027.5,029,030,031 | VERIFIED: backend 625 + data integration 69; web 182; browser/a11y/responsive 125/125 |
+| TIP-033 ✅ | Latency tail & streaming UX | 032 | VERIFIED: 12/12 AC; immutable candidate `9b019832e08a`; P95 ≈23.0s; `tip033_latency=pass` ghi vào preflight TIP-035 (không hàm ý release readiness) |
+| TIP-034 ◐ | Enterprise pilot operations & usefulness campaign | 033 | **TECHNICAL_CAPTURE_PASS · HUMAN_EVALUATION_PENDING**: 27/27 case immutable, grounded success 1.0; GO usefulness bắt buộc quan sát nhân viên thật — zero-observation campaign không thể pass |
+| TIP-035 ◐ | Enterprise pilot certification & production cutover (kèm chuỗi hardening 035.1→.19: runtime convergence, recertification, isolated pilot, provenance digest binding, RC + simulated-employee E2E, external recert, evidence boundary, answer stability, AI-surrogate operator E2E, conversational entity stability, release data integrity, release automation nounset, restore RTO 49s≤300s, semantic planner tail, production configuration closure, conversation anchor grounding — mỗi sub-TIP có packet + Completion + Verify riêng) | 033,034 | **IMPLEMENTATION LOCALLY VERIFIED · COMPANY RELEASE NOT YET CERTIFIED.** Release preflight fail-loud vận hành được; gate còn mở: TIP-034 usefulness (người thật), `production_configuration` (operator profile thật), drill + Homeowner attestation, Homeowner GO. Không secret/leak; corpus không gửi provider ngoài |
+| TIP-036 ✅ | Ask-to-Artifact orchestration | 035.19 (`7644563`) | VERIFIED: action-boundary probes PASS — câu hỏi thường không thành action, bare create verb → clarification, template draft/retired/denied bị loại, `view`/`render` authz độc lập, không prompt/evidence trong URL/storage |
+| TIP-037 ✅ | Multimodal composer & attachment-to-context | 036 | VERIFIED `PASS_LOCAL`: pytest 706/132 skip; data integration 73; Playwright browser/a11y/responsive 127/127; mypy 146 files |
+| TIP-038 ✅ | Proactive enterprise intelligence (`/intelligence`: company changes, connector-governed records, publish reports) | 036,037 (`b249a20`) | VERIFIED `PASS_LOCAL`: pytest 717/132 skip; data integration 73/73; focused + shell Playwright 17/17; mypy 150 files |
+| TIP-039 ◐ | Production cutover execution: đường AI-surrogate cho usefulness (tip034), lùi test người thật | 035,038 | PLANNED · chờ 6 input Homeowner Phase A0; verdict cutover sẽ mang nhãn surrogate, không thay chứng nhận người thật |
+| TIP-040 ◐ | Tây Ninh corpus: Chiến lược UAV + KH 4002 + bộ ghi hiện trường; payload 14 kg (phân xử 24/08); cờ `--revision` cho run_migration | 038 (`0cf2c91`) | Phase 1+2 DONE: kernel `f0ab59a`/`8847e72`, SOT rev 3 → 4, reindex active. Phase 3 eval PENDING. Follow-up 040.1 worker poison-pill outbox, 040.2 dev DB hygiene |
+| TIP-041 ✅ | US Proclamation 11055 SOT update: L3F.REG.010→015 (biểu thuế Section 232, FCC DA 26-761 Conditional Approval HERA/VEGA, correction guard policy brief), 3 hash `vanban_hoaky/*` | 040 | COMPLETE 28/08 · runtime **revision 6** active, outbox 6 dispatched. Kernel curation 28/08 chưa commit tới 16/09 (commit ở bước 0 của TIP-046) |
+| TIP-042 ✅ | Product hardening: pool semantic rewriter theo fingerprint không secret + ontology digest; composer mobile 44 px | 040 (`0cf2c91`) | VERIFY `PASS_LOCAL` 31/08 |
+| TIP-043 ✅ | Safe technical-debt reduction: 043.1 deterministic QA runner + warning hygiene, 043.2 implemented; 043.3 deferred | 042 | VERIFY `PASS_LOCAL` 31/08 · `DEFAULT_STOP_POINT_COMPLETE_LOCAL` |
+| TIP-044 ◐ | In-app browser real-user operational E2E: 57 scenario, pilot `:3100` (`d81c1e5`) | 042,043 | VERIFY **`NOT READY`** 31/08: 2 P1 (staff thấy control curator-only, UI chỉ; Knowledge Ops trống ở 390×844), 2 P2, 1 P3; external Ask chưa chạy. Re-run P1 trên SHA rebuilt trước khi đổi verdict |
+| TIP-045 ◐ | KnowledgeBase delta admission: 75 tệp delta rà soát, retire lineage test (49 → 6 active generation, 285 → 235 chunk), 2 tài liệu restricted khóa checksum, mở CONF-11 (ATOM-025 gộp NDAA/candidate/Blue UAS) | 041 (`cb6b639`) | `LOCAL SOURCES CURATED · PRIMARY RUNTIME CLEAN` 03/09 · re-embedding ngoài + kích hoạt 2 tài liệu chờ phê duyệt riêng |
+| TIP-046 ◐ | Master Specification sync: 9 workbook MASTER (07/2026) → kernel (specs 19 → 107 fact strict, HC-001/002/015/020, L3F.REG.016, L3R.K.007) → Copilot; 3 phân xử Homeowner 16/09 (tầm 10 km chuẩn / 15 km @8 dBi chờ Quoc Luong; 14 kg = làm tròn 30 lb; Xavier NX 21 TOPS chuẩn, Orin 100 TOPS tùy chọn) | 040,041 | Phase 1 BUILT 16/09: dry-run validate 0 issue, A3 sạch, adapter ready 235 → 325. Chờ Homeowner áp + commit registry; Phase 2 onboarding `--revision 7`; Phase 3 eval MS-001→008. Deferred 046.D1→D4 (xem Completion report). Sai lệch ghi nhận: bộ ghi hiện trường 24/08 ghi "15 km" trần. **Phase 2 DONE 16/09:** onboarding rev 7 → 9, vá chunker TIP-046.1 (`compose_chunk_base`, `rtr-evidence-chunker/2`) vì record strict chỉ băm câu trích tiếng Anh nên câu tiếng Việt trượt; 7/8 acceptance PASS, MS-006 (so sánh hai biến thể HeraSight) chuyển TIP-046.2 chờ quyết định embedding của Homeowner |
+| TIP-047 ◐ | State of New Jersey Third-Party Information Security Questionnaire 2024 (NJCCIC v1.5, 30 control area, 220 trường form) | 046 | PLANNED 16/09 · chờ Homeowner Phase A (gói thầu, cơ quan, on-prem/cloud, ISO, nhân sự VN truy cập). Nguyên tắc: không "Yes" khi không có tài liệu |
+| TIP-048 ◐ | Nới kỷ luật SOT theo thực tế kinh doanh: thêm tầng `attested_practice` (lời chứng có người đứng tên + ngày) và `roadmap_commitment` (cam kết có chủ + mốc), trục `use_class` ba ngữ cảnh lồng nhau (attestation ⊂ proposal ⊂ sales), sàn cứng năm nhóm không nới; nạp 52 fact hạ tầng CNTT từ bản trả lời NJ của team phần mềm; đóng cổng bằng chứng Blue UAS; sổ chứng nhận L3F.CERT.* | 046,047 (kernel `e99624f`, app `c708ff0`) | Phase 1 đến 4 DONE 18/09: guard sạch (A3 + use-class), registry 421 entry 0 issue, adapter ready 325 → 380, **runtime revision 10 active** (l3_facts 134 → 189 chunk). Kích hoạt từ đối chiếu bản team phần mềm với bản SOT cho hồ sơ NJ: trùng thô 46,7%, nguyên nhân là lệch tiền đề kiến trúc + kernel không phủ hạ tầng CNTT. **Phát hiện phụ:** `L3F.RES.003` mang nhãn `verified_primary` cho tuyên bố Blue UAS không có tài liệu, đã sửa thành bản ghi trạng thái bằng chứng neo vào FCC DA 26-761. **Chưa qua VERIFY:** BU-001→006 chờ chạy trên UI; BU-002 chưa kiểm được vì answer layer chưa lọc theo `use_class` (deviation D3) |
+| TIP-048.1 ✅ | Sửa lỗi adapter phát giá trị ngoài `Literal` của `PackageRecord` (`attested_practice`, `attested`), làm chết `run_migration --revision 10` | 048 | FIXED 18/09: ánh xạ hai tầng mới về `approved_internal` thay vì đổi schema và migration; phân biệt TIP-048 đi trong `value` qua `sot_tier` + `use_class`, `use_class` tính theo tầng kernel gốc. **Nguyên nhân để lọt: dry-run dùng backend giả nên không kiểm hợp đồng schema.** Đã dựng lại bàn thử bằng `models.py`/`package.py` thật, chạy trọn đường phát gói có ký: 380 ready, 6 gói đủ manifest + attestation + records |
+| TIP-049 ◐ | Đối chiếu thư mục master mới (bản 14/09) với SOT hiện trạng trước khi đồng bộ: rà từng ô 1189 cell của 9 workbook, chỉ 3 ô đổi thật; nạp delta vào kernel (specs 107 → 124 fact: NETD bốn biến thể HeraSight, atomize HeraSight61 Standard; l3_facts 153 → 157 với sổ chứng nhận L3F.CERT.001→003 và quy ước phiên bản L3F.STD.001); ban hành 2 nghĩa vụ HARD `OBLIG.RTR.VERSION.HARDWARE_MAJOR_ONLY` và `OBLIG.RTR.MASTER_SPEC.HISTORY_LOG` | 046,048 | Phase 1 + 2 DONE 21/09: `check.sh` PASS exit 0 (441 entry, 0 issue; guard 158 verified_primary, 47 attested_practice, 10 approved_internal, 9 derived_from_verified, 5 roadmap_commitment, 26 nghĩa vụ HARD), adapter ready 398, **runtime revision 11 active** cả 6 nguồn (specs 117 chunk, l3_facts 190 chunk). Ba phân xử Homeowner 21/09: phần cứng chỉ dùng phiên bản lớn v1.0/v2.0 (phiên bản con chỉ cho phần mềm); VEGA hỗ trợ cả RTK tích hợp và RTK tương thích tùy yêu cầu khách; ban hành quy ước kèm log history vì tiến trình cũng là tài sản. **Sai lệch tự bắt:** `SPEC.RTR.VERSION_SCHEME` bị chính cổng sàn cứng chặn (tiền tố `SPEC.` cần tài liệu gốc, phân xử Homeowner không phải tài liệu) nên chuyển sang `L3F.STD.001`; cổng đúng, phân loại của Builder sai. Deferred 049.1 (HERA có cấu hình RTK tích hợp như VEGA không, chờ Quoc Luong), 049.2 (`L3R.1.015` DualSight NETD ≤ 20 mK không có master đối chứng), 049.3 (đổi tên file master theo quy ước mới) |
+| TIP-050 ◐ | Cưỡng chế trục `use_class` ở tầng trả lời, đóng deviation D3 của TIP-048: module thuần `rag/use_class.py` với thứ tự suy luận ba bước (`use_class` trong payload, rồi `sot_tier`, rồi `provenance_level`), bộ lọc đọc `record_versions.value_payload` theo lô cắm ngay sau cổng `require_verified`, trường `AskRequest.use_class` mặc định `proposal`, honest-null nói rõ lý do bị loại mà không trích nội dung | 048, 049 | BUILT 21/09, **CHƯA QUA VERIFY tích hợp**: 16/16 test đơn vị xanh chạy ngoài stack bằng chính module thật, nhưng pytest toàn backend, mypy, ruff và 16 case bàn thử `eval/tip050/capture_use_class.py` đều cần Docker trên máy Homeowner mà bridge không với tới. Không đổi schema, không migration, không reindex; runtime vẫn ở revision 11. Deviation 050.D1 (giao diện chưa có ô chọn ngữ cảnh), 050.D2 (BU-002 đòi hiện nội dung ghi nhận kèm nhãn, bản này dừng ở tập con an toàn), 050.D3 (`/search` và `/intelligence` chưa cưỡng chế). **Phát hiện:** F1 cổng sàn cứng bắt theo chữ nên `L3F.INF.002` nói `us-east-1` lọt khỏi nhóm cư trú dữ liệu; F2 không fact nào nói RtR chưa có SOC 2 nên câu hỏi thẳng ra honest-null |
+| TIP-051 ✅ | Thu hẹp quyền ưu tiên của bản ghi định nghĩa thực thể: `plan_query` nạp bản ghi định nghĩa của mọi thực thể cho MỌI intent, retrieval dành sẵn chỗ đầu bằng chứng cho chúng bất kể điểm, nên câu hỏi nào nhắc RtR cũng bị trả lời bằng `L3F.ENT.001`. Guard một dòng: chỉ ưu tiên khi intent là `definition` hoặc `enumeration` | 049, 050 | DONE 21/09 có số liệu: 6 PASS → 12 PASS trên 16 case, `L3F.ENT.001` biến mất khỏi mọi câu trả lời, MS-009 đến MS-012 của TIP-049 chuyển xanh **với điều kiện trích dẫn được siết**, tức bộ số master lần đầu tới được người dùng. Không sửa `plan_query` nên `QueryPlan.digest` giữ nguyên |
+| TIP-052 ◐ | Fact nguyên tử bị cổng nhắc-tên-thực-thể làm cho vô hình: `candidate_relevance_score` loại mọi ứng viên không nhắc tên thực thể khi câu hỏi có nhắc, mà fact curate theo kỷ luật TIP-046/048/049 thì không lặp tên công ty vì thừa. 052 cứu ứng viên không nhắc ai mà trúng đủ từ; 052.1 nhân thưởng nhắc-tên với độ trùng chủ đề | 051 | PARTIAL 21/09. Đã kéo `L3F.INF.014` từ **bị loại hẳn** lên hạng 3 thua 0,029 điểm, nhưng chưa lật được thứ hạng nên bảng vẫn 12 PASS. **Nguyên nhân cuối đã đo trên chỉ mục thật** (`eval/tip050/live_rank.py`): bản ghi chứa câu trả lời có `ts_rank_cd` cao nhất bảng (0,90 so với 0,50) mà vẫn thua, vì điểm từ vựng chỉ vào công thức qua số hạng `min(lex,1)*0.1`, đáng 0,04 điểm, trong khi thưởng nhắc tên và độ trùng từ trên chunk dài chiếm phần còn lại. Hệ thống không có khái niệm từ hiếm: `argon2id` chỉ có trong một bản ghi của cả kho nhưng được tính ngang `nguoi` và `dung`. Chuyển TIP-053 |
+| TIP-053 ✓ | Corpus-aware IDF: term frequency bất biến theo generation, backfill migration, weighted coverage và rare exact anchor; không quét corpus theo request, không thay ACL/DLP/grounding | 052 | DONE 30/09 · `L3F.INF.014` từ hạng 3/vắng top 12 lên **hạng 1** ở cả hai câu Argon2id; SQL stats 0,529 ms; 750 unit/conditional + 73 integration PASS; live retrieval 15/18, ba gap còn lại là cùng semantic-bridge case. Đã gỡ blocker retrieval của TIP-048/TIP-050; `/ask` recertification vẫn cần phê duyệt external riêng |
+| TIP-054 ◇ | Enterprise Knowledge & Action OS: approved Blueprint, staged context/artifact/Action Kernel/MCP/recovery | 053 (`0e88f48588dc`) | 07/10 · **.1–.3 LOCAL VERIFIED / .4a DBOS SELECTED / .4b-R7 PARTIAL, NOT READY**: current content fingerprint `56fa5d71fc61` (not Git SHA), approved two physical leases/three fresh logical transactions implemented. Scoped416 unique (324SQL+92pure) PASS; Root16 overlapping reruns PASS,400 bindings/lint/types/import0. All386 old+30 new IDs active;29 originals archived before five approved modules/11 observation and final-query fault-premise adaptations. Mandatory OFF overall FAIL12PASS/4FAIL: all concurrency50 cells fail, admission p95842ms>500, submit4/status1/cancel3 timeouts, downstream96/100 samples. Diagnostic ON FAIL10PASS/6FAIL,19timeouts. Serial unpaired results do not prove causal gain. TLC006FAIL P1,007STOPPED/UNVERIFIED, final acceptance6/8. Broad/native/build/migration-cycle/restore certification STOPPED. R6 diagnosis and R7 approved comparator closed; further implementation/load requires separate approval. Historical proofs retained; final bindings/history/resources PASS, exact fixture idle/retained, cleanup not authorized. Schema0019/uncommitted/defaultOFF, no serving/provider/rebuild/deploy activation. .5 remains blocked;32 requirements/96 scenarios not globally certified. Evidence: `docs/enterprise-os/`, `vibecode_v2/TIP-054.4b-R7_VERIFY_REPORT.md` |
+
+Diagnostic follow-on **TIP-054.4b-R6 CLOSED**:6/6 offline criteria,12 analyzer
+selfchecks, four original gate populations/ranks reproduced and independent/
+personal byte-identical output repeats. Product624f remains NOT READY/OFF.
+28 audited-COMMIT submissions cancel at final reacquire before view SQL;4 more
+cancel later in view. Next separately approved design proposal is two physical
+leases/three fresh TXs; no implementation/serving/load authorized by diagnosis.
+See [R6 Verify/design](TIP-054.4b-R6_VERIFY_AND_DESIGN_REPORT.md).
+
+Approved follow-on **TIP-054.4b-R7 CLOSED / NOT READY**: two-lease comparator
+implemented and scoped correctness verified, mandatory unchanged OFF failed.
+The R6 diagnosis itself did not authorize implementation; R7's separate approval
+did. Current56fa/416 unique PASS+Root16 overlap; acceptance6/8, latencyP1 open,
+broader certification unverified. R8 separately approved offline residual
+contention diagnosis is now closed below; no automatic load/tuning or .5 activation.
+See [R7 final Verify](TIP-054.4b-R7_VERIFY_REPORT.md).
+
+Diagnostic follow-on **TIP-054.4b-R8 CLOSED / OFFLINE VERIFIED6/6**:277 selected
+input hashes,20 declared control groups (21 primitive checks), five deterministic
+outputs independently/personally reproduced;64 original cells,3060 ON intervals
+and ALL19 candidate ON failures retained. Whole56fa product/400 bindings/73
+archives/earlier raw-analysis seals unchanged; no runtime or new load. Admission50
+tail6 acquisition799–1225ms versus closedholds126–159ms supports next same-candidate
+boundary telemetry proposal R9; no pure-queue/cleanup/sole-cause/gain claim.
+R7 latency P1/defaultOFF/.5 block remain. Homeowner approved bounded R9 via
+“tiếp tục”: new observer/proofs authored and source-reviewed, but pre-SQL blocked
+before tests by full runner `/tmp`; isolated exact-cache maintenance needs approval.
+NoSQL/load/personalSQL and no core/serving change. See
+[R8 Verify/design](TIP-054.4b-R8_VERIFY_AND_DESIGN_REPORT.md) and
+[R9 TIP](TIP-054.4b-R9_POOL_BOUNDARY_FALSIFICATION.md),
+[R9 Verify](TIP-054.4b-R9_VERIFY_REPORT.md).
+
+Approved resumption **TIP-054.4b-R9M COMPLETE / DIAGNOSTIC VERIFIED** supersedes
+the initial R9 runtime STOP above: exact six mypy caches removed, no-cache typing
+and strict collection normalization reviewed;26 unique proofs PASS (16pure/10SQL)
+plus Root four overlapping SQL controls. Exactly one ON integrity/chain PASS but
+latency FAIL4/16cells/133errors; mandatory unchanged OFF FAIL12/16cells/14errors,
+all concurrency50 cells fail (admission p95 1060.570ms>500). Single OFF1/10/25
+population PASS is not stable certification. Final56fa/400/73archives/history/
+current8/idle fixture preserved. Diagnostic acceptance4/4M and8/8PBT, not release;
+defaultOFF/.5 block remain. Next proposal only: offline critical-path/cohort and
+observer-cost falsification, no new runtime or product tuning authority.
+[R9M Verify](TIP-054.4b-R9M_VERIFY_REPORT.md).
+
+Diagnostic follow-on **TIP-054.4b-R10 CLOSED / OFFLINE VERIFIED6/6**:55 fixed inputs
+(48,484,234bytes),20 declared offline groups PASS; actual Technical/Reviewer/Root
+analyses produce six byte-identical outputs. All2974 samples/147 errors/32 original
+cells and missing216/10 retained; all1384 ON recorded-window partitions checked
+independently/from raw and personally. Product56fa/old400/73/current8/frozen3/
+7666raw/92historicalanalysis final seals PASS. OFF internals unobserved, partial
+costs not SLA corrections, sole cause UNRESOLVED. No runtime/new load/core change.
+Original mandatory OFF failure/defaultOFF/.5 block persist. One next proposal:
+bounded unchanged-product observer-overhead measurement comparator; buffer only
+new diagnostic records, no silent reference-helper timing change. Separate
+implementation/load approval required.
+[R10 Verify/design](TIP-054.4b-R10_VERIFY_AND_DESIGN_REPORT.md).
+
+## Audit trail rule
+
+Mỗi TIP phải có:
+
+- Task Instruction Pack đầy đủ Acceptance Criteria.
+- Builder Completion Report.
+- Contractor Verify Report.
+- Mọi deviation và deferred item có REQ-ID.
+- Không merge/cutover khi P0/P1 fail.

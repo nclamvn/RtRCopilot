@@ -1,0 +1,15 @@
+domain: enterprise-os-public-research
+entity_label: Explicitly evaluated public documentation topics
+schema:
+  fields: [category, capability, constraint, performance_rtr, license_rtr]
+  type_field: category
+rollup_field: category
+universe:
+  estimate: 24
+  meaning: Finite evaluated cohort of 24 documentation topics, not the global market
+refresh_days: 30
+alias_map: {}
+ambiguous_clusters:
+  - [DBOS workflows, Temporal workflows]
+domain_gates:
+  no_inferred_fields: [category, capability, constraint, performance_rtr, license_rtr]

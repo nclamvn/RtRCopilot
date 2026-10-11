@@ -1,0 +1,42 @@
+{
+  "AST_deltas": [
+    "Writer.emit subtype expression -> semantic(self,family,variant)",
+    "Broker._write emit variant literal -> synthetic_input"
+  ],
+  "actual_charge_with_closure": 1532954,
+  "closed_domain_max_charge": 2469496,
+  "coarse_packet_codec_ceiling": 8241689,
+  "executor": "OFF",
+  "factory_authority": "diagnostic constructor/current witnesses; frozen checks entry required",
+  "file_tombstones": 9,
+  "final_live_before_cleanup": 4050,
+  "measurement": "NONE: synthetic elapsed_ms=1.0 oracle controls",
+  "metadata_reserve": 65536,
+  "original_PRE": "DENY",
+  "original_method_bodies": "UNCHANGED",
+  "owned_rmdir_calls": 4,
+  "payload_bytes": 733169,
+  "qualified_original_PRE": false,
+  "schema": "r27-local-pre-closure-evidence-v1",
+  "source_case": "R21Controls.test_packet_summary_controls_oracle_and_corruption",
+  "source_mkdir_calls": 2,
+  "source_pins": {
+    "v2/experiments/action_executor/r27/pre_stage/SCOPE.md": "781eb387a7210a1615b476a2284559a3c7d5bf189f95d10e960122c078169a7a",
+    "v2/experiments/action_executor/r27/pre_stage/checks.py": "91f6931b33b6ea9990e5a73b722db5f43bc49957c3662cb70ddcb9afe57743ef",
+    "v2/experiments/action_executor/r27/pre_stage/contract.json": "3fd5e054fa3febf0e0405191acee2099be42b7fdbccae8cd5736f52e95ae957b",
+    "v2/experiments/action_executor/r27/pre_stage/derive.py": "09ccfdc6b9b049e4b62971a2fabc9e2f7e3424d941b1fcd36842f8423c625b8d",
+    "v2/experiments/action_executor/r27/pre_stage/source_run.py": "cfac09162135f0af77919a3c3e69ce215a077417a35d2a7f603b171992a506c6",
+    "v2/experiments/action_executor/r27/pre_stage/stage.py": "35d17c7afa886beba8e010accd1e059ee8045a5d615411cc6f2258424d076fe7",
+    "v2/experiments/action_executor/r27/pre_stage/test_stage.py": "72508d35c9bd25bd5cd2b7bccb189d4329c4776b35b01a29458a5e4e86f93f4d",
+    "v2/experiments/action_executor/r27/real_path/adapter.py": "0f2a92fe0574fafc70acedc966b113928676cd78cc4ff7e6a83cb349074f63a2",
+    "v2/experiments/action_executor/r27/real_path/host.py": "cb390fff74ecfe3cbdb481443cfd76bfc8e90fe11286815ebb0eb3631a31eda8",
+    "v2/experiments/action_executor/r27/real_path/writer.py": "e2b7738807dced6bd7ed20d9f1662de648e09a1317db45ed193bb2db4c6ddeba"
+  },
+  "unqualified": [
+    "native tempfile/probe/fallback/rmtree",
+    "pytest basetemp/current symlink",
+    "shell/native child outputs",
+    "unknown plugin/platform/error routes"
+  ],
+  "whole_writes": 35
+}

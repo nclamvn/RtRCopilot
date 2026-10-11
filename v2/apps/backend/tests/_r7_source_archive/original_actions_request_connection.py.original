@@ -1,0 +1,498 @@
+"""Action-private physical ownership, never a permission or result cache.
+
+Each phase uses a new Session and an independent root transaction. This is
+host-code isolation for the supported async SQL surface, not a Python sandbox.
+"""
+
+import asyncio
+from collections.abc import AsyncIterator, Coroutine
+from contextlib import asynccontextmanager
+from typing import Any, Self
+
+from sqlalchemy.ext.asyncio import (
+    AsyncConnection,
+    AsyncEngine,
+    AsyncSession,
+    AsyncSessionTransaction,
+    async_sessionmaker,
+)
+
+from rtr_copilot.db.uow import UnitOfWork
+
+
+class LegacyInitialRequired(RuntimeError):
+    """Close the physical owner before the complete old initial path, once."""
+
+
+def _reject_options(kwargs: dict[str, Any], positional: tuple[Any, ...] = ()) -> None:
+    values = (*positional, kwargs.get("bind_arguments"), kwargs.get("execution_options"))
+    if any(value is not None and value != {} for value in values):
+        raise RuntimeError("request_connection_binding_options_unsupported")
+
+
+class _OwnerConnection(AsyncConnection):
+    def __init__(
+        self, engine: AsyncEngine, owner: "RequestConnection", *, generation: object
+    ) -> None:
+        super().__init__(engine)
+        self.request_owner = owner
+        self.request_generation = generation
+
+    async def start(self, is_ctxmanager: bool = False) -> Self:
+        self.request_owner.check_connection(self)
+        await super().start(is_ctxmanager=is_ctxmanager)
+        return self
+
+    async def execute(self, *args: Any, **kwargs: Any) -> Any:
+        self.request_owner.check_connection_sql(self)
+        _reject_options(kwargs)
+        return await super().execute(*args, **kwargs)
+
+    async def scalar(self, *args: Any, **kwargs: Any) -> Any:
+        self.request_owner.check_connection_sql(self)
+        _reject_options(kwargs)
+        return await super().scalar(*args, **kwargs)
+
+    async def exec_driver_sql(self, *args: Any, **kwargs: Any) -> Any:
+        self.request_owner.check_connection_sql(self)
+        _reject_options(kwargs, args[2:])
+        return await super().exec_driver_sql(*args, **kwargs)
+
+    async def scalars(self, *args: Any, **kwargs: Any) -> Any:
+        self.request_owner.check_connection_sql(self)
+        _reject_options(kwargs)
+        return await super().scalars(*args, **kwargs)
+
+    async def execution_options(self, **options: Any) -> AsyncConnection:
+        raise RuntimeError("request_connection_binding_options_unsupported")
+
+    def stream(self, *args: Any, **kwargs: Any) -> Any:
+        raise RuntimeError("request_connection_streaming_unsupported")
+
+    def stream_scalars(self, *args: Any, **kwargs: Any) -> Any:
+        raise RuntimeError("request_connection_streaming_unsupported")
+
+    async def run_sync(self, *args: Any, **kwargs: Any) -> Any:
+        raise RuntimeError("request_connection_raw_sql_unsupported")
+
+    async def get_raw_connection(self) -> Any:
+        raise RuntimeError("request_connection_raw_sql_unsupported")
+
+    def begin(self) -> Any:
+        raise RuntimeError("request_connection_transactions_are_session_owned")
+
+    def begin_nested(self) -> Any:
+        raise RuntimeError("request_connection_transactions_are_session_owned")
+
+    def get_transaction(self) -> Any:
+        raise RuntimeError("request_connection_transaction_access_unsupported")
+
+    def get_nested_transaction(self) -> Any:
+        raise RuntimeError("request_connection_transaction_access_unsupported")
+
+    async def commit(self) -> None:
+        raise RuntimeError("request_connection_transactions_are_session_owned")
+
+    async def rollback(self) -> None:
+        raise RuntimeError("request_connection_transactions_are_session_owned")
+
+    async def close(self) -> None:
+        self.request_owner.check_connection(self, terminal=True)
+        if self.in_transaction() or self.in_nested_transaction():
+            raise RuntimeError("request_connection_existing_transaction")
+        await super().close()
+
+    async def invalidate(self, exception: BaseException | None = None) -> None:
+        self.request_owner.check_connection(self, terminal=True)
+        await super().invalidate(exception)
+
+
+class _OwnerSessionTransaction(AsyncSessionTransaction):
+    def __init__(self, session: "_OwnerSession") -> None:
+        super().__init__(session)
+        self.request_owner = session.request_owner
+        self.owner_session = session
+
+    async def start(self, is_ctxmanager: bool = False) -> Self:
+        self.request_owner.check_session(self.owner_session)
+        await super().start(is_ctxmanager=is_ctxmanager)
+        return self
+
+    async def commit(self) -> None:
+        self.request_owner.check_session(self.owner_session)
+        await super().commit()
+
+    async def rollback(self) -> None:
+        self.request_owner.check_session(self.owner_session)
+        await super().rollback()
+
+    async def __aexit__(self, *args: Any) -> None:
+        self.request_owner.check_session(self.owner_session)
+        await super().__aexit__(*args)
+
+
+class _OwnerSession(AsyncSession):
+    def __init__(
+        self,
+        *args: Any,
+        request_owner: "RequestConnection",
+        request_generation: object,
+        **kwargs: Any,
+    ) -> None:
+        self.request_owner = request_owner
+        self.request_generation = request_generation
+        self.request_connection = request_owner.connection
+        self.request_closed = False
+        super().__init__(*args, **kwargs)
+        request_owner.register(self)
+
+    async def execute(self, *args: Any, **kwargs: Any) -> Any:
+        self.request_owner.check_session(self)
+        _reject_options(kwargs)
+        return await super().execute(*args, **kwargs)
+
+    async def scalar(self, *args: Any, **kwargs: Any) -> Any:
+        # Actual SA scalar bypasses AsyncSession.execute.
+        self.request_owner.check_session(self)
+        _reject_options(kwargs)
+        return await super().scalar(*args, **kwargs)
+
+    async def scalars(self, *args: Any, **kwargs: Any) -> Any:
+        self.request_owner.check_session(self)
+        _reject_options(kwargs)
+        return await super().scalars(*args, **kwargs)
+
+    async def connection(self, *args: Any, **kwargs: Any) -> AsyncConnection:
+        self.request_owner.check_session(self)
+        _reject_options(kwargs, args)
+        return await super().connection(*args, **kwargs)
+
+    def begin(self) -> AsyncSessionTransaction:
+        self.request_owner.check_session(self)
+        return _OwnerSessionTransaction(self)
+
+    def begin_nested(self) -> AsyncSessionTransaction:
+        raise RuntimeError("request_connection_nested_transaction_unsupported")
+
+    def get_transaction(self) -> AsyncSessionTransaction | None:
+        raise RuntimeError("request_connection_transaction_access_unsupported")
+
+    def get_nested_transaction(self) -> AsyncSessionTransaction | None:
+        raise RuntimeError("request_connection_transaction_access_unsupported")
+
+    async def stream(self, *args: Any, **kwargs: Any) -> Any:
+        raise RuntimeError("request_connection_streaming_unsupported")
+
+    async def stream_scalars(self, *args: Any, **kwargs: Any) -> Any:
+        raise RuntimeError("request_connection_streaming_unsupported")
+
+    async def run_sync(self, *args: Any, **kwargs: Any) -> Any:
+        raise RuntimeError("request_connection_raw_sql_unsupported")
+
+    async def commit(self) -> None:
+        raise RuntimeError("request_connection_transactions_are_session_owned")
+
+    async def rollback(self) -> None:
+        raise RuntimeError("request_connection_transactions_are_session_owned")
+
+    async def reset(self) -> None:
+        raise RuntimeError("request_connection_session_reset_unsupported")
+
+    async def invalidate(self) -> None:
+        self.request_owner.check_terminal_session(self)
+        try:
+            await super().invalidate()
+        finally:
+            self.request_closed = True
+
+    async def close(self) -> None:
+        self.request_owner.check_terminal_session(self)
+        if not self.request_closed:
+            try:
+                await super().close()
+            finally:
+                self.request_closed = True
+
+    async def __aexit__(self, kind: Any, error: Any, traceback: Any) -> None:
+        # Track/join this close instead of SA's otherwise untracked shield task.
+        self.request_owner.check_owner()
+        self.request_owner.check_terminal_session(self)
+        try:
+            await self.request_owner.join_terminal(self.close())
+        except BaseException as terminal_error:
+            if isinstance(error, BaseException):
+                error.add_note(f"session terminal work raised {type(terminal_error).__name__}")
+                raise error from terminal_error
+            raise
+
+
+class RequestConnection:
+    """One request Task; each phase owns a different closed physical lease."""
+
+    def __init__(self, factory: async_sessionmaker[AsyncSession]) -> None:
+        bind = factory.kw.get("bind")
+        if (
+            not isinstance(bind, AsyncEngine)
+            or factory.class_ is not AsyncSession
+            or factory.kw.get("binds")
+        ):
+            raise LegacyInitialRequired()
+        self.task = asyncio.current_task()
+        self.engine = bind
+        self.options = {key: value for key, value in factory.kw.items() if key != "bind"}
+        self.connection: _OwnerConnection | None = None
+        self.factory: async_sessionmaker[AsyncSession] | None = None
+        self.generation: object | None = None
+        self.entered = False
+        self.phase_active = False
+        self.mutation_started = False
+        self.poisoned = False
+        self.cleanup_complete = True
+        self.session: _OwnerSession | None = None
+        self.terminal_task: asyncio.Task[Any] | None = None
+
+    @property
+    def fallback_allowed(self) -> bool:
+        # Infrastructure only. Never permission or a successful rollback claim.
+        return (
+            not self.mutation_started
+            and not self.poisoned
+            and self.cleanup_complete
+            and not self.phase_active
+            and self.connection is None
+            and self.terminal_task is None
+        )
+
+    def check_owner(self) -> None:
+        if asyncio.current_task() is not self.task:
+            raise RuntimeError("request_connection_task_mismatch")
+
+    def check_terminal_task(self) -> None:
+        if asyncio.current_task() not in (self.task, self.terminal_task):
+            raise RuntimeError("request_connection_task_mismatch")
+
+    def check_connection(self, connection: _OwnerConnection, *, terminal: bool = False) -> None:
+        if terminal:
+            self.check_terminal_task()
+        else:
+            self.check_owner()
+        if (
+            not self.entered
+            or not self.phase_active
+            or self.connection is not connection
+            or self.generation is not connection.request_generation
+        ):
+            raise RuntimeError("request_connection_generation_inactive")
+
+    def register(self, session: _OwnerSession) -> None:
+        self.check_owner()
+        if (
+            not self.entered
+            or not self.phase_active
+            or self.session is not None
+            or self.connection is None
+            or session.request_generation is not self.generation
+            or session.request_connection is not self.connection
+        ):
+            raise RuntimeError("request_connection_phase_reentry")
+        self.session = session
+
+    def check_terminal_session(self, session: _OwnerSession) -> None:
+        self.check_terminal_task()
+        if (
+            self.session is not session
+            or self.connection is not session.request_connection
+            or self.generation is not session.request_generation
+            or not self.phase_active
+        ):
+            raise RuntimeError("request_connection_session_inactive")
+
+    def check_session(self, session: _OwnerSession) -> None:
+        self.check_owner()
+        if (
+            not self.entered
+            or not self.phase_active
+            or self.session is not session
+            or session.request_closed
+            or self.connection is not session.request_connection
+            or self.generation is not session.request_generation
+            or self.connection is None
+        ):
+            raise RuntimeError("request_connection_session_inactive")
+        if not session.in_transaction() and self.connection.in_transaction():
+            raise RuntimeError("request_connection_existing_transaction")
+
+    def check_connection_sql(self, connection: _OwnerConnection) -> None:
+        self.check_connection(connection)
+        if self.session is None:
+            raise RuntimeError("request_connection_session_inactive")
+        self.check_session(self.session)
+        if not self.session.in_transaction() or not connection.in_transaction():
+            raise RuntimeError("request_connection_transactions_are_session_owned")
+
+    async def join_terminal(self, operation: Coroutine[Any, Any, Any]) -> Any:
+        try:
+            self.check_owner()
+        except BaseException:
+            operation.close()
+            raise
+        if self.terminal_task is not None:
+            operation.close()
+            raise RuntimeError("request_connection_terminal_reentry")
+        task = asyncio.create_task(operation)
+        self.terminal_task = task
+        cancelled: asyncio.CancelledError | None = None
+        try:
+            while True:
+                try:
+                    result = await asyncio.shield(task)
+                    break
+                except asyncio.CancelledError as error:
+                    if task.done():
+                        result = task.result()
+                        cancelled = cancelled or error
+                        break
+                    cancelled = cancelled or error
+            if cancelled is not None:
+                raise cancelled
+            return result
+        except BaseException as error:
+            self.poisoned = True
+            if cancelled is not None and error is not cancelled:
+                cancelled.add_note(f"terminal work raised {type(error).__name__}")
+                raise cancelled from error
+            raise
+        finally:
+            self.terminal_task = None
+
+    async def close_connection(self, connection: _OwnerConnection) -> None:
+        # Capture the departing generation; never consult a newer mutable handle.
+        self.check_connection(connection, terminal=True)
+        if connection.sync_connection is None:
+            return
+        try:
+            await connection.close()
+        except BaseException as error:
+            self.poisoned = True
+            try:
+                await connection.invalidate(error)
+            except BaseException as invalidation_error:
+                error.add_note(f"invalidation raised {type(invalidation_error).__name__}")
+                raise error from invalidation_error
+            raise
+
+    async def release_phase(
+        self, connection: _OwnerConnection, error: BaseException | None
+    ) -> None:
+        self.check_owner()
+        self.check_connection(connection)
+        try:
+            await self.join_terminal(self.close_connection(connection))
+            self.cleanup_complete = not self.poisoned
+        except BaseException as terminal_error:
+            self.poisoned = True
+            self.cleanup_complete = False
+            if error is not None:
+                error.add_note(f"connection terminal work raised {type(terminal_error).__name__}")
+                raise error from terminal_error
+            raise
+        finally:
+            # Complete/faulted terminal work has been joined. Poison forbids reuse
+            # when acknowledgement is uncertain; no second cleanup/replay here.
+            self.connection = None
+            self.factory = None
+            self.session = None
+            self.generation = None
+            self.phase_active = False
+
+    async def __aenter__(self) -> "RequestConnection":
+        self.check_owner()
+        if self.entered:
+            raise RuntimeError("request_connection_owner_reentry")
+        self.entered = True
+        return self
+
+    async def __aexit__(self, kind: Any, error: Any, traceback: Any) -> None:
+        self.check_owner()
+        try:
+            if self.phase_active or self.connection is not None or self.terminal_task is not None:
+                fault = RuntimeError("request_connection_phase_cleanup_incomplete")
+                self.poisoned = True
+                if isinstance(error, BaseException):
+                    error.add_note(str(fault))
+                    raise error from fault
+                raise fault
+            if self.poisoned and error is None:
+                raise RuntimeError("request_connection_cleanup_uncertain")
+        finally:
+            self.entered = False
+
+    def ensure_transaction_free(self) -> None:
+        connection = self.connection
+        if connection is None:
+            return
+        if connection.in_transaction() or connection.in_nested_transaction():
+            raise RuntimeError("request_connection_existing_transaction")
+        if connection.invalidated or connection.closed:
+            raise RuntimeError("request_connection_unavailable")
+
+    def check_phase_entry(self) -> None:
+        self.check_owner()
+        if not self.entered or self.phase_active:
+            raise RuntimeError("request_connection_phase_reentry")
+        if self.poisoned or not self.cleanup_complete or self.terminal_task is not None:
+            raise RuntimeError("request_connection_cleanup_uncertain")
+        self.ensure_transaction_free()
+        if self.connection is not None:
+            raise RuntimeError("request_connection_phase_reentry")
+
+    def begin_phase(self) -> None:
+        self.check_phase_entry()
+        self.phase_active = True
+
+    @asynccontextmanager
+    async def phase_lease(self) -> AsyncIterator[async_sessionmaker[AsyncSession]]:
+        self.begin_phase()
+        self.cleanup_complete = False
+        generation = object()
+        connection = _OwnerConnection(self.engine, self, generation=generation)
+        self.generation, self.connection = generation, connection
+        error: BaseException | None = None
+        try:
+            await connection.start()
+            self.ensure_transaction_free()
+            factory = async_sessionmaker(
+                connection,
+                class_=_OwnerSession,
+                request_owner=self,
+                request_generation=generation,
+                **self.options,
+            )
+            self.factory = factory
+            yield factory
+            self.ensure_transaction_free()
+        except BaseException as primary:
+            error = primary
+            raise
+        finally:
+            await self.release_phase(connection, error)
+
+    @asynccontextmanager
+    async def read_phase(self, *, commit: bool = False) -> AsyncIterator[AsyncSession]:
+        async with self.phase_lease() as factory, factory() as session:
+            if commit:
+                async with session.begin():
+                    yield session
+            else:
+                yield session
+
+    @asynccontextmanager
+    async def mutation_phase(self) -> AsyncIterator[AsyncSession]:
+        self.check_owner()
+        if self.mutation_started:
+            raise RuntimeError("request_connection_mutation_reentry")
+        self.check_phase_entry()
+        # Lifecycle only: acquisition/commit uncertainty never allows replay.
+        self.mutation_started = True
+        async with self.phase_lease() as factory, UnitOfWork(factory).transaction() as session:
+            yield session

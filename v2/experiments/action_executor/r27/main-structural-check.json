@@ -1,0 +1,79 @@
+{
+  "tool_chunk": "d839f7",
+  "exit_code": 0,
+  "result": {
+    "binding_sha256": "b8d761511ba1ff5b7ee81852a2542eff10f8e0a5a2f9663ac292485e3bab63d3",
+    "direct_pins": 12,
+    "anchors": 4,
+    "syntax_files": 6,
+    "imports": {
+      "adapter.py": [
+        "fcntl",
+        "hashlib",
+        "json",
+        "os",
+        "pathlib",
+        "stat",
+        "struct",
+        "threading",
+        "uuid"
+      ],
+      "integration.py": [
+        "asyncio",
+        "hashlib",
+        "importlib",
+        "json",
+        "pathlib",
+        "source_subset",
+        "struct",
+        "sys"
+      ],
+      "source_subset.py": [
+        "ast",
+        "asyncio",
+        "hashlib",
+        "json",
+        "pathlib"
+      ],
+      "pipe_source.py": [
+        "os",
+        "struct",
+        "sys",
+        "time"
+      ],
+      "test_integration.py": [
+        "asyncio",
+        "integration",
+        "json",
+        "logging",
+        "pathlib",
+        "source_subset",
+        "sys",
+        "tempfile",
+        "unittest"
+      ],
+      "checks.py": [
+        "adapter",
+        "hashlib",
+        "io",
+        "json",
+        "pathlib",
+        "test_integration",
+        "time",
+        "unittest"
+      ]
+    },
+    "declared_derivation_exact": true,
+    "terminal_source_methods": {
+      "check_owner": "7aae58c2755684b8ee240acf3fb7652ba613fd40a0cf6a9b138c41f5be56eff5",
+      "join_terminal": "d68df5f17d64c6f13c0bd8502b5bb9a7573d397971994e85e18b8d993b25370e"
+    },
+    "families_mapped": 20,
+    "complete_original_routes": 0,
+    "actual_capture_admission": "HOLD",
+    "packet_only_charged_max_bytes": 9778880,
+    "unrestricted_source_total": null,
+    "sandboxes": 0,
+    "measured_imports": 0
+  }
+}

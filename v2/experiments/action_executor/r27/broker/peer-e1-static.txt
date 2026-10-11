@@ -1,0 +1,7 @@
+Initial authoring static attempt, before runtime tests. No campaign/effects.
+Ruff --no-cache, five peer surfaces: exit0, All checks passed.
+Mypy --strict --follow-imports=silent --cache-dir=/dev/null, no MYPYPATH: exit1.
+Missing backend imports2 (runner environment missing MYPYPATH); test import reexport1;
+test variable narrowing/incompatible assignment2. Total5 errors, five files checked.
+Exact pre-repair source bytes preserved under peer_e1_source/ (five owned source files).
+No actual integration control has run at this epoch. No PASS claim.

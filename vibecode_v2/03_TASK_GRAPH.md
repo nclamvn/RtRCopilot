@@ -1,6 +1,201 @@
 # TASK GRAPH · RtR Copilot V2
 
-**Trạng thái (ledger cập nhật · 21/09/2026):** TIP-022→052 ghi sổ; hàng 039→045 chép từ header packet/Verify report của từng TIP, không suy verdict. Số TIP 041/042 từng bị cấp trùng ngày 16/09 cho hai gói mới, đã đổi thành 046/047. PR #10 (014RE) đã merge; chuỗi TIP-031→035 (+ 035.1→.19 hardening) và TIP-036→038 đã có Completion + Verify report. Verdict hiện hành: **IMPLEMENTATION LOCALLY VERIFIED tới TIP-038 (backend 717 passed) · COMPANY-WIDE RELEASE NOT YET CERTIFIED** — release path fail-loud đã dựng xong; các gate còn mở đều là gate người/Homeowner: TIP-034 usefulness với nhân viên thật (đang HUMAN_EVALUATION_PENDING), `production_configuration` (cần operator profile/OIDC/TLS thật), drill + attestation, và Homeowner GO. Promotion trước khi đóng các gate này là governance failure.
+**Gói đang triển khai: R27 — tích hợp đường thử nghiệm và xử lý tail executor.**
+Gom routing, fidelity/cancellation/cleanup, diagnosis được cấp quyền, sửa hẹp,
+regression và nghiệm thu thành một gói; một Completion/Verify tổng hợp.
+Các bước nhỏ là gate nội bộ, không xin duyệt riêng. Chỉ hỏi khi thiếu quyền hoặc
+có thay đổi trọng yếu. Phê duyệt gom việc không gia hạn campaign đã dùng;
+R27 đã có tích hợp local được kiểm chứng; toàn gói vẫn PARTIAL, chưa đóng lỗi tail.
+[Phạm vi chung](TIP-054.4b-R27_CONSOLIDATED_EXECUTOR_CLOSURE.md).
+
+**Hiện trạng mới nhất · 11/10/2026: tempfile/pytest thật H1–H5 được chấp nhận 5/5; R27 PARTIAL / NOT_READY.**
+Bảy module nối trọn setUp/body/doCleanups gốc với tempfile/safe-fd shutil và
+pytest tmp_path/JUnit thật trong namespace riêng, gồm đường lỗi được khai báo.
+35 lần ghi nguyên khối/733.169B; XML38+635B, stdout679B/stderr21B.
+Recovery kiểm owner/raw, FD/inode/size/permission/link/generation. Lỗi tiêm được
+ghi rõ; XML/stream dở vẫn giữ vật lý khi root còn sống, lỗi sticky, không seal;
+root sau đó được dọn, không tuyên bố kho raw lưu bền hay sandbox toàn hệ điều hành.
+Chung10MiB/không hoàn ngân sách; charge1.582.422B, cận kín2.725.881B, META64KiB.
+Main38/38 PASS:33cũ+5mới,15,972221916s; Builder cùng38, không cộng76.
+Strict follow-imports=silent/no-incremental, Ruff/format/syntax7 sạch; review5/5.
+Giữ nguyên epoch38 đầu: kiểm kiểu mạnh phát hiện25 lỗi và FD faulthandler ngoài
+miền; đã sửa hẹp, tắt plugin/debug không được cấp quyền, rebind rồi kiểm lại.
+2.347 pin repo-root/18.777.645B;14direct+64history; product204/tests192/HEAD nguyên.
+Completion/review pin riêng; candidate không bị sửa sau test để tạo vòng chứng thực.
+Source/preservation/cache không đổi, scratch dọn sạch; preflight exit2/DENY.
+Hai warning outer config được giữ. Chỉ entry frozen với env sạch được chấp nhận;
+factory snapshot không tự cấp quyền. Full PRE/launcher, default user/lock/atexit,
+native child/writer bất kỳ, GC không kiểm soát và nền tảng khác còn UNQUALIFIED.
+Bước kế: chốt đầy đủ inventory producer/output của PRE/launcher theo source thật,
+rồi chọn seam tích hợp hữu hạn; không tăng count đơn thuần hay bỏ đầu ra.
+Không campaign, SQL/Docker, external, rebuild/Git hay bật executor.
+R27-001/002 PARTIAL,003/004 PENDING,005 reporting PASS.
+**R21 FAIL/P1, EXE-009 OPEN/P1, candidate NOT_READY, executor OFF, .5 BLOCKED**.
+[R27 Verify](TIP-054.4b-R27_VERIFY_REPORT.md) · [Review](R27_TEMPORARY_LIFECYCLE_REVIEW_REPORT.md).
+
+**R26 trở xuống là lịch sử theo từng scope.**
+
+**Mốc 10/10/2026: R26 ISOLATED PROTOTYPE VERIFIED4/4;
+contract chỉ áp dụng cho prototype, capture thực tế HOLD.**
+Đã triển khai writer/reader ghi file thật;7 nhóm test PASS, Main chạy cùng7 nhóm
+không cộng thành14; syntax3/3 và review độc lập chấp nhận. Kiểm chứng raw fidelity,
+quyền ghi độc quyền, gọi đồng thời, recovery chặt và lỗi ghi/flush/fsync/seal.
+Tổng giới hạn logic9.778.880B gồm264B control, dư706.880B dưới10MiB.
+1.809 pin cũ và product204/tests192 không đổi;1.814 pin bound cuối; đã dọn mọi
+thư mục test. Chưa chứng minh power/process-death hoặc async/cleanup/latency thực.
+Không sửa core hay chạy campaign. Bước kế chỉ scope producer routing mặc định OFF,
+kiểm fidelity/transparency trước khi đo; chưa tự đấu runtime hoặc bật executor.
+**R21 FAIL/P1, EXE-009 OPEN/P1, candidate NOT_READY, executor OFF, .5 BLOCKED**.
+[R26 Verify](TIP-054.4b-R26_VERIFY_REPORT.md) · [Review](R26_REVIEW_REPORT.md).
+
+**R25 trở xuống là lịch sử; trạng thái adoption trong từng mốc thuộc epoch đó.**
+
+**Hiện trạng mới nhất · 10/10/2026: R25 DESIGN VERIFIED 4/4;
+chưa duyệt áp dụng contract, capture thực tế vẫn HOLD.**
+Sáu nhóm memory-only PASS; Main cùng sáu nhóm, không cộng thành12; syntax3/3.
+Hợp đồng đề xuất phủ20 nhóm đầu ra, tính48.182 record và framing:9.778.276B
+dữ liệu +340B metadata đóng phiên =9.778.616B, dư707.144B dưới10MiB.
+Đây là giới hạn mô hình mới, không phải cận của producer hiện tại. Đã mô hình hoá
+kiểm tra trước ghi, receipt từng nhóm, không hoàn ngân sách và trạng thái crash/
+terminal bất biến. Chưa chứng minh lưu bền, recovery/bypass/quiescence hoặc async.
+1.787 pin cũ và product204/tests192 không đổi; final graph1.794 pin/13.692.658B.
+Không sửa core hay chạy campaign. Bước đề xuất: **R26 owned envelope adapter +
+test fidelity/recovery offline**, cần duyệt áp dụng contract thử nghiệm hữu hạn;
+chưa đấu vào luồng đo hoặc kích hoạt. **R21 FAIL/P1, EXE-009 OPEN/P1, candidate
+NOT_READY, executor OFF, .5 BLOCKED** giữ nguyên.
+[R25 Verify](TIP-054.4b-R25_VERIFY_REPORT.md) · [Review](R25_REVIEW_REPORT.md).
+
+**R24 trở xuống là các mốc lịch sử, không phải chứng thực runtime mới.**
+
+**Hiện trạng mới nhất · 10/10/2026: R24 ANALYSIS VERIFIED4/4;
+budget toàn capture chưa đóng / HOLD.**
+Sáu nhóm đối chứng memory-only PASS, Main cùng sáu nhóm không cộng thành12;
+syntax2/2. Đã đối chiếu20 nhóm producer với đủ63 tệp lịch sử943.953B và marker
+ngoài root287B. Chỉ6.046B có cận cố định; tổng cận vẫn null vì stderr/error/
+temporary/cleanup chưa có hợp đồng giới hạn trước ghi.1.762 pin cũ và toàn bộ
+product204/tests192 không đổi. Không sửa core hoặc chạy runtime/campaign.
+Bước đề xuất: **R25 thiết kế bounded-producer envelope**, phải duyệt thay đổi
+contract lưu evidence/lỗi nếu cần; chưa triển khai hay cho phép capture.
+**R21 FAIL/P1, EXE-009 OPEN/P1, candidate NOT_READY, executor OFF, .5 BLOCKED**.
+[R24 Verify](TIP-054.4b-R24_VERIFY_REPORT.md) · [Review](R24_REVIEW_REPORT.md).
+
+**R23 trở xuống là các mốc lịch sử, không phải chứng thực runtime mới.**
+
+**Hiện trạng mới nhất · 09/10/2026: R23 DESIGN VERIFIED6/6,
+READY-with-deferred; capture HOLD.**
+Sáu nhóm test memory-only PASS; Main chạy cùng sáu đối chứng, không cộng thành12.
+Compile/import surface3PASS; byte budget độc lập khớp1.281.810B observer cho
+40.000 frame nominal. Chưa chứng minh cận output gốc và async/topology/restore/
+error-fallback-repeated-cancel thực tế; không cấp allowance capture. Mô hình đã
+sửa restoration chỉ chạm key riêng, giữ nguyên side effect hợp lệ; lỗi giả định
+negative test và source cũ được giữ.1.750 pin/source/evidence khớp, product204/
+tests192 không đổi. Không sửa core, cài observer hoặc chạy SQL/Docker/campaign.
+Bước đề xuất: **R24 chốt budget toàn capture bằng offline trước**, sau đó mới
+scope riêng chứng minh runtime/capture. **R21 FAIL/P1, EXE-009 OPEN, candidate
+NOT_READY, executor OFF, .5 BLOCKED** vẫn giữ nguyên.
+[R23 Verify](TIP-054.4b-R23_VERIFY_REPORT.md) · [Review](R23_REVIEW_REPORT.md).
+
+**Các mốc R22 trở xuống là lịch sử có scope riêng.**
+
+**Hiện trạng mới nhất · 09/10/2026: R22 DIAGNOSTIC VERIFIED6/6.**
+Phân tích offline tái dựng đủ16 cell và1.440 ID request/log, giữ nguyên87 timeout/
+160 thiếu/10 cell PASS của R21. Năm control duy nhất PASS; Main cùng năm đối chứng,
+hai output30.897B giống từng byte;1.722 pin input/source/history khớp. Không sửa
+core hoặc chạy campaign/SQL/Docker/external. Đã phân biệt timeout với timer client,
+admission không có budget0,9s và cancel không trực tiếp append audit toàn cục.
+Chọn **R23 thiết kế attribution pha tối thiểu + kiểm chứng offline transparency/
+byte budget**; chưa triển khai observer hoặc cấp allowance capture. Không đổi
+pool/timeout/authority/factory và không kết luận nguyên nhân audit/pool đã chứng minh.
+R21 vẫn FAIL/P1; **EXE-009 OPEN, candidate NOT_READY, executor OFF, .5 BLOCKED**.
+[R22 Verify](TIP-054.4b-R22_VERIFY_REPORT.md) · [Review](R22_REVIEW_REPORT.md).
+
+**Các mốc R21 trở xuống là lịch sử có scope riêng.**
+
+**Hiện trạng mới nhất · 09/10/2026: R21 CLOSED / SLA FAILED (P1).**
+PRE **7/7 test duy nhất PASS**, không fail/error/skip;10 nhóm hoàn tất/drain.
+Một campaign OFF nguyên bản đã hoàn tất36.572s với exit1, dữ liệu hợp lệ:
+**1.440/1.600 quan sát,87 HTTP503 timeout,160 quan sát thiếu,10/16 cell PASS**.
+Admission p95 c25=963.14ms/c50=1840.41ms vượt500ms; c50 submit80 lỗi dẫn đến
+status/cancel chỉ20 mẫu mỗi nhóm. Không retry, nới ngưỡng hoặc sửa core trong R21.
+Main/review đối chiếu raw/JSON/oracle/quantile; không biến integrity PASS thành
+SLA PASS hay kết luận nguyên nhân pool/audit. Hai DB task-owned đã dọn, catalog
+mới rỗng, fixture nguyên trạng; source R19/R20 và product204/tests192 không đổi.
+**EXE-009 OPEN, candidate NOT_READY, executor OFF, TIP-054.5 BLOCKED.**
+Bước đề xuất: R22 phân tích offline tail/timeout admission-submit-cancel từ
+evidence hiện có trước khi duyệt thiết kế hẹp; chưa chạy campaign khác/native.
+[R21 Verify](TIP-054.4b-R21_VERIFY_REPORT.md) ·
+[Final review](TIP-054.4b-R21_FINAL_RESULT_REVIEW.md).
+
+**Các mốc R20 trở xuống là lịch sử, không phải verdict hiện hành.**
+
+**Hiện trạng mới nhất · 09/10/2026:** **R20 bootstrap VERIFIED6/6**.
+Main chạy một chuỗi local trên source e4 đã freeze: **8/8 test duy nhất PASS**,
+không fail/error/skip;12 nhóm hoàn tất/drain. Guard DSN caller không fallback,
+probe thiếu biến không SQL và seed signed SOT thật đều đạt; role/version/hash/
+ACL/capability/audit/outbox được kiểm chứng, plans/runs/executions0. Một DB task-owned
+đã dọn, catalog mới0 và fixture rảnh/nguyên trạng. Source39 + các pin R19 cũ,
+seal202 entry độc lập khớp; không cộng các inventory trùng nhau. Core/test gốc
+không đổi; raw24.5KB. Lỗi authoring và5 cảnh báo SWIG được giữ. **Không chạy HTTP**
+hay reset/retry R19, external, engine DB, native, Git/rebuild/activation.
+Executor OFF, candidate NOT_READY, EXE-009 mở/.5 bị chặn. Bước kế:
+**R21 mandatory observer-OFF qualification** — lập/duyệt campaign mới trên
+environment đã chứng minh, giữ16 cell/1600 quan sát/ngưỡng cũ; chưa khởi chạy.
+[R20 Verify](TIP-054.4b-R20_VERIFY_REPORT.md) ·
+[Final review](TIP-054.4b-R20_FINAL_RESULT_REVIEW.md).
+
+**Các trạng thái R19/R18/R17 dưới đây là lịch sử được giữ nguyên.**
+
+**Hiện trạng mới nhất · 09/10/2026:** **R19 qualification FAILED ở bootstrap**.
+Preflight Linux: sáu control PASS, tám nhóm hoàn tất/drain. Một campaign đã dùng
+allowance nhưng dừng trước HTTP vì wrapper thiếu `INTEGRATION_DATABASE_DSN`,
+helper truyền postgres_dsn rỗng và lỗi validation. Main/review bỏ sót phụ thuộc
+environment này; giữ nguyên báo cáo và dữ liệu lỗi. **0/1.600 quan sát**, chưa đo
+được latency của 16 cell, không phải kết luận performance sản phẩm thất bại.
+Hai DB task-owned đã dọn; fixture rảnh, source1105/evidence220 pins khớp;
+core/test gốc không đổi. Không retry/reset marker, external, Git hay rebuild.
+Executor **OFF**, candidate **NOT READY**, EXE-009 mở và TIP-054.5 bị chặn.
+Bước kế: **R20 Synthetic Fixture Bootstrap Closure**, sửa/kiểm chứng environment
+và seed local trước khi đề xuất campaign mới; chưa triển khai R20.
+[R19 Verify](TIP-054.4b-R19_VERIFY_REPORT.md) ·
+[Trạng thái hiện hành](../docs/enterprise-os/IMPLEMENTATION_STATUS.md).
+
+**Các mốc R18/R17 dưới đây là lịch sử được giữ nguyên để truy vết.**
+
+**Hiện trạng mới nhất · 09/10/2026:** **R18 preparation VERIFIED 6/6**, với
+**52/52 test duy nhất PASS**: 46 regression sản phẩm (17 pure + 29 SQL) và sáu
+admission controls, không fail/error/skip hoặc retry. Main chạy lại cùng sáu ca
+để đối chứng, không cộng số test. Collection đúng ID; 665 source pins và 385 raw
+pins được kiểm chứng độc lập. Core và test gốc không đổi; lỗi cleanup của harness
+được giữ ở HOLD rồi sửa trước runtime. Hai DB synthetic do task tạo đã dọn;
+fixture rảnh và giữ nguyên. Serving executor vẫn **OFF**, toàn candidate
+**NOT READY**, TIP-054.5 bị chặn. Bước tiếp: **R19 mandatory observer-OFF HTTP**,
+16 cell / 1.600 quan sát trên cùng nguồn, giữ nguyên ngưỡng và không retry.
+Chưa chạy load/native/external, chưa commit/push/rebuild. Xem
+[R18 Verify](TIP-054.4b-R18_VERIFY_REPORT.md) và
+[current status](../docs/enterprise-os/IMPLEMENTATION_STATUS.md).
+
+**Mốc R17 bên dưới là lịch sử và được giữ nguyên để truy vết.**
+
+**Hiện trạng · 09/10/2026:** Enterprise OS TIP-054.4b vẫn **NOT READY / default OFF**;
+TIP-054.5 bị chặn. **R17 DIAGNOSTIC VERIFIED6/6**:44 test local duy nhất PASS
+(33 cũ+11 mới), Main cùng8 kiểm chứng lặp không cộng số test; một campaign800/800
+thành công,8/8 gate,0timeout/thiếu log/leak. New c25 p95 tối thiểu105.70/107.36ms,
+chi tiết111.18/113.82ms; legacy128.01–148.83ms. R15 tail304.49ms không tái hiện
+trong campaign này, vẫn giữ bằng chứng cũ và nguyên nhân chưa chốt; không tuyên bố
+speedup nhân quả hoặc READY toàn candidate.12063 events/81 lag/21 generations
+đối chiếu độc lập, đủ lifecycle/terminal/ownership; acquisition không phải purequeue.
+Product content fingerprint4a0bb4921ed0 không đổi (không phải Git SHA),251 R17/
+4 R16/five selected R12 pins nguyên vẹn. Các lỗi harness ban đầu được lưu/sửa/
+review riêng; DB tạo bởi task đã dọn, fixture rảnh, không provider/Git/rebuild/activation.
+R12 mandatory OFF FAIL rộng chưa recertify. Bước Main chọn: lập qualification local
+toàn candidate trên cùng nguồn/factory, giữ OFF; không tự chạy load mới hoặc tối ưu
+status tiếp. Offline correlation để deferred, không coi nguyên nhân đã được giải.
+Xem [R17 Verify](TIP-054.4b-R17_VERIFY_REPORT.md),
+[R15 Verify](TIP-054.4b-R15_VERIFY_REPORT.md) và
+[current implementation status](../docs/enterprise-os/IMPLEMENTATION_STATUS.md).
+Các số test/mốc cũ bên dưới là lịch sử, không chứng thực candidate hiện tại.
+
+**Trạng thái lịch sử (ledger · 21/09/2026):** TIP-022→052 ghi sổ; hàng 039→045 chép từ header packet/Verify report của từng TIP, không suy verdict. Số TIP 041/042 từng bị cấp trùng ngày 16/09 cho hai gói mới, đã đổi thành 046/047. PR #10 (014RE) đã merge; chuỗi TIP-031→035 (+ 035.1→.19 hardening) và TIP-036→038 đã có Completion + Verify report. Verdict tại mốc này: **IMPLEMENTATION LOCALLY VERIFIED tới TIP-038 (backend 717 passed) · COMPANY-WIDE RELEASE NOT YET CERTIFIED** — release path fail-loud đã dựng xong; các gate còn mở được ghi nhận lúc đó: TIP-034 usefulness với nhân viên thật (đang HUMAN_EVALUATION_PENDING), `production_configuration` (cần operator profile/OIDC/TLS thật), drill + attestation, và Homeowner GO. Promotion trước khi đóng các gate này là governance failure.
 
 ```text
 TIP-001 Security containment
@@ -31,6 +226,10 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
                                                     ▼
                                          TIP-013 Migration & VERIFY
 ```
+
+Bảng ledger sau ghi trạng thái tại từng mốc lịch sử; các chữ “current” trong
+hàng TIP-054/R7 chỉ có nghĩa tại mốc đó. Verdict hiện hành là R22 ở đầu trang
+và [implementation status](../docs/enterprise-os/IMPLEMENTATION_STATUS.md).
 
 | TIP | Deliverable | Depends | Gate chính |
 |---|---|---|---|
@@ -111,6 +310,63 @@ TIP-002 Platform scaffold ───────┬──────► TIP-003 
 | TIP-051 ✅ | Thu hẹp quyền ưu tiên của bản ghi định nghĩa thực thể: `plan_query` nạp bản ghi định nghĩa của mọi thực thể cho MỌI intent, retrieval dành sẵn chỗ đầu bằng chứng cho chúng bất kể điểm, nên câu hỏi nào nhắc RtR cũng bị trả lời bằng `L3F.ENT.001`. Guard một dòng: chỉ ưu tiên khi intent là `definition` hoặc `enumeration` | 049, 050 | DONE 21/09 có số liệu: 6 PASS → 12 PASS trên 16 case, `L3F.ENT.001` biến mất khỏi mọi câu trả lời, MS-009 đến MS-012 của TIP-049 chuyển xanh **với điều kiện trích dẫn được siết**, tức bộ số master lần đầu tới được người dùng. Không sửa `plan_query` nên `QueryPlan.digest` giữ nguyên |
 | TIP-052 ◐ | Fact nguyên tử bị cổng nhắc-tên-thực-thể làm cho vô hình: `candidate_relevance_score` loại mọi ứng viên không nhắc tên thực thể khi câu hỏi có nhắc, mà fact curate theo kỷ luật TIP-046/048/049 thì không lặp tên công ty vì thừa. 052 cứu ứng viên không nhắc ai mà trúng đủ từ; 052.1 nhân thưởng nhắc-tên với độ trùng chủ đề | 051 | PARTIAL 21/09. Đã kéo `L3F.INF.014` từ **bị loại hẳn** lên hạng 3 thua 0,029 điểm, nhưng chưa lật được thứ hạng nên bảng vẫn 12 PASS. **Nguyên nhân cuối đã đo trên chỉ mục thật** (`eval/tip050/live_rank.py`): bản ghi chứa câu trả lời có `ts_rank_cd` cao nhất bảng (0,90 so với 0,50) mà vẫn thua, vì điểm từ vựng chỉ vào công thức qua số hạng `min(lex,1)*0.1`, đáng 0,04 điểm, trong khi thưởng nhắc tên và độ trùng từ trên chunk dài chiếm phần còn lại. Hệ thống không có khái niệm từ hiếm: `argon2id` chỉ có trong một bản ghi của cả kho nhưng được tính ngang `nguoi` và `dung`. Chuyển TIP-053 |
 | TIP-053 ✓ | Corpus-aware IDF: term frequency bất biến theo generation, backfill migration, weighted coverage và rare exact anchor; không quét corpus theo request, không thay ACL/DLP/grounding | 052 | DONE 30/09 · `L3F.INF.014` từ hạng 3/vắng top 12 lên **hạng 1** ở cả hai câu Argon2id; SQL stats 0,529 ms; 750 unit/conditional + 73 integration PASS; live retrieval 15/18, ba gap còn lại là cùng semantic-bridge case. Đã gỡ blocker retrieval của TIP-048/TIP-050; `/ask` recertification vẫn cần phê duyệt external riêng |
+| TIP-054 ◇ | Enterprise Knowledge & Action OS: approved Blueprint, staged context/artifact/Action Kernel/MCP/recovery | 053 (`0e88f48588dc`) | 07/10 · **.1–.3 LOCAL VERIFIED / .4a DBOS SELECTED / .4b-R7 PARTIAL, NOT READY**: current content fingerprint `56fa5d71fc61` (not Git SHA), approved two physical leases/three fresh logical transactions implemented. Scoped416 unique (324SQL+92pure) PASS; Root16 overlapping reruns PASS,400 bindings/lint/types/import0. All386 old+30 new IDs active;29 originals archived before five approved modules/11 observation and final-query fault-premise adaptations. Mandatory OFF overall FAIL12PASS/4FAIL: all concurrency50 cells fail, admission p95842ms>500, submit4/status1/cancel3 timeouts, downstream96/100 samples. Diagnostic ON FAIL10PASS/6FAIL,19timeouts. Serial unpaired results do not prove causal gain. TLC006FAIL P1,007STOPPED/UNVERIFIED, final acceptance6/8. Broad/native/build/migration-cycle/restore certification STOPPED. R6 diagnosis and R7 approved comparator closed; further implementation/load requires separate approval. Historical proofs retained; final bindings/history/resources PASS, exact fixture idle/retained, cleanup not authorized. Schema0019/uncommitted/defaultOFF, no serving/provider/rebuild/deploy activation. .5 remains blocked;32 requirements/96 scenarios not globally certified. Evidence: `docs/enterprise-os/`, `vibecode_v2/TIP-054.4b-R7_VERIFY_REPORT.md` |
+
+Diagnostic follow-on **TIP-054.4b-R6 CLOSED**:6/6 offline criteria,12 analyzer
+selfchecks, four original gate populations/ranks reproduced and independent/
+personal byte-identical output repeats. Product624f remains NOT READY/OFF.
+28 audited-COMMIT submissions cancel at final reacquire before view SQL;4 more
+cancel later in view. Next separately approved design proposal is two physical
+leases/three fresh TXs; no implementation/serving/load authorized by diagnosis.
+See [R6 Verify/design](TIP-054.4b-R6_VERIFY_AND_DESIGN_REPORT.md).
+
+Approved follow-on **TIP-054.4b-R7 CLOSED / NOT READY**: two-lease comparator
+implemented and scoped correctness verified, mandatory unchanged OFF failed.
+The R6 diagnosis itself did not authorize implementation; R7's separate approval
+did. Current56fa/416 unique PASS+Root16 overlap; acceptance6/8, latencyP1 open,
+broader certification unverified. R8 separately approved offline residual
+contention diagnosis is now closed below; no automatic load/tuning or .5 activation.
+See [R7 final Verify](TIP-054.4b-R7_VERIFY_REPORT.md).
+
+Diagnostic follow-on **TIP-054.4b-R8 CLOSED / OFFLINE VERIFIED6/6**:277 selected
+input hashes,20 declared control groups (21 primitive checks), five deterministic
+outputs independently/personally reproduced;64 original cells,3060 ON intervals
+and ALL19 candidate ON failures retained. Whole56fa product/400 bindings/73
+archives/earlier raw-analysis seals unchanged; no runtime or new load. Admission50
+tail6 acquisition799–1225ms versus closedholds126–159ms supports next same-candidate
+boundary telemetry proposal R9; no pure-queue/cleanup/sole-cause/gain claim.
+R7 latency P1/defaultOFF/.5 block remain. Homeowner approved bounded R9 via
+“tiếp tục”: new observer/proofs authored and source-reviewed, but pre-SQL blocked
+before tests by full runner `/tmp`; isolated exact-cache maintenance needs approval.
+NoSQL/load/personalSQL and no core/serving change. See
+[R8 Verify/design](TIP-054.4b-R8_VERIFY_AND_DESIGN_REPORT.md) and
+[R9 TIP](TIP-054.4b-R9_POOL_BOUNDARY_FALSIFICATION.md),
+[R9 Verify](TIP-054.4b-R9_VERIFY_REPORT.md).
+
+Approved resumption **TIP-054.4b-R9M COMPLETE / DIAGNOSTIC VERIFIED** supersedes
+the initial R9 runtime STOP above: exact six mypy caches removed, no-cache typing
+and strict collection normalization reviewed;26 unique proofs PASS (16pure/10SQL)
+plus Root four overlapping SQL controls. Exactly one ON integrity/chain PASS but
+latency FAIL4/16cells/133errors; mandatory unchanged OFF FAIL12/16cells/14errors,
+all concurrency50 cells fail (admission p95 1060.570ms>500). Single OFF1/10/25
+population PASS is not stable certification. Final56fa/400/73archives/history/
+current8/idle fixture preserved. Diagnostic acceptance4/4M and8/8PBT, not release;
+defaultOFF/.5 block remain. Next proposal only: offline critical-path/cohort and
+observer-cost falsification, no new runtime or product tuning authority.
+[R9M Verify](TIP-054.4b-R9M_VERIFY_REPORT.md).
+
+Diagnostic follow-on **TIP-054.4b-R10 CLOSED / OFFLINE VERIFIED6/6**:55 fixed inputs
+(48,484,234bytes),20 declared offline groups PASS; actual Technical/Reviewer/Root
+analyses produce six byte-identical outputs. All2974 samples/147 errors/32 original
+cells and missing216/10 retained; all1384 ON recorded-window partitions checked
+independently/from raw and personally. Product56fa/old400/73/current8/frozen3/
+7666raw/92historicalanalysis final seals PASS. OFF internals unobserved, partial
+costs not SLA corrections, sole cause UNRESOLVED. No runtime/new load/core change.
+Original mandatory OFF failure/defaultOFF/.5 block persist. One next proposal:
+bounded unchanged-product observer-overhead measurement comparator; buffer only
+new diagnostic records, no silent reference-helper timing change. Separate
+implementation/load approval required.
+[R10 Verify/design](TIP-054.4b-R10_VERIFY_AND_DESIGN_REPORT.md).
 
 ## Audit trail rule
 

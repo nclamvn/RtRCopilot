@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="2.843" timestamp="2026-10-09T15:40:22.248295+00:00" hostname="cb30f7e2244c"><testcase classname="" name="test_captured_load_envelope_without_sql" time="2.807" /></testsuite></testsuites>

@@ -1,0 +1,91 @@
+{
+  "actor": "Main",
+  "date": "2026-10-09",
+  "status": "CLOSED_SLA_FAILED",
+  "severity": "P1",
+  "scoped_criteria": {
+    "required": 6,
+    "verified": 5,
+    "failed": 1,
+    "missing": 0,
+    "deferred": 0,
+    "results": {
+      "R21-001": "PASS",
+      "R21-002": "PASS",
+      "R21-003": "PASS",
+      "R21-004": "FAIL_P1",
+      "R21-005": "PASS",
+      "R21-006": "PASS_HONEST_FAILED_OUTCOME_CAPTURE_REVIEW_PUBLICATION"
+    }
+  },
+  "unique_pre_tests": 7,
+  "pre_failure_error_skip": 0,
+  "pre_completed_drained_children": 10,
+  "http_campaigns": 1,
+  "observations": {
+    "requested": 1600,
+    "observed": 1440,
+    "successful": 1353,
+    "failed": 87,
+    "missing": 160,
+    "duplicates": 0,
+    "passing_cells": 10,
+    "required_cells": 16
+  },
+  "campaign_state": "CONSUMED_NO_RETRY",
+  "integrity": "PASS",
+  "qualification": "FAIL",
+  "source_binding_sha256": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc",
+  "sealed_evidence": {
+    "entries": 222,
+    "bytes": 1185952,
+    "sha256": "1cf5eaf9f88f03655b8d93a34c93bb75fb18f0e06f9bf54a489c06d8478bc756"
+  },
+  "source_evidence_checks_after_status_updates": {
+    "source": {
+      "chunk_id": "35a788",
+      "wall_time_seconds": 0.141798709,
+      "exit_code": 0,
+      "original_token_count": 4,
+      "output": "R21_PASS source\n"
+    },
+    "evidence": {
+      "chunk_id": "b6405f",
+      "wall_time_seconds": 0.000008542,
+      "exit_code": 0,
+      "original_token_count": 88,
+      "output": "{\n  \"seal_entries\": 222,\n  \"sealed_file_bytes\": 1185952,\n  \"seal_sha256\": \"1cf5eaf9f88f03655b8d93a34c93bb75fb18f0e06f9bf54a489c06d8478bc756\",\n  \"new_direct_source_pins\": 23,\n  \"old_r19_marker\": \"consumed bytes unchanged\",\n  \"new_r21_marker\": \"consumed retained\",\n  \"mutable_publication\": \"R21 status updates outside historical/source/evidence seals\"\n}\n"
+    }
+  },
+  "published": {
+    "vibecode_v2/TIP-054.4b-R21_VERIFY_REPORT.md": "070afa18ac1fbb64a837349fd265f65c901c4591407445a02a802523ad29449b",
+    "vibecode_v2/TIP-054.4b-R21_FINAL_RESULT_REVIEW.md": "4170df87118ff73d2fac1de2ff1d810b8cc6a656bc70be0aac02d1186201a45f",
+    "docs/enterprise-os/IMPLEMENTATION_STATUS.md": "bda05510252f67d9096d8d878027b47c8b1b3e5a872bba89189753beefb839f6",
+    "docs/enterprise-os/TASK_GRAPH.md": "047f886911928082ee0f6df9dfdbe77f90e08a6c1725679cd45d022772e6265a",
+    "vibecode_v2/03_TASK_GRAPH.md": "b52fb3cc7ff9417c2e4b5f490567ed6fe5c75fd9d2a48e87b11b5dbfad31a522"
+  },
+  "boundaries": {
+    "whole_candidate": "NOT_READY",
+    "serving_executor": "OFF",
+    "exe009": "OPEN_P1",
+    "tip054_5": "BLOCKED",
+    "external": false,
+    "git_writes": false,
+    "rebuild": false,
+    "production": false,
+    "native_worker": false
+  },
+  "cleanup": {
+    "owned_databases_removed": [
+      "rtr_tip054_r21_engine_e1",
+      "rtr_tip054_r21_local_e1"
+    ],
+    "fresh_target_catalog_empty": true,
+    "fixture_retained_unchanged": true,
+    "host_free_gib": 74,
+    "pg_free_kib": 1476564,
+    "image_prune_reclaimed_bytes": 0,
+    "containers_or_volumes_removed": false
+  },
+  "next": "Proposed R22 bounded offline admission/submit/cancel tail diagnosis on retained evidence before narrow product design; no new runtime allowance"
+}

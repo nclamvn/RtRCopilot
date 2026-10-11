@@ -1,0 +1,48 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html",
+      "retrieved_at": "2026-10-06T02:15:31.914602+00:00",
+      "source_family": "MCP",
+      "status": "failed"
+    },
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks",
+      "retrieved_at": "2026-10-06T02:15:31.918860+00:00",
+      "source_family": "MCP",
+      "status": "failed"
+    },
+    {
+      "bytes": 166730,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 31328,
+      "read_view_sha256": "8dc77625dbca8963511bf05c7cceaeb15b69960e17f9d7dd8b6ea4cb5c44c6e7",
+      "requested_url": "https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html",
+      "resolved_url": "https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html",
+      "retrieved_at": "2026-10-06T02:15:51.964650+00:00",
+      "sha256": "fb371bba216dc2af0aa3cf3684a268c91c930661b90f752fa1dbfabb1d8ef7e4",
+      "snapshot": "mcp-tasks.html",
+      "source_family": "MCP",
+      "status": "usable"
+    }
+  ],
+  "entity": "MCP tasks",
+  "id": "mcp-tasks",
+  "selected": {
+    "bytes": 166730,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 31328,
+    "read_view_sha256": "8dc77625dbca8963511bf05c7cceaeb15b69960e17f9d7dd8b6ea4cb5c44c6e7",
+    "requested_url": "https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html",
+    "resolved_url": "https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html",
+    "retrieved_at": "2026-10-06T02:15:51.964650+00:00",
+    "sha256": "fb371bba216dc2af0aa3cf3684a268c91c930661b90f752fa1dbfabb1d8ef7e4",
+    "snapshot": "mcp-tasks.html",
+    "source_family": "MCP",
+    "status": "usable"
+  }
+}

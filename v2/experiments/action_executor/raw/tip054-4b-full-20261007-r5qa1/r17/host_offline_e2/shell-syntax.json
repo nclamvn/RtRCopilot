@@ -1,0 +1,11 @@
+{
+  "phase": "shell-syntax",
+  "source_binding": "v2/experiments/action_executor/r17/source-binding-e2.sha256",
+  "actual": {
+    "chunk_id": "20790f",
+    "wall_time_seconds": 0.000007625,
+    "exit_code": 0,
+    "original_token_count": 0,
+    "output": ""
+  }
+}

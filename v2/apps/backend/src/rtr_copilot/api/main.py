@@ -15,10 +15,13 @@ from pydantic import BaseModel
 from redis.asyncio import Redis
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from rtr_copilot.actions.api import router as actions_router
+from rtr_copilot.actions.execution_api import router as execution_router
 from rtr_copilot.api.health import router as health_router
 from rtr_copilot.auth.api import dev_router as auth_dev_router
 from rtr_copilot.auth.api import router as auth_router
 from rtr_copilot.config import get_settings
+from rtr_copilot.context.api import router as context_router
 from rtr_copilot.documents.api import router as documents_router
 from rtr_copilot.enterprise.api import router as enterprise_router
 from rtr_copilot.governance.admin_api import router as governance_admin_router
@@ -60,6 +63,9 @@ app.include_router(governance_admin_router)
 app.include_router(audit_export_router)
 app.include_router(research_router)
 app.include_router(intelligence_router)
+app.include_router(context_router)
+app.include_router(actions_router)
+app.include_router(execution_router)
 if get_settings().app_env in {"development", "test"} and get_settings().dev_oidc_enabled:
     app.include_router(auth_dev_router)
 

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="8" time="1.201" timestamp="2026-10-10T15:45:08.309972+07:00" hostname="MacBookPro.lan"><testcase classname="test_integration" name="test_exact_driver_journal_summary_final_and_known_oracle" time="0.733" /><testcase classname="test_integration" name="test_full_pure_fixture_copy_temp_and_cached_native_denial" time="0.007"><failure message="KeyError: 'v2/apps/backend/src/rtr_copilot/sot/package.py'">owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-f12f06d9')
+
+    def test_full_pure_fixture_copy_temp_and_cached_native_denial(owned: Path) -&gt; None:
+        root = owned / "fixture"
+        broker = Broker(root)
+&gt;       package = signed_fixture(broker, broker.path("fixture", "fixture"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+v2/experiments/action_executor/r27/broker/test_integration.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+v2/experiments/action_executor/r27/broker/integration.py:323: in signed_fixture
+    source(dependency)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'v2/apps/backend/src/rtr_copilot/sot/package.py'
+
+    def source(name: str) -&gt; tuple[str, ast.Module]:
+        path = ROOT / name
+        if any(item.is_symlink() for item in (path, *path.parents)):
+            raise ValueError("source symlink")
+        raw = path.read_bytes()
+&gt;       if hashlib.sha256(raw).hexdigest() != pins()[name]:
+                                              ^^^^^^^^^^^^
+E       KeyError: 'v2/apps/backend/src/rtr_copilot/sot/package.py'
+
+v2/experiments/action_executor/r27/broker/integration.py:70: KeyError</failure></testcase><testcase classname="test_integration" name="test_original_shell_copy_literals_and_actual_audit_restoration" time="0.037" /><testcase classname="test_integration" name="test_scoped_fault_stale_foreign_and_close_restore_primary" time="0.022"><failure message="AssertionError: assert (RuntimeError('primary') is RuntimeError('primary') and PacketError('sticky incomplete epoch') is OSError('handler close'))&#10; +  where RuntimeError('primary') = &lt;ExceptionInfo RuntimeError('primary') tblen=1&gt;.value&#10; +  and   PacketError('sticky incomplete epoch') = RuntimeError('primary').__cause__">owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-txkqbf8o')
+
+    def test_scoped_fault_stale_foreign_and_close_restore_primary(owned: Path) -&gt; None:
+        for fault in ("encode", "type", "stale", "foreign", "source", "close", "emit", "nested"):
+            root = owned / fault
+            broker = Broker(root)
+            stdout, cache = sys.stdout, vars(audit_logger)["_cache"]
+            if fault == "source":
+                prep_error = OSError("source preparation")
+                with patch("integration.source", side_effect=prep_error), pytest.raises(OSError) as prep_caught:
+                    Producers(broker)
+                assert prep_caught.value is prep_error
+            elif fault == "close":
+                original, cleanup = RuntimeError("primary"), OSError("handler close")
+                with patch.object(RaisingHandler, "close", side_effect=cleanup), pytest.raises(RuntimeError) as caught:
+                    with output_scope(broker):
+                        raise original
+&gt;               assert caught.value is original and original.__cause__ is cleanup
+E               AssertionError: assert (RuntimeError('primary') is RuntimeError('primary') and PacketError('sticky incomplete epoch') is OSError('handler close'))
+E                +  where RuntimeError('primary') = &lt;ExceptionInfo RuntimeError('primary') tblen=1&gt;.value
+E                +  and   PacketError('sticky incomplete epoch') = RuntimeError('primary').__cause__
+
+v2/experiments/action_executor/r27/broker/test_integration.py:140: AssertionError</failure></testcase><testcase classname="test_integration" name="test_exact_owned_child_whole_eof_and_no_root_delivery" time="0.044" /><testcase classname="test_integration" name="test_child_repeated_cancel_one_deadline_and_overflow" time="0.014"><failure message="KeyError: 'pid'">owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-3ql5118g')
+
+    def test_child_repeated_cancel_one_deadline_and_overflow(owned: Path) -&gt; None:
+        root = owned / "cancel"
+        broker = Broker(root)
+        async def cancel() -&gt; asyncio.CancelledError:
+            started = asyncio.Event()
+            task = asyncio.create_task(owned_child(broker, "delay", started))
+            await started.wait()
+            task.cancel("first cancellation")
+            await asyncio.sleep(0)
+            task.cancel("repeated cancellation")
+            try:
+                await task
+            except asyncio.CancelledError as error:
+                return error
+            raise AssertionError("cancellation required")
+        error = asyncio.run(cancel())
+        assert error.args == ("first cancellation",)
+        owner = json.loads((root / "files/supervisor/owner.json").read_bytes())
+        process = json.loads((root / "files/supervisor/process.json").read_bytes())
+        assert owner["cleanup_deadline"] is not None and process["owner"]["cleanup_deadline"] == owner["cleanup_deadline"]
+        # Original cleanup writer admits one owner overwrite; no renewed deadline/second write.
+        segments = broker._entries["supervisor/owner.json"]["segments"]
+        assert sum(cast(int, row[1]) - cast(int, row[0]) for row in segments) == 2
+        with pytest.raises(ProcessLookupError):
+&gt;           os.kill(owner["pid"], 0)
+                    ^^^^^^^^^^^^
+E           KeyError: 'pid'
+
+v2/experiments/action_executor/r27/broker/test_integration.py:238: KeyError</failure></testcase><testcase classname="test_integration" name="test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap" time="0.021" /><testcase classname="test_integration" name="test_frozen_preflight_readonly_fresh_namespace_untrusted_grant_deny" time="0.081" /></testsuite></testsuites>

@@ -1,0 +1,77 @@
+{
+  "actor": "Main",
+  "date": "2026-10-09",
+  "status": "BOOTSTRAP_VERIFIED_NOT_CANDIDATE_QUALIFICATION",
+  "binding_sha256": "9ee11e8257402c9038abcc8d07d5b4e3d9a09efa146a1e62b2f52702a65333ae",
+  "unique_tests": 8,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "supervised_groups": 12,
+  "raw_bytes": 24513,
+  "run_exit": {
+    "chunk_id": "20e07e",
+    "wall_time_seconds": 0.000008334,
+    "exit_code": 0,
+    "original_token_count": 0,
+    "output": ""
+  },
+  "personal_raw_analysis": {
+    "chunk_id": "bf06d7",
+    "wall_time_seconds": 0.000021292,
+    "exit_code": 0,
+    "original_token_count": 1101,
+    "output": "{\n  \"binding_sha256\": \"9ee11e8257402c9038abcc8d07d5b4e3d9a09efa146a1e62b2f52702a65333ae\",\n  \"processes\": [\n    {\n      \"label\": \"syntax\",\n      \"wall_seconds\": 0.12176999999792315,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"ruff\",\n      \"wall_seconds\": 0.029581708018667996,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"format\",\n      \"wall_seconds\": 0.030776833009440452,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"collection\",\n      \"wall_seconds\": 1.080973832984455,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"inventory\",\n      \"wall_seconds\": 0.12433516600867733,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"offline\",\n      \"wall_seconds\": 1.2886166259995662,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"offline-xml\",\n      \"wall_seconds\": 0.1623039170226548,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"negative\",\n      \"wall_seconds\": 1.6741150419984479,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"negative-xml\",\n      \"wall_seconds\": 0.11854150000726804,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"migration\",\n      \"wall_seconds\": 1.2427493759896606,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"positive\",\n      \"wall_seconds\": 4.889402419008547,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    },\n    {\n      \"label\": \"positive-xml\",\n      \"wall_seconds\": 0.12752004200592637,\n      \"exit\": 0,\n      \"reason\": \"completed\",\n      \"group_drained\": true\n    }\n  ],\n  \"junit_suites\": [\n    {\n      \"group\": \"offline\",\n      \"name\": \"pytest\",\n      \"errors\": \"0\",\n      \"failures\": \"0\",\n      \"skipped\": \"0\",\n      \"tests\": \"6\",\n      \"time\": \"0.614\",\n      \"timestamp\": \"2026-10-09T15:09:04.295056+00:00\",\n      \"hostname\": \"cb30f7e2244c\"\n    },\n    {\n      \"group\": \"negative\",\n      \"name\": \"pytest\",\n      \"errors\": \"0\",\n      \"failures\": \"0\",\n      \"skipped\": \"0\",\n      \"tests\": \"1\",\n      \"time\": \"0.777\",\n      \"timestamp\": \"2026-10-09T15:09:07.264780+00:00\",\n      \"hostname\": \"cb30f7e2244c\"\n    },\n    {\n      \"group\": \"positive\",\n      \"name\": \"pytest\",\n      \"errors\": \"0\",\n      \"failures\": \"0\",\n      \"skipped\": \"0\",\n      \"tests\": \"1\",\n      \"time\": \"3.455\",\n      \"timestamp\": \"2026-10-09T15:09:12.955378+00:00\",\n      \"hostname\": \"cb30f7e2244c\"\n    }\n  ],\n  \"unique_cases\": [\n    [\n      \".EnvironmentControls\",\n      \"test_exact_domain_environment_and_import_order\"\n    ],\n    [\n      \".EnvironmentControls\",\n      \"test_exact_selection_records_and_zero_skip_conservation\"\n    ],\n    [\n      \".EnvironmentControls\",\n      \"test_missing_mismatch_and_unsafe_rejected_before_effects\"\n    ],\n    [\n      \".EnvironmentControls\",\n      \"test_owned_fixture_budget_cap_and_cleanup_contract\"\n    ],\n    [\n      \".EnvironmentControls\",\n      \"test_protected_source_raw_marker_and_drift_rejection\"\n    ],\n    [\n      \".EnvironmentControls\",\n      \"test_seed_only_scope_and_truthful_readiness_ledger\"\n    ],\n    [\n      \"\",\n      \"test_missing_integration_import_capture_rejected_without_sql\"\n    ],\n    [\n      \"\",\n      \"test_same_unchanged_dependency_chain_owned_seed_bootstrap\"\n    ]\n  ],\n  \"codes\": [\n    \"syntax 0\",\n    \"ruff 0\",\n    \"format 0\",\n    \"collection 0\",\n    \"inventory 0\",\n    \"offline 0\",\n    \"offline-xml 0\",\n    \"negative 0\",\n    \"negative-xml 0\",\n    \"migration 0\",\n    \"positive 0\",\n    \"positive-xml 0\",\n    \"owned_drop 0\",\n    \"bootstrap exit 0\"\n  ],\n  \"raw_bytes\": 24513,\n  \"database_closure\": \"final_absence 0\\n\",\n  \"source_after\": \"R20_PASS source\\n\",\n  \"fixture_after\": \"R20_PASS fixture\\n\",\n  \"pg_final\": \"Filesystem     1K-blocks    Used Available Use% Mounted on\\ntmpfs            3145728 1669132   1476596  54% /var/lib/postgresql/data\\n\",\n  \"host_final\": \"Filesystem     1024-blocks      Used Available Capacity iused     ifree %iused  Mounted on\\n/dev/disk3s1s1   482797652  13339796  80181772    15%  484019 801817720    0%   /\\n\"\n}\n"
+  },
+  "closure": {
+    "source": {
+      "chunk_id": "b9f937",
+      "wall_time_seconds": 0.142028417,
+      "exit_code": 0,
+      "original_token_count": 4,
+      "output": "R20_PASS source\n"
+    },
+    "fixture": {
+      "chunk_id": "bd8011",
+      "wall_time_seconds": 0.165242583,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "R18_ADMISSION_PASS fixture\n"
+    },
+    "catalog": {
+      "chunk_id": "7ddd76",
+      "wall_time_seconds": 0.000009208,
+      "exit_code": 0,
+      "original_token_count": 1,
+      "output": "0\n"
+    },
+    "prune": {
+      "chunk_id": "d30dd1",
+      "wall_time_seconds": 0.0000085,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "Total reclaimed space: 0B\n"
+    },
+    "head": {
+      "chunk_id": "ddc97e",
+      "wall_time_seconds": 0.0000085,
+      "exit_code": 0,
+      "original_token_count": 48,
+      "output": "0e88f48588dc3228f1ae9eca7a7597d96589af8b\nFilesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s1s1   460Gi    13Gi    76Gi    15%    484k  802M    0%   /\n"
+    }
+  },
+  "boundaries": {
+    "serving_executor": "OFF",
+    "candidate": "NOT_READY",
+    "tip054_5": "BLOCKED",
+    "exe009": "OPEN",
+    "HTTP_load": false,
+    "provider": false,
+    "native": false,
+    "engine_database": false,
+    "git_writes": false,
+    "rebuild": false,
+    "r19_retry_or_marker_reset": false
+  },
+  "warnings": "Positive probe preserves five third-party SWIG deprecation warnings plus stderr warning; no failures or assertion relaxation."
+}

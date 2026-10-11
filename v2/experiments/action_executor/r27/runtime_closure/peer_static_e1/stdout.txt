@@ -1,0 +1,4 @@
+v2/experiments/action_executor/r27/runtime_closure/logging_seam.py:160: error: Non-overlapping identity check (left operand type: "TextIO", right operand type: "MigrationStream")  [comparison-overlap]
+v2/experiments/action_executor/r27/runtime_closure/logging_seam.py:176: error: Incompatible types in assignment (expression has type "Handler", variable has type "StreamHandler[TextIO]")  [assignment]
+v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py:54: error: Item "None" of "Element[str] | None" has no attribute "attrib"  [union-attr]
+Found 3 errors in 2 files (checked 4 source files)

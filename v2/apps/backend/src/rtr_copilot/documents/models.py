@@ -182,6 +182,9 @@ class RenderStatus(StrictModel):
     version_id: uuid.UUID | None = None
     checksum: str | None = None
     error_code: str | None = None
+    attempt: int = Field(default=0, ge=0)
+    max_attempts: int = Field(default=3, ge=1, le=20)
+    retryable: bool = False
 
 
 class DecisionRequest(StrictModel):

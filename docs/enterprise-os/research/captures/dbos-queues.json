@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://docs.dbos.dev/python/tutorials/queue-tutorial",
+      "retrieved_at": "2026-10-06T02:15:31.937452+00:00",
+      "source_family": "DBOS",
+      "status": "failed"
+    },
+    {
+      "bytes": 138746,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 17663,
+      "read_view_sha256": "bd239a03ff139094d3bb179209423833327624a99d7e748f505d85711b597837",
+      "requested_url": "https://docs.dbos.dev/python/tutorials/queue-tutorial",
+      "resolved_url": "https://docs.dbos.dev/python/tutorials/queue-tutorial",
+      "retrieved_at": "2026-10-06T02:15:54.937821+00:00",
+      "sha256": "4f8f08c6cb3d4ef37f663aef19e5549df346aa27597173b78d294746664abf37",
+      "snapshot": "dbos-queues.html",
+      "source_family": "DBOS",
+      "status": "usable"
+    }
+  ],
+  "entity": "DBOS queues",
+  "id": "dbos-queues",
+  "selected": {
+    "bytes": 138746,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 17663,
+    "read_view_sha256": "bd239a03ff139094d3bb179209423833327624a99d7e748f505d85711b597837",
+    "requested_url": "https://docs.dbos.dev/python/tutorials/queue-tutorial",
+    "resolved_url": "https://docs.dbos.dev/python/tutorials/queue-tutorial",
+    "retrieved_at": "2026-10-06T02:15:54.937821+00:00",
+    "sha256": "4f8f08c6cb3d4ef37f663aef19e5549df346aa27597173b78d294746664abf37",
+    "snapshot": "dbos-queues.html",
+    "source_family": "DBOS",
+    "status": "usable"
+  }
+}

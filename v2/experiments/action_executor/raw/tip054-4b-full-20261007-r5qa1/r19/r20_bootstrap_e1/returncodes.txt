@@ -1,0 +1,14 @@
+syntax 0
+ruff 0
+format 0
+collection 0
+inventory 0
+offline 0
+offline-xml 0
+negative 0
+negative-xml 0
+migration 0
+positive 0
+positive-xml 0
+owned_drop 0
+bootstrap exit 0

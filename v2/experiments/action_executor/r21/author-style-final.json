@@ -1,0 +1,71 @@
+{
+  "kind": "final unfrozen author style feedback",
+  "records": [
+    {
+      "name": "qualification.py",
+      "mode": "check --output-format=json",
+      "result": {
+        "chunk_id": "85003e",
+        "wall_time_seconds": 0.000008834,
+        "exit_code": 0,
+        "original_token_count": 1,
+        "output": "[]"
+      }
+    },
+    {
+      "name": "qualification.py",
+      "mode": "format --check",
+      "result": {
+        "chunk_id": "a3dff7",
+        "wall_time_seconds": 0.000007667,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "name": "test_r21_offline.py",
+      "mode": "check --output-format=json",
+      "result": {
+        "chunk_id": "2bfe78",
+        "wall_time_seconds": 0.000008542,
+        "exit_code": 0,
+        "original_token_count": 1,
+        "output": "[]"
+      }
+    },
+    {
+      "name": "test_r21_offline.py",
+      "mode": "format --check",
+      "result": {
+        "chunk_id": "f98978",
+        "wall_time_seconds": 0.000007584,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "name": "test_r21_envelope.py",
+      "mode": "check --output-format=json",
+      "result": {
+        "chunk_id": "ed1325",
+        "wall_time_seconds": 0.000011,
+        "exit_code": 0,
+        "original_token_count": 1,
+        "output": "[]"
+      }
+    },
+    {
+      "name": "test_r21_envelope.py",
+      "mode": "format --check",
+      "result": {
+        "chunk_id": "ed5284",
+        "wall_time_seconds": 0.000008,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ]
+}

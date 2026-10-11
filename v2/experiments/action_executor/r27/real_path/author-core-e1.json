@@ -1,0 +1,11 @@
+{
+  "actual_tool_chunk": "047f5c",
+  "exit_code": 1,
+  "passed": 1,
+  "failed": 7,
+  "warnings": 2,
+  "seconds_pytest": 0.43,
+  "observed_failure": "OSError: AF_UNIX path too long before child spawn; chmod-injection case saw same earlier bind failure",
+  "full_output": "Retained actual tool chunk 047f5c; no inferred IPC proof or host-cause generalization",
+  "tested_source": "history/core-e1/*.original"
+}

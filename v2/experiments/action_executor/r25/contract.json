@@ -1,0 +1,655 @@
+{
+  "schema": "R25-proposed-envelope-v1",
+  "cap_bytes": 10485760,
+  "record_header_bytes": 10,
+  "record_suffix_bytes": 1,
+  "close_bytes": 16,
+  "final_bytes": 20,
+  "terminal_reserve_bytes": 340,
+  "actual_capture_admission": "HOLD",
+  "adoption": "NOT AUTHORIZED; model proposal only",
+  "boundary": "One exclusive future epoch: all HTTP record copies, direct/outer/sibling/terminal streams and live-file writes share one10MiB aggregate. PRE separately capped10MiB, never consumes or proves HTTP fit. No uncapped side channels or extra physical copies; each copy/write charged. No refunds.",
+  "families": [
+    {
+      "id": "frozen_copies",
+      "code": 1,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": 5646,
+      "current_classification": "fixed",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 44,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/source-binding-e1.json",
+          "line": 1,
+          "sha256": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/contract.json",
+          "line": 1,
+          "sha256": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 2,
+          "max_payload_bytes": 65536
+        }
+      ]
+    },
+    {
+      "id": "literal_controls",
+      "code": 2,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": 283,
+      "current_classification": "fixed",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r/run_phase_baseline.py",
+          "line": 26,
+          "sha256": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 1,
+          "max_payload_bytes": 512
+        }
+      ]
+    },
+    {
+      "id": "literal_scope",
+      "code": 3,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": 117,
+      "current_classification": "fixed",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 196,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 1,
+          "max_payload_bytes": 256
+        }
+      ]
+    },
+    {
+      "id": "launch_review",
+      "code": 4,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "conditional",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 46,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 131,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 228,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 3,
+          "max_payload_bytes": 1024
+        }
+      ]
+    },
+    {
+      "id": "journal",
+      "code": 5,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "conditional",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 39,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        },
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 54,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/qualification.py",
+          "line": 216,
+          "sha256": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 3200,
+          "max_payload_bytes": 512
+        }
+      ]
+    },
+    {
+      "id": "final_samples",
+      "code": 6,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "conditional",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 101,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 1,
+          "max_payload_bytes": 2097152
+        }
+      ]
+    },
+    {
+      "id": "summary_stdout",
+      "code": 7,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "conditional",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 87,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        },
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 96,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 3,
+          "max_payload_bytes": 16384
+        }
+      ]
+    },
+    {
+      "id": "load_stderr",
+      "code": 8,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "unknown",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 106,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        },
+        {
+          "path": "v2/apps/backend/src/rtr_copilot/api/main.py",
+          "line": 88,
+          "sha256": "a3a8f760b93a6804487eb4fdc4411537ee5ff500113651f273c4ee93cea9569b"
+        },
+        {
+          "path": "v2/apps/backend/src/rtr_copilot/auth/audit.py",
+          "line": 27,
+          "sha256": "13e3da023c2b886725c6fa0270789c6297b58647dbcd8949ef5ad7474fe0fa8e"
+        },
+        {
+          "path": "v2/apps/backend/src/rtr_copilot/repositories/audit.py",
+          "line": 242,
+          "sha256": "ed2b90e2e8e24fcb99efc0ccbb2263397c372a920bc719173674e9146e45ec8a"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 4096,
+          "max_payload_bytes": 512
+        }
+      ]
+    },
+    {
+      "id": "migration_streams",
+      "code": 9,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "unknown",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 191,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 106,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 512,
+          "max_payload_bytes": 512
+        }
+      ]
+    },
+    {
+      "id": "owner_process",
+      "code": 10,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "conditional",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 113,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 163,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 76,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 8,
+          "max_payload_bytes": 1024
+        }
+      ]
+    },
+    {
+      "id": "supervisor_stop",
+      "code": 11,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "unknown",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 64,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 133,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/bounded.py",
+          "line": 181,
+          "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 64,
+          "max_payload_bytes": 1024
+        }
+      ]
+    },
+    {
+      "id": "source_cap_child",
+      "code": 12,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "conditional",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 101,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 127,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 364,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 397,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        },
+        {
+          "path": "v2/experiments/action_executor/r19/qualification.py",
+          "line": 177,
+          "sha256": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 32,
+          "max_payload_bytes": 2048
+        }
+      ]
+    },
+    {
+      "id": "fixture",
+      "code": 13,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "unknown",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 57,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 119,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 102,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r18/gate.py",
+          "line": 409,
+          "sha256": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 8,
+          "max_payload_bytes": 8192
+        }
+      ]
+    },
+    {
+      "id": "database_admin",
+      "code": 14,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "unknown",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 55,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 81,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 179,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 202,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 104,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 64,
+          "max_payload_bytes": 2048
+        }
+      ]
+    },
+    {
+      "id": "disk",
+      "code": 15,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "unknown",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 90,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 8,
+          "max_payload_bytes": 4096
+        }
+      ]
+    },
+    {
+      "id": "reconstruction",
+      "code": 16,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "conditional",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 208,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 307,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/qualification.py",
+          "line": 387,
+          "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 2,
+          "max_payload_bytes": 65536
+        }
+      ]
+    },
+    {
+      "id": "returncodes",
+      "code": 17,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "conditional",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 86,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 99,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 110,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 138,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 206,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 32,
+          "max_payload_bytes": 256
+        }
+      ]
+    },
+    {
+      "id": "ephemeral",
+      "code": 18,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "unknown",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 31,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 43,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/latency_probe.py",
+          "line": 46,
+          "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+        },
+        {
+          "path": "v2/apps/backend/tests/sot_fixtures.py",
+          "line": 148,
+          "sha256": "524e0f00a30b13b0d8844070556f0713ee9e4b7e22e72ac6b16bf9c8e8ccaacd"
+        },
+        {
+          "path": "v2/apps/backend/tests/test_context_memory_integration.py",
+          "line": 98,
+          "sha256": "4cae35ed6a550eb03f3cbbe85c0e294ea32ef76970de2ac8f2d2175c570b0425"
+        },
+        {
+          "path": "v2/apps/backend/tests/test_tip054_baseline_integration.py",
+          "line": 52,
+          "sha256": "9f459c198ecfe749bd738574ff9b296c27a6ad22c13cea24a1a3dfbeee162181"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 16,
+          "max_payload_bytes": 65536
+        }
+      ]
+    },
+    {
+      "id": "future_observer",
+      "code": 19,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "model",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r23/model.py",
+          "line": 1,
+          "sha256": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024"
+        },
+        {
+          "path": "v2/experiments/action_executor/r23/budget.json",
+          "line": 1,
+          "sha256": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 40000,
+          "max_payload_bytes": 32
+        },
+        {
+          "name": "framing",
+          "code": 2,
+          "max_records": 1,
+          "max_payload_bytes": 1810
+        }
+      ]
+    },
+    {
+      "id": "outer_transcript",
+      "code": 20,
+      "proposal": "NEW MODEL CONTRACT LIMIT, NOT CURRENT PRODUCER PROOF",
+      "current_source_max_bytes": null,
+      "current_classification": "unknown",
+      "witnesses": [
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 12,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        },
+        {
+          "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+          "line": 194,
+          "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+        }
+      ],
+      "variants": [
+        {
+          "name": "data",
+          "code": 1,
+          "max_records": 128,
+          "max_payload_bytes": 1024
+        }
+      ]
+    }
+  ]
+}

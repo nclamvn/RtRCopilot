@@ -1,0 +1,11 @@
+{
+  "actor": "Main",
+  "stage": "pre",
+  "binding_sha256": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc",
+  "source_review": "vibecode_v2/TIP-054.4b-R21_CODE_REVIEW_E1_REPORT.md",
+  "source_review_sha256": "17a8d29ee9adb55c37ecfafacd8bacd983861253591aaea5c19ef2f294ca85e1",
+  "main_static_record": "v2/experiments/action_executor/r21/main-style-e1.json",
+  "scope": "one fixed PRE root, seven unique identities, no SQL workload, no external, no rebuild, no serving executor activation",
+  "http_admitted": false,
+  "serving_executor": "OFF"
+}

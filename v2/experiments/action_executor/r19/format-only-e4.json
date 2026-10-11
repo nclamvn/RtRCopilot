@@ -1,0 +1,11 @@
+{
+  "actor": "Builder",
+  "scope": "Actual formatting AST equality before explicitly authorized archive/history pins; not tests",
+  "actual": {
+    "chunk_id": "72f194",
+    "wall_time_seconds": 0.000028667,
+    "exit_code": 0,
+    "original_token_count": 19,
+    "output": "{\"qualification.py\": true, \"bounded.py\": true, \"test_r19_offline.py\": true}\n"
+  }
+}

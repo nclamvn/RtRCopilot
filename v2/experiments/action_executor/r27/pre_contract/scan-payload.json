@@ -1,0 +1,7 @@
+{
+  "chunk_id": "302dda",
+  "wall_time_seconds": 0.021648167,
+  "exit_code": 0,
+  "original_token_count": 171,
+  "output": "{\n  \"contract_bytes\": 2108,\n  \"effects\": \"NONE; sourceguarded original rows and reconstruction pure calls only; no setUp, test, packet write or subprocess invoked\",\n  \"full\": {\n    \"controls\": 263,\n    \"largest_row_plus_LF\": 154,\n    \"rows\": 1600,\n    \"samples_JSON\": 235440,\n    \"summary\": 3453,\n    \"whole_samples_JSONL\": 233840\n  },\n  \"method_rows_sha\": \"a4eb4f2b8af8796896ddb3bd555b65c262803c2bc74a3395fc2df3f43e25b9e9\",\n  \"packet_method_sha\": \"ac8bea1a4966e13ed302a2871e6b3223a91d8f92b8a805be1bf1190d323ec7db\",\n  \"partial\": {\n    \"controls\": 263,\n    \"largest_row_plus_LF\": 152,\n    \"rows\": 4,\n    \"samples_JSON\": 582,\n    \"summary\": 3473,\n    \"whole_samples_JSONL\": 578\n  }\n}\n"
+}

@@ -1,0 +1,29 @@
+{
+  "commands": [
+    {
+      "cmd": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 MYPYPATH=v2/apps/backend/src:v2/experiments/action_executor/r27/real_path:v2/experiments/action_executor/r27/runtime_closure v2/apps/backend/.venv/bin/python -B -m mypy --strict --follow-imports=silent --cache-dir=/dev/null --no-incremental --config-file=v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/pre_contract/bridge.py v2/experiments/action_executor/r27/pre_contract/admission.py v2/experiments/action_executor/r27/pre_contract/test_pre_contract.py v2/experiments/action_executor/r27/pre_contract/checks.py",
+      "chunk_id": "580f39",
+      "wall_time_seconds": 2.6405083339999997,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 4 source files\n"
+    },
+    {
+      "cmd": "v2/apps/backend/.venv/bin/python -B -m ruff check --config v2/apps/backend/pyproject.toml --no-cache v2/experiments/action_executor/r27/pre_contract/bridge.py v2/experiments/action_executor/r27/pre_contract/admission.py v2/experiments/action_executor/r27/pre_contract/test_pre_contract.py v2/experiments/action_executor/r27/pre_contract/checks.py",
+      "chunk_id": "f4046d",
+      "wall_time_seconds": 0.000012834,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    },
+    {
+      "cmd": "v2/apps/backend/.venv/bin/python -B -m ruff format --check --config v2/apps/backend/pyproject.toml --no-cache v2/experiments/action_executor/r27/pre_contract/bridge.py v2/experiments/action_executor/r27/pre_contract/admission.py v2/experiments/action_executor/r27/pre_contract/test_pre_contract.py v2/experiments/action_executor/r27/pre_contract/checks.py",
+      "chunk_id": "45ecc4",
+      "wall_time_seconds": 0.000015,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "4 files already formatted\n"
+    }
+  ],
+  "scope": "4 new surfaces, explicit backend config"
+}

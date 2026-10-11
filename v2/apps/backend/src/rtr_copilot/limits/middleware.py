@@ -63,6 +63,22 @@ def classify(method: str, path: str) -> str:
         return "render"
     if path.startswith("/api/v1/admin"):
         return "admin"
+    # TIP-054.2/.3: context resolve/packet POSTs are bounded read-compute,
+    # but scoped memory writes and action-domain mutations must not inherit
+    # the more permissive read window. Reuse existing finite write classes;
+    # these classifications do not authorize a capability or source effect.
+    mutation = method in {"POST", "PUT", "PATCH", "DELETE"}
+    memory_path = "/api/v1/context/memory"
+    if mutation and (path == memory_path or path.startswith(f"{memory_path}/")):
+        return "upload"
+    action_path = "/api/v1/actions"
+    capability_path = f"{action_path}/capabilities"
+    if mutation and (
+        path == capability_path or path.startswith(f"{capability_path}/")
+    ):
+        return "admin"
+    if mutation and (path == action_path or path.startswith(f"{action_path}/")):
+        return "render"
     return "default-read"
 
 

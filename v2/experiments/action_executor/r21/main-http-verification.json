@@ -1,0 +1,218 @@
+{
+  "actor": "Main",
+  "method": "independent stdlib read-only parsing, exact typed slot/state/predecessor/profile checks, canonical JSON agreement and nearest-rank reconstruction without qualification imports",
+  "requested": 1600,
+  "observed": 1440,
+  "successful": 1353,
+  "failed": 87,
+  "missing": 160,
+  "duplicates": 0,
+  "cells_passed": 10,
+  "cells": [
+    {
+      "concurrency": 1,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 38.639083,
+      "p95_ms": 53.612792,
+      "p99_ms": 56.497041,
+      "p95_limit_ms": 500,
+      "pass": true
+    },
+    {
+      "concurrency": 1,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 31.478416,
+      "p95_ms": 41.474291,
+      "p99_ms": 68.873542,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 1,
+      "operation": "status",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 11.173833,
+      "p95_ms": 14.254833,
+      "p99_ms": 16.724291,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 1,
+      "operation": "cancel",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 19.199666,
+      "p95_ms": 27.015041,
+      "p99_ms": 30.054667,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 248.833875,
+      "p95_ms": 456.912709,
+      "p99_ms": 527.916751,
+      "p95_limit_ms": 500,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 218.256001,
+      "p95_ms": 321.560208,
+      "p99_ms": 336.086916,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "status",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 80.517334,
+      "p95_ms": 124.732542,
+      "p99_ms": 225.679625,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "cancel",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 159.009333,
+      "p95_ms": 224.660958,
+      "p99_ms": 267.831084,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 25,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 604.218625,
+      "p95_ms": 963.140043,
+      "p99_ms": 1012.916751,
+      "p95_limit_ms": 500,
+      "pass": false
+    },
+    {
+      "concurrency": 25,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 592.815834,
+      "p95_ms": 839.311376,
+      "p99_ms": 954.666584,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 25,
+      "operation": "status",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 205.613375,
+      "p95_ms": 345.657292,
+      "p99_ms": 371.20175,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 25,
+      "operation": "cancel",
+      "samples": 100,
+      "failures": 3,
+      "p50_ms": 449.639125,
+      "p95_ms": 743.759833,
+      "p99_ms": 1035.612751,
+      "p95_limit_ms": 1000,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 1242.678375,
+      "p95_ms": 1840.407626,
+      "p99_ms": 2239.412918,
+      "p95_limit_ms": 500,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 80,
+      "p50_ms": 1021.48075,
+      "p95_ms": 1126.457167,
+      "p99_ms": 1189.17225,
+      "p95_limit_ms": 1000,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "status",
+      "samples": 20,
+      "failures": 1,
+      "p50_ms": 122.229208,
+      "p95_ms": 919.985417,
+      "p99_ms": 994.849959,
+      "p95_limit_ms": 1000,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "cancel",
+      "samples": 20,
+      "failures": 3,
+      "p50_ms": 170.181167,
+      "p95_ms": 997.366709,
+      "p99_ms": 1011.957417,
+      "p95_limit_ms": 1000,
+      "pass": false
+    }
+  ],
+  "failure_outcomes": {
+    "(25, 'cancel', 503, 'action_operation_timeout', None)": 3,
+    "(50, 'submit', 503, 'action_operation_timeout', None)": 80,
+    "(50, 'status', 503, 'action_operation_timeout', None)": 1,
+    "(50, 'cancel', 503, 'action_operation_timeout', None)": 3
+  },
+  "missing_origin": "exact status and cancel descendants of 80 failed c50 submits; no imputation or retries",
+  "jsonl_sha256": "9e2100f80531f02b24fa355cb46e8559ac5b8e398db3f8d6be195147edbf9bb3",
+  "raw_bytes": 943953,
+  "raw_files": 63,
+  "load_process": {
+    "exit_code": 1,
+    "reason": "completed",
+    "original_exit_code": 1,
+    "group_drained": true,
+    "wall_seconds": 36.57204905798426,
+    "owner": {
+      "group": 10368,
+      "token": "d447de52aa14418d9c1a8dd6611ad21b",
+      "supervisor": 10362,
+      "supervisor_start": "15038053",
+      "cleanup_deadline": null
+    }
+  },
+  "engine_user_tables": "0",
+  "no_worker_effects": "0|0|0|0|0|0",
+  "verdict": "FAIL",
+  "integrity": "PASS",
+  "exe009": "OPEN"
+}

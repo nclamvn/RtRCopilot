@@ -1,0 +1,17 @@
+{
+  "schema": "r27-genuine-lifecycle-local-candidate-v1",
+  "binding_sha256": "5a7ba0ff1cacce3bc2e95c58c8266992fca2443ff9db6fc61076eac024415ee6",
+  "manifest_sha256": "1e79ea88f5ecdd776fc9f82dda6cd904feb1e1a4702e122eae3cf9221aad3ee6",
+  "local_source_control": "FROZEN_CHECKED_ENTRY_LOCAL_ONLY",
+  "outer_controls": {
+    "preceding_unchanged": 33,
+    "new": 5,
+    "total": 38
+  },
+  "nested_intentional_failure": "EXPECTED_SOURCE_DIAGNOSTIC_NOT_OUTER_COVERAGE",
+  "capture_admission": "HOLD",
+  "original_PRE": "DENY",
+  "measurements": "NONE",
+  "executor": "OFF",
+  "overall_status": "NOT_READY"
+}

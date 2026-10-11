@@ -1,0 +1,988 @@
+{
+  "observed": 1440,
+  "failed": 87,
+  "missing": [
+    [
+      50,
+      0,
+      "status"
+    ],
+    [
+      50,
+      0,
+      "cancel"
+    ],
+    [
+      50,
+      1,
+      "status"
+    ],
+    [
+      50,
+      1,
+      "cancel"
+    ],
+    [
+      50,
+      2,
+      "status"
+    ],
+    [
+      50,
+      2,
+      "cancel"
+    ],
+    [
+      50,
+      3,
+      "status"
+    ],
+    [
+      50,
+      3,
+      "cancel"
+    ],
+    [
+      50,
+      4,
+      "status"
+    ],
+    [
+      50,
+      4,
+      "cancel"
+    ],
+    [
+      50,
+      5,
+      "status"
+    ],
+    [
+      50,
+      5,
+      "cancel"
+    ],
+    [
+      50,
+      6,
+      "status"
+    ],
+    [
+      50,
+      6,
+      "cancel"
+    ],
+    [
+      50,
+      7,
+      "status"
+    ],
+    [
+      50,
+      7,
+      "cancel"
+    ],
+    [
+      50,
+      8,
+      "status"
+    ],
+    [
+      50,
+      8,
+      "cancel"
+    ],
+    [
+      50,
+      9,
+      "status"
+    ],
+    [
+      50,
+      9,
+      "cancel"
+    ],
+    [
+      50,
+      10,
+      "status"
+    ],
+    [
+      50,
+      10,
+      "cancel"
+    ],
+    [
+      50,
+      11,
+      "status"
+    ],
+    [
+      50,
+      11,
+      "cancel"
+    ],
+    [
+      50,
+      12,
+      "status"
+    ],
+    [
+      50,
+      12,
+      "cancel"
+    ],
+    [
+      50,
+      13,
+      "status"
+    ],
+    [
+      50,
+      13,
+      "cancel"
+    ],
+    [
+      50,
+      15,
+      "status"
+    ],
+    [
+      50,
+      15,
+      "cancel"
+    ],
+    [
+      50,
+      16,
+      "status"
+    ],
+    [
+      50,
+      16,
+      "cancel"
+    ],
+    [
+      50,
+      17,
+      "status"
+    ],
+    [
+      50,
+      17,
+      "cancel"
+    ],
+    [
+      50,
+      18,
+      "status"
+    ],
+    [
+      50,
+      18,
+      "cancel"
+    ],
+    [
+      50,
+      19,
+      "status"
+    ],
+    [
+      50,
+      19,
+      "cancel"
+    ],
+    [
+      50,
+      20,
+      "status"
+    ],
+    [
+      50,
+      20,
+      "cancel"
+    ],
+    [
+      50,
+      21,
+      "status"
+    ],
+    [
+      50,
+      21,
+      "cancel"
+    ],
+    [
+      50,
+      22,
+      "status"
+    ],
+    [
+      50,
+      22,
+      "cancel"
+    ],
+    [
+      50,
+      23,
+      "status"
+    ],
+    [
+      50,
+      23,
+      "cancel"
+    ],
+    [
+      50,
+      24,
+      "status"
+    ],
+    [
+      50,
+      24,
+      "cancel"
+    ],
+    [
+      50,
+      25,
+      "status"
+    ],
+    [
+      50,
+      25,
+      "cancel"
+    ],
+    [
+      50,
+      26,
+      "status"
+    ],
+    [
+      50,
+      26,
+      "cancel"
+    ],
+    [
+      50,
+      27,
+      "status"
+    ],
+    [
+      50,
+      27,
+      "cancel"
+    ],
+    [
+      50,
+      28,
+      "status"
+    ],
+    [
+      50,
+      28,
+      "cancel"
+    ],
+    [
+      50,
+      29,
+      "status"
+    ],
+    [
+      50,
+      29,
+      "cancel"
+    ],
+    [
+      50,
+      30,
+      "status"
+    ],
+    [
+      50,
+      30,
+      "cancel"
+    ],
+    [
+      50,
+      32,
+      "status"
+    ],
+    [
+      50,
+      32,
+      "cancel"
+    ],
+    [
+      50,
+      34,
+      "status"
+    ],
+    [
+      50,
+      34,
+      "cancel"
+    ],
+    [
+      50,
+      35,
+      "status"
+    ],
+    [
+      50,
+      35,
+      "cancel"
+    ],
+    [
+      50,
+      36,
+      "status"
+    ],
+    [
+      50,
+      36,
+      "cancel"
+    ],
+    [
+      50,
+      37,
+      "status"
+    ],
+    [
+      50,
+      37,
+      "cancel"
+    ],
+    [
+      50,
+      38,
+      "status"
+    ],
+    [
+      50,
+      38,
+      "cancel"
+    ],
+    [
+      50,
+      39,
+      "status"
+    ],
+    [
+      50,
+      39,
+      "cancel"
+    ],
+    [
+      50,
+      40,
+      "status"
+    ],
+    [
+      50,
+      40,
+      "cancel"
+    ],
+    [
+      50,
+      41,
+      "status"
+    ],
+    [
+      50,
+      41,
+      "cancel"
+    ],
+    [
+      50,
+      42,
+      "status"
+    ],
+    [
+      50,
+      42,
+      "cancel"
+    ],
+    [
+      50,
+      43,
+      "status"
+    ],
+    [
+      50,
+      43,
+      "cancel"
+    ],
+    [
+      50,
+      44,
+      "status"
+    ],
+    [
+      50,
+      44,
+      "cancel"
+    ],
+    [
+      50,
+      45,
+      "status"
+    ],
+    [
+      50,
+      45,
+      "cancel"
+    ],
+    [
+      50,
+      46,
+      "status"
+    ],
+    [
+      50,
+      46,
+      "cancel"
+    ],
+    [
+      50,
+      47,
+      "status"
+    ],
+    [
+      50,
+      47,
+      "cancel"
+    ],
+    [
+      50,
+      48,
+      "status"
+    ],
+    [
+      50,
+      48,
+      "cancel"
+    ],
+    [
+      50,
+      49,
+      "status"
+    ],
+    [
+      50,
+      49,
+      "cancel"
+    ],
+    [
+      50,
+      50,
+      "status"
+    ],
+    [
+      50,
+      50,
+      "cancel"
+    ],
+    [
+      50,
+      51,
+      "status"
+    ],
+    [
+      50,
+      51,
+      "cancel"
+    ],
+    [
+      50,
+      52,
+      "status"
+    ],
+    [
+      50,
+      52,
+      "cancel"
+    ],
+    [
+      50,
+      53,
+      "status"
+    ],
+    [
+      50,
+      53,
+      "cancel"
+    ],
+    [
+      50,
+      54,
+      "status"
+    ],
+    [
+      50,
+      54,
+      "cancel"
+    ],
+    [
+      50,
+      55,
+      "status"
+    ],
+    [
+      50,
+      55,
+      "cancel"
+    ],
+    [
+      50,
+      56,
+      "status"
+    ],
+    [
+      50,
+      56,
+      "cancel"
+    ],
+    [
+      50,
+      58,
+      "status"
+    ],
+    [
+      50,
+      58,
+      "cancel"
+    ],
+    [
+      50,
+      59,
+      "status"
+    ],
+    [
+      50,
+      59,
+      "cancel"
+    ],
+    [
+      50,
+      61,
+      "status"
+    ],
+    [
+      50,
+      61,
+      "cancel"
+    ],
+    [
+      50,
+      62,
+      "status"
+    ],
+    [
+      50,
+      62,
+      "cancel"
+    ],
+    [
+      50,
+      63,
+      "status"
+    ],
+    [
+      50,
+      63,
+      "cancel"
+    ],
+    [
+      50,
+      64,
+      "status"
+    ],
+    [
+      50,
+      64,
+      "cancel"
+    ],
+    [
+      50,
+      65,
+      "status"
+    ],
+    [
+      50,
+      65,
+      "cancel"
+    ],
+    [
+      50,
+      66,
+      "status"
+    ],
+    [
+      50,
+      66,
+      "cancel"
+    ],
+    [
+      50,
+      67,
+      "status"
+    ],
+    [
+      50,
+      67,
+      "cancel"
+    ],
+    [
+      50,
+      70,
+      "status"
+    ],
+    [
+      50,
+      70,
+      "cancel"
+    ],
+    [
+      50,
+      71,
+      "status"
+    ],
+    [
+      50,
+      71,
+      "cancel"
+    ],
+    [
+      50,
+      72,
+      "status"
+    ],
+    [
+      50,
+      72,
+      "cancel"
+    ],
+    [
+      50,
+      73,
+      "status"
+    ],
+    [
+      50,
+      73,
+      "cancel"
+    ],
+    [
+      50,
+      74,
+      "status"
+    ],
+    [
+      50,
+      74,
+      "cancel"
+    ],
+    [
+      50,
+      75,
+      "status"
+    ],
+    [
+      50,
+      75,
+      "cancel"
+    ],
+    [
+      50,
+      76,
+      "status"
+    ],
+    [
+      50,
+      76,
+      "cancel"
+    ],
+    [
+      50,
+      77,
+      "status"
+    ],
+    [
+      50,
+      77,
+      "cancel"
+    ],
+    [
+      50,
+      78,
+      "status"
+    ],
+    [
+      50,
+      78,
+      "cancel"
+    ],
+    [
+      50,
+      79,
+      "status"
+    ],
+    [
+      50,
+      79,
+      "cancel"
+    ],
+    [
+      50,
+      80,
+      "status"
+    ],
+    [
+      50,
+      80,
+      "cancel"
+    ],
+    [
+      50,
+      81,
+      "status"
+    ],
+    [
+      50,
+      81,
+      "cancel"
+    ],
+    [
+      50,
+      83,
+      "status"
+    ],
+    [
+      50,
+      83,
+      "cancel"
+    ],
+    [
+      50,
+      85,
+      "status"
+    ],
+    [
+      50,
+      85,
+      "cancel"
+    ],
+    [
+      50,
+      86,
+      "status"
+    ],
+    [
+      50,
+      86,
+      "cancel"
+    ],
+    [
+      50,
+      87,
+      "status"
+    ],
+    [
+      50,
+      87,
+      "cancel"
+    ],
+    [
+      50,
+      89,
+      "status"
+    ],
+    [
+      50,
+      89,
+      "cancel"
+    ]
+  ],
+  "missing_count": 160,
+  "cells": [
+    {
+      "concurrency": 1,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 38.639083,
+      "p95_ms": 53.612792,
+      "p99_ms": 56.497041,
+      "p95_limit_ms": 500,
+      "pass": true
+    },
+    {
+      "concurrency": 1,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 31.478416,
+      "p95_ms": 41.474291,
+      "p99_ms": 68.873542,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 1,
+      "operation": "status",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 11.173833,
+      "p95_ms": 14.254833,
+      "p99_ms": 16.724291,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 1,
+      "operation": "cancel",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 19.199666,
+      "p95_ms": 27.015041,
+      "p99_ms": 30.054667,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 248.833875,
+      "p95_ms": 456.912709,
+      "p99_ms": 527.916751,
+      "p95_limit_ms": 500,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 218.256001,
+      "p95_ms": 321.560208,
+      "p99_ms": 336.086916,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "status",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 80.517334,
+      "p95_ms": 124.732542,
+      "p99_ms": 225.679625,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "cancel",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 159.009333,
+      "p95_ms": 224.660958,
+      "p99_ms": 267.831084,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 25,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 604.218625,
+      "p95_ms": 963.140043,
+      "p99_ms": 1012.916751,
+      "p95_limit_ms": 500,
+      "pass": false
+    },
+    {
+      "concurrency": 25,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 592.815834,
+      "p95_ms": 839.311376,
+      "p99_ms": 954.666584,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 25,
+      "operation": "status",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 205.613375,
+      "p95_ms": 345.657292,
+      "p99_ms": 371.20175,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 25,
+      "operation": "cancel",
+      "samples": 100,
+      "failures": 3,
+      "p50_ms": 449.639125,
+      "p95_ms": 743.759833,
+      "p99_ms": 1035.612751,
+      "p95_limit_ms": 1000,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 1242.678375,
+      "p95_ms": 1840.407626,
+      "p99_ms": 2239.412918,
+      "p95_limit_ms": 500,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 80,
+      "p50_ms": 1021.48075,
+      "p95_ms": 1126.457167,
+      "p99_ms": 1189.17225,
+      "p95_limit_ms": 1000,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "status",
+      "samples": 20,
+      "failures": 1,
+      "p50_ms": 122.229208,
+      "p95_ms": 919.985417,
+      "p99_ms": 994.849959,
+      "p95_limit_ms": 1000,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "cancel",
+      "samples": 20,
+      "failures": 3,
+      "p50_ms": 170.181167,
+      "p95_ms": 997.366709,
+      "p99_ms": 1011.957417,
+      "p95_limit_ms": 1000,
+      "pass": false
+    }
+  ],
+  "status": "FAIL",
+  "integrity": "PASS",
+  "oracle_complete_pass": false
+}

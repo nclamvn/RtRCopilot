@@ -1,0 +1,73 @@
+{
+  "schema": "r27-retention-main-runtime-controls-v1",
+  "scope": "Unchanged full RequestConnection class with deliberate fake engines/delegates. No SQL/whole driver or output completeness proof.",
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/bin/python -B -m pytest -p pytest_asyncio.plugin -p no:cacheprovider -q --junitxml=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/retention/runtime-unit.xml tests/test_action_request_connection_unit.py",
+  "workdir": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend",
+  "launch_tool": "e4949f",
+  "final_tool": "360d00",
+  "exit_code": 0,
+  "passed": 27,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "seconds": 2.47,
+  "dependency_check": {
+    "tool": "774d6c",
+    "exit_code": 0,
+    "result": {
+      "all_match_lock": true,
+      "installed_lock_pins": {
+        "annotated-types": "0.8.0",
+        "asyncpg": "0.30.0",
+        "greenlet": "3.5.4",
+        "iniconfig": "2.3.0",
+        "mypy": "1.17.1",
+        "mypy-extensions": "1.1.0",
+        "packaging": "26.2",
+        "pathspec": "1.1.1",
+        "pluggy": "1.6.0",
+        "pydantic": "2.13.4",
+        "pydantic-core": "2.46.4",
+        "pydantic-settings": "2.10.1",
+        "pygments": "2.20.0",
+        "pytest": "8.4.1",
+        "pytest-asyncio": "1.1.0",
+        "python-dotenv": "1.2.2",
+        "ruff": "0.12.9",
+        "sqlalchemy": "2.0.43",
+        "typing-extensions": "4.16.0",
+        "typing-inspection": "0.4.2"
+      },
+      "lock_sha256": "cf091ca54b36632e9ed1884e6a1c3aa46cf0114191da8e2a4abe670e767a26dc",
+      "manifest_sha256": "a70f415c118e99b4e1c7d71cb16b67d8eaab8cce3327a8f12252711612b91c6c"
+    }
+  },
+  "dependency_restore_attempts": [
+    {
+      "tool": "af3653",
+      "mode": "uv sync --locked --offline",
+      "exit_code": 2,
+      "reason": "cache write sandbox restriction"
+    },
+    {
+      "tool": "b30f4d",
+      "mode": "uv sync --locked --offline escalated",
+      "exit_code": 2,
+      "reason": "vosk0.3.45 no macOS arm64 wheel"
+    },
+    {
+      "tool": "5e331a",
+      "mode": "uv pip install --offline --no-deps exact unit pins",
+      "exit_code": 1,
+      "reason": "SQLAlchemy missing offline cache"
+    },
+    {
+      "launch_tool": "fff888",
+      "final_tool": "d139c7",
+      "mode": "uv pip install --no-deps exact20lockpins existingvenv",
+      "exit_code": 0,
+      "installed_packages": 20,
+      "network": "Registry package download only; no company evidence or provider call"
+    }
+  ]
+}

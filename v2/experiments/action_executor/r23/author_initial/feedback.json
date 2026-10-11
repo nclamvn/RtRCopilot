@@ -1,0 +1,20 @@
+{
+  "actual_tool_record": {
+    "chunk_id": "4541fc",
+    "exit_code": 0,
+    "wall_time_seconds": 2.736021541
+  },
+  "commands": [
+    "python3 -B -m unittest discover -s v2/experiments/action_executor/r23 -p test_model.py -v",
+    "python3 -B v2/experiments/action_executor/r23/model.py"
+  ],
+  "actual_control_summary": "Ran 6 tests in 2.745s; OK",
+  "actual_budget": {
+    "event_bytes": 32,
+    "framing_bytes": 1810,
+    "observer_wire_bytes": 1281810,
+    "reachable_max_events": 40000,
+    "capture_admission": "HOLD"
+  },
+  "scope": "Initial author source/control feedback, not final-source verification"
+}

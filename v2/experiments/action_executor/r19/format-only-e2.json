@@ -1,0 +1,11 @@
+{
+  "actor": "Builder",
+  "scope": "Supplied mechanical formatting only; AST equality, not test evidence",
+  "actual": {
+    "chunk_id": "79c3cf",
+    "wall_time_seconds": 0.0000085,
+    "exit_code": 0,
+    "original_token_count": 19,
+    "output": "{\"qualification.py\": true, \"bounded.py\": true, \"test_r19_offline.py\": true}\n"
+  }
+}

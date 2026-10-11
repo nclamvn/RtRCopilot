@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+      "retrieved_at": "2026-10-06T02:15:31.962984+00:00",
+      "source_family": "Anthropic",
+      "status": "failed"
+    },
+    {
+      "bytes": 266839,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 40422,
+      "read_view_sha256": "1439d9ec2917ffe0414cdbbfa57230e7a5a07bb4d1caef65b71697dcb4ed62c4",
+      "requested_url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+      "resolved_url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+      "retrieved_at": "2026-10-06T02:16:00.508003+00:00",
+      "sha256": "6910cb6c073bf98e4e647add8801424172ef7eafe23b2e208a0d242269a59879",
+      "snapshot": "anthropic-evals.html",
+      "source_family": "Anthropic",
+      "status": "usable"
+    }
+  ],
+  "entity": "Anthropic agent evaluations",
+  "id": "anthropic-evals",
+  "selected": {
+    "bytes": 266839,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 40422,
+    "read_view_sha256": "1439d9ec2917ffe0414cdbbfa57230e7a5a07bb4d1caef65b71697dcb4ed62c4",
+    "requested_url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+    "resolved_url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+    "retrieved_at": "2026-10-06T02:16:00.508003+00:00",
+    "sha256": "6910cb6c073bf98e4e647add8801424172ef7eafe23b2e208a0d242269a59879",
+    "snapshot": "anthropic-evals.html",
+    "source_family": "Anthropic",
+    "status": "usable"
+  }
+}

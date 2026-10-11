@@ -1,0 +1,45 @@
+{
+  "after": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13692658,
+    "prior_bytes": 13634646,
+    "prior_pins": 1787,
+    "scope_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "total_pins": 1794
+  },
+  "before": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13692658,
+    "prior_bytes": 13634646,
+    "prior_pins": 1787,
+    "scope_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "total_pins": 1794
+  },
+  "scope": "Read/hash only after wording correction; actual same-code six controls retained in author-feedback.json; no rerun.",
+  "source_after": {
+    "checks.py": "0475446e0f89f0ad5a895d3e40cd0fa8268003f799f87a2e91b2a79f19c818da",
+    "contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "input-binding.json": "87c5aa1ad6cd8009aa7eacf607a060d258dde11c929653f265c4d7af53bf0923",
+    "model.py": "5912d03f4d8f02235ee7d320c8fdd8b4e753a2b9b8b06230bf866dfefdf2a43d",
+    "test_model.py": "7962d5ffd77985edca90ce8434d6e941951f911e081d08e82bef4e552176d00c"
+  },
+  "source_before": {
+    "checks.py": "0475446e0f89f0ad5a895d3e40cd0fa8268003f799f87a2e91b2a79f19c818da",
+    "contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "input-binding.json": "87c5aa1ad6cd8009aa7eacf607a060d258dde11c929653f265c4d7af53bf0923",
+    "model.py": "5912d03f4d8f02235ee7d320c8fdd8b4e753a2b9b8b06230bf866dfefdf2a43d",
+    "test_model.py": "7962d5ffd77985edca90ce8434d6e941951f911e081d08e82bef4e552176d00c"
+  }
+}

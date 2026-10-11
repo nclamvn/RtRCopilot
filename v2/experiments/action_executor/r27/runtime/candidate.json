@@ -1,0 +1,344 @@
+{
+  "HEAD": "0e88f48588dc3228f1ae9eca7a7597d96589af8b",
+  "HEAD_probe_diagnostic_policy": "git: warning: confstr() failed with code 5: couldn't get path of DARWIN_USER_TEMP_DIR; using /tmp instead",
+  "HEAD_witness": "Main baseline + fixed read-only git rev-parse live match; no Git write",
+  "blockers": [
+    "unbrokered native/cached-fd temporary writes can occur before Capture accounting",
+    "Codex/platform-owned outer transcript is outside interpreter prewrite ownership",
+    "original effectful launcher/Docker/SQL/admin/migration/HTTP routes prepared, not executed",
+    "Linux original owned-group supervisor not runtime qualified by fixed local child"
+  ],
+  "dispatch_surface": "NONE",
+  "effectful_prerequisites": "NOT_EXECUTED, not PASS",
+  "measurement_admission": "HOLD",
+  "plan": {
+    "commands": [
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "exec",
+          "-w",
+          "/workspace/v2/apps/backend",
+          "tip054-4b-full-20261007-r5qa1-runner",
+          "env",
+          "-i",
+          "PATH=/app/.venv/bin:/usr/local/bin:/usr/bin:/bin",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "PYTHONPATH=/qa/packages:/workspace/v2/apps/backend/src:/workspace/v2/apps/backend/tests:/work/r21",
+          "APP_ENV=test",
+          "ACTION_EXECUTOR_ENABLED=false",
+          "POSTGRES_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_local_e1",
+          "INTEGRATION_DATABASE_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_local_e1",
+          "RAG_EMBEDDING_PROVIDER=offline",
+          "RAG_PROVIDER_MODE=local",
+          "OPENAI_API_KEY=",
+          "ANTHROPIC_API_KEY=",
+          "LIMITS_RATE_RENDER_MAX=30",
+          "LIMITS_RATE_DEFAULT_READ_MAX=120",
+          "LIMITS_RATE_WINDOW_SECONDS=60",
+          "ACTION_EXECUTOR_OPERATION_TIMEOUT_SECONDS=0.9",
+          "TMPDIR=/evidence/r19/r27_runtime_http_e1/tmp",
+          "SOT_STAGING_ROOT=/evidence/r19/r27_runtime_http_e1/tmp/staging",
+          "RESEARCH_STAGING_ROOT=/evidence/r19/r27_runtime_http_e1/tmp/research",
+          "REDIS_URL=redis://tip054-redis:6379/0",
+          "S3_ENDPOINT=http://tip054-minio:9000",
+          "S3_ACCESS_KEY=rtr_tip054_local",
+          "S3_SECRET_KEY=rtr_tip054_synthetic_only",
+          "S3_BUCKET=rtr-tip054-synthetic",
+          "/app/.venv/bin/python",
+          "/work/r19/bounded.py",
+          "run",
+          "/evidence/r19/r27_runtime_http_e1",
+          "http",
+          "load",
+          "/usr/bin/env",
+          "ACTION_EXECUTOR_ENABLED=true",
+          "ACTION_WORKFLOW_DSN=postgresql://rtr_tip054_engine:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_engine_e1",
+          "LIMITS_RATE_RENDER_MAX=5000",
+          "LIMITS_RATE_DEFAULT_READ_MAX=5000",
+          "/app/.venv/bin/python",
+          "/work/r/run_phase_baseline.py",
+          "/evidence/r19/r27_runtime_http_e1/run",
+          "off"
+        ],
+        "effects": "PREPARED_ONLY: original HTTP/SQL workload, never dispatched",
+        "label": "load",
+        "output_records": "original write calls; whole child stream HOLD",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 190,
+        "stderr_family": "load_stderr",
+        "stdout_family": "summary_stdout"
+      },
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "exec",
+          "-w",
+          "/workspace/v2/apps/backend",
+          "tip054-4b-full-20261007-r5qa1-runner",
+          "env",
+          "-i",
+          "PATH=/app/.venv/bin:/usr/local/bin:/usr/bin:/bin",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "PYTHONPATH=/qa/packages:/workspace/v2/apps/backend/src:/workspace/v2/apps/backend/tests:/work/r21",
+          "APP_ENV=test",
+          "ACTION_EXECUTOR_ENABLED=false",
+          "POSTGRES_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_local_e1",
+          "INTEGRATION_DATABASE_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_local_e1",
+          "RAG_EMBEDDING_PROVIDER=offline",
+          "RAG_PROVIDER_MODE=local",
+          "OPENAI_API_KEY=",
+          "ANTHROPIC_API_KEY=",
+          "LIMITS_RATE_RENDER_MAX=30",
+          "LIMITS_RATE_DEFAULT_READ_MAX=120",
+          "LIMITS_RATE_WINDOW_SECONDS=60",
+          "ACTION_EXECUTOR_OPERATION_TIMEOUT_SECONDS=0.9",
+          "TMPDIR=/evidence/r19/r27_runtime_http_e1/tmp",
+          "SOT_STAGING_ROOT=/evidence/r19/r27_runtime_http_e1/tmp/staging",
+          "RESEARCH_STAGING_ROOT=/evidence/r19/r27_runtime_http_e1/tmp/research",
+          "REDIS_URL=redis://tip054-redis:6379/0",
+          "S3_ENDPOINT=http://tip054-minio:9000",
+          "S3_ACCESS_KEY=rtr_tip054_local",
+          "S3_SECRET_KEY=rtr_tip054_synthetic_only",
+          "S3_BUCKET=rtr-tip054-synthetic",
+          "/app/.venv/bin/python",
+          "/work/r19/bounded.py",
+          "run",
+          "/evidence/r19/r27_runtime_http_e1",
+          "http",
+          "migration",
+          "/usr/bin/env",
+          "MIGRATION_DSN=postgresql://rtr_tip054_local:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r27_local_e1",
+          "/app/.venv/bin/alembic",
+          "upgrade",
+          "0019_action_executor"
+        ],
+        "effects": "PREPARED_ONLY: database migration, never dispatched",
+        "label": "migration",
+        "output_records": "native whole streams HOLD",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "migration_streams",
+        "stdout_family": "migration_streams"
+      },
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "/work/r21/qualification.py",
+          "fixture",
+          "/work/r12/preflight_e1/fixture-preflight.json",
+          "/usr/local/bin/docker"
+        ],
+        "effects": "PREPARED_ONLY: Docker inspect",
+        "label": "fixture",
+        "output_records": "one original stdout/stderr stream each",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "fixture",
+        "stdout_family": "fixture"
+      },
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "exec",
+          "tip054-4b-full-20261007-r5qa1-pg",
+          "df",
+          "-k",
+          "/var/lib/postgresql/data"
+        ],
+        "effects": "PREPARED_ONLY: read-only Docker call, not executed",
+        "label": "capacity",
+        "output_records": "one original df output",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "disk",
+        "stdout_family": "disk"
+      },
+      {
+        "argv": [
+          "/usr/local/bin/docker",
+          "exec",
+          "tip054-4b-full-20261007-r5qa1-pg",
+          "env",
+          "PGCONNECT_TIMEOUT=5",
+          "PGOPTIONS=-c statement_timeout=10000 -c lock_timeout=5000",
+          "psql",
+          "-X",
+          "-U",
+          "rtr_tip054_local",
+          "-d",
+          "postgres",
+          "-At",
+          "-v",
+          "ON_ERROR_STOP=1",
+          "-c",
+          "SELECT count(*) FROM pg_database WHERE datname='rtr_tip054_r27_local_e1';"
+        ],
+        "effects": "PREPARED_ONLY: SQL read, no execution",
+        "label": "absence",
+        "output_records": "one original psql output per call",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "database_admin",
+        "stdout_family": "database_admin"
+      },
+      {
+        "argv": [
+          "python3",
+          "-B",
+          "/work/r21/qualification.py",
+          "analyze",
+          "/evidence/r19/r27_runtime_http_e1"
+        ],
+        "effects": "PREPARED_ONLY: original reconstruction CLI not executed",
+        "label": "reconstruction",
+        "output_records": "one original report/error",
+        "producer": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "seconds": 120,
+        "stderr_family": "reconstruction",
+        "stdout_family": "reconstruction"
+      }
+    ],
+    "databases": [
+      "rtr_tip054_r27_local_e1",
+      "rtr_tip054_r27_engine_e1"
+    ],
+    "dispatch_surface": "NONE",
+    "docker_executable": "/usr/local/bin/docker PREPARED_ONLY resolution/identity unverified by runtime",
+    "effect_envelope": "serving executor OFF; synthetic queueing true; observer OFF; no worker/provider",
+    "epoch": "r27_runtime_http_e1",
+    "future_raw_root": "raw/tip054-4b-full-20261007-r5qa1/r19/r27_runtime_http_e1",
+    "historical_marker": "r19/r21-campaign-launch.json; preserved immutable, never deleted/reused",
+    "identity_substitutions": {
+      "r21-campaign-launch.json": "r27-runtime-campaign-launch.json",
+      "r21_http_e1": "r27_runtime_http_e1",
+      "rtr_tip054_r21_engine_e1": "rtr_tip054_r27_engine_e1",
+      "rtr_tip054_r21_local_e1": "rtr_tip054_r27_local_e1"
+    },
+    "load_seconds": 190,
+    "marker": "r19/r27-runtime-campaign-launch.json; exclusive fresh marker; unknown launch consumed",
+    "native_and_outer_blockers": [
+      "direct native/cached-fd temp writes before Python accounting",
+      "platform-owned Codex tool transcript cannot be precharged or owned"
+    ],
+    "resource_names": [
+      "tip054-4b-full-20261007-r5qa1-runner",
+      "tip054-4b-full-20261007-r5qa1-pg",
+      "tip054-4b-full-20261007-r5qa1-redis",
+      "tip054-4b-full-20261007-r5qa1-minio"
+    ],
+    "schema": "r27-runtime-command-preparation-v1",
+    "shared_cleanup_seconds": 10,
+    "sla": "unchanged admission p95<=500ms; submit/status/cancel p95<=1000ms; errors0, all100/cell",
+    "source_pins": [
+      {
+        "path": "v2/apps/backend/src/rtr_copilot/api/main.py",
+        "sha256": "a3a8f760b93a6804487eb4fdc4411537ee5ff500113651f273c4ee93cea9569b"
+      },
+      {
+        "path": "v2/apps/backend/src/rtr_copilot/auth/audit.py",
+        "sha256": "13e3da023c2b886725c6fa0270789c6297b58647dbcd8949ef5ad7474fe0fa8e"
+      },
+      {
+        "path": "v2/apps/backend/src/rtr_copilot/repositories/audit.py",
+        "sha256": "ed2b90e2e8e24fcb99efc0ccbb2263397c372a920bc719173674e9146e45ec8a"
+      },
+      {
+        "path": "v2/apps/backend/tests/sot_fixtures.py",
+        "sha256": "524e0f00a30b13b0d8844070556f0713ee9e4b7e22e72ac6b16bf9c8e8ccaacd"
+      },
+      {
+        "path": "v2/apps/backend/tests/test_context_memory_integration.py",
+        "sha256": "4cae35ed6a550eb03f3cbbe85c0e294ea32ef76970de2ac8f2d2175c570b0425"
+      },
+      {
+        "path": "v2/apps/backend/tests/test_tip054_baseline_integration.py",
+        "sha256": "9f459c198ecfe749bd738574ff9b296c27a6ad22c13cea24a1a3dfbeee162181"
+      },
+      {
+        "path": "v2/experiments/action_executor/latency_probe.py",
+        "sha256": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2"
+      },
+      {
+        "path": "v2/experiments/action_executor/r/run_phase_baseline.py",
+        "sha256": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7"
+      },
+      {
+        "path": "v2/experiments/action_executor/r18/gate.py",
+        "sha256": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1"
+      },
+      {
+        "path": "v2/experiments/action_executor/r19/bounded.py",
+        "sha256": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb"
+      },
+      {
+        "path": "v2/experiments/action_executor/r19/qualification.py",
+        "sha256": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11"
+      },
+      {
+        "path": "v2/experiments/action_executor/r21/contract.json",
+        "sha256": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c"
+      },
+      {
+        "path": "v2/experiments/action_executor/r21/qualification.py",
+        "sha256": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef"
+      },
+      {
+        "path": "v2/experiments/action_executor/r21/run-http-qualification.sh",
+        "sha256": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1"
+      },
+      {
+        "path": "v2/experiments/action_executor/r21/source-binding-e1.json",
+        "sha256": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc"
+      },
+      {
+        "path": "v2/experiments/action_executor/r23/budget.json",
+        "sha256": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41"
+      },
+      {
+        "path": "v2/experiments/action_executor/r23/model.py",
+        "sha256": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024"
+      }
+    ],
+    "substitution_status": "PREPARED_ONLY; unchanged original R21 guard would not admit new names; no new effects qualified",
+    "whole_record_cap_bytes": 10485760,
+    "workload": "original one signed synthetic SOTref; c1/10/25/50; 100 cases/cell; four API operations"
+  },
+  "schema": "r27-runtime-candidate-v1",
+  "sources": {
+    "v2/apps/backend/src/rtr_copilot/api/main.py": "a3a8f760b93a6804487eb4fdc4411537ee5ff500113651f273c4ee93cea9569b",
+    "v2/apps/backend/src/rtr_copilot/auth/audit.py": "13e3da023c2b886725c6fa0270789c6297b58647dbcd8949ef5ad7474fe0fa8e",
+    "v2/apps/backend/src/rtr_copilot/repositories/audit.py": "ed2b90e2e8e24fcb99efc0ccbb2263397c372a920bc719173674e9146e45ec8a",
+    "v2/apps/backend/tests/sot_fixtures.py": "524e0f00a30b13b0d8844070556f0713ee9e4b7e22e72ac6b16bf9c8e8ccaacd",
+    "v2/apps/backend/tests/test_context_memory_integration.py": "4cae35ed6a550eb03f3cbbe85c0e294ea32ef76970de2ac8f2d2175c570b0425",
+    "v2/apps/backend/tests/test_tip054_baseline_integration.py": "9f459c198ecfe749bd738574ff9b296c27a6ad22c13cea24a1a3dfbeee162181",
+    "v2/experiments/action_executor/latency_probe.py": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2",
+    "v2/experiments/action_executor/r/run_phase_baseline.py": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7",
+    "v2/experiments/action_executor/r18/gate.py": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1",
+    "v2/experiments/action_executor/r19/bounded.py": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb",
+    "v2/experiments/action_executor/r19/qualification.py": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11",
+    "v2/experiments/action_executor/r21/contract.json": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c",
+    "v2/experiments/action_executor/r21/qualification.py": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef",
+    "v2/experiments/action_executor/r21/run-http-qualification.sh": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1",
+    "v2/experiments/action_executor/r21/source-binding-e1.json": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc",
+    "v2/experiments/action_executor/r23/budget.json": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41",
+    "v2/experiments/action_executor/r23/model.py": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024",
+    "v2/experiments/action_executor/r25/contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "v2/experiments/action_executor/r27/runtime/SCOPE.md": "f8192c758e231d1c655d862a84b85a4d2b26e41058aa132bc618e402070d45d2",
+    "v2/experiments/action_executor/r27/runtime/adapter.py": "fb2aaac6812d33ddd206d1d8ba1a5d658b53925d52ce03414137184b0623fa21",
+    "v2/experiments/action_executor/r27/runtime/adapter.pyi": "096df18ceb818c2866e2821388408ae1e240766ee43e60464a5d6ba637077461",
+    "v2/experiments/action_executor/r27/runtime/checks.py": "462057209c6a4f9557a0d9809fac7ddfd213284d6b7cb7500feffe16a57c288e",
+    "v2/experiments/action_executor/r27/runtime/envelope.py": "ea20b7fb00cc585419bfbcb49020de400a77272db5b4dd5aea9bb48fa25430cb",
+    "v2/experiments/action_executor/r27/runtime/launcher.py": "d7d1ff030bafa22b58227e4648c63cae0a7dbd242af508432fea44a185781773",
+    "v2/experiments/action_executor/r27/runtime/pipes.py": "f90d1632e9f739a72eff1dc3e6eb1ae2b035c45635f086eac0eee0d2f8ac19cb",
+    "v2/experiments/action_executor/r27/runtime/preflight.py": "267838d414cc7258a8da11e7d40ea06e7ce34f367a0be6fd3664c56505990b13",
+    "v2/experiments/action_executor/r27/runtime/producers.py": "916a22184421ec3f15a37177bdb341baf6819593da1c3f0c19a7bd98a0db55c8",
+    "v2/experiments/action_executor/r27/runtime/raw_child.py": "11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f",
+    "v2/experiments/action_executor/r27/runtime/routing_manifest.py": "563d4c3f4eb9cfd09ba607b3be966827e9ddf3cebde2faa75cddcd33083b9db6",
+    "v2/experiments/action_executor/r27/runtime/schemas.py": "ab2474e021983804e17ee33009620f2d5dfdd9c5e548ae693b4e7fabc8f57118",
+    "v2/experiments/action_executor/r27/runtime/supervisor.py": "fe159a5b65dac1d733783128a71387b507bb1ba2cb05a21a4d873ac21d241577",
+    "v2/experiments/action_executor/r27/runtime/test_launcher.py": "adb40c56b06459e20911e93fca9478b6316a9f34654e0ee88c90e1d5e0082f20",
+    "v2/experiments/action_executor/r27/runtime/test_retention.py": "e62d5005900ed08f528398e2e07104657a2457f28693bf474a349e7c9057c9a9"
+  }
+}

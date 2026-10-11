@@ -1,0 +1,19 @@
+{
+  "actor": "Main",
+  "catalog": {
+    "chunk_id": "f07289",
+    "wall_time_seconds": 0.018885875,
+    "exit_code": 0,
+    "original_token_count": 12,
+    "output": "r21_databases|0\nrtr_app|t\nrtr_tip054_engine|t\n"
+  },
+  "pg_disk": {
+    "chunk_id": "5cde7f",
+    "wall_time_seconds": 0.000007917,
+    "exit_code": 0,
+    "original_token_count": 33,
+    "output": "Filesystem     1K-blocks    Used Available Use% Mounted on\ntmpfs            3145728 1669132   1476596  54% /var/lib/postgresql/data\n"
+  },
+  "host_initial_free_gib": 75,
+  "scope": "read-only initial pre-admission; wrapper independently rechecks per CREATE and final closure"
+}

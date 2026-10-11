@@ -1,0 +1,49 @@
+{
+  "scope": "13 authored/interface surfaces. Genuine byte-derived adapter.py body excluded from static lint/typing/format; AST signatures and real return-shape conformance tested. Imported product/helper code preserved, not claimed strict re-audited.",
+  "surfaces": [
+    "adapter.pyi",
+    "schemas.py",
+    "envelope.py",
+    "producers.py",
+    "pipes.py",
+    "raw_child.py",
+    "test_retention.py",
+    "checks.py",
+    "launcher.py",
+    "supervisor.py",
+    "preflight.py",
+    "routing_manifest.py",
+    "test_launcher.py"
+  ],
+  "strict": {
+    "command": "env -i PATH=/usr/bin:/bin MYPYPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src v2/apps/backend/.venv/bin/mypy --strict --cache-dir=/dev/null --follow-imports=silent --no-incremental v2/experiments/action_executor/r27/runtime/adapter.pyi v2/experiments/action_executor/r27/runtime/schemas.py v2/experiments/action_executor/r27/runtime/envelope.py v2/experiments/action_executor/r27/runtime/producers.py v2/experiments/action_executor/r27/runtime/pipes.py v2/experiments/action_executor/r27/runtime/raw_child.py v2/experiments/action_executor/r27/runtime/test_retention.py v2/experiments/action_executor/r27/runtime/checks.py v2/experiments/action_executor/r27/runtime/launcher.py v2/experiments/action_executor/r27/runtime/supervisor.py v2/experiments/action_executor/r27/runtime/preflight.py v2/experiments/action_executor/r27/runtime/routing_manifest.py v2/experiments/action_executor/r27/runtime/test_launcher.py",
+    "tool": {
+      "chunk_id": "65d4ca",
+      "wall_time_seconds": 8.062209,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 13 source files\n"
+    }
+  },
+  "ruff": {
+    "command": "v2/apps/backend/.venv/bin/ruff check --no-cache --config v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/runtime/adapter.pyi v2/experiments/action_executor/r27/runtime/schemas.py v2/experiments/action_executor/r27/runtime/envelope.py v2/experiments/action_executor/r27/runtime/producers.py v2/experiments/action_executor/r27/runtime/pipes.py v2/experiments/action_executor/r27/runtime/raw_child.py v2/experiments/action_executor/r27/runtime/test_retention.py v2/experiments/action_executor/r27/runtime/checks.py v2/experiments/action_executor/r27/runtime/launcher.py v2/experiments/action_executor/r27/runtime/supervisor.py v2/experiments/action_executor/r27/runtime/preflight.py v2/experiments/action_executor/r27/runtime/routing_manifest.py v2/experiments/action_executor/r27/runtime/test_launcher.py",
+    "tool": {
+      "chunk_id": "d9cfcf",
+      "wall_time_seconds": 0.00001225,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    }
+  },
+  "format": {
+    "command": "v2/apps/backend/.venv/bin/ruff format --check --config v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/runtime/adapter.pyi v2/experiments/action_executor/r27/runtime/schemas.py v2/experiments/action_executor/r27/runtime/envelope.py v2/experiments/action_executor/r27/runtime/producers.py v2/experiments/action_executor/r27/runtime/pipes.py v2/experiments/action_executor/r27/runtime/raw_child.py v2/experiments/action_executor/r27/runtime/test_retention.py v2/experiments/action_executor/r27/runtime/checks.py v2/experiments/action_executor/r27/runtime/launcher.py v2/experiments/action_executor/r27/runtime/supervisor.py v2/experiments/action_executor/r27/runtime/preflight.py v2/experiments/action_executor/r27/runtime/routing_manifest.py v2/experiments/action_executor/r27/runtime/test_launcher.py",
+    "tool": {
+      "chunk_id": "8c2737",
+      "wall_time_seconds": 0.000008708,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "13 files already formatted\n"
+    }
+  },
+  "frozen_binding_sha256": "192974e7042b8c3d0aa966732fa23ea2760c69a785cd5f79dfe87a6ff57264d0"
+}

@@ -1,0 +1,5 @@
+{
+  "normalization": "Removed exactly one added trailing LF introduced by apply_patch snapshot assembly; source content otherwise unchanged. core-e2 transport/finite snapshots now byte-equal to their still-current tested source.",
+  "earlier_static_feedback": ["first selected strict:5 errors (host2/transport3), retained first-static source", "intermediate selected strict:19 errors (transport3/checks1/control kwargs15); fixed genuine typed signatures", "initial Ruff11; test B0232; later4 and final SIM1171; all observed authoring findings, no runtime campaign"],
+  "claims": "Snapshots are author source provenance, not extra unique tests or runtime proof"
+}

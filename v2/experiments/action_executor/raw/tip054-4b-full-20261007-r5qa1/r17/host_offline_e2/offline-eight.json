@@ -1,0 +1,11 @@
+{
+  "phase": "offline-eight",
+  "source_binding": "v2/experiments/action_executor/r17/source-binding-e2.sha256",
+  "actual": {
+    "chunk_id": "d1956c",
+    "wall_time_seconds": 0.269755416,
+    "exit_code": 0,
+    "original_token_count": 295,
+    "output": "test_child_cleanup_held_record_ownership (test_r17_offline.OfflineControls.test_child_cleanup_held_record_ownership) ... ok\ntest_collector_caps_stop_and_original_failure_retention (test_r17_offline.OfflineControls.test_collector_caps_stop_and_original_failure_retention) ... ok\ntest_complete_summary_error_missing_populations (test_r17_offline.OfflineControls.test_complete_summary_error_missing_populations) ... ok\ntest_connection_generation_and_ledger_semantics (test_r17_offline.OfflineControls.test_connection_generation_and_ledger_semantics) ... ok\ntest_deterministic_analysis_and_validation_corruption (test_r17_offline.OfflineControls.test_deterministic_analysis_and_validation_corruption) ... ok\ntest_ids_time_order_and_finite_values (test_r17_offline.OfflineControls.test_ids_time_order_and_finite_values) ... ok\ntest_lag_bounds_and_no_catchup (test_r17_offline.OfflineControls.test_lag_bounds_and_no_catchup) ... ok\ntest_minimal_detailed_fields_and_transparent_restoration (test_r17_offline.OfflineControls.test_minimal_detailed_fields_and_transparent_restoration) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.246s\n\nOK\n"
+  }
+}

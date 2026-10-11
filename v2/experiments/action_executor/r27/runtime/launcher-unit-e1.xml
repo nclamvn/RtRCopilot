@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="8" time="2.477" timestamp="2026-10-10T15:13:56.194923+07:00" hostname="MacBookPro.lan"><testcase classname="" name="test_actual_source_copies_literals_and_returncode_routes" time="0.053" /><testcase classname="" name="test_fixed_child_and_actual_r19_metadata_cleanup_subset" time="0.116" /><testcase classname="" name="test_preparation_and_write_faults_sticky_primary_cleanup" time="0.018" /><testcase classname="" name="test_fixed_excess_and_cancel_join_no_complete_retry" time="0.139" /><testcase classname="" name="test_native_cached_fd_prewrite_ownership_counterexample" time="0.003" /><testcase classname="" name="test_exact_commands_twenty_routes_and_no_dispatch" time="0.001" /><testcase classname="" name="test_readonly_source_bound_preflight_and_untrusted_grant" time="1.106"><failure message="ValueError: live HEAD differs from Main baseline">local_root = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/runtime/codex-tmp-r27-launcher-20261010-dtmaqmv7')
+
+    def test_readonly_source_bound_preflight_and_untrusted_grant(local_root: Path) -&gt; None:
+        frozen = local_root / "candidate.json"
+&gt;       payload = candidate()
+                  ^^^^^^^^^^^
+
+v2/experiments/action_executor/r27/runtime/test_launcher.py:182: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+v2/experiments/action_executor/r27/runtime/preflight.py:90: in candidate
+    "HEAD": live_head(),
+            ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def live_head() -&gt; str:
+        # Contractor-authorized fixed read-only Git check, no shell/network/Git mutation.
+        result = subprocess.run(
+            ("/usr/bin/git", "rev-parse", "HEAD"),
+            cwd=ROOT,
+            env={"PATH": "/usr/bin:/bin", "GIT_OPTIONAL_LOCKS": "0"},
+            capture_output=True,
+            timeout=2,
+            check=True,
+        )
+        if len(result.stdout) &gt; 64 or result.stderr or result.stdout.decode("ascii").strip() != HEAD:
+&gt;           raise ValueError("live HEAD differs from Main baseline")
+E           ValueError: live HEAD differs from Main baseline
+
+v2/experiments/action_executor/r27/runtime/preflight.py:61: ValueError</failure></testcase><testcase classname="" name="test_preflight_rejects_marker_parent_symlink_without_creation" time="0.020"><failure message="ValueError: live HEAD differs from Main baseline">local_root = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/runtime/codex-tmp-r27-launcher-20261010-nmzskct5')
+
+    def test_preflight_rejects_marker_parent_symlink_without_creation(local_root: Path) -&gt; None:
+        frozen = local_root / "candidate.json"
+&gt;       frozen.write_bytes(canonical(candidate()))
+                                     ^^^^^^^^^^^
+
+v2/experiments/action_executor/r27/runtime/test_launcher.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+v2/experiments/action_executor/r27/runtime/preflight.py:90: in candidate
+    "HEAD": live_head(),
+            ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def live_head() -&gt; str:
+        # Contractor-authorized fixed read-only Git check, no shell/network/Git mutation.
+        result = subprocess.run(
+            ("/usr/bin/git", "rev-parse", "HEAD"),
+            cwd=ROOT,
+            env={"PATH": "/usr/bin:/bin", "GIT_OPTIONAL_LOCKS": "0"},
+            capture_output=True,
+            timeout=2,
+            check=True,
+        )
+        if len(result.stdout) &gt; 64 or result.stderr or result.stdout.decode("ascii").strip() != HEAD:
+&gt;           raise ValueError("live HEAD differs from Main baseline")
+E           ValueError: live HEAD differs from Main baseline
+
+v2/experiments/action_executor/r27/runtime/preflight.py:61: ValueError</failure></testcase></testsuite></testsuites>

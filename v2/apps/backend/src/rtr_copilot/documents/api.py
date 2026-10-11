@@ -39,6 +39,7 @@ def error(request: Request, status: int, code: str) -> JSONResponse:
         "invalid_request": "Request is invalid",
         "forbidden": "Action is not permitted",
         "conflict": "Resource state changed; refresh and retry",
+        "render_retry_exhausted": "Render attempt limit reached; contact an operator",
     }
     return JSONResponse(
         status_code=status,
@@ -66,6 +67,8 @@ async def call(
     except PermissionError:
         return error(request, 403, "forbidden")
     except ValueError as failure:
+        if str(failure) == "render_retry_exhausted":
+            return error(request, 409, "render_retry_exhausted")
         if str(failure) in {
             "stale_transition", "approval_required", "not_issued_or_revoked",
             "separation_or_state_denied",

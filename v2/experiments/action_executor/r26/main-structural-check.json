@@ -1,0 +1,46 @@
+{
+  "frozen_binding_sha256": "999167124e38280545959522e25dcc00e4b596779b5e01a74fb9e2601a82abd0",
+  "direct_hashes_checked": 5,
+  "anchors_checked": 6,
+  "syntax_files": 3,
+  "imports": {
+    "adapter.py": [
+      "fcntl",
+      "hashlib",
+      "json",
+      "os",
+      "pathlib",
+      "stat",
+      "struct",
+      "threading",
+      "uuid"
+    ],
+    "test_adapter.py": [
+      "adapter",
+      "concurrent",
+      "hashlib",
+      "pathlib",
+      "tempfile",
+      "unittest"
+    ],
+    "checks.py": [
+      "adapter",
+      "hashlib",
+      "io",
+      "json",
+      "pathlib",
+      "test_adapter",
+      "time",
+      "unittest"
+    ]
+  },
+  "data_records": 48182,
+  "normal_bytes": 9778276,
+  "terminal_bytes": 340,
+  "control_bytes": 264,
+  "charged_max_bytes": 9778880,
+  "spare_bytes": 706880,
+  "final_file_bytes": 9778792,
+  "sandboxes": 0,
+  "measured_imports": 0
+}

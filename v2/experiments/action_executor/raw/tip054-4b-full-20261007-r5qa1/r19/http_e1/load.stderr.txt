@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "/work/r/run_phase_baseline.py", line 58, in <module>
+    runpy.run_path("/work/latency_probe.py", run_name="__main__")
+  File "<frozen runpy>", line 286, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/work/latency_probe.py", line 107, in <module>
+    asyncio.run(main())
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/work/latency_probe.py", line 47, in main
+    refs = await publish(Path(temporary), factory, owner, 'tip054.latency.' + uuid.uuid4().hex, 'TIP054.LATENCY.' + uuid.uuid4().hex)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/v2/apps/backend/tests/test_context_memory_integration.py", line 123, in publish
+    pipeline = SOTPublishService(synthetic_settings(root), factory=factory, clock=lambda: NOW)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/v2/apps/backend/tests/test_tip054_baseline_integration.py", line 53, in synthetic_settings
+    return Settings(
+           ^^^^^^^^^
+  File "/app/.venv/lib/python3.12/site-packages/pydantic_settings/main.py", line 188, in __init__
+    super().__init__(
+  File "/app/.venv/lib/python3.12/site-packages/pydantic/main.py", line 263, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 1 validation error for Settings
+postgres_dsn
+  Input should be a valid URL, input is empty [type=url_parsing, input_value='', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.13/v/url_parsing

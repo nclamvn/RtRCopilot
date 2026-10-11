@@ -1,0 +1,12 @@
+{
+  "source_binding": "v2/experiments/action_executor/r17/source-binding-e4.sha256",
+  "command": "docker exec -w /workspace/v2/apps/backend tip054-4b-full-20261007-r5qa1-runner /app/.venv/bin/ruff format --check --no-cache --config /workspace/v2/apps/backend/pyproject.toml /work/r17/diagnostic.py /work/r17/observer.py /work/r17/gate.py /work/r17/test_r17_offline.py /work/r17/test_r17_sql.py /work/r17/test_r17_campaign.py",
+  "scope": "read-only static only",
+  "actual": {
+    "chunk_id": "a5b521",
+    "wall_time_seconds": 0.000008917,
+    "exit_code": 0,
+    "original_token_count": 7,
+    "output": "6 files already formatted\n"
+  }
+}

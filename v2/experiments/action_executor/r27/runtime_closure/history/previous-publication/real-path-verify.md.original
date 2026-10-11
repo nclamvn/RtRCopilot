@@ -1,0 +1,161 @@
+# TIP-054.4b-R27 consolidated verification
+
+2026-10-10 · Contractor/Main · **Real-path local continuation accepted; wider R27 PARTIAL / NOT_READY.**
+
+The approved host-owned broker and separately disclosed platform audit boundary
+remain implemented. This continuation adds actual finite-child UNIX IPC, genuine
+parser/service composition and original-source logging/controller bridges inside
+the same R27. No new micro-TIP or serving activation follows this local acceptance.
+R21 SLA FAILED/P1, EXE-009 OPEN/P1, candidate NOT_READY, executor OFF and
+TIP-054.5 BLOCKED remain unchanged. No product latency repair is claimed.
+
+## Requirement coverage
+
+| Criterion | Disposition | Evidence and remaining output |
+|---|---|---|
+| R27-001 | PARTIAL | Actual local IPC/parser/logging/controller endpoints verified; full original twenty-family shell/admin/migration/native routing remains NOT_RUN. |
+| R27-002 | PARTIAL | Fourteen local groups pass; exact finite child reap, EOF and owned task joins checked before loop shutdown. Physical SQL and Linux group/descendant lifecycle remain unqualified. |
+| R27-003 | PENDING | No campaign, measured attribution, performance delta or attributable core repair. |
+| R27-004 | PENDING | New authored/interface static checks pass actual backend configuration; no whole-serving-candidate correctness/security/performance qualification. |
+| R27-005 | PASS for this checkpoint | One current Verify, frozen Completion/candidate/binding, independent review, actual Main evidence and retained failures/history. |
+
+Declared local C1–C5 delivery is accepted, including source preparation/default
+denial for unexecuted C3/C4 portions. This does not mean five complete runtime
+families, closure of the original technical criteria or a product completion percentage.
+
+## Delivered and frozen
+
+Implementation: `v2/experiments/action_executor/r27/real_path`.
+Original product204 and test/helper192 files, dependencies and prior sealed
+source/candidates/reviews remain unchanged.
+
+**C1 — actual broker transport and lifecycle.** Authenticated bounded UNIX IPC
+from the pinned finite child routes complete write/LogRecord frames to the sole
+host writer. No artifact root or descriptor is exported. Shape/token/sequence,
+partial/oversize, storage faults and genuine lost ACK after charge reject without
+refund/replay. Creator ownership, stale immutable snapshots and cached iterator
+steps are guarded; native-fspath access denies. Four client tasks, 4MiB frames,
+2MiB raw/snapshot limits and one retained server join bound cooperative operation.
+Socket identity is validated and unlinked before lease release; unresolved cleanup
+retains HOLD. First producer fault remains sticky and preserves exception identity.
+
+The actual finite child control is five seconds, not a 190-second load. Child/server
+share the first absolute ten-second cleanup deadline. Concurrent bounded whole-EOF
+stdout/stderr drains, observed PID absence and named owned task absence are checked
+before event-loop shutdown, including overflow/repeated cancellation. This is not
+Linux process-group/descendant proof, hostile same-UID/native-FD isolation or a
+universal sandbox. Native socket path-length and sandbox permission failures remain
+retained; the final admitted local test uses a bounded repository-relative socket.
+
+**C2 — genuine composition.** Full original signed fixture executes five files/six
+write attempts and genuine PackageParser through generation-checked logical snapshots.
+Actual SOTPublishService construction and inherited method/factory identity are
+checked; only parser storage is replaced. Stage/validate/publish SQL methods are
+not called. Unsafe/missing/extra/corrupt/schema/signature/expiry/curator controls run.
+Lower-parameter line/schema controls do not certify exhaustive production-max boundaries.
+
+**C3 — source-conserved driver and logging.** Complete original driver/baseline ASTs
+are recoverable unchanged after removing four explicit storage/context bindings
+and one readiness call. Nested runpy, argv, seed and code objects are prepared;
+every full execution entry self-DENY before imports/effects. Whole rendered root,
+audit and httpx-style LogRecords preserve formatter/terminator bytes. Logger/global
+state restores, including genuine cold-created logger identities and failure lock
+release. Exact original oracle source/code/line plus complete summary/stdout/sample
+state separates legitimate integrity-valid SLA FAIL from arbitrary Exit1 or caught
+producer fault. No HTTP observations or scheduling-equivalence claim follows.
+
+**C4 — concrete controller endpoints.** Actual correct pinned R21 e1 copy bytes,
+shell literal, returncode line, exclusive local control marker and original R19
+persisted cleanup deadline execute. Full native commands/Linux routines are only
+source-prepared. Pytest JUnit XML and Alembic fileConfig writer seams remain
+UNSUPPORTED_BEFORE_DISPATCH; unexpected native/warnings/tracebacks deny.
+Local control markers are not future campaign markers.
+
+**C5 — frozen evidence.** Four codec/four writer byte substitutions, identical
+interface stub and real-return/interface checks pass. Codec implementation body
+is not strict-type/style body-audited; historical errors are retained.
+Identity is HEAD `0e88f48588dc3228f1ae9eca7a7597d96589af8b` plus frozen
+dirty source bytes, not a new commit or deployed runtime.
+
+- Scope SHA256: `5c64dca6f4ae93bc7445cda7c9190d3401406c9460bfd76376e263532bbc6d64`.
+- Binding: `7c61db96c95f2b12a2de56c9e24ed6e325774b2eca3344e9a4c538fc6286fdf2`.
+- Candidate: `517eb7af2f8774f5a464b7272192cd511ab209eb77a426ef464f591a14044c0e`.
+- Completion: `c596a3f904ed39726f47505364e2a05a52aa2c0f39f3cffff38c363b380ea0c6`.
+- Independent review: `947eb75661e3ce974e751df5a40ce4b3971d1a6df32410bbe9154cfd788f11a1`.
+
+## Actual independent verification
+
+| Check | Main result | Scope and limits |
+|---|---|---|
+| Exact combined groups | 14/14 PASS; wrapper0; 1.98001975s; zero failure/error/skip | Eight core +six peer. Builder same14 passes in1.971779833s; overlap, not28. |
+| Syntax | 14/14 compiled | Complete owned Python/interface set. |
+| Strict mypy | 0 errors /13 surfaces | Explicit backend config, strict, follow-imports=silent, devnull/no-incremental cache. Codec body excluded; interface included. |
+| Ruff / format | 0 errors /12 already formatted bodies | Actual backend config, no-cache; no weakened rules. |
+| Independent source review | Declared local C1–C5 accepted | Source/evidence-only Reviewer; no workload or helper execution. |
+| Main independent graph/AST audit | 2,117 pins /16,438,294B; exact14 identities | Stdlib-only reconstruction, not implementation preservation helper. |
+| Actual preflight | Expected exit2/DENY; source_matches true | All full effects NOT_RUN; not live Linux/DB/resource qualification or a grant. |
+| Whole backend/build, SQL/HTTP/load/native/Linux groups, restore/migration/provider/power-cut | NOT_RUN | No full-runtime, latency or release certification. |
+
+Actual Python3.12.11. Two pytest configuration warnings remain because plugin
+autoload is disabled while backend config names asyncio settings. Local paths use
+asyncio.run and skip none; this is not whole-backend clean health.
+
+The prior expansion is **2,011 pins /15,440,912B**: historical2,010 plus its binding
+anchor. New graph has106 direct pins/one recursive anchor; candidate54 includes all
+fourteen owned code/interface files. Product204/test192 digests are respectively
+`b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641` and
+`5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1`.
+Pyproject/uv.lock, old source and sealed broker/runtime/retention evidence are preserved.
+Older broker14 groups/27 fake-engine units remain historical, not new runtime proof.
+
+## Capacity and remaining prerequisites
+
+Operative lifetime file/PRE record capacities remain **32/32**. Full historical
+HTTP paths need at least69 entries; original PRE needs53 records. Proposed96/PRE64
+is **NOT_ADOPTED**, awaiting the single material Homeowner decision. Twenty families,
+10MiB aggregate,16KiB metadata and no-refund physical-copy accounting remain fixed.
+No truncation, record splitting or output dropping can manufacture full-path fit.
+
+Preflight marker field `ABSENT_NOT_CONSUMED_THIS_BATCH` is fixed batch nonconsumption
+metadata, not a fresh filesystem check of a configured future marker. Candidate has
+no such marker path. Do not interpret it as live marker-absence/admission evidence.
+Full-driver httpx/fastapi/redis dependency surface, actual XML/Alembic seams,
+unexpected native output, live fixture/owned databases, physical SQL and Linux
+cleanup remain unqualified. No installation or effect permission is inferred.
+
+## Preserved failures and cleanup
+
+Peer e1 retained4PASS/2expectationFAIL; peer e2 passes6. Core e1/e2 each retained
+1PASS/7FAIL at long socket path then bindEPERM, before child launch. Unchanged
+permissioned local controls subsequently pass. Initial static/style findings and
+source epochs remain; no failure erased or broad sandbox-neutrality claim.
+One source-snapshot assembly extra LF was explicitly corrected and documented.
+
+All owned small test directories were automatically removed; one author-created
+transport pyc and its empty directory were removed. No whole-project copy, dependency
+install/venv, new build tree, Docker/SQL resource or broad cache deletion. The unrelated
+old backend cache and other dirty work are preserved. No campaign, external processing,
+Git write/rebuild, serving activation or TIP-054.5 transition occurred.
+The four previous current publications are retained byte-for-byte under
+`real_path/history/previous-publication`; frozen prior evidence remains separate.
+
+## Next cohesive step within R27
+
+Resolve the pending capacity decision, close the actual unsupported XML/Alembic/native
+writer seams and validate full source-closed dependency/lifecycle prerequisites before
+requesting one exact source-bound measurement grant. No new toy model, generic
+architecture approval, automatic campaign or speculative latency tuning.
+
+Preserve original16cells/1,600 requested observations, c1/10/25/50,100 cases per
+operation, admission/submit/status/cancel, p95500ms admission/1,000ms others,
+zero errors, pool5+5/pre_ping, timeout0.9s, quotas5,000, load190s/shared cleanup10s
+and retained10MiB. Prior consumed allowances are not renewed. No retry, threshold
+relaxation, release or executor activation follows automatically.
+
+## Evidence
+
+- [Scope](../v2/experiments/action_executor/r27/real_path/SCOPE.md) · [Completion](../v2/experiments/action_executor/r27/real_path/COMPLETION.md) · [independent review](R27_REAL_PATH_REVIEW_REPORT.md)
+- [Binding](../v2/experiments/action_executor/r27/real_path/input-binding.json) · [candidate](../v2/experiments/action_executor/r27/real_path/candidate.json) · [routing](../v2/experiments/action_executor/r27/real_path/routing.json)
+- [Main actual controls](../v2/experiments/action_executor/r27/real_path/main-feedback.json) · [health](../v2/experiments/action_executor/r27/real_path/main-health.json) · [preflight](../v2/experiments/action_executor/r27/real_path/main-preflight.json) · [independent structural audit](../v2/experiments/action_executor/r27/real_path/main-structural-check.json)
+- [Builder controls](../v2/experiments/action_executor/r27/real_path/author-feedback.json) · [health](../v2/experiments/action_executor/r27/real_path/author-health.json)
+- [Previous broker Verify](../v2/experiments/action_executor/r27/real_path/history/previous-publication/broker-verify.md.original) · [historical broker review](R27_BROKER_REVIEW_REPORT.md)

@@ -1,0 +1,172 @@
+"""Four actual local native EOF/lifecycle groups; no effectful command qualification."""
+
+from __future__ import annotations
+
+import asyncio
+import tempfile
+from collections.abc import Iterator
+from pathlib import Path
+from unittest.mock import patch
+
+import adapter
+import pytest
+from host import HostPort, OwnedBroker
+from writer import recover
+
+import native_seam
+
+HERE = Path(__file__).absolute().parent
+REFERENCE = HERE.parent / "real_path"
+
+
+@pytest.fixture
+def owned() -> Iterator[Path]:
+    with tempfile.TemporaryDirectory(prefix=".closure-native-", dir=REFERENCE) as name:
+        yield Path(name)
+
+
+def joined() -> None:
+    assert not [
+        t for t in asyncio.all_tasks() if t.get_name().startswith("r27-") and not t.done()
+    ]
+
+
+def incomplete(broker: OwnedBroker, root: Path) -> None:
+    with pytest.raises(adapter.PacketError):
+        broker.finish()
+    assert not (root / "packet/seal.bin").exists()
+    broker.abandon()
+
+
+def test_real_native_whole_eof_dual_physical_charge_recovery(owned: Path) -> None:
+    root = owned / "capture"
+    broker = OwnedBroker(root)
+    with HostPort(broker) as port:
+        async def run() -> None:
+            result = await native_seam.run(broker, port)
+            assert result.stdout == b"\x00\xffwhole-native-stdout\n"
+            assert result.stderr == b"\xffwhole-native-stderr\n"
+            assert result.code == 0 and result.reaped and result.tasks_joined
+            assert native_seam.absent(result.pid)
+            assert str(root).encode() not in result.stdout + result.stderr
+            joined()
+
+        asyncio.run(run())
+    result = broker.finish()
+    records = result["records"]
+    assert records[:2] == [
+        ("source_cap_child", 1, 0, b"\x00\xffwhole-native-stdout\n"),
+        ("source_cap_child", 1, 1, b"\xffwhole-native-stderr\n"),
+    ]
+    assert result["physical_attempt_bytes"] == len(records[0][3]) + len(records[1][3])
+    assert result["charge"] > result["stored_bytes"] + result["physical_attempt_bytes"]
+    assert recover(root) == result
+    disk_root = owned / "host_df"
+    disk_broker = OwnedBroker(disk_root)
+    with HostPort(disk_broker) as port:
+        async def df() -> None:
+            actual = await native_seam.run(disk_broker, port, kind="host_df")
+            assert actual.code == 0 and actual.stderr == b""
+            assert actual.stdout.startswith(b"Filesystem") and len(actual.stdout.splitlines()) == 2
+            assert native_seam.absent(actual.pid)
+            assert port.read("native/host_df.stdout") == actual.stdout
+            joined()
+
+        asyncio.run(df())
+    disk = disk_broker.finish()
+    assert [r[0] for r in disk["records"][:2]] == ["disk", "disk"]
+    assert recover(disk_root) == disk
+
+
+def test_unknown_source_and_whole_overflow_deny_not_chunk_split(owned: Path) -> None:
+    for mode in ("source", "overflow"):
+        root = owned / mode
+        broker = OwnedBroker(root)
+        processes: list[asyncio.subprocess.Process] = []
+        with HostPort(broker) as port:
+            async def run(case: str = mode) -> None:
+                if case == "source":
+                    with patch.object(native_seam, "CHILD_SHA", "0" * 64):
+                        with pytest.raises(ValueError) as caught:
+                            await native_seam.run(broker, port, observe=processes.append)
+                    assert not processes and broker.first_fault is caught.value
+                else:
+                    with pytest.raises(ValueError, match="never split") as caught:
+                        await native_seam.run(broker, port, "overflow", observe=processes.append)
+                    assert broker.first_fault is caught.value
+                    assert all(p.returncode is not None and native_seam.absent(p.pid) for p in processes)
+                assert not list((root / "files").iterdir())
+                joined()
+
+            asyncio.run(run())
+        incomplete(broker, root)
+    with pytest.raises(PermissionError):
+        native_seam.dispatch(("psql", "--arbitrary"))
+
+
+def test_nonzero_retains_original_whole_raw_but_never_qualifies(owned: Path) -> None:
+    root = owned / "nonzero"
+    broker = OwnedBroker(root)
+    processes: list[asyncio.subprocess.Process] = []
+    with HostPort(broker) as port:
+        async def run() -> None:
+            with pytest.raises(native_seam.NativeFailure) as caught:
+                await native_seam.run(broker, port, "nonzero", observe=processes.append)
+            assert broker.first_fault is caught.value
+            assert len(processes) == 1 and processes[0].returncode == 3
+            assert native_seam.absent(processes[0].pid)
+            joined()
+
+        asyncio.run(run())
+    assert (root / "files/native/control.stdout").read_bytes() == b"\x00\xffwhole-native-stdout\n"
+    assert (root / "files/native/control.stderr").read_bytes() == b"\xffwhole-native-stderr\n"
+    assert len(broker._payloads()) == 2
+    incomplete(broker, root)
+
+
+def test_deadline_repeated_cancel_active_seal_and_cleanup_fault_identity(owned: Path) -> None:
+    for mode in ("deadline", "cancel", "active_finish", "cleanup_fault"):
+        root = owned / mode
+        broker = OwnedBroker(root)
+        processes: list[asyncio.subprocess.Process] = []
+        lifetime = native_seam.Cleanup()
+        with HostPort(broker) as port:
+            async def run(case: str = mode) -> None:
+                started = asyncio.Event()
+
+                def observe(process: asyncio.subprocess.Process) -> None:
+                    processes.append(process)
+                    started.set()
+
+                task = asyncio.create_task(
+                    native_seam.run(broker, port, "delay", cleanup=lifetime,
+                                    seconds=0.01 if case in {"deadline", "cleanup_fault"} else 5,
+                                    observe=observe),
+                    name="r27-native-test",
+                )
+                await started.wait()
+                if case == "active_finish":
+                    with pytest.raises(adapter.PacketError):
+                        broker.finish()
+                if case == "cancel":
+                    task.cancel("first")
+                    await asyncio.sleep(0)
+                    task.cancel("repeated")
+                if case == "cleanup_fault":
+                    fault = OSError("owned terminate failure")
+                    with patch.object(processes[0], "terminate", side_effect=fault):
+                        with pytest.raises(TimeoutError) as caught:
+                            await task
+                    assert caught.value.__cause__ is fault
+                    assert broker.first_fault is caught.value
+                else:
+                    with pytest.raises((TimeoutError, asyncio.CancelledError, adapter.PacketError)):
+                        await task
+                deadline = lifetime.deadline
+                lifetime.remaining()
+                assert lifetime.deadline == deadline
+                assert all(p.returncode is not None and native_seam.absent(p.pid) for p in processes)
+                joined()
+
+            asyncio.run(run())
+        incomplete(broker, root)

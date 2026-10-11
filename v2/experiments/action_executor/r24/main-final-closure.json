@@ -1,0 +1,58 @@
+{
+  "schema": "r24-main-final-closure-v1",
+  "date": "2026-10-10",
+  "scope": "offline whole capture budget analysis, not runtime certification",
+  "analysis_requirements": {
+    "accepted": 4,
+    "total": 4,
+    "coverage_percent": 100
+  },
+  "controls": {
+    "unique_groups": 6,
+    "passed": 6,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "main_same_groups_overlap": true,
+    "syntax_files": 2
+  },
+  "capture": {
+    "admission": "HOLD",
+    "budget_closed": false,
+    "total_upper_bytes": null,
+    "fixed_subtotal_bytes": 6046
+  },
+  "evidence_seal": {
+    "path": "v2/experiments/action_executor/r24/main-evidence-binding.sha256",
+    "sha256": "6406b3cfeafd057920594945d5807eaf68f712ba2f8b7b5e513fc8b784fc01cb",
+    "entries": 22,
+    "artifact_bytes": 130880
+  },
+  "input_binding_sha256": "34f6c3f85d1c2468731b0ba0fa103d49c2fd71abc3af44811b71de507ce4ca00",
+  "preservation": {
+    "prior_pins": 1762,
+    "prior_bytes": 13498377,
+    "total_bound_pins": 1771,
+    "total_bound_bytes": 13587654,
+    "product_files": 204,
+    "test_files": 192
+  },
+  "publication_epoch": {
+    "docs/enterprise-os/IMPLEMENTATION_STATUS.md": "0ac66df29daa9a22a93375e5c9ef63672a2c01f62d0af61aa8295b1c981827bc",
+    "docs/enterprise-os/TASK_GRAPH.md": "98fcea26586ab13e523431e58a790617edbcf693fbd23102420adb182f259a2f",
+    "vibecode_v2/03_TASK_GRAPH.md": "fc7530b3d474320ce2861de548efec92272b6234d13c7e5831fa64197d8fb5aa"
+  },
+  "publication_note": "Current status hashes are point-in-time metadata; immutable historical reports and evidence remain sealed.",
+  "gates": {
+    "r21_sla": "FAILED/P1",
+    "exe009": "OPEN/P1",
+    "candidate": "NOT_READY",
+    "serving_executor": "OFF",
+    "tip054_5": "BLOCKED"
+  },
+  "next_proposal": "R25 bounded producer envelope design; narrowed experimental retention/error contract requires Homeowner approval; no implementation/capture allowance",
+  "runtime_executed": false,
+  "external_executed": false,
+  "resources_created": [],
+  "resources_removed": []
+}

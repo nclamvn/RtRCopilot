@@ -1,0 +1,379 @@
+"""One typed local package check: preservation, real codec interface, scoped controls."""
+
+from __future__ import annotations
+
+import ast
+import hashlib
+import io
+import json
+import tempfile
+import time
+from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path
+from typing import TypedDict, cast
+
+import adapter
+import pytest
+from broker import BASE as CONTRACT_PATH
+from broker import EPOCH, mapping
+
+HERE = Path(__file__).absolute().parent
+ROOT = HERE.parents[4]
+BASE = "v2/experiments/action_executor/"
+
+
+class Preservation(TypedDict):
+    prior_pins: int
+    prior_bytes: int
+    total_pins: int
+    input_bytes: int
+    digests: dict[str, str]
+    scope_counts: dict[str, int]
+
+
+def digest(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def read(name: str) -> bytes:
+    path = Path(name)
+    adapter.need(
+        not path.is_absolute() and ".." not in path.parts and name == path.as_posix(),
+        "input path",
+    )
+    adapter.need(
+        not any(
+            (ROOT / Path(*path.parts[:i])).is_symlink()
+            for i in range(1, len(path.parts) + 1)
+        ),
+        "input symlink",
+    )
+    adapter.need((ROOT / path).stat().st_size <= 33554432, "input cap")
+    return (ROOT / path).read_bytes()
+
+
+def strings(value: object) -> list[str]:
+    if not isinstance(value, list) or any(type(v) is not str for v in value):
+        raise adapter.PacketError("string array")
+    return cast(list[str], value)
+
+
+def pins_map(value: object) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for name, expected in mapping(value).items():
+        if type(expected) is not str or len(expected) != 64:
+            raise adapter.PacketError("SHA256 pin")
+        result[name] = expected
+    return result
+
+
+def preserve() -> Preservation:
+    binding = mapping(json.loads((HERE / "input-binding.json").read_bytes()))
+    anchors = pins_map(binding["anchors"])
+    pins: dict[str, str] = {}
+    pending, expanded = list(anchors), set[str]()
+
+    def add(items: dict[str, str]) -> None:
+        for path, expected in items.items():
+            adapter.need(path not in pins or pins[path] == expected, "conflicting pin")
+            pins[path] = expected
+
+    add(anchors)
+    while pending:
+        path = pending.pop()
+        if path in expanded:
+            continue
+        expanded.add(path)
+        data = read(path)
+        adapter.need(digest(data) == pins[path], "anchor drift")
+        if path.endswith(".sha256"):
+            items: dict[str, str] = {}
+            for line in data.decode().splitlines():
+                value, name = line.split("  ", 1)
+                adapter.need(name not in items, "duplicate seal entry")
+                items[name] = value
+            add(items)
+        elif path.endswith("input-binding.json") or "/source-binding-e" in path:
+            previous = mapping(json.loads(data))
+            add(pins_map(previous.get("files", {})))
+            add(pins_map(previous.get("direct", {})))
+            for field in ("anchors", "links"):
+                linked = pins_map(previous.get(field, {}))
+                add(linked)
+                pending.extend(linked)
+    prior_count, prior_bytes = len(pins), sum(len(read(p)) for p in pins)
+    add(pins_map(binding["direct"]))
+    total = 0
+    for path, expected in pins.items():
+        data = read(path)
+        total += len(data)
+        adapter.need(total <= 33554432 and digest(data) == expected, "input drift/cap")
+    source = mapping(json.loads(read(BASE + "r18/source-binding-e3.json")))
+    scopes = mapping(source["scopes"])
+    digests = pins_map(source["digests"])
+    counts: dict[str, int] = {}
+    ignored = {"__pycache__", ".pytest_cache", ".ruff_cache"}
+    for scope, raw_paths in scopes.items():
+        paths = strings(raw_paths)
+        dirs = ("src", "migrations") if scope == "product" else ("tests",)
+        actual: list[str] = []
+        for directory in dirs:
+            for source_path in (ROOT / "v2/apps/backend" / directory).rglob("*"):
+                relative = source_path.relative_to(ROOT)
+                if ignored.intersection(relative.parts) or source_path.suffix == ".pyc":
+                    continue
+                adapter.need(not source_path.is_symlink(), "source symlink")
+                if source_path.is_file():
+                    actual.append(relative.as_posix())
+        actual += [p for p in paths if not any("/" + d + "/" in p for d in dirs)]
+        adapter.need(sorted(actual) == paths, "inventory drift")
+        adapter.need(
+            digest("".join(pins[p] + "  " + p + "\n" for p in paths).encode())
+            == digests[scope],
+            "source digest",
+        )
+        counts[scope] = len(paths)
+    return {
+        "prior_pins": prior_count,
+        "prior_bytes": prior_bytes,
+        "total_pins": len(pins),
+        "input_bytes": total,
+        "digests": digests,
+        "scope_counts": counts,
+    }
+
+
+def signature(node: ast.FunctionDef) -> tuple[object, ...]:
+    args = node.args
+    return (
+        tuple(a.arg for a in args.posonlyargs),
+        tuple(a.arg for a in args.args),
+        tuple(a.arg for a in args.kwonlyargs),
+        args.vararg.arg if args.vararg else None,
+        args.kwarg.arg if args.kwarg else None,
+        len(args.defaults),
+        tuple(v is not None for v in args.kw_defaults),
+    )
+
+
+def codec_interface() -> dict[str, object]:
+    body = (HERE / "adapter.py").read_bytes()
+    prior = read(BASE + "r27/runtime/adapter.py")
+    expected = (
+        prior.replace(b"R27 runtime derived", b"R27 broker derived")
+        .replace(b"outside runtime", b"outside broker")
+        .replace(b"R27OWNR2", b"R27OWNB1")
+        .replace(b"R27SEAR2", b"R27SEAB1")
+    )
+    adapter.need(body == expected, "exact codec derivation")
+    tree, stub = ast.parse(body), ast.parse((HERE / "adapter.pyi").read_bytes())
+    actual_functions = {n.name: n for n in tree.body if isinstance(n, ast.FunctionDef)}
+    checked: list[str] = []
+    for node in stub.body:
+        if isinstance(node, ast.FunctionDef):
+            adapter.need(
+                signature(node) == signature(actual_functions[node.name]),
+                "codec function interface",
+            )
+            checked.append(node.name)
+        if isinstance(node, ast.ClassDef) and node.name == "Writer":
+            actual = next(
+                n
+                for n in tree.body
+                if isinstance(n, ast.ClassDef) and n.name == "Writer"
+            )
+            methods = {n.name: n for n in actual.body if isinstance(n, ast.FunctionDef)}
+            assigned = {
+                n.attr
+                for n in ast.walk(actual)
+                if isinstance(n, ast.Attribute) and isinstance(n.ctx, ast.Store)
+            }
+            for member in node.body:
+                if isinstance(member, ast.FunctionDef):
+                    adapter.need(
+                        signature(member) == signature(methods[member.name]),
+                        "codec method interface",
+                    )
+                    checked.append("Writer." + member.name)
+                elif isinstance(member, ast.AnnAssign) and isinstance(
+                    member.target, ast.Name
+                ):
+                    adapter.need(
+                        member.target.id in assigned, "codec attribute interface"
+                    )
+    CONTRACT_BYTES = CONTRACT_PATH.read_bytes()
+    CONTRACT: object = json.loads(CONTRACT_BYTES)
+
+    with tempfile.TemporaryDirectory(prefix=".broker-codec-", dir=HERE) as temporary:
+        path = Path(temporary) / "packet"
+        writer = adapter.Writer(path, CONTRACT, CONTRACT_BYTES, EPOCH)
+        try:
+            adapter.need(
+                isinstance(writer.packet, io.FileIO), "real codec binary stream"
+            )
+            adapter.need(
+                writer.emit("journal", "data", b"\x00\xff\n") == 0,
+                "real sequence return",
+            )
+            for family in adapter.IDS:
+                writer.close_family(family)
+            writer.finish()
+            result = adapter.recover(path, CONTRACT, CONTRACT_BYTES, EPOCH)
+            adapter.need(
+                set(result)
+                == {
+                    "prototype_complete",
+                    "records",
+                    "stored_bytes",
+                    "actual_capture_admission",
+                    "power_loss_proved",
+                },
+                "real recovery keys",
+            )
+            adapter.need(
+                result["prototype_complete"] is True
+                and result["power_loss_proved"] is False
+                and type(result["stored_bytes"]) is int
+                and result["actual_capture_admission"] == "HOLD",
+                "real recovery scalar types",
+            )
+            adapter.need(
+                result["records"] == [("journal", 1, 0, b"\x00\xff\n")],
+                "real record interface",
+            )
+            adapter.need(
+                adapter.parse((path / "packet.bin").read_bytes(), writer.rules)
+                == result["records"],
+                "parse interface",
+            )
+        finally:
+            writer.abandon()
+    return {
+        "functions": checked,
+        "real_return_shape": "PASS",
+        "codec_body_strict_audit": False,
+        "derivative_sha256": digest(body),
+        "stub_sha256": digest((HERE / "adapter.pyi").read_bytes()),
+    }
+
+
+def main() -> None:
+    before = preserve()
+    files = sorted(p.name for p in HERE.iterdir() if p.suffix in (".py", ".pyi"))
+    files += [
+        "SCOPE.md",
+        "boundary.json",
+        "input-binding.json",
+        "candidate.json",
+        "routing.json",
+    ]
+    source_before = {name: digest((HERE / name).read_bytes()) for name in files}
+    interface = codec_interface()
+    for name in files:
+        if name.endswith((".py", ".pyi")):
+            compile((HERE / name).read_text(), name, "exec")
+    sandbox_before = sandboxes()
+    stream = io.StringIO()
+    start = time.monotonic()
+    collector = ControlCollector()
+    with (
+        tempfile.TemporaryDirectory(prefix=".broker-pytest-", dir=HERE) as temporary,
+        redirect_stdout(stream),
+        redirect_stderr(stream),
+    ):
+        result = pytest.main(
+            [
+                "-c",
+                str(ROOT / "v2/apps/backend/pyproject.toml"),
+                "--confcutdir=" + str(HERE),
+                "-p",
+                "no:cacheprovider",
+                "--basetemp=" + str(Path(temporary) / "pytest"),
+                "-q",
+                str(HERE / "test_broker.py"),
+                str(HERE / "test_integration.py"),
+            ],
+            plugins=[collector],
+        )
+    elapsed = time.monotonic() - start
+    after = preserve()
+    source_after = {name: digest((HERE / name).read_bytes()) for name in files}
+    sandbox_after = sandboxes()
+    print(
+        json.dumps(
+            {
+                "before": before,
+                "after": after,
+                "source_before": source_before,
+                "source_after": source_after,
+                "codec_interface": interface,
+                "tests_run": len(collector.calls),
+                "collected": collector.collected,
+                "exit_code": int(result),
+                "failures": collector.failures,
+                "errors": collector.errors,
+                "skips": collector.skips,
+                "stdout": stream.getvalue(),
+                "seconds": elapsed,
+                "compiled_files": sum(n.endswith((".py", ".pyi")) for n in files),
+                "sandboxes_before": sandbox_before,
+                "sandboxes_after": sandbox_after,
+                "measurement_admission": "HOLD",
+                "platform_boundary": "APPROVED_SEPARATE_DISCLOSED_AUDIT",
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    adapter.need(
+        int(result) == 0
+        and len(collector.calls) == 14
+        and before == after
+        and source_before == source_after
+        and sandbox_before == sandbox_after,
+        "tests/preservation/cleanup",
+    )
+
+
+def sandboxes() -> list[str]:
+    return sorted(
+        p.name for p in HERE.iterdir() if p.is_dir() and p.name.startswith(".broker-")
+    )
+
+
+class ControlCollector:
+    def __init__(self) -> None:
+        self.calls: set[str] = set()
+        self.collected: list[str] = []
+        self.failures = self.errors = self.skips = 0
+
+    def pytest_collection_modifyitems(self, items: list[pytest.Item]) -> None:
+        expected: set[tuple[str, str]] = set()
+        for name in ("test_broker.py", "test_integration.py"):
+            tree = ast.parse((HERE / name).read_bytes())
+            for node in ast.walk(tree):
+                if isinstance(
+                    node, ast.FunctionDef | ast.AsyncFunctionDef
+                ) and node.name.startswith("test_"):
+                    expected.add((name, node.name))
+        actual = [(Path(item.path).name, item.name) for item in items]
+        adapter.need(
+            len(items) == 14
+            and len(expected) == 14
+            and set(actual) == expected
+            and all(Path(item.path).absolute().parent == HERE for item in items),
+            "exact fourteen source-bound controls",
+        )
+        self.collected = [item.nodeid for item in items]
+
+    def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
+        if report.when == "call":
+            self.calls.add(report.nodeid)
+            self.failures += int(report.failed)
+        elif report.failed:
+            self.errors += 1
+        self.skips += int(report.skipped)
+
+
+if __name__ == "__main__":
+    main()

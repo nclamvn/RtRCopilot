@@ -1,0 +1,12 @@
+{
+  "source_binding": "v2/experiments/action_executor/r17/source-binding-e4.sha256",
+  "command": "PYTHONDONTWRITEBYTECODE=1 python3 v2/experiments/action_executor/r17/gate.py collection v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1/r15/pre_e1/collection.stdout.txt v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1/r17/pre_e1/collection.stdout.txt v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1/r17/collection_e4/campaign.stdout.txt",
+  "scope": "host offline/read-only only",
+  "actual": {
+    "chunk_id": "87b593",
+    "wall_time_seconds": 0.000008583,
+    "exit_code": 0,
+    "original_token_count": 8,
+    "output": "R17_ADMISSION_PASS collection\n"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "scope": "five peer authored modules only; runtime no effects; actual eight grouped controls separately retained",
+  "results": [
+    {
+      "name": "mypy",
+      "chunk_id": "6804d6",
+      "wall_time_seconds": 9.262896458,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 5 source files\n"
+    },
+    {
+      "name": "ruff",
+      "chunk_id": "b98d9d",
+      "wall_time_seconds": 0.002954459,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    },
+    {
+      "name": "syntax",
+      "chunk_id": "33bb6b",
+      "wall_time_seconds": 0.005171,
+      "exit_code": 0,
+      "original_token_count": 8,
+      "output": "syntax zero: five source files\n"
+    },
+    {
+      "name": "source_binding",
+      "chunk_id": "d0f75e",
+      "wall_time_seconds": 0.071532459,
+      "exit_code": 0,
+      "original_token_count": 154,
+      "output": "cd56a42cb0c4c194d12d61219e7479c6e467e72b05b6480d754a4580b2ef9136  v2/experiments/action_executor/r27/broker/integration.py\ncb20c9c6c0f6d03628e0facf3feca5b7442f859a20281d52207fdb3b259fa530  v2/experiments/action_executor/r27/broker/supervisor.py\n8056250b380f7d373284de6e21718d063930bca5942c7cb2bd79b1df37fb0ea4  v2/experiments/action_executor/r27/broker/routing.py\nacf57b5b4b2319c6ef2bf3fcdb7848c8373477f92165c406fbebfe5ead292133  v2/experiments/action_executor/r27/broker/preflight.py\ndc32e2f923775946b3014cb9b24223b40bc2fb6f82c5151cf69c979bdd12ca57  v2/experiments/action_executor/r27/broker/test_integration.py\n"
+    },
+    {
+      "name": "xml_inventory",
+      "chunk_id": "562ccd",
+      "wall_time_seconds": 0.00000825,
+      "exit_code": 0,
+      "original_token_count": 126,
+      "output": "[\"test_exact_driver_journal_summary_final_and_known_oracle\", \"test_full_pure_fixture_copy_temp_and_cached_native_denial\", \"test_original_shell_copy_literals_and_actual_audit_restoration\", \"test_scoped_fault_stale_foreign_and_close_restore_primary\", \"test_exact_owned_child_whole_eof_and_no_root_delivery\", \"test_child_repeated_cancel_one_deadline_and_overflow\", \"test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap\", \"test_frozen_preflight_readonly_fresh_namespace_untrusted_grant_deny\"]\n"
+    }
+  ]
+}

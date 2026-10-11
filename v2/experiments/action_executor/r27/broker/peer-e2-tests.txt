@@ -1,0 +1,213 @@
+Actual eight grouped integration controls, first runtime epoch. Exit 1
+.FFF.FFF                                                                 [100%]
+=================================== FAILURES ===================================
+__________ test_full_pure_fixture_copy_temp_and_cached_native_denial ___________
+
+owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-5nncyhfs')
+
+    def test_full_pure_fixture_copy_temp_and_cached_native_denial(owned: Path) -> None:
+        root = owned / "fixture"
+        broker = Broker(root)
+>       package = signed_fixture(broker, broker.path("fixture", "signed_fixture"))
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+v2/experiments/action_executor/r27/broker/test_integration.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+v2/experiments/action_executor/r27/broker/broker.py:239: in path
+    self.fail("path family")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <broker.Broker object at 0x107384200>, reason = 'path family'
+
+    def fail(self, reason: str) -> NoReturn:
+        self.invalidate()
+>       raise adapter.PacketError(reason)
+E       adapter.PacketError: path family
+
+v2/experiments/action_executor/r27/broker/broker.py:141: PacketError
+________ test_original_shell_copy_literals_and_actual_audit_restoration ________
+
+owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-0uw5l1u_')
+
+    def test_original_shell_copy_literals_and_actual_audit_restoration(owned: Path) -> None:
+        root = owned / "source"
+        broker = Broker(root)
+        shell_outputs(broker)
+        cache = vars(audit_logger)["_cache"]
+        assert isinstance(cache, dict)
+        snapshot = dict(cache)
+        old = (sys.stdout, audit_logger.handlers, audit_logger.filters, audit_logger.level,
+               audit_logger.propagate, audit_logger.disabled)
+        producer = Producers(broker)
+        with output_scope(broker):
+            for _ in range(40):
+                producer.audit()
+        assert old == (sys.stdout, audit_logger.handlers, audit_logger.filters, audit_logger.level,
+                       audit_logger.propagate, audit_logger.disabled)
+        assert vars(audit_logger)["_cache"] is cache and cache == snapshot
+        result = broker.finish()
+        assert sum(row[0] == "frozen_copies" for row in result["records"]) == 2
+        assert sum(row[0] == "load_stderr" for row in result["records"]) == 40
+>       assert result["platform_audit"] == "SEPARATE_DISCLOSED_NOT_BROKER_CONTROLLED"
+E       AssertionError: assert 'SEPARATE_DIS...IFYING_PACKET' == 'SEPARATE_DIS...ER_CONTROLLED'
+E         
+E         - SEPARATE_DISCLOSED_NOT_BROKER_CONTROLLED
+E         + SEPARATE_DISCLOSED_OUTSIDE_QUALIFYING_PACKET
+
+v2/experiments/action_executor/r27/broker/test_integration.py:121: AssertionError
+__________ test_scoped_fault_stale_foreign_and_close_restore_primary ___________
+
+owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-zpi211w5')
+
+    def test_scoped_fault_stale_foreign_and_close_restore_primary(owned: Path) -> None:
+        for fault in ("encode", "type", "stale", "foreign", "source", "close"):
+            root = owned / fault
+            broker = Broker(root)
+            stdout, cache = sys.stdout, vars(audit_logger)["_cache"]
+            if fault == "source":
+                prep_error = OSError("source preparation")
+                with patch("integration.source", side_effect=prep_error), pytest.raises(OSError) as prep_caught:
+                    Producers(broker)
+                assert prep_caught.value is prep_error
+            elif fault == "close":
+                original, cleanup = RuntimeError("primary"), OSError("handler close")
+                with patch.object(RaisingHandler, "close", side_effect=cleanup), pytest.raises(RuntimeError) as caught:
+                    with output_scope(broker):
+                        raise original
+                assert caught.value is original and original.__cause__ is cleanup
+                # A failed close must not strand the global lock.
+                fresh = Broker(owned / "after-close")
+                with output_scope(fresh):
+                    pass
+                fresh.finish()
+            else:
+                stream = BrokerStream(broker, "summary_stdout")
+                if fault == "encode":
+                    with pytest.raises(UnicodeEncodeError):
+                        stream.write("\ud800")
+                elif fault == "type":
+                    with pytest.raises(TypeError):
+                        stream.write(cast(str, 7))
+                elif fault == "stale":
+                    stream.close_scope()
+                    with pytest.raises(ValueError):
+                        stream.flush()
+                else:
+                    failures: list[BaseException] = []
+                    def foreign() -> None:
+                        try:
+                            stream.write("foreign")
+                        except BaseException as error:
+                            failures.append(error)
+                    thread = threading.Thread(target=foreign)
+                    thread.start()
+                    thread.join()
+                    assert len(failures) == 1 and isinstance(failures[0], ValueError)
+                if stream.active:
+>                   stream.close_scope()
+
+v2/experiments/action_executor/r27/broker/test_integration.py:170: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+v2/experiments/action_executor/r27/broker/integration.py:119: in close_scope
+    self.__file.close()
+v2/experiments/action_executor/r27/broker/broker.py:604: in close
+    self._path._broker._guard(self._path._token)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <broker.Broker object at 0x1073878c0>
+token = 'a453612f21b44105bc66dcd24e73f52f'
+
+    def _guard(self, token: str | None = None) -> None:
+        if (
+            threading.get_ident() != self._owner
+            or self._finished
+            or self._writer.closed
+            or self._writer.finished
+            or (token is not None and token != self._token)
+        ):
+            self.fail("creator/active capability epoch")
+        if self._writer.flags:
+>           raise adapter.PacketError("sticky incomplete epoch")
+E           adapter.PacketError: sticky incomplete epoch
+
+v2/experiments/action_executor/r27/broker/broker.py:153: PacketError
+_____________ test_child_repeated_cancel_one_deadline_and_overflow _____________
+
+owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-0n203fmy')
+
+    def test_child_repeated_cancel_one_deadline_and_overflow(owned: Path) -> None:
+        root = owned / "cancel"
+        broker = Broker(root)
+        async def cancel() -> asyncio.CancelledError:
+            started = asyncio.Event()
+            task = asyncio.create_task(owned_child(broker, "delay", started))
+            await started.wait()
+            task.cancel("first cancellation")
+            await asyncio.sleep(0)
+            task.cancel("repeated cancellation")
+            try:
+                await task
+            except asyncio.CancelledError as error:
+                return error
+            raise AssertionError("cancellation required")
+        error = asyncio.run(cancel())
+        assert error.args == ("first cancellation",)
+        owner = json.loads((root / "files/supervisor/owner.json").read_bytes())
+        process = json.loads((root / "files/supervisor/process.json").read_bytes())
+>       assert owner["cleanup_deadline"] is not None and process["cleanup_deadline"] == owner["cleanup_deadline"]
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'cleanup_deadline'
+
+v2/experiments/action_executor/r27/broker/test_integration.py:218: KeyError
+_______ test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap _______
+
+owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-ara72ezk')
+
+    def test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap(owned: Path) -> None:
+        root = owned / "spawn"
+        broker = Broker(root)
+        original = OSError("exact spawn failed")
+        async def fail_spawn(*_args: object, **_keywords: object) -> asyncio.subprocess.Process:
+            raise original
+        with patch("supervisor.asyncio.create_subprocess_exec", fail_spawn), pytest.raises(OSError) as caught:
+            asyncio.run(owned_child(broker))
+        assert caught.value is original and isinstance(original.__cause__, RuntimeError)
+        assert not (root / "files/supervisor/process.json").exists()
+        incomplete(broker, root)
+        root = owned / "metadata"
+        broker = Broker(root, {"native_write": "raise"})
+        real = asyncio.create_subprocess_exec
+        children: list[asyncio.subprocess.Process] = []
+        async def remember(*args: str, **kwargs: object) -> asyncio.subprocess.Process:
+            # Fixed call shape; retain exact Process only to assert terminal ownership.
+            child = await real(*args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                               limit=4096, cwd=CHILD.parent,
+                               env={"PATH": "/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1"})
+            children.append(child)
+            return child
+>       with patch("supervisor.asyncio.create_subprocess_exec", remember), pytest.raises(OSError):
+                                                                           ^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'OSError'>
+
+v2/experiments/action_executor/r27/broker/test_integration.py:255: Failed
+_____ test_frozen_preflight_readonly_fresh_namespace_untrusted_grant_deny ______
+
+owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-skyfr6ix')
+
+    def test_frozen_preflight_readonly_fresh_namespace_untrusted_grant_deny(owned: Path) -> None:
+        frozen = candidate()
+        plan = canonical(frozen["plan"])
+        assert EPOCH.encode() in plan and b"rtr_tip054_r27_broker_local_e1" in plan
+>       assert b"r27_runtime_http_e1" not in plan
+E       assert b'r27_runtime_http_e1' not in b'{"broker_identity_substitutions":{"r27-runtime-campaign-launch.json":"r27-broker-launch.json","r27_runtime_http_e1":...p_bytes":10485760,"workload":"original one signed synthetic SOTref; c1/10/25/50; 100 cases/cell; four API operations"}'
+
+v2/experiments/action_executor/r27/broker/test_integration.py:265: AssertionError
+- generated xml file: /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/peer-e2-tests.xml -
+=========================== short test summary info ============================
+FAILED v2/experiments/action_executor/r27/broker/test_integration.py::test_full_pure_fixture_copy_temp_and_cached_native_denial
+FAILED v2/experiments/action_executor/r27/broker/test_integration.py::test_original_shell_copy_literals_and_actual_audit_restoration
+FAILED v2/experiments/action_executor/r27/broker/test_integration.py::test_scoped_fault_stale_foreign_and_close_restore_primary
+FAILED v2/experiments/action_executor/r27/broker/test_integration.py::test_child_repeated_cancel_one_deadline_and_overflow
+FAILED v2/experiments/action_executor/r27/broker/test_integration.py::test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap
+FAILED v2/experiments/action_executor/r27/broker/test_integration.py::test_frozen_preflight_readonly_fresh_namespace_untrusted_grant_deny
+6 failed, 2 passed in 1.38s

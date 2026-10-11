@@ -1,0 +1,42 @@
+{
+  "schema": "r27-broker-artifact-boundary-v1",
+  "base_contract": {
+    "path": "v2/experiments/action_executor/r25/contract.json",
+    "sha256": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc"
+  },
+  "decision": "APPROVED_LOCAL_IMPLEMENTATION",
+  "approval_evidence": {
+    "date": "2026-10-10",
+    "actor": "Homeowner",
+    "user_reply": "chốt và triển khai",
+    "approved": "Owned broker controls qualifying artifacts/streams; platform transcripts separately retained disclosed audit."
+  },
+  "qualifying": {
+    "cap_bytes": 10485760,
+    "family_count": 20,
+    "raw_whole_records": true,
+    "all_physical_writes_precharged": true,
+    "no_refunds": true,
+    "includes": [
+      "original shell/admin/child stdout and stderr",
+      "source and temporary artifacts, every copy and overwrite",
+      "owner/process/terminal/cleanup/failure outputs",
+      "broker framing and control metadata"
+    ]
+  },
+  "platform_audit": {
+    "scope": "Codex/platform-owned Main tool transcript and independently retained platform copies",
+    "retention": "separate disclosed audit outside qualifying artifact packet",
+    "controlled_by_broker": false,
+    "bytes_claimed_zero": false,
+    "qualifies_packet": false
+  },
+  "authority": {
+    "campaign": false,
+    "external_processing": false,
+    "SQL_Docker_HTTP": false,
+    "Git_writes_rebuild": false,
+    "serving_executor_activation": false
+  },
+  "supported_admission": "Pinned cooperative producer ports and exact finite owned local children; unknown native/filesystem writers capability-DENY; no hostile same-UID host sandbox claim."
+}

@@ -1,0 +1,53 @@
+{
+  "schema": "R24-linked-input-v1",
+  "input_cap_bytes": 33554432,
+  "anchors": {
+    "v2/experiments/action_executor/r23/input-binding.json": "9caf0d67084eb189f896e6bfcdb48258f3730de31a3f9b6002447e5cc11d208a",
+    "v2/experiments/action_executor/r23/main-evidence-binding.sha256": "b3c9c76e7a329d222b9010630810a00e2ce0b1a71ae29ad5e1a023310d383a5e",
+    "v2/experiments/action_executor/r23/main-final-closure.json": "2637de5a6e213fef82019caf88c0c9d29692939b687527e4457aac51c5bf1b4e",
+    "v2/experiments/action_executor/r23/main-publication-check.json": "c96cdb7c3916ccdf997049e9880b68c8f25c70b8b7ecafa4ae20f31368caa8af",
+    "vibecode_v2/R23_REVIEW_REPORT.md": "1875a8cd1aa4465c880af4441373842017a3d60a6c921b0672dc9793d3e13fdf",
+    "vibecode_v2/TIP-054.4b-R23_VERIFY_REPORT.md": "aaa384fde3182eb24efe0ba2ab6828a2d98a7a0278b3b9c952e491f8341b4833"
+  },
+  "sources": {
+    "v2/experiments/action_executor/latency_probe.py": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2",
+    "v2/experiments/action_executor/r21/run-http-qualification.sh": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1",
+    "v2/experiments/action_executor/r19/bounded.py": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb",
+    "v2/experiments/action_executor/r21/qualification.py": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef",
+    "v2/experiments/action_executor/r19/qualification.py": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11",
+    "v2/experiments/action_executor/r/run_phase_baseline.py": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7",
+    "v2/experiments/action_executor/r21/source-binding-e1.json": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc",
+    "v2/experiments/action_executor/r21/contract.json": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c",
+    "v2/experiments/action_executor/r18/gate.py": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1",
+    "v2/experiments/action_executor/r23/model.py": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024",
+    "v2/experiments/action_executor/r23/budget.json": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41",
+    "v2/apps/backend/src/rtr_copilot/api/main.py": "a3a8f760b93a6804487eb4fdc4411537ee5ff500113651f273c4ee93cea9569b",
+    "v2/apps/backend/src/rtr_copilot/auth/audit.py": "13e3da023c2b886725c6fa0270789c6297b58647dbcd8949ef5ad7474fe0fa8e",
+    "v2/apps/backend/src/rtr_copilot/repositories/audit.py": "ed2b90e2e8e24fcb99efc0ccbb2263397c372a920bc719173674e9146e45ec8a",
+    "v2/apps/backend/tests/sot_fixtures.py": "524e0f00a30b13b0d8844070556f0713ee9e4b7e22e72ac6b16bf9c8e8ccaacd",
+    "v2/apps/backend/tests/test_context_memory_integration.py": "4cae35ed6a550eb03f3cbbe85c0e294ea32ef76970de2ac8f2d2175c570b0425"
+  },
+  "direct": {
+    "v2/experiments/action_executor/r24/audit.py": "c7c064a4c569c1de430f71353164af1af314cefe3e5e05672b336f1baa90c35a",
+    "v2/experiments/action_executor/r24/test_audit.py": "1b907be2af0cd72560210a8c3d858b95c0ae38b6056a3c1829b9b602b78dd1ae",
+    "v2/experiments/action_executor/r24/ledger.json": "621cb6f0f6ce07875d4b6162835301a14ee777e1de74199858505510295914aa",
+    "vibecode_v2/R24_SCAN_REPORT.md": "ccd5f5677599379ce986973a35c091b4f3ed243c7c415d29e914d8069f917b8d",
+    "vibecode_v2/TIP-054.4b-R24_WHOLE_CAPTURE_BUDGET.md": "b14df58329db7f30b57d6b877adb654fd5c38aaa0bbdb12ea3a485804d259eef",
+    "v2/experiments/action_executor/latency_probe.py": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2",
+    "v2/experiments/action_executor/r21/run-http-qualification.sh": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1",
+    "v2/experiments/action_executor/r19/bounded.py": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb",
+    "v2/experiments/action_executor/r21/qualification.py": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef",
+    "v2/experiments/action_executor/r19/qualification.py": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11",
+    "v2/experiments/action_executor/r/run_phase_baseline.py": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7",
+    "v2/experiments/action_executor/r21/source-binding-e1.json": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc",
+    "v2/experiments/action_executor/r21/contract.json": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c",
+    "v2/experiments/action_executor/r18/gate.py": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1",
+    "v2/experiments/action_executor/r23/model.py": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024",
+    "v2/experiments/action_executor/r23/budget.json": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41",
+    "v2/apps/backend/src/rtr_copilot/api/main.py": "a3a8f760b93a6804487eb4fdc4411537ee5ff500113651f273c4ee93cea9569b",
+    "v2/apps/backend/src/rtr_copilot/auth/audit.py": "13e3da023c2b886725c6fa0270789c6297b58647dbcd8949ef5ad7474fe0fa8e",
+    "v2/apps/backend/src/rtr_copilot/repositories/audit.py": "ed2b90e2e8e24fcb99efc0ccbb2263397c372a920bc719173674e9146e45ec8a",
+    "v2/apps/backend/tests/sot_fixtures.py": "524e0f00a30b13b0d8844070556f0713ee9e4b7e22e72ac6b16bf9c8e8ccaacd",
+    "v2/apps/backend/tests/test_context_memory_integration.py": "4cae35ed6a550eb03f3cbbe85c0e294ea32ef76970de2ac8f2d2175c570b0425"
+  }
+}

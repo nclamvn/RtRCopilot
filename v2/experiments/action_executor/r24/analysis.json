@@ -1,0 +1,52 @@
+{
+  "after": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13587654,
+    "prior_bytes": 13498377,
+    "prior_pins": 1762,
+    "total_pins": 1771
+  },
+  "audit": {
+    "blockers": [
+      "launch_review",
+      "journal",
+      "final_samples",
+      "summary_stdout",
+      "load_stderr",
+      "migration_streams",
+      "owner_process",
+      "supervisor_stop",
+      "source_cap_child",
+      "fixture",
+      "database_admin",
+      "disk",
+      "reconstruction",
+      "returncodes",
+      "ephemeral",
+      "future_observer",
+      "outer_transcript"
+    ],
+    "capture_admission": "HOLD",
+    "fixed_subtotal_bytes": 6046,
+    "historical_bytes": 943953,
+    "historical_files": 63,
+    "historical_sibling_marker_bytes": 287,
+    "observer_nominal_model_bytes": 1281810,
+    "producer_groups": 20,
+    "reason": "Unknown/conditional/all-error producers have no ex-ante complete bound.",
+    "total_upper_bytes": null
+  },
+  "before": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13587654,
+    "prior_bytes": 13498377,
+    "prior_pins": 1762,
+    "total_pins": 1771
+  }
+}

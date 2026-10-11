@@ -1,0 +1,5 @@
+Cleanup-review repair authoring phase; no runtime control executed.
+Ruff zero, strict five-file mypy six errors in supervisor.py: cleanup recorder
+name fault shadows outer except-as fault variables, incompatible Callable/BaseException.
+Exact changed source preserved peer_e5_static_source/supervisor.py and test_integration.py.
+Repair: rename cleanup recorder capture_cleanup. No behavioral scope expansion.

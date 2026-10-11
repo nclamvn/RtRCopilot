@@ -1,0 +1,8 @@
+{
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=v2/apps/backend/src:v2/experiments/action_executor/r27/pre_stage:v2/experiments/action_executor/r27/pre_contract:v2/experiments/action_executor/r27/runtime_closure:v2/experiments/action_executor/r27/real_path v2/apps/backend/.venv/bin/python -B v2/experiments/action_executor/r27/pre_stage/checks.py --preflight",
+  "chunk_id": "3a8037",
+  "wall_time_seconds": 0.723826375,
+  "exit_code": 2,
+  "original_token_count": 54,
+  "output": "{\"execution_admission\": \"DENY\", \"effects\": \"NOT_RUN\", \"reason\": \"Original PRE DENY before root/child/marker: genuine tempfile/probe/rmtree, pytest basetemp/symlink, shell/native/plugin/failure writers UNQUALIFIED\"}\n"
+}

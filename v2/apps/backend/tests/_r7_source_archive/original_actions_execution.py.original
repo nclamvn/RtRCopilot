@@ -1,0 +1,1195 @@
+"""Current Action Kernel authority, source-owned effects and bounded receipts.
+
+No runtime SDK is imported here. DBOS checkpoints contain only run identifiers
+and decisions; the business database is the authoritative effect ledger.
+"""
+
+import json
+import uuid
+from datetime import UTC, date, datetime
+from typing import Any, Literal, cast
+
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from rtr_copilot.actions.execution_models import (
+    TERMINAL,
+    ExecutionClaim,
+    ExecutionDecision,
+    ExecutionLeaseLost,
+    ExecutionReceipt,
+    ExecutionView,
+)
+from rtr_copilot.actions.models import BoundStep, PlanView
+from rtr_copilot.actions.policy import policy
+from rtr_copilot.actions.registry import ActionError, digest, hashes, validate_input
+from rtr_copilot.actions.request_connection import LegacyInitialRequired, RequestConnection
+from rtr_copilot.actions.service import ActionService, correlation
+from rtr_copilot.actions.source_metadata import InitialClockDenied, UnsupportedSourceTopology
+from rtr_copilot.auth.models import PolicyContext, Subject
+from rtr_copilot.config import get_settings
+from rtr_copilot.context.sources import revalidate_sot_references
+from rtr_copilot.db.uow import UnitOfWork
+from rtr_copilot.documents.models import RenderRequest, TemplateSchema
+from rtr_copilot.documents.service import DocumentOSService, locked_fact_value
+from rtr_copilot.rag.use_class import blocks as purpose_blocks
+from rtr_copilot.repositories.identity_postgres import PostgresSubjectRepository
+from rtr_copilot.repositories.resources import Classification
+
+
+class ExecutionService:
+    def __init__(
+        self, uow: UnitOfWork | None = None, *, actions: ActionService | None = None
+    ) -> None:
+        self.uow = uow or UnitOfWork()
+        self.actions = actions or ActionService(self.uow)
+        self.settings = get_settings()
+
+    def available(self) -> None:
+        if not self.settings.action_executor_enabled or self.settings.action_workflow_dsn is None:
+            raise ActionError("executor_unavailable", 503)
+
+    async def _row(
+        self,
+        session: AsyncSession,
+        run_id: uuid.UUID,
+        *,
+        lock: bool = False,
+        missing_ok: bool = False,
+    ) -> Any:
+        row = (
+            (
+                await session.execute(
+                    text(
+                        "SELECT e.*,r.plan_id,p.actor_id,p.plan_digest FROM action_executions e "
+                        "JOIN action_runs r USING(run_id) JOIN action_plans p USING(plan_id) "
+                        "WHERE e.run_id=:run" + (" FOR UPDATE OF e" if lock else "")
+                    ),
+                    {"run": run_id},
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        if row is None and not missing_ok:
+            raise ActionError("not_found", 404)
+        return row
+
+    async def _event(self, session: AsyncSession, row: Any, event: str, reason: str) -> None:
+        await session.execute(
+            text("""
+            INSERT INTO action_execution_events(run_id,event_type,reason_code,epoch,build_id)
+            VALUES(:run,:event,:reason,:epoch,:build)
+        """),
+            {
+                "run": row["run_id"],
+                "event": event,
+                "reason": reason,
+                "epoch": row["epoch"],
+                "build": row["build_id"],
+            },
+        )
+
+    async def _owner(self, subject: Subject, run_id: uuid.UUID) -> Any:
+        # Ownership metadata survives source ACL loss. Content has a separate guard.
+        current = await self.actions.policy.current(subject)
+        async with self.uow.factory() as session:
+            row = await self._row(session, run_id)
+        if str(row["actor_id"]) != current.user_id:
+            raise ActionError("not_found", 404)
+        return row
+
+    async def _view(
+        self, run_id: uuid.UUID, *, _owner: RequestConnection | None = None
+    ) -> ExecutionView:
+        phase = _owner.read_phase() if _owner is not None else self.uow.factory()
+        async with phase as session:
+            row = await self._row(session, run_id)
+            receipts = (
+                (
+                    await session.execute(
+                        text("""
+                SELECT c.receipt_id,c.run_id,c.attempt_id,c.step_key,c.attempt,c.kind,
+                  c.source_id,c.version_id,c.output_digest,c.reused_source,c.occurred_at,
+                  a.input_digest,a.source_key,a.charged_calls charged_tool_calls,
+                  e.build_id,p.request_id request_correlation_digest
+                FROM action_execution_receipts c JOIN action_step_attempts a USING(attempt_id)
+                JOIN action_executions e ON e.run_id=c.run_id
+                JOIN action_runs r ON r.run_id=c.run_id JOIN action_plans p USING(plan_id)
+                WHERE c.run_id=:run ORDER BY c.occurred_at,c.receipt_id LIMIT 100
+            """),
+                        {"run": run_id},
+                    )
+                )
+                .mappings()
+                .all()
+            )
+        return ExecutionView(
+            run_id=run_id,
+            plan_id=row["plan_id"],
+            state=row["state"],
+            cancel_requested=row["cancel_requested"],
+            cancel_acknowledged=row["cancel_requested"],
+            reason_code=row["reason_code"],
+            workflow_id=row["workflow_id"],
+            executor_version=row["executor_version"],
+            spent_tool_calls=row["spent_tool_calls"],
+            tool_call_limit=row["tool_call_limit"],
+            deadline_at=row["deadline_at"],
+            epoch=row["epoch"],
+            receipts=tuple(
+                ExecutionReceipt.model_validate_json(json.dumps(dict(r), default=str))
+                for r in receipts
+            ),
+            execution_available=(
+                self.settings.action_executor_enabled
+                and self.settings.action_workflow_dsn is not None
+            ),
+        )
+
+    async def _initial_submission(
+        self,
+        subject: Subject,
+        plan_id: uuid.UUID,
+        expected_plan_digest: str,
+        request_id: str,
+        *,
+        _owner: RequestConnection | None = None,
+        private_initial_mode: Literal["current", "legacy"] = "current",
+    ) -> tuple[PlanView, bool]:
+        # Submission is an execution admission, not another contract-validation
+        # operation. Load immutable metadata once, reject unsupported work before
+        # binding content, then rederive the complete live input and authority.
+        phase = _owner.read_phase() if _owner is not None else self.uow.factory()
+        async with phase as session:
+            plan = await self.actions.repo.plan(session, plan_id)
+            self._executable_plan(subject, plan, expected_plan_digest)
+            optimized = private_initial_mode != "legacy" and self.actions._r0_plan(plan)
+            if not optimized and _owner is not None:
+                raise LegacyInitialRequired()
+            if optimized:
+                try:
+                    await self.actions._revalidate(
+                        subject, plan, request_id, initial_session=session
+                    )
+                except InitialClockDenied:
+                    current = await self.actions.policy.current(subject, initial_session=session)
+                    if current.security_version != plan.payload.actor_security_version:
+                        raise ActionError("authority_changed", 403) from None
+                    await self.actions._clock_retry_preflight(
+                        session, current, self.actions._request_from_plan(plan), request_id
+                    )
+                    optimized = False
+                except UnsupportedSourceTopology:
+                    optimized = False
+        if not optimized:
+            if _owner is not None:
+                raise LegacyInitialRequired()
+            await self.actions._revalidate(subject, plan, request_id)
+        return plan, optimized
+
+    async def submit(
+        self, subject: Subject, plan_id: uuid.UUID, expected_plan_digest: str, *, request_id: str
+    ) -> ExecutionView:
+        self.available()
+        owner: RequestConnection | None = None
+        try:
+            async with RequestConnection(self.uow.factory) as owner:
+                return await self._submit_attempt(
+                    subject, plan_id, expected_plan_digest, request_id=request_id, _owner=owner
+                )
+        except LegacyInitialRequired:
+            if owner is not None and not owner.fallback_allowed:
+                raise
+            return await self._submit_attempt(
+                subject,
+                plan_id,
+                expected_plan_digest,
+                request_id=request_id,
+                private_initial_mode="legacy",
+            )
+
+    async def _submit_attempt(
+        self,
+        subject: Subject,
+        plan_id: uuid.UUID,
+        expected_plan_digest: str,
+        *,
+        request_id: str,
+        _owner: RequestConnection | None = None,
+        private_initial_mode: Literal["current", "legacy"] = "current",
+    ) -> ExecutionView:
+        safe_request = correlation(request_id)
+        plan, optimized = await self._initial_submission(
+            subject,
+            plan_id,
+            expected_plan_digest,
+            safe_request,
+            _owner=_owner,
+            private_initial_mode=private_initial_mode,
+        )
+        phase = _owner.mutation_phase() if _owner is not None else self.uow.transaction()
+        async with phase as session:
+            locked = await self.actions.repo.plan(session, plan_id, lock=True)
+            self._executable_plan(subject, locked, expected_plan_digest)
+            existing = (
+                await self._row(session, plan.run_id, lock=True, missing_ok=True)
+                if optimized
+                else None
+            )
+            if existing is not None:
+                self._compatible_execution(existing)
+                # Full authority AFTER the execution-row wait. No INSERT,
+                # conflict wait, audit or cancellation/deadline/spend reset.
+                await self.actions._snapshot(session, subject, plan.payload, safe_request)
+            else:
+                await self._submit_new(session, subject, plan, locked, safe_request)
+        if _owner is not None:
+            return await self._view(plan.run_id, _owner=_owner)
+        return await self._view(plan.run_id)
+
+    def _compatible_execution(self, row: Any) -> None:
+        if row["executor_version"] != self.settings.action_executor_version:
+            raise ActionError("executor_version_changed")
+        if row["build_id"] != self.actions.build_id:
+            raise ActionError("contract_changed")
+
+    async def _submit_new(
+        self,
+        session: AsyncSession,
+        subject: Subject,
+        plan: PlanView,
+        locked: PlanView,
+        safe_request: str,
+    ) -> None:
+        # Keep immutable created_at/deadline INSERT AFTER audit/fresh authority.
+        # An absent pre-read is never treated as a gap lock.
+        await self.actions._snapshot(session, subject, plan.payload, safe_request, audit_fence=True)
+        inserted = await session.scalar(
+            text("""
+                INSERT INTO action_executions(run_id,workflow_id,executor_version,build_id,state,
+                  tool_call_limit,deadline_at)
+                VALUES(:run,:workflow,:version,:build,'queued',:limit,
+                  statement_timestamp()+make_interval(secs=>:seconds))
+                ON CONFLICT(run_id) DO NOTHING RETURNING run_id
+        """),
+            {
+                "run": plan.run_id,
+                "workflow": f"action-{plan.run_id}",
+                "version": self.settings.action_executor_version,
+                "build": plan.payload.runtime_build_sha,
+                "limit": plan.payload.budget.tool_calls,
+                "seconds": plan.payload.budget.wall_seconds,
+            },
+        )
+        row = await self._row(session, plan.run_id)
+        self._compatible_execution(row)
+        if inserted is not None:
+            # Exactly one audit entry, atomic with the actual admission.
+            # Do not reset contract state/history or cancellation/budget.
+            await self.actions._audit(
+                session, subject, "action.execution.submit", safe_request, plan=locked
+            )
+
+    def _executable_plan(self, subject: Subject, plan: PlanView, expected_plan_digest: str) -> None:
+        if plan.payload.actor_id != uuid.UUID(subject.user_id):
+            raise ActionError("not_found", 404)
+        if (
+            plan.plan_digest != expected_plan_digest
+            or plan.payload.runtime_build_sha != self.actions.build_id
+        ):
+            raise ActionError("contract_changed")
+        if plan.state != "contract_ready" or any(
+            step.effect_class not in {"R0", "R1"}
+            or step.capability_version != "2"
+            or not self.actions.registry.contract(step.capability_id, "2").execution_available
+            for step in plan.payload.steps
+        ):
+            raise ActionError("effect_unavailable", 403)
+        for step in plan.payload.steps:
+            spec = self.actions.registry.contract(step.capability_id, step.capability_version)
+            contract_hash, schema_hash = hashes(spec)
+            if (
+                step.contract_digest != contract_hash
+                or step.schema_digest != schema_hash
+                or step.arguments_digest != digest(step.arguments)
+                or step.effect_class != spec.effect_class
+            ):
+                raise ActionError("contract_changed")
+            validate_input(step.arguments, spec.input_schema)
+
+    async def status(self, subject: Subject, run_id: uuid.UUID) -> ExecutionView:
+        await self._owner(subject, run_id)
+        return await self._view(run_id)
+
+    async def cancel(self, subject: Subject, run_id: uuid.UUID) -> ExecutionView:
+        await self._owner(subject, run_id)
+        async with self.uow.transaction() as session:
+            row = await self._row(session, run_id, lock=True)
+            if row["state"] not in TERMINAL:
+                known = await session.scalar(
+                    text(
+                        "SELECT EXISTS(SELECT 1 FROM action_execution_receipts WHERE run_id=:run "
+                        "AND kind IN ('read_verified','job_accepted','artifact_verified'))"
+                    ),
+                    {"run": run_id},
+                )
+                await session.execute(
+                    text("""
+                    UPDATE action_executions SET cancel_requested=true,state=:state,
+                      reason_code='cancel_remaining',epoch=epoch+1,owner_token=NULL,
+                      lease_expires_at=NULL,updated_at=now() WHERE run_id=:run
+                """),
+                    {"run": run_id, "state": "partial" if known else "cancelled"},
+                )
+                await self._event(session, row, "cancel_acknowledged", "cancel_remaining")
+        return await self._view(run_id)
+
+    async def resume(
+        self, subject: Subject, run_id: uuid.UUID, *, request_id: str
+    ) -> ExecutionView:
+        row = await self._owner(subject, run_id)
+        self.available()
+        await self.actions.validate_ready(subject, row["plan_id"], request_id=request_id)
+        async with self.uow.transaction() as session:
+            row = await self._row(session, run_id, lock=True)
+            if row["executor_version"] != self.settings.action_executor_version:
+                raise ActionError("executor_version_changed")
+            if row["state"] == "paused" and row["deadline_at"] > datetime.now(UTC):
+                await session.execute(
+                    text("""
+                    UPDATE action_executions SET state='queued',reason_code=NULL,
+                      dispatch_pending=true,updated_at=now() WHERE run_id=:run
+                """),
+                    {"run": run_id},
+                )
+        return await self._view(run_id)
+
+    async def claim(self, run_id: uuid.UUID) -> ExecutionClaim | None:
+        async with self.uow.transaction() as session:
+            row = await self._row(session, run_id, lock=True)
+            if row["state"] in TERMINAL:
+                return None
+            if row["deadline_at"] <= datetime.now(UTC):
+                await self._finish(session, row, "failed", "wall_budget_exhausted")
+                return None
+            if row["state"] == "paused":
+                return None
+            if (
+                row["executor_version"] != self.settings.action_executor_version
+                or row["build_id"] != self.settings.rtr_build_sha
+            ):
+                await session.execute(
+                    text("""
+                    UPDATE action_executions SET state='paused',
+                      reason_code='executor_version_changed',
+                      owner_token=NULL,lease_expires_at=NULL,updated_at=now() WHERE run_id=:run
+                """),
+                    {"run": run_id},
+                )
+                return None
+            if row["lease_expires_at"] and row["lease_expires_at"] > datetime.now(UTC):
+                return None
+            token = uuid.uuid4()
+            await session.execute(
+                text("""
+                UPDATE action_executions SET state='running',epoch=epoch+1,owner_token=:token,
+                  lease_expires_at=statement_timestamp()+make_interval(secs=>:seconds),
+                  updated_at=now() WHERE run_id=:run
+            """),
+                {
+                    "run": run_id,
+                    "token": token,
+                    "seconds": self.settings.action_executor_lease_seconds,
+                },
+            )
+            return ExecutionClaim(run_id=run_id, token=token, epoch=row["epoch"] + 1)
+
+    async def assert_owned(self, session: AsyncSession, claim: ExecutionClaim) -> Any:
+        row = await self._row(session, claim.run_id, lock=True)
+        if (
+            row["owner_token"] != claim.token
+            or row["epoch"] != claim.epoch
+            or row["state"] in TERMINAL
+            or row["cancel_requested"]
+            or not row["lease_expires_at"]
+            or row["lease_expires_at"] <= datetime.now(UTC)
+            or row["deadline_at"] <= datetime.now(UTC)
+        ):
+            raise ExecutionLeaseLost()
+        if (
+            row["build_id"] != self.settings.rtr_build_sha
+            or row["executor_version"] != self.settings.action_executor_version
+        ):
+            raise ActionError("executor_version_changed")
+        return row
+
+    async def _authority(self, plan: PlanView, request_id: str) -> Subject:
+        actor = await PostgresSubjectRepository(self.uow.factory).get_by_user_id(
+            plan.payload.actor_id
+        )
+        if actor is None:
+            raise ActionError("subject_unavailable", 403)
+        await self.actions._revalidate(actor, plan, request_id)
+        return actor
+
+    async def _attempt(
+        self, session: AsyncSession, row: Any, claim: ExecutionClaim, step: BoundStep
+    ) -> Any:
+        existing = (
+            (
+                await session.execute(
+                    text("""
+            SELECT * FROM action_step_attempts WHERE run_id=:run AND step_key=:step
+            ORDER BY attempt DESC LIMIT 1
+        """),
+                    {"run": claim.run_id, "step": step.step_key},
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        spec = self.actions.registry.contract(step.capability_id, step.capability_version)
+        ordinal = 1
+        if existing:
+            if existing["input_digest"] != step.arguments_digest:
+                raise ActionError("contract_changed")
+            if step.capability_id == "documents.create_draft":
+                known = await session.scalar(
+                    text("""
+                    SELECT EXISTS(SELECT 1 FROM render_jobs WHERE idempotency_key=:key
+                      AND requester_id=:actor)
+                """),
+                    {"key": existing["source_key"], "actor": row["actor_id"]},
+                )
+                accepted = await session.scalar(
+                    text("""
+                    SELECT EXISTS(SELECT 1 FROM action_execution_receipts WHERE run_id=:run
+                      AND step_key=:step AND kind='job_accepted')
+                """),
+                    {"run": claim.run_id, "step": step.step_key},
+                )
+                if known or accepted:
+                    # Canonical reconciliation performs no new capability call.
+                    return existing
+            ordinal = existing["attempt"] + 1
+            if ordinal > spec.max_attempts:
+                raise ActionError("attempts_exhausted", 429)
+        if row["spent_tool_calls"] + spec.max_tool_calls > row["tool_call_limit"]:
+            raise ActionError("budget_exhausted", 429)
+        attempt_id = uuid.uuid4()
+        key = f"action:{claim.run_id}:{step.step_key}:{ordinal}"
+        await session.execute(
+            text("""
+            UPDATE action_executions SET spent_tool_calls=spent_tool_calls+:calls
+              WHERE run_id=:run
+        """),
+            {"run": claim.run_id, "calls": spec.max_tool_calls},
+        )
+        await session.execute(
+            text("""
+            INSERT INTO action_step_attempts(attempt_id,run_id,step_key,attempt,epoch,owner_token,
+              source_key,input_digest,charged_calls)
+            VALUES(:id,:run,:step,:attempt,:epoch,:token,:key,:digest,:calls)
+        """),
+            {
+                "id": attempt_id,
+                "run": claim.run_id,
+                "step": step.step_key,
+                "epoch": claim.epoch,
+                "token": claim.token,
+                "key": key,
+                "attempt": ordinal,
+                "digest": step.arguments_digest,
+                "calls": spec.max_tool_calls,
+            },
+        )
+        await self._event(session, row, "attempt_charged", "attempt_charged")
+        return (
+            (
+                await session.execute(
+                    text("SELECT * FROM action_step_attempts WHERE attempt_id=:id"),
+                    {"id": attempt_id},
+                )
+            )
+            .mappings()
+            .one()
+        )
+
+    async def _receipt(
+        self,
+        session: AsyncSession,
+        attempt: Any,
+        kind: str,
+        output: Any,
+        *,
+        source_id: uuid.UUID | None = None,
+        version_id: uuid.UUID | None = None,
+        reused: bool = False,
+    ) -> None:
+        await session.execute(
+            text("""
+            INSERT INTO action_execution_receipts(receipt_id,run_id,attempt_id,step_key,attempt,
+              kind,source_id,version_id,output_digest,reused_source)
+            VALUES(:id,:run,:aid,:step,:attempt,:kind,:source,:version,:output,:reused)
+            ON CONFLICT(run_id,step_key,attempt,kind) DO NOTHING
+        """),
+            {
+                "id": uuid.uuid4(),
+                "run": attempt["run_id"],
+                "aid": attempt["attempt_id"],
+                "step": attempt["step_key"],
+                "attempt": attempt["attempt"],
+                "kind": kind,
+                "source": source_id,
+                "version": version_id,
+                "output": digest(output),
+                "reused": reused,
+            },
+        )
+
+    async def _finish(self, session: AsyncSession, row: Any, state: str, reason: str) -> None:
+        if state == "failed":
+            known = await session.scalar(
+                text("""
+                SELECT EXISTS(SELECT 1 FROM action_execution_receipts WHERE run_id=:run
+                  AND kind IN ('read_verified','job_accepted','artifact_verified'))
+            """),
+                {"run": row["run_id"]},
+            )
+            if known:
+                state = "partial"
+        await session.execute(
+            text("""
+            UPDATE action_executions SET state=:state,reason_code=:reason,owner_token=NULL,
+              lease_expires_at=NULL,updated_at=now() WHERE run_id=:run
+        """),
+            {"run": row["run_id"], "state": state, "reason": reason},
+        )
+        await self._event(session, row, "execution_terminal", reason)
+
+    async def _release(self, claim: ExecutionClaim) -> None:
+        async with self.uow.transaction() as session:
+            row = await self.assert_owned(session, claim)
+            await session.execute(
+                text("""
+                UPDATE action_executions SET state='waiting',owner_token=NULL,
+                  lease_expires_at=NULL,updated_at=now() WHERE run_id=:run
+            """),
+                {"run": claim.run_id},
+            )
+            await self._event(session, row, "execution_waiting", "source_pending")
+
+    async def advance(self, run_id: uuid.UUID) -> ExecutionDecision:
+        claim = await self.claim(run_id)
+        if claim is None:
+            view = await self._view(run_id)
+            return ExecutionDecision(
+                run_id=run_id, state=view.state, terminal=view.state in TERMINAL
+            )
+        try:
+            async with self.uow.factory() as session:
+                row = await self._row(session, run_id)
+                plan = await self.actions.repo.plan(session, row["plan_id"])
+                receipts = (
+                    (
+                        await session.execute(
+                            text("""
+                    SELECT * FROM action_execution_receipts WHERE run_id=:run
+                """),
+                            {"run": run_id},
+                        )
+                    )
+                    .mappings()
+                    .all()
+                )
+            done = {
+                r["step_key"]
+                for r in receipts
+                if r["kind"] in {"read_verified", "artifact_verified"}
+            }
+            pending = [
+                s
+                for s in plan.payload.steps
+                if s.step_key not in done and set(s.dependencies) <= done
+            ]
+            if not pending:
+                async with self.uow.transaction() as session:
+                    row = await self.assert_owned(session, claim)
+                    await self._finish(session, row, "succeeded", "source_verified")
+            else:
+                step = pending[0]
+                actor = await self._authority(plan, row["workflow_id"])
+                async with self.uow.transaction() as session:
+                    row = await self.assert_owned(session, claim)
+                    await self.actions._snapshot(session, actor, plan.payload, row["workflow_id"])
+                    row = await self.assert_owned(session, claim)
+                    attempt = await self._attempt(session, row, claim, step)
+                if step.capability_id == "sot.read":
+                    await self._read(claim, plan, step, attempt, actor)
+                elif step.capability_id == "documents.create_draft":
+                    await self._draft(claim, plan, step, attempt, actor)
+                else:
+                    raise ActionError("effect_unavailable", 403)
+                await self._release(claim)
+        except ExecutionLeaseLost:
+            # Crucially no attempt to return a newer owner's source receipt.
+            raise
+        except ActionError as error:
+            async with self.uow.transaction() as session:
+                row = await self.assert_owned(session, claim)
+                uncertain = error.code in {"source_outcome_uncertain", "source_identity_changed"}
+                await self._finish(
+                    session, row, "needs_review" if uncertain else "failed", error.code
+                )
+        except Exception:
+            async with self.uow.transaction() as session:
+                row = await self.assert_owned(session, claim)
+                await self._finish(session, row, "needs_review", "source_outcome_uncertain")
+        view = await self._view(run_id)
+        return ExecutionDecision(run_id=run_id, state=view.state, terminal=view.state in TERMINAL)
+
+    async def _read(
+        self, claim: ExecutionClaim, plan: PlanView, step: BoundStep, attempt: Any, actor: Subject
+    ) -> None:
+        refs = tuple(
+            r for r in plan.payload.source_refs if r.record_key == step.arguments["record_key"]
+        )
+        result = await revalidate_sot_references(
+            actor,
+            refs,
+            factory=self.uow.factory,
+            use_class=plan.payload.purpose,
+            request_id=str(claim.run_id),
+            include_text=True,
+        )
+        if result.gaps or len(result.sources) != 1:
+            raise ActionError("source_unavailable", 403)
+        source = result.sources[0]
+        async with self.uow.transaction() as session:
+            await self.assert_owned(session, claim)
+            await self.actions._snapshot(session, result.subject, plan.payload, str(claim.run_id))
+            await self.assert_owned(session, claim)
+            await self._receipt(
+                session,
+                attempt,
+                "read_verified",
+                {"reference": source.reference.model_dump(mode="json"), "text": source.text},
+                source_id=source.record_id,
+                version_id=source.reference.record_version_id,
+            )
+
+    async def _draft(
+        self, claim: ExecutionClaim, plan: PlanView, step: BoundStep, attempt: Any, actor: Subject
+    ) -> None:
+        async def guard(session: AsyncSession) -> None:
+            await self.assert_owned(session, claim)
+            await self.actions._snapshot(session, actor, plan.payload, str(claim.run_id))
+            await self.assert_owned(session, claim)
+
+        async def accepted(
+            session: AsyncSession, job_id: uuid.UUID, created: bool, canonical_hash: str
+        ) -> None:
+            await guard(session)
+            if created:
+                await session.execute(
+                    text("""
+                    INSERT INTO action_source_links(render_job_id,run_id,attempt_id,step_key,
+                      canonical_input_hash) VALUES(:job,:run,:attempt,:step,:hash)
+                """),
+                    {
+                        "job": job_id,
+                        "run": claim.run_id,
+                        "attempt": attempt["attempt_id"],
+                        "step": step.step_key,
+                        "hash": canonical_hash,
+                    },
+                )
+            own = await session.scalar(
+                text("""
+                SELECT EXISTS(SELECT 1 FROM action_source_links WHERE render_job_id=:job
+                  AND run_id=:run AND attempt_id=:attempt)
+            """),
+                {"job": job_id, "run": claim.run_id, "attempt": attempt["attempt_id"]},
+            )
+            await self._receipt(
+                session,
+                attempt,
+                "job_accepted",
+                {"job_id": str(job_id)},
+                source_id=job_id,
+                reused=not own,
+            )
+
+        # Canonical source identity is queried BEFORE dispatch, after every recovery.
+        async with self.uow.transaction() as session:
+            await guard(session)
+            receipt = (
+                await session.execute(
+                    text("""
+                SELECT source_id FROM action_execution_receipts WHERE run_id=:run
+                  AND step_key=:step AND kind='job_accepted' ORDER BY occurred_at LIMIT 1
+            """),
+                    {"run": claim.run_id, "step": step.step_key},
+                )
+            ).scalar_one_or_none()
+            job = (
+                (
+                    await session.execute(
+                        text("""
+                SELECT j.*,g.generated_file_id,g.version_id,g.checksum,o.state outbox_state
+                FROM render_jobs j LEFT JOIN generated_files g USING(render_job_id)
+                JOIN document_publication_outbox o USING(render_job_id)
+                WHERE j.requester_id=:actor AND (j.idempotency_key=:key OR j.render_job_id=:receipt)
+                ORDER BY j.created_at LIMIT 1
+            """),
+                        {
+                            "actor": plan.payload.actor_id,
+                            "key": attempt["source_key"],
+                            "receipt": receipt,
+                        },
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if job is not None:
+                if job["template_version_id"] != uuid.UUID(step.arguments["template_version_id"]):
+                    raise ActionError("source_identity_changed")
+                link_hash = await session.scalar(
+                    text("""
+                    SELECT canonical_input_hash FROM action_source_links
+                    WHERE render_job_id=:job AND run_id=:run
+                """),
+                    {"job": job["render_job_id"], "run": claim.run_id},
+                )
+                if link_hash != job["canonical_input_hash"]:
+                    raise ActionError("source_identity_changed")
+                await accepted(session, job["render_job_id"], False, job["canonical_input_hash"])
+                if job["state"] == "completed":
+                    if (
+                        not job["generated_file_id"]
+                        or not job["version_id"]
+                        or not job["checksum"]
+                        or job["outbox_state"] != "finalized"
+                    ):
+                        raise ActionError("source_outcome_uncertain")
+                    output = {
+                        "source_id": str(job["generated_file_id"]),
+                        "version_id": str(job["version_id"]),
+                        "checksum": str(job["checksum"]),
+                    }
+                    await self._receipt(
+                        session,
+                        attempt,
+                        "artifact_verified",
+                        output,
+                        source_id=job["generated_file_id"],
+                        version_id=job["version_id"],
+                    )
+                elif job["state"] in {"failed", "cancelled"}:
+                    await self._receipt(
+                        session,
+                        attempt,
+                        "failed",
+                        {"code": "document_render_failed"},
+                        source_id=job["render_job_id"],
+                    )
+                    raise ActionError("document_render_failed")
+                return
+        await DocumentOSService(self.uow).create_render(
+            actor,
+            uuid.UUID(step.arguments["template_version_id"]),
+            RenderRequest(
+                idempotency_key=attempt["source_key"], parameters=step.arguments["parameters"]
+            ),
+            request_id=str(claim.run_id),
+            admission_guard=guard,
+            accepted_callback=accepted,
+            action_policy_digest=plan.plan_digest,
+        )
+
+    async def read_output(
+        self, subject: Subject, run_id: uuid.UUID, step_key: str, *, request_id: str
+    ) -> dict[str, Any]:
+        row = await self._owner(subject, run_id)
+        plan = await self.actions.read_plan(subject, row["plan_id"], request_id=request_id)
+        step = next((s for s in plan.payload.steps if s.step_key == step_key), None)
+        if step is None or step.capability_id != "sot.read":
+            raise ActionError("not_found", 404)
+        refs = tuple(
+            r for r in plan.payload.source_refs if r.record_key == step.arguments["record_key"]
+        )
+        result = await revalidate_sot_references(
+            subject,
+            refs,
+            factory=self.uow.factory,
+            use_class=plan.payload.purpose,
+            request_id=correlation(request_id),
+            include_text=True,
+        )
+        if result.gaps or len(result.sources) != 1:
+            raise ActionError("source_unavailable", 403)
+        output = {
+            "reference": result.sources[0].reference.model_dump(mode="json"),
+            "text": result.sources[0].text,
+        }
+        async with self.uow.factory() as session:
+            verified = await session.scalar(
+                text("""
+                SELECT EXISTS(SELECT 1 FROM action_execution_receipts WHERE run_id=:run
+                  AND step_key=:step AND kind='read_verified' AND output_digest=:digest)
+            """),
+                {"run": run_id, "step": step_key, "digest": digest(output)},
+            )
+        if not verified:
+            raise ActionError("source_unavailable", 403)
+        # The receipt lookup may itself wait; it is not disclosure authority.
+        # Close with a fresh metadata-only guard after all content/digest work.
+        async with self.uow.factory() as session:
+            await self.actions._snapshot(
+                session, result.subject, plan.payload, correlation(request_id)
+            )
+        return output
+
+
+async def lock_action_publication_inputs(
+    session: AsyncSession, uow: UnitOfWork, job_id: uuid.UUID
+) -> None:
+    """Preserve run-before-actor/source lock order even in the legacy host guard."""
+    from rtr_copilot.actions.checkpoints import lock_inputs
+
+    run_id = await session.scalar(
+        text("""
+        SELECT run_id FROM action_source_links WHERE render_job_id=:job
+    """),
+        {"job": job_id},
+    )
+    if run_id is not None:
+        service = ExecutionService(uow)
+        row = await service._row(session, run_id, lock=True)
+        plan = await service.actions.repo.plan(session, row["plan_id"])
+        await lock_inputs(session, plan.payload, (plan.payload.actor_id,))
+
+
+async def action_publication_guard(
+    session: AsyncSession, uow: UnitOfWork, job_id: uuid.UUID, *, audit_writing: bool = False
+) -> None:
+    """Host lookup only: unlinked normal/shared jobs keep their existing owner.
+
+    Publication uses the active RUN fence, not an old short-lived action-worker
+    lease. Cancellation and publication serialize on that run row.
+    """
+    link = (
+        (
+            await session.execute(
+                text("""
+        SELECT * FROM action_source_links WHERE render_job_id=:job
+    """),
+                {"job": job_id},
+            )
+        )
+        .mappings()
+        .one_or_none()
+    )
+    if link is None:
+        return
+    service = ExecutionService(uow)
+    row = await service._row(session, link["run_id"], lock=True)
+    if (
+        row["cancel_requested"]
+        or row["state"] in TERMINAL
+        or row["state"] == "paused"
+        or row["deadline_at"] <= datetime.now(UTC)
+        or row["build_id"] != service.settings.rtr_build_sha
+        or row["executor_version"] != service.settings.action_executor_version
+    ):
+        raise ActionError("action_publication_denied", 403)
+    plan = await service.actions.repo.plan(session, row["plan_id"])
+    source = (
+        (
+            await session.execute(
+                text("""
+        SELECT j.canonical_input_hash,j.template_version_id,j.idempotency_key,a.source_key,
+          a.input_digest FROM render_jobs j JOIN action_step_attempts a ON a.attempt_id=:attempt
+        WHERE j.render_job_id=:job
+    """),
+                {"attempt": link["attempt_id"], "job": job_id},
+            )
+        )
+        .mappings()
+        .one_or_none()
+    )
+    if (
+        source is None
+        or source["canonical_input_hash"] != link["canonical_input_hash"]
+        or source["idempotency_key"] != source["source_key"]
+    ):
+        raise ActionError("source_identity_changed")
+    # Same-session final authority; no pool checkout while holding publication locks.
+    actor = Subject(
+        user_id=str(plan.payload.actor_id),
+        issuer="action-worker",
+        sub="action-worker",
+        email="",
+        canonical_domain="",
+    )
+    # Canonical facts are content too. A fresh post-input-lock check authorizes
+    # reconstruction, independently of the later publication commit fence.
+    await service.actions._snapshot(session, actor, plan.payload, str(row["run_id"]))
+    step = next((s for s in plan.payload.steps if s.step_key == link["step_key"]), None)
+    if (
+        step is None
+        or step.capability_id != "documents.create_draft"
+        or step.capability_version != "2"
+        or step.effect_class != "R1"
+        or step.arguments_digest != digest(step.arguments)
+        or source["input_digest"] != step.arguments_digest
+        or source["template_version_id"] != uuid.UUID(step.arguments["template_version_id"])
+    ):
+        raise ActionError("contract_changed")
+    spec = service.actions.registry.contract(step.capability_id, step.capability_version)
+    validate_input(step.arguments, spec.input_schema)
+    # Re-derive every value from immutable plan parameters and current admitted
+    # source payloads. A stored job/hash/manifest alone is not input authority.
+    schema_body = await session.scalar(
+        text("""
+        SELECT field_schema FROM template_versions WHERE version_id=:version
+    """),
+        {"version": source["template_version_id"]},
+    )
+    schema = TemplateSchema.model_validate(schema_body)
+    fields = (
+        (
+            await session.execute(
+                text("""
+        SELECT * FROM render_job_bindings WHERE render_job_id=:job
+    """),
+                {"job": job_id},
+            )
+        )
+        .mappings()
+        .all()
+    )
+    actual = {field["field_path"]: field for field in fields}
+    if set(actual) != {binding.field_path for binding in schema.bindings}:
+        raise ActionError("source_identity_changed")
+    parameters = step.arguments["parameters"]
+    documents = DocumentOSService(uow)
+    for binding in schema.bindings:
+        field = actual[binding.field_path]
+        if field["source"] != binding.source:
+            raise ActionError("source_identity_changed")
+        if binding.source == "user":
+            expected = documents._coerce_user(binding, parameters.get(binding.field_path))
+        elif binding.source == "derived":
+            inputs = [parameters.get(key) for key in binding.derived_fields]
+            if any(value in (None, "") for value in inputs):
+                expected = None
+            elif binding.derived_operation == "concat":
+                expected = " ".join(str(value) for value in inputs)
+            else:
+                parsed = date.fromisoformat(str(inputs[0]))
+                expected = {
+                    "date_day": parsed.day,
+                    "date_month": parsed.month,
+                    "date_year": parsed.year,
+                }[str(binding.derived_operation)]
+        else:
+            ref = next(
+                (r for r in plan.payload.source_refs if r.record_key == binding.record_key), None
+            )
+            if ref is None or field["record_version_id"] != ref.record_version_id:
+                raise ActionError("source_identity_changed")
+            fact = (
+                (
+                    await session.execute(
+                        text("""
+                SELECT rv.value_payload,COALESCE(s.display_name,s.email,s.user_id::text) owner_name
+                FROM record_versions rv JOIN records r USING(record_id)
+                JOIN subjects s ON s.user_id=r.owner_subject_id WHERE rv.version_id=:version
+            """),
+                        {"version": ref.record_version_id},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            expected = locked_fact_value(binding, fact["value_payload"])
+            if (
+                isinstance(fact["value_payload"], dict)
+                and fact["value_payload"].get("confidence_signal", {}).get("needs_double_check")
+                is True
+            ):
+                expected = (
+                    f"{expected} [CAVEAT: needs_double_check · "
+                    f"owner: {fact['owner_name'] or 'unassigned'}]"
+                )
+        if digest(field["canonical_value"]) != digest(expected):
+            raise ActionError("source_identity_changed")
+    # No authority frame crosses canonical-binding reconstruction or the existing
+    # audit wait. Read-only pre-render guards never take that global audit fence.
+    await service.actions._snapshot(
+        session, actor, plan.payload, str(row["run_id"]), audit_fence=audit_writing
+    )
+    row = await service._row(session, link["run_id"])
+    if (
+        row["cancel_requested"]
+        or row["state"] in TERMINAL
+        or row["state"] == "paused"
+        or row["deadline_at"] <= datetime.now(UTC)
+        or row["build_id"] != service.settings.rtr_build_sha
+        or row["executor_version"] != service.settings.action_executor_version
+    ):
+        raise ActionError("action_publication_denied", 403)
+
+
+async def action_output_classification(uow: UnitOfWork, job_id: uuid.UUID) -> Classification | None:
+    async with uow.factory() as session:
+        link = (
+            await session.execute(
+                text("""
+            SELECT r.plan_id FROM action_source_links l JOIN action_runs r USING(run_id)
+            WHERE l.render_job_id=:job
+        """),
+                {"job": job_id},
+            )
+        ).scalar_one_or_none()
+        if link is None:
+            return None
+        plan = await ActionService(uow).repo.plan(session, link)
+    ranks = {"public": 0, "internal": 1, "restricted": 2, "classified": 3}
+    inherited = max(
+        (r.classification for s in plan.payload.steps for r in s.resources),
+        key=lambda value: ranks[value],
+        default="internal",
+    )
+    mapping = {
+        "public": "public_internal",
+        "internal": "internal",
+        "restricted": "restricted",
+        "classified": "highly_restricted",
+    }
+    return cast(Classification, mapping[inherited])
+
+
+async def action_output_guard(
+    session: AsyncSession, uow: UnitOfWork, version_id: uuid.UUID, subject: Subject
+) -> None:
+    """Current source/purpose policy for linked output, independent of run status.
+
+    Previously completed partial artifacts remain readable if all their current
+    source rights permit it. Receipt metadata alone never authorizes content.
+    """
+    plan_id = (
+        await session.execute(
+            text("""
+        SELECT r.plan_id FROM generated_files g JOIN action_source_links l USING(render_job_id)
+        JOIN action_runs r USING(run_id) WHERE g.version_id=:version
+    """),
+            {"version": version_id},
+        )
+    ).scalar_one_or_none()
+    if plan_id is None:
+        return
+    actions = ActionService(uow)
+    plan = await actions.repo.plan(session, plan_id)
+    from rtr_copilot.actions.authority import LeafRequest
+    from rtr_copilot.actions.checkpoints import (
+        check_sources,
+        input_metadata,
+        lock_inputs,
+        source_requests,
+    )
+
+    await lock_inputs(session, plan.payload, (plan.payload.actor_id, uuid.UUID(subject.user_id)))
+    original = Subject(
+        user_id=str(plan.payload.actor_id),
+        issuer="action-output",
+        sub="action-output",
+        email="",
+        canonical_domain="",
+    )
+    await actions._snapshot(session, original, plan.payload, "action-output-origin")
+    metadata = await input_metadata(session, plan.payload)
+    requests = source_requests(metadata) + [
+        LeafRequest(r.resource_id, "view", r.resource_type)
+        for step in plan.payload.steps
+        for r in step.resources
+    ]
+    frame = await actions.policy.checkpoint(session, subject, requests)
+    check_sources(metadata, frame, plan.payload, policy, "action-output-disclosure")
+    for step in plan.payload.steps:
+        for resource in step.resources:
+            attributes = frame.attributes.get((resource.resource_id, "view"))
+            if (
+                attributes is None
+                or not policy.decide(
+                    frame.subject,
+                    "view",
+                    attributes[0],
+                    PolicyContext(request_id="action-output-disclosure"),
+                ).allow
+            ):
+                raise ActionError("resource_unavailable", 403)
+
+
+async def action_output_purpose_allowed(
+    session: AsyncSession, uow: UnitOfWork, version_id: uuid.UUID, requested: str
+) -> bool:
+    """Optional linked-file Ask guard; ordinary files retain their old policy.
+
+    Repeated again at final answer admission, after any provider wait. Only
+    purpose metadata is loaded, never source content or derived file text.
+    """
+    plan_id = await session.scalar(
+        text("""
+        SELECT r.plan_id FROM generated_files g JOIN action_source_links l USING(render_job_id)
+        JOIN action_runs r USING(run_id) WHERE g.version_id=:version
+    """),
+        {"version": version_id},
+    )
+    if plan_id is None:
+        return True
+    plan = await ActionService(uow).repo.plan(session, plan_id)
+    ranks = {"sales": 0, "proposal": 1, "attestation": 2}
+    if requested not in ranks or ranks[requested] > ranks[plan.payload.purpose]:
+        return False
+    for ref in plan.payload.source_refs:
+        source = (
+            (
+                await session.execute(
+                    text("""
+            SELECT jsonb_build_object('use_class',rv.value_payload->'use_class',
+              'sot_tier',rv.value_payload->'sot_tier') purpose,rv.provenance_level
+            FROM record_versions rv JOIN records r ON r.current_version_id=rv.version_id
+            JOIN sot_packages p USING(package_id)
+            WHERE rv.version_id=:version AND rv.content_sha256=:checksum
+              AND r.source_key=:source AND r.record_key=:record
+              AND rv.lifecycle='active' AND r.lifecycle='active' AND p.lifecycle='active'
+              AND rv.verification_state IN ('verified','approved')
+              AND rv.fact_state IN ('verified','approved') AND rv.provenance_level<>'claim'
+              AND rv.freshness_state='current' AND rv.effective_from<=statement_timestamp()
+              AND (rv.effective_to IS NULL OR rv.effective_to>statement_timestamp())
+              AND (rv.freshness_due_at IS NULL OR rv.freshness_due_at>statement_timestamp())
+              AND (CAST(:evidence AS text) IS NULL OR EXISTS(
+                SELECT 1 FROM evidence_spans e WHERE e.record_version_id=rv.version_id
+                  AND e.evidence_key=:evidence AND e.lifecycle='active'))
+        """),
+                    {
+                        "version": ref.record_version_id,
+                        "checksum": ref.content_sha256,
+                        "source": ref.source_key,
+                        "record": ref.record_key,
+                        "evidence": ref.evidence_key,
+                    },
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        if source is None or purpose_blocks(
+            source["purpose"], requested=requested, provenance_level=source["provenance_level"]
+        ):
+            return False
+    return True

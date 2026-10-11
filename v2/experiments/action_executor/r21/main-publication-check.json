@@ -1,0 +1,11 @@
+{
+  "actor": "Main",
+  "scope": "downstream final publication check outside seal and closure to avoid cycles",
+  "result": {
+    "chunk_id": "17028a",
+    "wall_time_seconds": 0.190926167,
+    "exit_code": 0,
+    "original_token_count": 78,
+    "output": "R21_PASS source\n{\n  \"actor\": \"Main\",\n  \"all_evidence_222_match\": true,\n  \"all_published_5_match\": true,\n  \"final_closure_sha256\": \"8c70df801f6484597eda54df66d88da1d83b4f87b3d2ff052c3d4b6b3fb721ef\",\n  \"status\": \"CLOSED_SLA_FAILED\",\n  \"exe009\": \"OPEN_P1\",\n  \"serving_executor\": \"OFF\",\n  \"candidate\": \"NOT_READY\"\n}\n"
+  }
+}

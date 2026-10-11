@@ -1,0 +1,134 @@
+{
+  "schema": "r27-local-routing-v1",
+  "default_enabled": false,
+  "actual_capture_admission": "HOLD",
+  "scope": "Local owned packets, exact-source method subsets and fixed finite child emitters; no full app/helper import",
+  "families": [
+    {
+      "id": "frozen_copies",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "literal_controls",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "literal_scope",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "launch_review",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "journal",
+      "connection": "exact original retain body subset connected; original main/file-open/record domains unproved",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "final_samples",
+      "connection": "local virtual copy API only; original finalizer unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "summary_stdout",
+      "connection": "fixed local framed stdout fixture only; original summary producer unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "load_stderr",
+      "connection": "fixed local framed stderr fixture only; original logger/exception producers unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "migration_streams",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "owner_process",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "supervisor_stop",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "source_cap_child",
+      "connection": "local scope metadata only; original source-check/cap-child unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "fixture",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "database_admin",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "disk",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "reconstruction",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "returncodes",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "ephemeral",
+      "connection": "packet-only virtual endpoint; native filesystem/live temp writers unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "future_observer",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    },
+    {
+      "id": "outer_transcript",
+      "connection": "unconnected",
+      "original_full_route": "HOLD",
+      "current_source_upper_bytes": null
+    }
+  ],
+  "async_scope": "Exact hash/AST-bound check_owner/join_terminal bodies, minimal owner probe; true awaits and repeated cancellation, not SQL/lease/topology/full RequestConnection equivalence",
+  "record_domain": "Fixed fixture only: uint32 length-prefixed whole records, <=4 records and4096 bytes/stream, record maximum stdout16384/stderr512; excessive/partial data is incomplete, never chunk-split. Not arbitrary/hanging-child safety.",
+  "budget": "Protected R25 model domains adopted only locally; packet frames+owner+temporary/committed seal charged, no physical raw sidecars. Logical cap10485760; maximum9778880 including340 closure metadata and264 controls. Not current producer bounds.",
+  "remaining_gate": "Before one grouped measured-scope authority: dependencies available without unauthorized install; all original and outer/native producers exclusively owned/routed with explicit complete raw retention and ex ante domains; source/topology/async failure fidelity reviewed; one launch marker and task-owned resources. Then Main requests one complete scope, not per substep.",
+  "reference_measurement": "Not authorized: immutable original OFF driver,16 cells/1600 requested observations,profiles1/10/25/50,100 cases,admission/submit/status/cancel,p95 admission500ms/others1000ms,zero errors; pool5+5/pre_ping,.9s/quota5000;190s load/shared10s cleanup,10MiB; no serving activation.",
+  "verdict": "R27-001/002 PARTIAL; R27-003/004 PENDING; global measurement/capture HOLD; R21 SLA FAILED, EXE009 OPEN, candidate NOT_READY, executor OFF/.5 BLOCKED"
+}

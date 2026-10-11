@@ -1,0 +1,87 @@
+F...                                                                     [100%]
+=================================== FAILURES ===================================
+________________ test_genuine_installed_pytest_plugin_whole_xml ________________
+
+    def test_genuine_installed_pytest_plugin_whole_xml() -> None:
+        module, code = installed_junit()
+        old_os = vars(module)["os"]
+        old_open = vars(module).get("open")
+        with capture() as (broker, port, root):
+            assert actual_pytest(port) == 0
+            raw = port.read("plugins/report.xml")
+            assert raw.startswith(b'<?xml version="1.0" encoding="utf-8"?>')
+            xml = ET.fromstring(raw)
+            cases = xml.findall(".//testcase")
+            assert {case.attrib["name"] for case in cases} == {
+                "test_original_off_scope_literal",
+                "test_original_child_budget_body",
+            }
+            suite = xml.find("testsuite")
+            assert suite is not None and suite.attrib["tests"] == "2"
+            assert len(raw) <= 2048
+            assert (root / "files/plugins/report.xml").read_bytes() == raw
+            assert vars(module)["os"] is old_os and vars(module).get("open") is old_open
+            assert module.LogXML.pytest_sessionfinish.__code__ is code
+        # Capture helper closes its producer before broker completion in separate normal epoch.
+        with TemporaryDirectory(prefix=".closure-peer-", dir=REAL_PATH) as temporary:
+            broker = OwnedBroker(Path(temporary) / "capture")
+            with HostPort(broker) as port:
+                assert actual_pytest(port) == 0
+            recovered = broker.finish()
+            records = [
+                record
+                for record in recovered["records"]
+                if record[0] == "source_cap_child" and record[1] == 1
+            ]
+>           assert len(records) == 1  # Explicit two source writes -> one whole admitted physical XML.
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+E           assert 2 == 1
+E            +  where 2 = len([('source_cap_child', 1, 0, b'<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="p...es>'), ('source_cap_child', 1, 1, b'BROKER-MANIFEST:8dd55b8a651e70997d82c385369a067301d97efc6c2fc7f19815891430c78bc7')])
+
+v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py:91: AssertionError
+----------------------------- Captured stdout call -----------------------------
+..                                                                       [100%]
+=============================== warnings summary ===============================
+v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_default_test_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /evidence/r27-logical/eb99be4c62da491488d935b8e62a7b9d/plugins/report.xml -
+2 passed, 2 warnings in 0.01s
+..                                                                       [100%]
+=============================== warnings summary ===============================
+v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_default_test_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /evidence/r27-logical/838686e7199f475b8563bb0a275db237/plugins/report.xml -
+2 passed, 2 warnings in 0.01s
+=============================== warnings summary ===============================
+v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_default_test_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED v2/apps/backend::test_genuine_installed_pytest_plugin_whole_xml - asse...
+1 failed, 3 passed, 2 warnings in 0.27s

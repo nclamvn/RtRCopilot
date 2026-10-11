@@ -1,0 +1,13 @@
+{
+  "schema": "r24-main-reproduction-v1",
+  "tool": {
+    "chunk_id": "56fa53",
+    "exit_code": 0
+  },
+  "result": {
+    "audit_output_byte_identical": true,
+    "analysis_sha256": "2c38e4a7b5852b6341b026ca8b9a7f9c76d0b820d77346549e031d1caf3701f3",
+    "audit_chunk_id": "c544e8",
+    "exit_code": 0
+  }
+}

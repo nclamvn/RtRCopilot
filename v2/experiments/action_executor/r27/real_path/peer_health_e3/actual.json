@@ -1,0 +1,62 @@
+{
+  "sources": {
+    "composition.py": "586ccc5dae621df3a3362c4090a1c19140f27ea5dbb5538aca6d8c0cbe2a0cbd",
+    "controller.py": "0d1cdbe65fe5a5af761cc7f5d06671cfc1ca113d1cd46dc8768e9218947bf051",
+    "routing.py": "99736f7e49e1ceb40bed0727d1618481cf020184283dd5f8f9333ed8ed146872",
+    "test_runtime_path.py": "c220e2037358b0fbfc3a5104e185ba8243ce3efa843d4d8047dabbc621a611f6"
+  },
+  "strict": {
+    "command": [
+      "v2/apps/backend/.venv/bin/mypy",
+      "--strict",
+      "--follow-imports=silent",
+      "--cache-dir=/dev/null",
+      "--config-file=v2/apps/backend/pyproject.toml",
+      "v2/experiments/action_executor/r27/real_path/composition.py",
+      "v2/experiments/action_executor/r27/real_path/controller.py",
+      "v2/experiments/action_executor/r27/real_path/routing.py",
+      "v2/experiments/action_executor/r27/real_path/test_runtime_path.py"
+    ],
+    "returncode": 0
+  },
+  "ruff": {
+    "command": [
+      "v2/apps/backend/.venv/bin/ruff",
+      "check",
+      "--no-cache",
+      "--config=v2/apps/backend/pyproject.toml",
+      "v2/experiments/action_executor/r27/real_path/composition.py",
+      "v2/experiments/action_executor/r27/real_path/controller.py",
+      "v2/experiments/action_executor/r27/real_path/routing.py",
+      "v2/experiments/action_executor/r27/real_path/test_runtime_path.py"
+    ],
+    "returncode": 0
+  },
+  "format": {
+    "command": [
+      "v2/apps/backend/.venv/bin/ruff",
+      "format",
+      "--check",
+      "--no-cache",
+      "--config=v2/apps/backend/pyproject.toml",
+      "v2/experiments/action_executor/r27/real_path/composition.py",
+      "v2/experiments/action_executor/r27/real_path/controller.py",
+      "v2/experiments/action_executor/r27/real_path/routing.py",
+      "v2/experiments/action_executor/r27/real_path/test_runtime_path.py"
+    ],
+    "returncode": 0
+  },
+  "syntax": {
+    "command": [
+      "v2/apps/backend/.venv/bin/python",
+      "-B",
+      "-c",
+      "import pathlib,sys; [compile(pathlib.Path(p).read_bytes(),p,\"exec\") for p in sys.argv[1:]]",
+      "v2/experiments/action_executor/r27/real_path/composition.py",
+      "v2/experiments/action_executor/r27/real_path/controller.py",
+      "v2/experiments/action_executor/r27/real_path/routing.py",
+      "v2/experiments/action_executor/r27/real_path/test_runtime_path.py"
+    ],
+    "returncode": 0
+  }
+}

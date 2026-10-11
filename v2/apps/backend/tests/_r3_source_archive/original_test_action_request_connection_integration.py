@@ -1,0 +1,1122 @@
+"""Finite R3 lifecycle proofs, real SQL; no SDK/network-loss certification.
+
+Twenty-two non-parametrized cases. Scheduling pauses never replace policy or
+COMMIT. The acknowledgement fault delegates real driver COMMIT, independently
+witnesses committed rows/chain, then faults delivery to ORM; not TCP packet loss.
+"""
+
+import asyncio
+import uuid
+from contextlib import AsyncExitStack, asynccontextmanager
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from typing import Any
+
+import pytest
+import pytest_asyncio
+import test_action_contracts_integration as fixtures
+import test_action_execution_adversarial as adversarial
+from sqlalchemy import text
+from sqlalchemy.dialects.postgresql.asyncpg import AsyncAdapt_asyncpg_connection
+from sqlalchemy.exc import DBAPIError
+from sqlalchemy.ext.asyncio import AsyncConnection, async_sessionmaker, create_async_engine
+from starlette.requests import Request
+from test_action_checkout_audit_tail_integration import (
+    Observation,
+    counts,
+    execution_metadata,
+    expired_role,
+    premise,
+    record_id,
+    requested,
+)
+from test_action_policy_batching_integration import wait_after, wait_blocked
+
+from rtr_copilot.actions import policy as policy_module
+from rtr_copilot.actions.execution import ExecutionService
+from rtr_copilot.actions.execution_api import bounded
+from rtr_copilot.actions.registry import ActionError
+from rtr_copilot.actions.request_connection import RequestConnection
+from rtr_copilot.actions.service import ActionService
+from rtr_copilot.auth.models import Role
+from rtr_copilot.context.sources import revalidate_sot_references
+from rtr_copilot.db.uow import UnitOfWork
+from rtr_copilot.documents.service import DocumentOSService
+from rtr_copilot.repositories.audit import AuditRepository
+
+pytestmark = fixtures.pytestmark
+
+
+@pytest_asyncio.fixture
+async def factory() -> Any:
+    async for value in fixtures.factory.__wrapped__():
+        yield value
+
+
+@pytest.fixture
+def execution_config(monkeypatch: pytest.MonkeyPatch) -> Any:
+    return adversarial.execution_config.__wrapped__(monkeypatch)
+
+
+@pytest.fixture
+def local_boundaries(monkeypatch: pytest.MonkeyPatch, factory: Any) -> Any:
+    return adversarial.local_boundaries.__wrapped__(monkeypatch, factory)
+
+
+async def prepared(factory: Any, tmp_path: Path, settings: Any, **kwargs: Any) -> Any:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path, **kwargs)
+    plan = await actions.create_plan(actor, requested(refs), request_id="RLC-existing")
+    executor = ExecutionService(actions.uow, actions=actions)
+    executor.settings = settings
+    return actions, actor, refs, plan, executor
+
+
+async def valid_chain(factory: Any) -> None:
+    async with factory() as session:
+        assert (await AuditRepository().verify(session))[0]
+
+
+async def submission_count(factory: Any, actor: Any, run: Any) -> tuple[int, int]:
+    async with factory() as session:
+        return tuple(
+            (
+                await session.execute(
+                    text(
+                        "SELECT (SELECT count(*) FROM action_executions WHERE run_id=:run),"
+                        "(SELECT count(*) FROM audit_events WHERE actor_user_id=:actor "
+                        "AND action='action.execution.submit')"
+                    ),
+                    {"run": run, "actor": uuid.UUID(actor.user_id)},
+                )
+            ).one()
+        )
+
+
+async def cancel_join(task: Any) -> None:
+    if task is not None and not task.done():
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+
+
+class Phases:
+    """Transparent real phase delegates; retain Session objects against ID reuse."""
+
+    def __init__(self) -> None:
+        self.rows: list[Any] = []
+        self.connections: list[Any] = []
+
+    async def capture(self, session: Any, name: str) -> None:
+        connection = await session.connection()
+        row = (
+            await session.execute(
+                text("SELECT pg_backend_pid(),txid_current(),transaction_timestamp()")
+            )
+        ).one()
+        self.rows.append((name, session, *row))
+        self.connections.append(connection)
+
+    def install(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        real_read, real_mutation = RequestConnection.read_phase, RequestConnection.mutation_phase
+
+        @asynccontextmanager
+        async def read(owner: Any, *, commit: bool = False) -> Any:
+            async with real_read(owner, commit=commit) as session:
+                await self.capture(session, "read")
+                yield session
+            assert not owner.connection.in_transaction()
+            assert not owner.connection.in_nested_transaction()
+
+        @asynccontextmanager
+        async def mutation(owner: Any) -> Any:
+            async with real_mutation(owner) as session:
+                await self.capture(session, "mutation")
+                yield session
+            assert not owner.connection.in_transaction()
+            assert not owner.connection.in_nested_transaction()
+
+        monkeypatch.setattr(RequestConnection, "read_phase", read)
+        monkeypatch.setattr(RequestConnection, "mutation_phase", mutation)
+
+    def assert_three(self) -> None:
+        assert [r[0] for r in self.rows] == ["read", "mutation", "read"]
+        assert len({id(r[1]) for r in self.rows}) == 3
+        assert len({r[2] for r in self.rows}) == 1
+        assert len({r[3] for r in self.rows}) == 3
+        assert self.rows[0][4] < self.rows[1][4] < self.rows[2][4]
+        assert len({id(c) for c in self.connections}) == 1
+
+
+async def one_checkout(factory: Any, monkeypatch: Any, operation: Any) -> Any:
+    observation, phases = Observation(factory, monkeypatch), Phases()
+    phases.install(monkeypatch)
+    with observation.watching():
+        await observation.control(factory)
+        observation.tasks.add(asyncio.current_task())
+        result = await operation()
+    phases.assert_three()
+    assert observation.checkouts == 1 and observation.max_held == 1 and observation.held == 0
+    assert not any(
+        "quoted_text" in sql or "SELECT rv.value_payload," in sql for sql in observation.sql
+    )
+    assert all("value_payload" not in sql or "value_payload->" in sql for sql in observation.sql)
+    return result
+
+
+def mutation_observer(monkeypatch: Any, entered: Any) -> None:
+    real = RequestConnection.mutation_phase
+
+    @asynccontextmanager
+    async def observed(owner: Any) -> Any:
+        async with real(owner) as session:
+            entered.set_result(await session.scalar(text("SELECT pg_backend_pid()")))
+            yield session
+
+    monkeypatch.setattr(RequestConnection, "mutation_phase", observed)
+
+
+@pytest.mark.asyncio
+async def test_create_has_one_checkout_three_real_transactions(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    view = await one_checkout(
+        factory,
+        monkeypatch,
+        lambda: actions.create_plan(actor, requested(refs), request_id="RLC-create-three-TX"),
+    )
+    assert view.state == "contract_ready"
+    await valid_chain(factory)
+
+
+@pytest.mark.asyncio
+async def test_submit_has_one_checkout_three_real_transactions(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+    execution_config: Any,
+) -> None:
+    _, actor, _, plan, executor = await prepared(factory, tmp_path, execution_config)
+    view = await one_checkout(
+        factory,
+        monkeypatch,
+        lambda: executor.submit(
+            actor, plan.plan_id, plan.plan_digest, request_id="RLC-submit-three-TX"
+        ),
+    )
+    assert view.state == "queued"
+    assert await submission_count(factory, actor, view.run_id) == (1, 1)
+    await valid_chain(factory)
+
+
+@pytest.mark.asyncio
+async def test_mutation_xact_locks_release_before_final_phase(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    async with factory() as session:
+        key = await session.scalar(
+            text(
+                "SELECT evidence_key FROM evidence_spans WHERE record_version_id=:v "
+                "AND lifecycle='active' ORDER BY span_id LIMIT 1"
+            ),
+            {"v": refs[0].record_version_id},
+        )
+    assert key
+    refs = (refs[0].model_copy(update={"evidence_key": key}),)
+    request = requested(refs)
+    real = actions._metadata_plan
+    checks: list[Any] = []
+
+    async def final(
+        subject: Any, plan_id: Any, expected: Any, request_id: Any, *, _owner: Any = None
+    ) -> Any:
+        assert _owner is not None and not _owner.connection.in_transaction()
+        async with factory() as independent, independent.begin():
+            checks.append(await actions.repo.plan(independent, plan_id))
+            for lock in (827004, 827005):
+                assert await independent.scalar(
+                    text("SELECT pg_try_advisory_xact_lock(:key)"), {"key": lock}
+                )
+            assert await independent.scalar(
+                text("SELECT pg_try_advisory_xact_lock(hashtextextended(:key,0))"),
+                {"key": f"action-plan-key:{actor.user_id}:{request.idempotency_key}"},
+            )
+            for sql, params in (
+                (
+                    "SELECT record_id FROM records WHERE source_key=:source FOR UPDATE NOWAIT",
+                    {"source": refs[0].source_key},
+                ),
+                (
+                    "SELECT span_id FROM evidence_spans WHERE record_version_id=:v "
+                    "AND evidence_key=:key AND lifecycle='active' FOR UPDATE NOWAIT",
+                    {"v": refs[0].record_version_id, "key": key},
+                ),
+            ):
+                assert (await independent.execute(text(sql), params)).all()
+        return await real(subject, plan_id, expected, request_id, _owner=_owner)
+
+    monkeypatch.setattr(actions, "_metadata_plan", final)
+    view = await actions.create_plan(actor, request, request_id="RLC-release-xact-locks")
+    assert checks == [view]
+
+
+@pytest.mark.asyncio
+async def test_real_audit_wait_expired_role_denies(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path, restricted=True)
+    resource = await record_id(factory, refs)
+    await premise(factory, actor, resource, True)
+    request = requested(refs)
+    before = await counts(factory, actor, request.idempotency_key)
+    due = datetime.now(UTC) + timedelta(seconds=2)
+    await expired_role(factory, actor, due)
+    entered = asyncio.get_running_loop().create_future()
+    mutation_observer(monkeypatch, entered)
+    task = None
+    try:
+        async with factory() as blocker, blocker.begin():
+            pid = await blocker.scalar(text("SELECT pg_backend_pid()"))
+            await blocker.execute(text("SELECT pg_advisory_xact_lock(827004)"))
+            task = asyncio.create_task(actions.create_plan(actor, request, request_id="RLC-expiry"))
+            await wait_blocked(factory, await asyncio.wait_for(entered, 5), pid)
+            await wait_after(factory, due)
+            current = await premise(factory, actor, resource, False)
+            assert Role.CURATOR not in current.roles
+        with pytest.raises(ActionError):
+            await asyncio.wait_for(task, 10)
+    finally:
+        await cancel_join(task)
+    assert await counts(factory, actor, request.idempotency_key) == before
+    await valid_chain(factory)
+
+
+@pytest.mark.asyncio
+async def test_parallel_calls_share_service_not_connection(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    real, reached = RequestConnection.read_phase, asyncio.Event()
+    initial: dict[Any, Any] = {}
+    observation = Observation(factory, monkeypatch)
+
+    @asynccontextmanager
+    async def read(owner: Any, *, commit: bool = False) -> Any:
+        async with real(owner, commit=commit) as session:
+            task = asyncio.current_task()
+            if task not in initial:
+                initial[task] = await session.scalar(text("SELECT pg_backend_pid()"))
+                if len(initial) == 2:
+                    reached.set()
+                await asyncio.wait_for(reached.wait(), 5)
+            yield session
+
+    monkeypatch.setattr(RequestConnection, "read_phase", read)
+
+    async def create() -> Any:
+        observation.tasks.add(asyncio.current_task())
+        return await actions.create_plan(actor, requested(refs), request_id="RLC-shared-service")
+
+    with observation.watching():
+        await observation.control(factory)
+        views = await asyncio.gather(create(), create())
+    assert len(set(initial.values())) == 2 and len({v.plan_id for v in views}) == 2
+    assert observation.checkouts == 2 and observation.max_held == 2 and observation.held == 0
+    await valid_chain(factory)
+
+
+@pytest.mark.asyncio
+async def test_child_phase_borrow_rejected_before_sql(factory: Any, monkeypatch: Any) -> None:
+    observation = Observation(factory, monkeypatch)
+    with observation.watching():
+        await observation.control(factory)
+        observation.tasks.add(asyncio.current_task())
+        async with RequestConnection(factory) as owner, owner.read_phase() as session:
+            assert (
+                await session.execute(text("SELECT 17"), bind_arguments={}, execution_options={})
+            ).scalar_one() == 17
+            assert (
+                await session.scalar(text("SELECT 19"), bind_arguments=None, execution_options={})
+                == 19
+            )
+            connection = await session.connection()
+            assert (
+                await connection.execute(text("SELECT 23"), execution_options={})
+            ).scalar_one() == 23
+            assert await connection.scalar(text("SELECT 29"), execution_options={}) == 29
+            assert (await session.scalars(text("SELECT 31"))).one() == 31
+            assert (await connection.scalars(text("SELECT 37"))).one() == 37
+            assert (await connection.exec_driver_sql("SELECT 41", None, {})).scalar_one() == 41
+            assert await session.connection(None, {}) is connection
+            txid = await session.scalar(text("SELECT txid_current()"))
+            # Same-task overrides must reject independently of the child guard;
+            # otherwise a nominal owner could redirect to another checkout/clock.
+            bind = {"bind": factory.kw["bind"].sync_engine}
+            before_overrides = len(observation.sql)
+            for method in (session.execute, session.scalar, session.scalars):
+                with pytest.raises(RuntimeError):
+                    await method(text("SELECT 97"), bind_arguments=bind)
+                with pytest.raises(RuntimeError):
+                    await method(text("SELECT 97"), execution_options={"autoflush": False})
+            with pytest.raises(RuntimeError):
+                await session.connection(bind_arguments=bind)
+            with pytest.raises(RuntimeError):
+                await session.connection(execution_options={"no_parameters": True})
+            with pytest.raises(RuntimeError):
+                await session.connection(bind)
+            with pytest.raises(RuntimeError):
+                await session.connection(None, {"no_parameters": True})
+            with pytest.raises(RuntimeError):
+                await connection.execution_options(no_parameters=True)
+            for method in (connection.execute, connection.scalar, connection.scalars):
+                with pytest.raises(RuntimeError):
+                    await method(text("SELECT 97"), execution_options={"no_parameters": True})
+            with pytest.raises(RuntimeError):
+                await connection.exec_driver_sql(
+                    "SELECT 97", execution_options={"no_parameters": True}
+                )
+            with pytest.raises(RuntimeError):
+                await connection.exec_driver_sql("SELECT 97", None, {"no_parameters": True})
+            assert len(observation.sql) == before_overrides
+            # Public real unstarted facade: constructor does not BEGIN/COMMIT.
+            # Getters may be unsupported, but passing this object to a child
+            # must still reject terminal/start operations before delegation.
+            facades = [session.begin()]
+            for surface in (session, connection):
+                try:
+                    facade = surface.get_transaction()
+                except RuntimeError:
+                    continue  # Deliberately unsupported public access, not a skip.
+                if facade is not None:
+                    facades.append(facade)
+
+            async def rejected(name: str) -> None:
+                observation.tasks.add(asyncio.current_task())
+                before = len(observation.sql)
+                with pytest.raises(RuntimeError):
+                    if name == "phase":
+                        async with owner.read_phase():
+                            raise AssertionError("child entered leased phase")
+                    elif name == "session_execute":
+                        await session.execute(text("SELECT 101"))
+                    elif name == "session_scalar":
+                        await session.scalar(text("SELECT 103"))
+                    elif name == "session_connection":
+                        await session.connection()
+                    elif name == "session_bind_override":
+                        await session.execute(text("SELECT 101"), bind_arguments=bind)
+                    elif name == "session_option_override":
+                        await session.scalar(
+                            text("SELECT 103"), execution_options={"autoflush": False}
+                        )
+                    elif name in {"session_begin", "session_begin_nested"}:
+                        async with getattr(session, name.removeprefix("session_"))():
+                            raise AssertionError("child entered a transaction")
+                    elif name in {
+                        "session_get_transaction",
+                        "session_get_nested_transaction",
+                        "connection_get_transaction",
+                        "connection_get_nested_transaction",
+                    }:
+                        surface = session if name.startswith("session_") else connection
+                        getattr(surface, name.split("_", 1)[1])()
+                    elif name == "connection_execute":
+                        await connection.execute(text("SELECT 107"))
+                    elif name == "connection_scalar":
+                        await connection.scalar(text("SELECT 109"))
+                    elif name == "connection_driver_sql":
+                        await connection.exec_driver_sql("SELECT 113")
+                    elif name == "connection_options":
+                        await connection.execution_options(no_parameters=True)
+                    else:
+                        index, terminal = name.split(":")
+                        if terminal == "__aexit__":
+                            await facades[int(index)].__aexit__(None, None, None)
+                        else:
+                            await getattr(facades[int(index)], terminal)()
+                assert len(observation.sql) == before
+
+            names = [
+                "phase",
+                "session_execute",
+                "session_scalar",
+                "session_connection",
+                "session_bind_override",
+                "session_option_override",
+                "session_begin",
+                "session_begin_nested",
+                "session_get_transaction",
+                "session_get_nested_transaction",
+                "connection_get_transaction",
+                "connection_get_nested_transaction",
+                "connection_execute",
+                "connection_scalar",
+                "connection_driver_sql",
+                "connection_options",
+            ]
+            names += [
+                f"{i}:{terminal}"
+                for i in range(len(facades))
+                for terminal in ("start", "commit", "rollback", "__aexit__")
+            ]
+            for name in names:
+                await asyncio.create_task(rejected(name))
+            assert await session.scalar(text("SELECT txid_current()")) == txid
+        assert observation.held == 0
+
+
+@pytest.mark.asyncio
+async def test_pool_wait_cancel_returns_no_owned_connection(factory: Any, monkeypatch: Any) -> None:
+    # Dedicated synthetic engine, same fixed serving pool5+5, not a serving change.
+    engine = create_async_engine(
+        factory.kw["bind"].url, pool_size=5, max_overflow=5, pool_pre_ping=True
+    )
+    pooled = async_sessionmaker(engine, expire_on_commit=False)
+    entered = asyncio.get_running_loop().create_future()
+    task = None
+    try:
+        async with AsyncExitStack() as stack:
+            for _ in range(10):
+                await stack.enter_async_context(engine.connect())
+            assert engine.sync_engine.pool.checkedout() == 10
+            real = engine.sync_engine.pool._do_get
+
+            def getting() -> Any:
+                if not entered.done():
+                    entered.set_result(asyncio.current_task())
+                return real()
+
+            monkeypatch.setattr(engine.sync_engine.pool, "_do_get", getting)
+
+            async def acquire() -> None:
+                async with RequestConnection(pooled):
+                    raise AssertionError("saturated pool granted an unreturned connection")
+
+            task = asyncio.create_task(acquire())
+            assert await asyncio.wait_for(entered, 5) is task
+            assert not task.done() and engine.sync_engine.pool.checkedout() == 10
+            task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await asyncio.wait_for(task, 5)
+            assert engine.sync_engine.pool.checkedout() == 10
+        assert engine.sync_engine.pool.checkedout() == 0
+        async with pooled() as session:
+            assert await session.scalar(text("SELECT 31")) == 31
+    finally:
+        await cancel_join(task)
+        await engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_audit_wait_cancel_rolls_back_and_checks_in(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    request = requested(refs)
+    before = await counts(factory, actor, request.idempotency_key)
+    entered = asyncio.get_running_loop().create_future()
+    mutation_observer(monkeypatch, entered)
+    observation = Observation(factory, monkeypatch)
+    task = None
+
+    async def create() -> Any:
+        observation.tasks.add(asyncio.current_task())
+        return await actions.create_plan(actor, request, request_id="RLC-audit-cancel")
+
+    with observation.watching():
+        await observation.control(factory)
+        try:
+            async with factory() as blocker, blocker.begin():
+                pid = await blocker.scalar(text("SELECT pg_backend_pid()"))
+                await blocker.execute(text("SELECT pg_advisory_xact_lock(827004)"))
+                task = asyncio.create_task(create())
+                await wait_blocked(factory, await asyncio.wait_for(entered, 5), pid)
+                assert any("INSERT INTO action_receipts" in sql for sql in observation.sql)
+                assert await counts(factory, actor, request.idempotency_key) == before
+                task.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await asyncio.wait_for(task, 5)
+                assert observation.held == 0
+        finally:
+            await cancel_join(task)
+    assert await counts(factory, actor, request.idempotency_key) == before
+    await valid_chain(factory)
+
+
+@pytest.mark.asyncio
+async def test_repeated_cancel_joins_one_cleanup(factory: Any, monkeypatch: Any) -> None:
+    # Controlled cleanup scheduling; delegate actual Connection.close afterwards.
+    ready, closing, release = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    target: list[Any] = []
+    calls: list[Any] = []
+    real = AsyncConnection.close
+    observation = Observation(factory, monkeypatch)
+
+    async def close(connection: Any) -> None:
+        if target and connection is target[0]:
+            calls.append(asyncio.current_task())
+            closing.set()
+            await release.wait()
+        await real(connection)
+
+    monkeypatch.setattr(AsyncConnection, "close", close)
+
+    async def run() -> None:
+        observation.tasks.add(asyncio.current_task())
+        async with RequestConnection(factory) as owner, owner.read_phase() as session:
+            assert await session.scalar(text("SELECT 37")) == 37
+            target.append(await session.connection())
+            ready.set()
+            await asyncio.Future()
+
+    task = None
+    with observation.watching():
+        await observation.control(factory)
+        try:
+            task = asyncio.create_task(run())
+            await asyncio.wait_for(ready.wait(), 5)
+            task.cancel()
+            await asyncio.wait_for(closing.wait(), 5)
+            for _ in range(3):
+                task.cancel()
+                await asyncio.sleep(0)
+            assert len(calls) == 1 and not task.done()
+            release.set()
+            with pytest.raises(asyncio.CancelledError):
+                await asyncio.wait_for(task, 5)
+            assert len(calls) == 1 and calls[0].done() and observation.held == 0
+        finally:
+            release.set()
+            await cancel_join(task)
+    async with factory() as session:
+        assert await session.scalar(text("SELECT 41")) == 41
+
+
+@pytest.mark.asyncio
+async def test_real_commit_before_cancel_is_durable_unknown_caller(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+    execution_config: Any,
+) -> None:
+    _, actor, _, plan, executor = await prepared(factory, tmp_path, execution_config)
+    final = asyncio.Event()
+    real = executor._view
+
+    async def paused(run: Any, *, _owner: Any = None) -> Any:
+        assert _owner is not None and not _owner.connection.in_transaction()
+        final.set()
+        await asyncio.Future()  # Controlled post-COMMIT response scheduling.
+        return await real(run, _owner=_owner)
+
+    monkeypatch.setattr(executor, "_view", paused)
+    request = Request(
+        {
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v1/actions/execute",
+            "headers": [],
+            "state": {"request_id": "RLC-commit-timeout"},
+        }
+    )
+    task = asyncio.create_task(
+        bounded(
+            request,
+            actor,
+            executor,
+            executor.submit(actor, plan.plan_id, plan.plan_digest, request_id="RLC-commit-timeout"),
+        )
+    )
+    try:
+        await asyncio.wait_for(final.wait(), 5)
+        assert await submission_count(factory, actor, plan.run_id) == (1, 1)
+        await valid_chain(factory)
+        response = await asyncio.wait_for(task, 5)
+        assert response.status_code == 503
+        assert b"action_operation_timeout" in response.body
+        assert b"Check durable action status before resubmitting" in response.body
+    finally:
+        await cancel_join(task)
+        monkeypatch.setattr(executor, "_view", real)
+    assert (await executor.status(actor, plan.run_id)).state == "queued"
+    before = await execution_metadata(factory, plan.run_id)
+    await executor.submit(actor, plan.plan_id, plan.plan_digest, request_id="RLC-timeout-reconcile")
+    assert await execution_metadata(factory, plan.run_id) == before
+    assert await submission_count(factory, actor, plan.run_id) == (1, 1)
+
+
+@pytest.mark.asyncio
+async def test_sql_failure_rolls_back_then_same_key_retry_once(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    request = requested(refs)
+    before = await counts(factory, actor, request.idempotency_key)
+    real = AuditRepository.append
+    called = []
+
+    async def fault(repo: Any, session: Any, **kwargs: Any) -> Any:
+        if kwargs["action"] == "action.plan.create":
+            called.append(session)
+            kwargs["request_id"] = None  # Actual SECURITY DEFINER/NOT NULL fault.
+        return await real(repo, session, **kwargs)
+
+    with monkeypatch.context() as scoped:
+        scoped.setattr(AuditRepository, "append", fault)
+        with pytest.raises(DBAPIError):
+            await actions.create_plan(actor, request, request_id="RLC-rollback")
+    assert len(called) == 1 and await counts(factory, actor, request.idempotency_key) == before
+    first = await actions.create_plan(actor, request, request_id="RLC-retry-after-rollback")
+    second = await actions.create_plan(actor, request, request_id="RLC-equal-retry")
+    assert first == second
+    assert await counts(factory, actor, request.idempotency_key) == (1, 1, 1, 1, 1)
+    await valid_chain(factory)
+
+
+class AcknowledgementDeliveryFault(RuntimeError):
+    """Explicit controlled delivery fault AFTER genuinely committed driver work."""
+
+
+@pytest.mark.asyncio
+async def test_real_committed_ack_delivery_fault_never_reports_success(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+    execution_config: Any,
+) -> None:
+    _, actor, _, plan, executor = await prepared(factory, tmp_path, execution_config)
+    committed, release = asyncio.Event(), asyncio.Event()
+    target: list[Any] = []
+    delegated: list[Any] = []
+    real_phase = RequestConnection.mutation_phase
+    real_commit = AsyncAdapt_asyncpg_connection._commit_and_discard
+    observation = Observation(factory, monkeypatch)
+
+    @asynccontextmanager
+    async def mutation(owner: Any) -> Any:
+        async with real_phase(owner) as session:
+            # Test-only actual Engine handle; never passed to product/child code.
+            connection = await session.connection()
+            adapter = connection.sync_connection.connection.dbapi_connection
+            target.append(adapter)
+            yield session
+
+    async def delivery(adapter: Any) -> None:
+        await real_commit(adapter)  # Genuine driver COMMIT; no result fabrication.
+        if target and adapter is target[0]:
+            delegated.append(adapter)
+            committed.set()
+            await release.wait()
+            adapter._connection.terminate()  # ONLY the exact synthetic owned driver.
+            assert adapter._connection.is_closed()
+            raise AcknowledgementDeliveryFault("controlled post-COMMIT ACK delivery")
+
+    async def submit() -> Any:
+        observation.tasks.add(asyncio.current_task())
+        return await executor.submit(
+            actor, plan.plan_id, plan.plan_digest, request_id="RLC-controlled-ACK"
+        )
+
+    task = None
+    with monkeypatch.context() as scoped, observation.watching():
+        await observation.control(factory)
+        scoped.setattr(RequestConnection, "mutation_phase", mutation)
+        scoped.setattr(AsyncAdapt_asyncpg_connection, "_commit_and_discard", delivery)
+        try:
+            task = asyncio.create_task(submit())
+            await asyncio.wait_for(committed.wait(), 5)
+            assert not task.done() and len(delegated) == 1
+            # Independent SQL must prove COMMIT while ORM/caller is still pending.
+            assert await submission_count(factory, actor, plan.run_id) == (1, 1)
+            before = await execution_metadata(factory, plan.run_id)
+            await valid_chain(factory)
+            release.set()
+            with pytest.raises(AcknowledgementDeliveryFault):
+                await asyncio.wait_for(task, 5)
+            assert observation.held == 0
+        finally:
+            release.set()
+            await cancel_join(task)
+    # This is controlled client ACK propagation, NOT proof of TCP packet loss.
+    assert (await executor.status(actor, plan.run_id)).state == "queued"
+    await executor.submit(actor, plan.plan_id, plan.plan_digest, request_id="RLC-ACK-reconcile")
+    assert await execution_metadata(factory, plan.run_id) == before
+    assert await submission_count(factory, actor, plan.run_id) == (1, 1)
+    await valid_chain(factory)
+
+
+@pytest.mark.asyncio
+async def test_retry_after_known_commit_preserves_execution_ledger(
+    factory: Any,
+    tmp_path: Path,
+    execution_config: Any,
+) -> None:
+    _, actor, _, plan, executor = await prepared(factory, tmp_path, execution_config)
+    view = await executor.submit(actor, plan.plan_id, plan.plan_digest, request_id="RLC-new")
+    await executor.advance(view.run_id)  # Actual R0 verified read, no SDK/provider.
+    await executor.cancel(actor, view.run_id)
+    before = await execution_metadata(factory, view.run_id)
+    public = await executor.status(actor, view.run_id)
+    assert public.state == "partial" and public.spent_tool_calls == 1 and public.receipts
+    repeated = await executor.submit(
+        actor, plan.plan_id, plan.plan_digest, request_id="RLC-known-commit-retry"
+    )
+    assert repeated == public
+    assert await execution_metadata(factory, view.run_id) == before
+    assert await submission_count(factory, actor, view.run_id) == (1, 1)
+
+
+@pytest.mark.asyncio
+async def test_equal_concurrent_key_one_admission(factory: Any, tmp_path: Path) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    request = requested(refs)
+    views = await asyncio.gather(
+        *(actions.create_plan(actor, request, request_id=f"RLC-key-{i}") for i in range(2))
+    )
+    assert views[0] == views[1]
+    assert await counts(factory, actor, request.idempotency_key) == (1, 1, 1, 1, 1)
+    await valid_chain(factory)
+
+
+@pytest.mark.asyncio
+async def test_conflicting_key_no_second_admission(factory: Any, tmp_path: Path) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    request = requested(refs)
+    view = await actions.create_plan(actor, request, request_id="RLC-first-key")
+    before = await counts(factory, actor, request.idempotency_key)
+    with pytest.raises(ActionError, match="idempotency_conflict"):
+        await actions.create_plan(
+            actor,
+            request.model_copy(update={"objective": "Different"}),
+            request_id="RLC-conflict-key",
+        )
+    assert await counts(factory, actor, request.idempotency_key) == before
+    assert await actions.read_plan(actor, view.plan_id, request_id="RLC-still-original") == view
+
+
+@pytest.mark.asyncio
+async def test_clock_fallback_physically_closes_then_old_path_once(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    resource = await record_id(factory, refs)
+    real_project, real_legacy = policy_module.project_subject, actions._legacy_initial_plan
+    seeded, retries = [], []
+    observation = Observation(factory, monkeypatch)
+
+    async def project(session: Any, actor_id: Any) -> Any:
+        result = await real_project(session, actor_id)
+        if not seeded and actor_id == uuid.UUID(actor.user_id):
+            start = await session.scalar(text("SELECT transaction_timestamp()"))
+            expiry = datetime.now(UTC) + timedelta(seconds=0.35)
+            async with factory() as writer, writer.begin():
+                await writer.execute(
+                    text(
+                        "INSERT INTO acl_entries(resource_id,principal_type,principal_id,action,"
+                        "effect,reason,valid_from,expires_at) "
+                        "VALUES(:r,'user',:a,'view','deny','RLC-clock',:start,:end)"
+                    ),
+                    {
+                        "r": resource,
+                        "a": actor_id,
+                        "start": start - timedelta(seconds=1),
+                        "end": expiry,
+                    },
+                )
+            seeded.append(expiry)
+            await wait_after(factory, expiry)
+            # Independent SQL/old Repo policy premise, not candidate clock flags.
+            await premise(factory, actor, resource, True)
+            row = (
+                await session.execute(
+                    text(
+                        "SELECT EXISTS(SELECT 1 FROM acl_entries WHERE resource_id=:r "
+                        "AND principal_id=:a AND effect='deny' "
+                        "AND valid_from<=transaction_timestamp() "
+                        "AND expires_at>transaction_timestamp()),"
+                        "EXISTS(SELECT 1 FROM acl_entries WHERE resource_id=:r AND principal_id=:a "
+                        "AND effect='deny' AND valid_from<=statement_timestamp() "
+                        "AND expires_at>statement_timestamp())"
+                    ),
+                    {"r": resource, "a": actor_id},
+                )
+            ).one()
+            assert row == (True, False)
+        return result
+
+    async def legacy(*args: Any, **kwargs: Any) -> Any:
+        assert observation.held == 0  # Entire physical owner returned FIRST.
+        retries.append(args)
+        return await real_legacy(*args, **kwargs)
+
+    monkeypatch.setattr(policy_module, "project_subject", project)
+    monkeypatch.setattr(actions, "_legacy_initial_plan", legacy)
+    with observation.watching():
+        await observation.control(factory)
+        observation.tasks.add(asyncio.current_task())
+        view = await actions.create_plan(actor, requested(refs), request_id="RLC-clock-fallback")
+    assert len(seeded) == len(retries) == 1 and observation.held == 0
+    assert view.state == "contract_ready"
+
+
+async def grant_attempt(factory: Any, tmp_path: Path, monkeypatch: Any, late: bool) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    resource, grant = await record_id(factory, refs), uuid.uuid4()
+    async with factory() as session, session.begin():
+        changed = await session.execute(
+            text("DELETE FROM subject_roles WHERE subject_id=:a"), {"a": uuid.UUID(actor.user_id)}
+        )
+        assert changed.rowcount == 1
+    await premise(factory, actor, resource, True)
+    request = requested(refs)
+    before = await counts(factory, actor, request.idempotency_key)
+    real_project, real_mutation = policy_module.project_subject, RequestConnection.mutation_phase
+    seen = []
+
+    async def project(session: Any, actor_id: Any) -> Any:
+        result = await real_project(session, actor_id)
+        if not seen and actor_id == uuid.UUID(actor.user_id):
+            start = await session.scalar(text("SELECT transaction_timestamp()"))
+            seen.append(start)
+            async with factory() as writer, writer.begin():
+                await writer.execute(
+                    text("UPDATE resources SET classification='restricted' WHERE resource_id=:r"),
+                    {"r": resource},
+                )
+                born = await writer.scalar(text("SELECT clock_timestamp()"))
+                await writer.execute(
+                    text(
+                        "INSERT INTO entitlements(entitlement_id,subject_id,resource_id,"
+                        "action,effect,"
+                        "conditions,active,expires_at,reason) VALUES(:g,:a,:r,'view','allow',"
+                        '\'{"classification":"restricted"}\'::jsonb,true,'
+                        "statement_timestamp()+interval '1 minute','RLC-grant')"
+                    ),
+                    {"g": grant, "a": actor_id, "r": resource},
+                )
+            assert born > start and Role.CURATOR not in result.subject.roles
+            assert (await premise(factory, actor, resource, True)).temporary_entitlements
+            assert await session.scalar(
+                text("SELECT active FROM entitlements WHERE entitlement_id=:g"), {"g": grant}
+            )
+        return result
+
+    @asynccontextmanager
+    async def mutation(owner: Any) -> Any:
+        if late:
+            async with factory() as writer, writer.begin():
+                changed = await writer.execute(
+                    text("UPDATE entitlements SET active=false WHERE entitlement_id=:g AND active"),
+                    {"g": grant},
+                )
+                assert changed.rowcount == 1
+            await premise(factory, actor, resource, False)
+        async with real_mutation(owner) as session:
+            yield session
+
+    with monkeypatch.context() as scoped:
+        scoped.setattr(policy_module, "project_subject", project)
+        scoped.setattr(RequestConnection, "mutation_phase", mutation)
+        if late:
+            with pytest.raises(ActionError):
+                await actions.create_plan(actor, request, request_id="RLC-late-revoke")
+            assert await counts(factory, actor, request.idempotency_key) == before
+        else:
+            assert (
+                await actions.create_plan(actor, request, request_id="RLC-new-grant")
+            ).state == "contract_ready"
+    assert len(seen) == 1
+
+
+@pytest.mark.asyncio
+async def test_new_grant_visible_then_late_revoke_denies(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    await grant_attempt(factory, tmp_path, monkeypatch, False)
+    await grant_attempt(factory, tmp_path, monkeypatch, True)
+
+
+async def fallback_attempt(factory: Any, tmp_path: Path, monkeypatch: Any, topology: str) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    resource = await record_id(factory, refs)
+    async with factory() as session, session.begin():
+        if topology == "nonrecord":
+            changed = await session.execute(
+                text("UPDATE resources SET resource_type='document' WHERE resource_id=:r"),
+                {"r": resource},
+            )
+            assert changed.rowcount == 1
+        else:
+            row = (
+                await session.execute(
+                    text(
+                        "SELECT span_id,evidence_key FROM evidence_spans "
+                        "WHERE record_version_id=:v "
+                        "AND lifecycle='active' ORDER BY span_id LIMIT 1"
+                    ),
+                    {"v": refs[0].record_version_id},
+                )
+            ).one()
+            refs = (refs[0].model_copy(update={"evidence_key": row.evidence_key}),)
+            await session.execute(
+                text(
+                    "INSERT INTO evidence_spans(evidence_key,record_version_id,package_id,"
+                    "source_ref,locator,quoted_text,normalized_text,evidence_sha256,"
+                    "source_label,classification,lifecycle) "
+                    "SELECT :prefix||n::text,record_version_id,package_id,source_ref,"
+                    "locator,quoted_text,"
+                    "normalized_text,evidence_sha256,source_label,classification,lifecycle "
+                    "FROM evidence_spans CROSS JOIN generate_series(1,1001) n WHERE span_id=:span"
+                ),
+                {"prefix": f"RLC-overflow-{uuid.uuid4()}-", "span": row.span_id},
+            )
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT count(*) FROM evidence_spans "
+                        "WHERE record_version_id=:v AND lifecycle='active'"
+                    ),
+                    {"v": refs[0].record_version_id},
+                )
+                > 1000
+            )
+    expected = await revalidate_sot_references(
+        actor, refs, factory=factory, include_text=False, request_id="RLC-independent-shared"
+    )
+    real, retries = actions._legacy_initial_plan, []
+    observation = Observation(factory, monkeypatch)
+
+    async def legacy(*args: Any, **kwargs: Any) -> Any:
+        assert observation.held == 0
+        retries.append(args)
+        return await real(*args, **kwargs)
+
+    monkeypatch.setattr(actions, "_legacy_initial_plan", legacy)
+    with observation.watching():
+        await observation.control(factory)
+        observation.tasks.add(asyncio.current_task())
+        if expected.gaps or len(expected.sources) != len(refs):
+            with pytest.raises(ActionError):
+                await actions.create_plan(actor, requested(refs), request_id="RLC-fallback-denied")
+        else:
+            view = await actions.create_plan(
+                actor, requested(refs), request_id="RLC-fallback-permitted"
+            )
+            assert view.payload.source_refs == refs
+    assert len(retries) == 1 and observation.held == 0
+
+
+@pytest.mark.asyncio
+async def test_nonrecord_fallback_releases_whole_owner(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    await fallback_attempt(factory, tmp_path, monkeypatch, "nonrecord")
+
+
+@pytest.mark.asyncio
+async def test_overflow_fallback_releases_whole_owner(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    await fallback_attempt(factory, tmp_path, monkeypatch, "overflow")
+
+
+@pytest.mark.asyncio
+async def test_owner_metadata_survives_source_revoke_content_denies(
+    factory: Any,
+    tmp_path: Path,
+    execution_config: Any,
+) -> None:
+    _, actor, refs, plan, executor = await prepared(factory, tmp_path, execution_config)
+    view = await executor.submit(actor, plan.plan_id, plan.plan_digest, request_id="RLC-content")
+    await executor.advance(view.run_id)
+    before = await execution_metadata(factory, view.run_id)
+    await fixtures.deny(factory, refs[0], actor)
+    await premise(factory, actor, await record_id(factory, refs), False)
+    assert (await executor.status(actor, view.run_id)).receipts
+    with pytest.raises(ActionError):
+        await executor.read_output(actor, view.run_id, "read", request_id="RLC-denied-content")
+    with pytest.raises(ActionError):
+        await executor.submit(actor, plan.plan_id, plan.plan_digest, request_id="RLC-denied-submit")
+    assert await execution_metadata(factory, view.run_id) == before
+    cancelled = await executor.cancel(actor, view.run_id)
+    assert cancelled.cancel_requested and cancelled.state == "partial"
+
+
+@pytest.mark.asyncio
+async def test_r1_retains_unleased_body_path(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: Any,
+    local_boundaries: Any,
+) -> None:
+    from test_action_plan_metadata_integration import requested as draft_request
+
+    actions, actor, refs, _, template = await adversarial.domain(factory, tmp_path, locked=True)
+    real_enter, real_bind = RequestConnection.__aenter__, DocumentOSService.bind
+    enters, binds = [], []
+
+    async def entering(owner: Any) -> Any:
+        enters.append(owner)
+        return await real_enter(owner)
+
+    async def binding(documents: Any, *args: Any, **kwargs: Any) -> Any:
+        binds.append(args)
+        return await real_bind(documents, *args, **kwargs)
+
+    monkeypatch.setattr(RequestConnection, "__aenter__", entering)
+    monkeypatch.setattr(DocumentOSService, "bind", binding)
+    plan = await actions.create_plan(
+        actor, draft_request(refs, template=template), request_id="RLC-real-R1"
+    )
+    assert not enters and len(binds) == 1
+    assert plan.payload.steps[0].effect_class == "R1" and plan.state == "contract_ready"
+    # Actual binding/locked-fact reconstruction only, not generated output/SDK proof.
+
+
+@pytest.mark.asyncio
+async def test_worker_child_has_independent_unleased_connection(
+    factory: Any,
+    tmp_path: Path,
+    execution_config: Any,
+) -> None:
+    _, actor, _, plan, executor = await prepared(factory, tmp_path, execution_config)
+    view = await executor.submit(
+        actor, plan.plan_id, plan.plan_digest, request_id="RLC-child-existing"
+    )
+    async with RequestConnection(factory) as owner, owner.read_phase() as session:
+        parent = await session.scalar(text("SELECT pg_backend_pid()"))
+
+        async def child() -> Any:
+            # Explicit real business-service child, NOT native DBOS certification.
+            uow = UnitOfWork(factory)
+            service = ExecutionService(uow, actions=ActionService(uow))
+            service.settings = execution_config
+            assert service.uow.factory is factory
+            async with factory() as independent:
+                pid = await independent.scalar(text("SELECT pg_backend_pid()"))
+            status = await service.status(actor, view.run_id)
+            return pid, status
+
+        pid, status = await asyncio.create_task(child())
+        assert pid != parent and status.run_id == view.run_id and status.state == "queued"
+        assert await session.scalar(text("SELECT pg_backend_pid()")) == parent

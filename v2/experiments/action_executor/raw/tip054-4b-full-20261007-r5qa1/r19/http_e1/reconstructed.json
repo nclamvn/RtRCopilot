@@ -1,0 +1,8 @@
+{
+  "integrity": "FAIL",
+  "status": "FAIL",
+  "error_type": "FileNotFoundError",
+  "error": "[Errno 2] No such file or directory: '/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1/r19/http_e1/run/latency-summary.json'",
+  "requested": 1600,
+  "limits": "malformed/partial evidence is not salvaged as a passing population"
+}

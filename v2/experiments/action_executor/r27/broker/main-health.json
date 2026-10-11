@@ -1,0 +1,40 @@
+{
+  "schema": "r27-broker-main-health-v1",
+  "source_candidate_sha256": "553542c994785a3882e416cef25830852cac9b47f3d4f743fb4343f6c263186f",
+  "scope": "Exact9 authored/interface surfaces with explicit backend config. Derived adapter.py implementation body excluded; precise adapter.pyi included. No broad Any/ignore or altered project rules.",
+  "results": [
+    {
+      "kind": "strict",
+      "cmd": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 MYPYPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src PYTHONPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src v2/apps/backend/.venv/bin/python -B -m mypy --strict --follow-imports=silent --cache-dir=/dev/null --no-incremental --config-file=v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/broker/adapter.pyi v2/experiments/action_executor/r27/broker/broker.py v2/experiments/action_executor/r27/broker/checks.py v2/experiments/action_executor/r27/broker/integration.py v2/experiments/action_executor/r27/broker/preflight.py v2/experiments/action_executor/r27/broker/routing.py v2/experiments/action_executor/r27/broker/supervisor.py v2/experiments/action_executor/r27/broker/test_broker.py v2/experiments/action_executor/r27/broker/test_integration.py",
+      "result": {
+        "chunk_id": "1af8a0",
+        "wall_time_seconds": 3.905947333,
+        "exit_code": 0,
+        "original_token_count": 11,
+        "output": "Success: no issues found in 9 source files\n"
+      }
+    },
+    {
+      "kind": "ruff",
+      "cmd": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 v2/apps/backend/.venv/bin/python -B -m ruff check --no-cache --config=v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/broker/adapter.pyi v2/experiments/action_executor/r27/broker/broker.py v2/experiments/action_executor/r27/broker/checks.py v2/experiments/action_executor/r27/broker/integration.py v2/experiments/action_executor/r27/broker/preflight.py v2/experiments/action_executor/r27/broker/routing.py v2/experiments/action_executor/r27/broker/supervisor.py v2/experiments/action_executor/r27/broker/test_broker.py v2/experiments/action_executor/r27/broker/test_integration.py",
+      "result": {
+        "chunk_id": "59fb36",
+        "wall_time_seconds": 0.019357041,
+        "exit_code": 0,
+        "original_token_count": 5,
+        "output": "All checks passed!\n"
+      }
+    },
+    {
+      "kind": "format",
+      "cmd": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 v2/apps/backend/.venv/bin/python -B -m ruff format --check --no-cache --config=v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/broker/adapter.pyi v2/experiments/action_executor/r27/broker/broker.py v2/experiments/action_executor/r27/broker/checks.py v2/experiments/action_executor/r27/broker/integration.py v2/experiments/action_executor/r27/broker/preflight.py v2/experiments/action_executor/r27/broker/routing.py v2/experiments/action_executor/r27/broker/supervisor.py v2/experiments/action_executor/r27/broker/test_broker.py v2/experiments/action_executor/r27/broker/test_integration.py",
+      "result": {
+        "chunk_id": "598b25",
+        "wall_time_seconds": 0.007144125,
+        "exit_code": 0,
+        "original_token_count": 7,
+        "output": "9 files already formatted\n"
+      }
+    }
+  ]
+}

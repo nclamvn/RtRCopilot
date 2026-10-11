@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="8" time="1.987" timestamp="2026-10-10T15:51:40.126913+07:00" hostname="MacBookPro.lan"><testcase classname="test_integration" name="test_exact_driver_journal_summary_final_and_known_oracle" time="1.448" /><testcase classname="test_integration" name="test_full_pure_fixture_copy_temp_and_cached_native_denial" time="0.042" /><testcase classname="test_integration" name="test_original_shell_copy_literals_and_actual_audit_restoration" time="0.036" /><testcase classname="test_integration" name="test_scoped_fault_stale_foreign_and_close_restore_primary" time="0.048" /><testcase classname="test_integration" name="test_exact_owned_child_whole_eof_and_no_root_delivery" time="0.045" /><testcase classname="test_integration" name="test_child_repeated_cancel_one_deadline_and_overflow" time="0.045" /><testcase classname="test_integration" name="test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap" time="0.009"><failure message="AssertionError: assert (OSError('exact spawn failed') is OSError('exact spawn failed') and False)&#10; +  where OSError('exact spawn failed') = &lt;ExceptionInfo OSError('exact spawn failed') tblen=9&gt;.value&#10; +  and   False = isinstance(OSError('exact spawn failed'), RuntimeError)&#10; +    where OSError('exact spawn failed') = OSError('exact spawn failed').__cause__">owned = PosixPath('/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/codex-tmp-r27-broker-integration-20261010-9krymp6b')
+
+    def test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap(owned: Path) -&gt; None:
+        root = owned / "spawn"
+        broker = Broker(root)
+        original = OSError("exact spawn failed")
+        async def fail_spawn(*_args: object, **_keywords: object) -&gt; asyncio.subprocess.Process:
+            raise original
+        with patch("supervisor.asyncio.create_subprocess_exec", fail_spawn), pytest.raises(OSError) as caught:
+            asyncio.run(owned_child(broker))
+&gt;       assert caught.value is original and isinstance(original.__cause__, RuntimeError)
+E       AssertionError: assert (OSError('exact spawn failed') is OSError('exact spawn failed') and False)
+E        +  where OSError('exact spawn failed') = &lt;ExceptionInfo OSError('exact spawn failed') tblen=9&gt;.value
+E        +  and   False = isinstance(OSError('exact spawn failed'), RuntimeError)
+E        +    where OSError('exact spawn failed') = OSError('exact spawn failed').__cause__
+
+v2/experiments/action_executor/r27/broker/test_integration.py:270: AssertionError</failure></testcase><testcase classname="test_integration" name="test_frozen_preflight_readonly_fresh_namespace_untrusted_grant_deny" time="0.089" /></testsuite></testsuites>

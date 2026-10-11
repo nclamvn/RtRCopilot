@@ -18,6 +18,14 @@ REQUIRED_SCHEMA_RELATIONS: tuple[str, ...] = (
     "render_jobs",
     "document_publication_outbox",
     "enterprise_domains",
+    "context_packets",
+    "memory_entries",
+    "capability_versions",
+    "action_plans",
+    "action_runs",
+    "action_approvals",
+    "action_events",
+    "action_receipts",
 )
 
 

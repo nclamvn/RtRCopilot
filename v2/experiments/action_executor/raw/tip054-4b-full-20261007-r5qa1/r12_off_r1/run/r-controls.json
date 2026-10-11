@@ -1,0 +1,11 @@
+{
+  "observer": "off",
+  "pool_size": 5,
+  "max_overflow": 5,
+  "pre_ping": true,
+  "operation_timeout_seconds": 0.9,
+  "old_load_helper": "/work/latency_probe.py",
+  "provider": false,
+  "worker": false,
+  "authority_override": "Existing current synthetic subject dependency ONLY"
+}

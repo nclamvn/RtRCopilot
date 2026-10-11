@@ -1,0 +1,4 @@
+Actual eight grouped controls: robust cleanup joins/observed outcome/active token. Exit 0
+........                                                                 [100%]
+- generated xml file: /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/broker/peer-e7-tests.xml -
+8 passed in 1.60s

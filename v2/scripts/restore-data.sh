@@ -257,7 +257,7 @@ docker compose --profile tools run --rm \
 
 revision="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
   -c 'SELECT version_num FROM alembic_version')"
-[[ "$revision" == "0015_generation_term_stats" ]] || exit 10
+[[ "$revision" == "0018_action_contracts" ]] || exit 10
 broken_links="$(docker compose exec -T postgres psql -At -U "$POSTGRES_USER" -d "$target" \
   -c "SELECT count(*) FROM documents d LEFT JOIN document_versions v
       ON v.version_id=d.current_version_id

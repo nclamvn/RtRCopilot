@@ -1,0 +1,10 @@
+{
+  "schema": "r27-pre-stage-local-candidate-v1",
+  "binding_sha256": "48f3cb9aa429b18a00d380ff4a3d6a1171693965754ba0352bd8dc379b901d22",
+  "manifest_sha256": "d7696313a6863848cd495affcd85c8ce99f74172253799dd433b14bb4791cac5",
+  "local_source_control": "ADOPTED_LOCAL_ONLY",
+  "original_PRE": "DENY",
+  "measurements": "NONE",
+  "executor": "OFF",
+  "overall_status": "PARTIAL_NOT_READY"
+}

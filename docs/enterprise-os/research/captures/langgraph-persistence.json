@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://docs.langchain.com/oss/python/langgraph/persistence",
+      "retrieved_at": "2026-10-06T02:15:31.946525+00:00",
+      "source_family": "LangChain",
+      "status": "failed"
+    },
+    {
+      "bytes": 851295,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 4015,
+      "read_view_sha256": "78c57c561ac76484fdf7014f86c72866b87cc9e7620fae6edb6f2d5601a79e86",
+      "requested_url": "https://docs.langchain.com/oss/python/langgraph/persistence",
+      "resolved_url": "https://docs.langchain.com/oss/python/langgraph/persistence",
+      "retrieved_at": "2026-10-06T02:15:57.247311+00:00",
+      "sha256": "82b360ff41adc357f8302d12c32dcdc290d23862992167fdf148abb9cbb0434c",
+      "snapshot": "langgraph-persistence.html",
+      "source_family": "LangChain",
+      "status": "usable"
+    }
+  ],
+  "entity": "LangGraph persistence",
+  "id": "langgraph-persistence",
+  "selected": {
+    "bytes": 851295,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 4015,
+    "read_view_sha256": "78c57c561ac76484fdf7014f86c72866b87cc9e7620fae6edb6f2d5601a79e86",
+    "requested_url": "https://docs.langchain.com/oss/python/langgraph/persistence",
+    "resolved_url": "https://docs.langchain.com/oss/python/langgraph/persistence",
+    "retrieved_at": "2026-10-06T02:15:57.247311+00:00",
+    "sha256": "82b360ff41adc357f8302d12c32dcdc290d23862992167fdf148abb9cbb0434c",
+    "snapshot": "langgraph-persistence.html",
+    "source_family": "LangChain",
+    "status": "usable"
+  }
+}

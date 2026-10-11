@@ -1,0 +1,32 @@
+{
+  "actor": "Main",
+  "scope": "Final frozen e5 readonly static; no tests/SQL/load",
+  "before": {
+    "chunk_id": "53572e",
+    "wall_time_seconds": 0.093459584,
+    "exit_code": 0,
+    "original_token_count": 53,
+    "output": "{\"files\": 1105, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+  },
+  "check": {
+    "chunk_id": "a83451",
+    "wall_time_seconds": 0.005310167,
+    "exit_code": 0,
+    "original_token_count": 5,
+    "output": "All checks passed!\n"
+  },
+  "format_check": {
+    "chunk_id": "8b5473",
+    "wall_time_seconds": 0.000008458,
+    "exit_code": 0,
+    "original_token_count": 7,
+    "output": "3 files already formatted\n"
+  },
+  "after": {
+    "chunk_id": "fc712d",
+    "wall_time_seconds": 0.072129041,
+    "exit_code": 0,
+    "original_token_count": 53,
+    "output": "{\"files\": 1105, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+  }
+}

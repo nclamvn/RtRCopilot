@@ -1,0 +1,25 @@
+--- /work/r20/test_r20_bootstrap.py
++++ /work/r20/test_r20_bootstrap.py
+@@ -3,8 +3,8 @@
+ import os
+ from uuid import UUID, uuid4
+ 
++import pytest
+ from env_contract import DATABASE, DSN, environment
+-import pytest
+ 
+ 
+ def assert_settings(settings):
+@@ -42,8 +42,8 @@
+     environment(os.environ)
+     from sqlalchemy import text
+     from test_action_contracts_integration import principal
++    from test_context_memory_integration import DSN as context_dsn
+     from test_context_memory_integration import publish
+-    from test_context_memory_integration import DSN as context_dsn
+     from test_tip054_baseline_integration import DATABASE_DSN, synthetic_settings
+ 
+     from rtr_copilot.actions.service import ActionService, correlation
+
+Would fix 2 errors.
+

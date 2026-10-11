@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://docs.dbos.dev/python/tutorials/workflow-tutorial",
+      "retrieved_at": "2026-10-06T02:15:31.928347+00:00",
+      "source_family": "DBOS",
+      "status": "failed"
+    },
+    {
+      "bytes": 97751,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 11704,
+      "read_view_sha256": "27da591ec272290bd5464862379dbe72c3a60f66aab56798c2a594f1c7dbd9ac",
+      "requested_url": "https://docs.dbos.dev/python/tutorials/workflow-tutorial",
+      "resolved_url": "https://docs.dbos.dev/python/tutorials/workflow-tutorial",
+      "retrieved_at": "2026-10-06T02:15:53.476373+00:00",
+      "sha256": "6fe00c551e1801753b999cfcd63e60333b126bd65f19f76e0e3f12aabaf410f8",
+      "snapshot": "dbos-workflows.html",
+      "source_family": "DBOS",
+      "status": "usable"
+    }
+  ],
+  "entity": "DBOS workflows",
+  "id": "dbos-workflows",
+  "selected": {
+    "bytes": 97751,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 11704,
+    "read_view_sha256": "27da591ec272290bd5464862379dbe72c3a60f66aab56798c2a594f1c7dbd9ac",
+    "requested_url": "https://docs.dbos.dev/python/tutorials/workflow-tutorial",
+    "resolved_url": "https://docs.dbos.dev/python/tutorials/workflow-tutorial",
+    "retrieved_at": "2026-10-06T02:15:53.476373+00:00",
+    "sha256": "6fe00c551e1801753b999cfcd63e60333b126bd65f19f76e0e3f12aabaf410f8",
+    "snapshot": "dbos-workflows.html",
+    "source_family": "DBOS",
+    "status": "usable"
+  }
+}

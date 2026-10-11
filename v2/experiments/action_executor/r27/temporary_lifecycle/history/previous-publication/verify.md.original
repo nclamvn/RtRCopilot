@@ -1,0 +1,138 @@
+# TIP-054.4b-R27 consolidated verification
+
+2026-10-11 · Contractor/Main · **LOCAL PRE stage G1–G5 accepted 5/5; full R27 PARTIAL / NOT_READY.**
+
+Human approved stage-specific synthetic-input implementation and local tests.
+The original full corruption control now completes through the real owned writer,
+instead of merely demonstrating the preceding diagnostic rejection. This closes
+a local source-integration gap, not the failed executor latency qualification.
+Vibecode separation kept implementation with Builder and verification with Main
+and an independent source Reviewer. No new micro-TIP or campaign was introduced.
+
+R21 SLA FAILED/P1, EXE-009 OPEN/P1, serving candidate NOT_READY, executor OFF and
+TIP-054.5 BLOCKED remain. SQL/Docker, external processing, campaign, rebuild,
+Git writes and activation were not performed.
+
+## Requirement coverage
+
+| Requirement | Result | Remaining |
+|---|---|---|
+| R27-001 · routing/integration | PARTIAL | One genuine full source case is connected; full native PRE/launcher/plugin routes remain unqualified. |
+| R27-002 · fidelity/cancellation/cleanup | PARTIAL | Whole writes, retained history, public recovery and owned cleanup pass; physical SQL/Linux/full native lifecycle are unqualified. |
+| R27-003 · diagnosis and tail repair | PENDING | No new measured campaign or causal latency repair. |
+| R27-004 · candidate qualification | PENDING | Local regression/health do not certify the serving candidate. |
+| R27-005 · consolidated evidence | PASS for this checkpoint | Frozen Completion/binding/candidate, actual results, independent audit/review and prior publication backups. |
+
+Original reporting criterion 1/5 is accepted; original technical criteria remain
+partial/pending, not silently counted complete. **Declared local G1–G5: 5/5 (100%).**
+Earlier diagnostic E1–E4 and closure D1–D5 remain preserved historical checkpoints.
+
+## Implemented local outcome
+
+Five sibling modules under `v2/experiments/action_executor/r27/pre_stage` reuse
+unchanged original source and writer algorithms; two exact AST deltas configure
+PRE codec subtype selection and its writer emit variant. No old HTTP contract,
+epoch, framing, implementation, product or test source was edited.
+
+| Scope | Main acceptance |
+|---|---|
+| G1 | Canonical typed PRE policy is consumed by codec/writer/recovery; distinct epoch and source/stage witnesses; closed per-path whole-write/count/metadata/aggregate checks precede destructive I/O. Same 20 wire families and shared 10MiB, without refunds. |
+| G2 | Entire unchanged original corruption method, rows/write_packet and genuine unittest assertions execute through private logical I/O and original read validators/oracles. |
+| G3 | Every synthetic frame has exactly one file owner; whole overwrite ranges, nine tombstones and six directory events are retained and checked. Paired recovery rejects role/count/history/cross-stage corruption. |
+| G4 | Exact 33 unique outer groups pass; five-file health, complete source preservation, actual failure history and independent review agree. |
+| G5 | Original PRE remains predispatch DENY; all unqualified native/platform routes are explicit. No expanded execution authority. |
+
+### Genuine source sequence, not measured performance
+
+The original method constructs 1,600 synthetic rows and writes the whole JSON
+235,440B and whole JSONL 233,840B without splitting. It checks full PASS, eight
+mutation/restoration integrity failures, journal truncation with no observed
+count, four-row FAIL, and missing-summary reconstruction (observed 4/missing 1,596).
+
+Actual sequence: **35 whole writes / 733,169B lifetime payload**. Before cleanup,
+4,050B remains live. The source deletes its summary; owned cleanup deletes eight
+remaining files and four directories deepest-first. All nine file tombstones,
+two original mkdir calls and four rmdir calls remain in recovery metadata.
+Deleted/overwritten bytes are still charged and retained in packet history.
+
+| Bound | Bytes |
+|---|---:|
+| Actual shared charge, including closure | 1,532,954 |
+| Closed per-path Cartesian payload maximum | 1,201,440 |
+| Closed packet + physical + reserves maximum | 2,469,496 |
+| Coarse codec-only ceiling (not a physical-copy proof) | 8,241,689 |
+| Unchanged aggregate cap | 10,485,760 |
+
+The local metadata reserve is explicitly adopted at 64KiB, inside the same cap.
+Outer safety ceilings remain 32 entries/64 directories/64 tombstones, with the
+stronger closed nine-path/35-call policy. Original HTTP metadata policy is unchanged.
+Synthetic elapsed_ms=1.0 and process fixture fields are oracle inputs, not observed
+HTTP/process performance. Original setUp and the six-test suite were not run.
+
+## Actual verification
+
+| Check | Main observed result |
+|---|---|
+| Combined regression | **33/33 PASS**, wrapper 0, 7.110381083999528s; failures/errors/skips 0. Exactly unchanged 28 + new 5. |
+| Builder repeat | Same 33 PASS, 7.085501125024166s; overlap, not 66. Focused/nested assertions do not add unique coverage. |
+| Technical health | Strict mypy, Ruff, format: 0 errors on five explicit new modules; five compiled by the checked entry. Silent old imports are not a fresh strict audit. |
+| Pure independent graph audit | 2,263 repo pins / 17,660,714B, including prior 2,249 and new 11 direct + 3 top-level artifacts; seven external interfaces. |
+| Complete source inventories | Product 204 / tests 192 and digests unchanged; HEAD 0e88f48588dc3228f1ae9eca7a7597d96589af8b unchanged. |
+| Independent arithmetic | Contract/AST-only computation matches actual/max/shared bounds; no implementation imports or effects. |
+| Actual preflight | Exit 2, execution DENY, effects NOT_RUN; this is expected refusal, not successful qualification or live marker-absence proof. |
+| Independent source review | G1–G5 accepted 5/5; no blocking defect within the supported frozen local control. |
+
+Source/preservation before and after are equal; scratch [] → [].
+Public recovery controls include direct semantic-role mutations and actual sealed
+manifest/packet/owner corruption, extra native file and missing seal, followed by
+exact restoration and valid recovery. Post-seal tampering is an adversarial test,
+not an admitted producer write.
+
+Two disabled-plugin config warnings remain. Initial four type errors and source
+snapshots are retained. Initial combined command yielded 22 pass/11 environment
+failures (seven sandbox IPC denials, four missing backend imports); its returned
+output was tool-truncated and is not represented as complete raw JSON. Corrected
+clean environment/approved finite IPC ran the same source without changes.
+Initial plugin-autoload warnings are disclosed. Local environment correction is
+not a failed campaign retry. Main's initial display compared JS object identity;
+deep content comparison immediately confirmed equality, with raw evidence intact.
+
+## Authority and remaining boundary
+
+Supported frozen `checks.py` validates new binding/evidence before effectful
+derived imports and controlled workloads. Pure stage policy definitions load
+before that gate. The diagnostic factory verifies old pins, scope and contract,
+then snapshots current new-code witnesses: it is NOT standalone authorization
+for arbitrary changed new code. Bare private codec/internal reflective access is
+not a universal filesystem sandbox; accepted scope is the cooperative owned port.
+
+Known original launcher 125 names + suite 14 names = 139 is an uncovered lower
+bound, not an admitted full PRE domain. Genuine tempfile probe/fallback/rmtree,
+pytest basetemp/current-symlink, shell/native outputs and unknown plugin/platform/
+failure routes remain UNQUALIFIED/default DENY. Owned four-directory cleanup here
+does not qualify stdlib TemporaryDirectory cleanup.
+
+Next finite integration boundary is **genuine source-bound temporary-file creation,
+probe/fallback/cleanup and pytest basetemp lifecycle, including failure paths**,
+before wider PRE. No automatic campaign or executor activation follows. Missing
+dependencies, Linux/physical SQL qualification and measured tail repair remain
+separate prerequisites and authority boundaries.
+
+69GiB free at finish; no whole-project copy, install, venv, build/distDir, tool cache
+or Docker resource created. Exact owned test roots auto-cleaned, including failures;
+no unrelated data was removed. Four previous current publications remain byte-exact.
+
+Frozen identities: binding `48f3cb9aa429b18a00d380ff4a3d6a1171693965754ba0352bd8dc379b901d22`;
+candidate `0cebd82ab5a036d92d445edfa6b02d68bf15625d721bb7a08206b959328b86a4`;
+Completion `e5ff08ee303c8624e95f73b9058012045ead1f0b9b3da6c6ab133916f7e48c29`;
+review `460b48e3992500a5140409a9685c7912bd0a1518a029218890c0bdc9d12a0887`.
+These are source/evidence file identities, not new commits or deployments.
+
+## Evidence
+
+- [Approved scope](../v2/experiments/action_executor/r27/pre_stage/SCOPE.md) · [Completion](../v2/experiments/action_executor/r27/pre_stage/COMPLETION.md) · [independent review](R27_PRE_STAGE_REVIEW_REPORT.md)
+- [Binding](../v2/experiments/action_executor/r27/pre_stage/input-binding.json) · [candidate](../v2/experiments/action_executor/r27/pre_stage/candidate.json) · [manifest](../v2/experiments/action_executor/r27/pre_stage/manifest.json)
+- [Main controls](../v2/experiments/action_executor/r27/pre_stage/main-feedback.json) · [health](../v2/experiments/action_executor/r27/pre_stage/main-health.json) · [preflight](../v2/experiments/action_executor/r27/pre_stage/main-preflight.json)
+- [Main structural audit](../v2/experiments/action_executor/r27/pre_stage/main-structural-check.json) · [independent bounds](../v2/experiments/action_executor/r27/pre_stage/main-independent-bounds.json) · [prior audit](../v2/experiments/action_executor/r27/pre_stage/main-prior-structural-before.json)
+- [Final Builder controls](../v2/experiments/action_executor/r27/pre_stage/author-final-feedback.json) · [retained initial result](../v2/experiments/action_executor/r27/pre_stage/author-feedback.json)
+- [Previous current Verify, byte-exact](../v2/experiments/action_executor/r27/pre_stage/history/previous-publication/verify.md.original) · [preceding diagnostic review](R27_PRE_CONTRACT_REVIEW_REPORT.md)

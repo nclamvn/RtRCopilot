@@ -1,0 +1,240 @@
+{
+  "diagnostic_mapping_only": {
+    "r21-campaign-launch.json": "launch_review",
+    "r21_http_e1/binding.json": "frozen_copies",
+    "r21_http_e1/contract.json": "frozen_copies",
+    "r21_http_e1/load.owner.json": "owner_process",
+    "r21_http_e1/load.process.json": "owner_process",
+    "r21_http_e1/run/latency-summary.json": "summary_stdout",
+    "r21_http_e1/run/r-controls.json": "literal_controls",
+    "r21_http_e1/run/samples.json": "final_samples",
+    "r21_http_e1/run/samples.jsonl": "journal"
+  },
+  "execution_admission": "DENY",
+  "family_adoption": "NONE: scratch inputs are not genuine measurement journal/final_samples",
+  "known_six_suite_lower_bound": {
+    "breakdown": "corruption35; linked binding+marker2; fake shell drop appends2; collection/XML4",
+    "complete_platform_upper_bound": false,
+    "distinct_lifetime_files": 14,
+    "explicit_summary_delete": 1,
+    "failed_exclusive_open_attempts": 1,
+    "final_files_subject_to_temp_cleanup": 13,
+    "missing_drop_unlink_attempts": 4,
+    "successful_explicit_writes": 43,
+    "temporary_directory_roots": 6
+  },
+  "launcher_lower_bound": {
+    "closure": 1,
+    "nominal_files": 125,
+    "source_cap_producer": 75
+  },
+  "next_material_decision": "stage-specific PRE synthetic-input variant within same shared10MiB/no-refund; source-derived whole-write/file/metadata bounds plus every deleted/native scratch route; NOT adopted, no count-only grant or uncapped second plane",
+  "original_cap": "current file stat sum inside epoch; TMPDIR and basetemp are inside while live; .02s polls/postchecks may miss overwritten/deleted payloads; no lifetime/no-refund proof",
+  "packet_lifetime": {
+    "final_live_payload_bytes": 4050,
+    "first_packet": [
+      [
+        "r21_http_e1/binding.json",
+        18,
+        "13503a6c3e2aee33af36376bc5ab63d9dafcd714f0314ca788c4ea62f3a59242"
+      ],
+      [
+        "r21_http_e1/contract.json",
+        2108,
+        "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c"
+      ],
+      [
+        "r21-campaign-launch.json",
+        287,
+        "8f196e15bcd1d442f62563ef55d0936692ae3726c6e0583c92c60d2a0fbc5eef"
+      ],
+      [
+        "r21_http_e1/run/samples.json",
+        235440,
+        "9c78a32b35603393f7881ce1cf4a71bac24be96dbba594a157777993cc54eea1"
+      ],
+      [
+        "r21_http_e1/run/samples.jsonl",
+        233840,
+        "fad8333c3eb8e2dbb256c841eb23e72da2094eb30ca092819ea075c8a347745e"
+      ],
+      [
+        "r21_http_e1/run/latency-summary.json",
+        3453,
+        "a7c481df44da5be4157a2628593a144abbcfe2b16832b97d90f0aeb91b58cfc3"
+      ],
+      [
+        "r21_http_e1/run/r-controls.json",
+        263,
+        "6ee7ac3bff0d4bc6d6b33657e6ae45b97e83f98f5dbe7e7b7c62c41327d83865"
+      ],
+      [
+        "r21_http_e1/load.owner.json",
+        58,
+        "cfe6b928ab1d4c7cb6480c19dc9b892fb3a3f7ea6907ad4f22737300ca8291ca"
+      ],
+      [
+        "r21_http_e1/load.process.json",
+        156,
+        "f1ebb8fdfd10ebbcdeddb8ce47b1863f7086714bf2c4c518da2f4cb14ee65e47"
+      ]
+    ],
+    "journal_truncating_overwrite": 1,
+    "largest_whole_write": 235440,
+    "lifetime_payload_bytes": 733169,
+    "marker_namespace_note": "marker stores binding/contract hashes, not path text; identical binding bytes produce identical marker bytes here; generalized path-bearing records may differ",
+    "mutation_restore_writes": 16,
+    "names_lifetime": [
+      "r21-campaign-launch.json",
+      "r21_http_e1/binding.json",
+      "r21_http_e1/contract.json",
+      "r21_http_e1/load.owner.json",
+      "r21_http_e1/load.process.json",
+      "r21_http_e1/run/latency-summary.json",
+      "r21_http_e1/run/r-controls.json",
+      "r21_http_e1/run/samples.json",
+      "r21_http_e1/run/samples.jsonl"
+    ],
+    "original_default_UTF8_bytes": true,
+    "scope": "unchanged packet producer; original mutation expressions; not six test execution",
+    "summary_deletion": 1,
+    "whole_write_attempts": 35
+  },
+  "packets": {
+    "four": {
+      "r21-campaign-launch.json": {
+        "bytes": 287,
+        "sha256": "8f196e15bcd1d442f62563ef55d0936692ae3726c6e0583c92c60d2a0fbc5eef"
+      },
+      "r21_http_e1/binding.json": {
+        "bytes": 18,
+        "sha256": "13503a6c3e2aee33af36376bc5ab63d9dafcd714f0314ca788c4ea62f3a59242"
+      },
+      "r21_http_e1/contract.json": {
+        "bytes": 2108,
+        "sha256": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c"
+      },
+      "r21_http_e1/load.owner.json": {
+        "bytes": 58,
+        "sha256": "cfe6b928ab1d4c7cb6480c19dc9b892fb3a3f7ea6907ad4f22737300ca8291ca"
+      },
+      "r21_http_e1/load.process.json": {
+        "bytes": 156,
+        "sha256": "c64d0e3aade9e172ba3bd79ae29e79a5328e69544e3bcb88580bd01c972e82d3"
+      },
+      "r21_http_e1/run/latency-summary.json": {
+        "bytes": 3473,
+        "sha256": "54fdcc5beae4069ed86fa6ae04f91427a14150024c9945a5bf981d49ac2eb874"
+      },
+      "r21_http_e1/run/r-controls.json": {
+        "bytes": 263,
+        "sha256": "6ee7ac3bff0d4bc6d6b33657e6ae45b97e83f98f5dbe7e7b7c62c41327d83865"
+      },
+      "r21_http_e1/run/samples.json": {
+        "bytes": 582,
+        "sha256": "8ca182ea59ec667da91b771c00dda56dc0d0aa93b937568ea8331a5d4a75e3f7"
+      },
+      "r21_http_e1/run/samples.jsonl": {
+        "bytes": 578,
+        "sha256": "5fc045d56b727d97727cd7bf3395974dd672f02fea793e6a1d99826589014f78"
+      }
+    },
+    "full": {
+      "r21-campaign-launch.json": {
+        "bytes": 287,
+        "sha256": "8f196e15bcd1d442f62563ef55d0936692ae3726c6e0583c92c60d2a0fbc5eef"
+      },
+      "r21_http_e1/binding.json": {
+        "bytes": 18,
+        "sha256": "13503a6c3e2aee33af36376bc5ab63d9dafcd714f0314ca788c4ea62f3a59242"
+      },
+      "r21_http_e1/contract.json": {
+        "bytes": 2108,
+        "sha256": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c"
+      },
+      "r21_http_e1/load.owner.json": {
+        "bytes": 58,
+        "sha256": "cfe6b928ab1d4c7cb6480c19dc9b892fb3a3f7ea6907ad4f22737300ca8291ca"
+      },
+      "r21_http_e1/load.process.json": {
+        "bytes": 156,
+        "sha256": "f1ebb8fdfd10ebbcdeddb8ce47b1863f7086714bf2c4c518da2f4cb14ee65e47"
+      },
+      "r21_http_e1/run/latency-summary.json": {
+        "bytes": 3453,
+        "sha256": "a7c481df44da5be4157a2628593a144abbcfe2b16832b97d90f0aeb91b58cfc3"
+      },
+      "r21_http_e1/run/r-controls.json": {
+        "bytes": 263,
+        "sha256": "6ee7ac3bff0d4bc6d6b33657e6ae45b97e83f98f5dbe7e7b7c62c41327d83865"
+      },
+      "r21_http_e1/run/samples.json": {
+        "bytes": 235440,
+        "sha256": "9c78a32b35603393f7881ce1cf4a71bac24be96dbba594a157777993cc54eea1"
+      },
+      "r21_http_e1/run/samples.jsonl": {
+        "bytes": 233840,
+        "sha256": "fad8333c3eb8e2dbb256c841eb23e72da2094eb30ca092819ea075c8a347745e"
+      }
+    },
+    "one": {
+      "r21-campaign-launch.json": {
+        "bytes": 287,
+        "sha256": "8f196e15bcd1d442f62563ef55d0936692ae3726c6e0583c92c60d2a0fbc5eef"
+      },
+      "r21_http_e1/binding.json": {
+        "bytes": 18,
+        "sha256": "13503a6c3e2aee33af36376bc5ab63d9dafcd714f0314ca788c4ea62f3a59242"
+      },
+      "r21_http_e1/contract.json": {
+        "bytes": 2108,
+        "sha256": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c"
+      },
+      "r21_http_e1/load.owner.json": {
+        "bytes": 58,
+        "sha256": "cfe6b928ab1d4c7cb6480c19dc9b892fb3a3f7ea6907ad4f22737300ca8291ca"
+      },
+      "r21_http_e1/load.process.json": {
+        "bytes": 156,
+        "sha256": "c64d0e3aade9e172ba3bd79ae29e79a5328e69544e3bcb88580bd01c972e82d3"
+      },
+      "r21_http_e1/run/latency-summary.json": {
+        "bytes": 3482,
+        "sha256": "886c6a5ddc315cf3b58436a7d8177f6db5f2d6cea1fb8363764285b870128deb"
+      },
+      "r21_http_e1/run/r-controls.json": {
+        "bytes": 263,
+        "sha256": "6ee7ac3bff0d4bc6d6b33657e6ae45b97e83f98f5dbe7e7b7c62c41327d83865"
+      },
+      "r21_http_e1/run/samples.json": {
+        "bytes": 153,
+        "sha256": "6dfc8eccf81682ee1384a88f067a4d93f049beb766c1907b159ba94481d68639"
+      },
+      "r21_http_e1/run/samples.jsonl": {
+        "bytes": 152,
+        "sha256": "6b9dabaee0abac183cb216534d02485113641d71cc01051f8ec05673dbfd25db"
+      }
+    }
+  },
+  "schema": "r27-pre-contract-diagnostic-v1",
+  "source_pins": {
+    "r18/gate.py": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1",
+    "r19/bounded.py": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb",
+    "r19/qualification.py": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11",
+    "r20/env_contract.py": "b347e161a7c3a255c4bb2efeda3eff2bd6df5e0f12f72739d3d204a46418859c",
+    "r21/contract.json": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c",
+    "r21/qualification.py": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef",
+    "r21/run-http-qualification.sh": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1",
+    "r21/test_r21_envelope.py": "879414b56aaed8af655dc48c6b40710788bb63e24d1022e18747a5ecef0a7903",
+    "r21/test_r21_offline.py": "d48f93fc7f420a26d546fd172f80d5d0a10a00cb8f2bd5b5fb384defce3c1dd4"
+  },
+  "strengthened_contract": "same10MiB; packet+physical prewrite/attempt accounting; deletion never refunds; 32 lifetime files/PRE32 records,20families,16KiB metadata unchanged",
+  "synthetic_settings": "constructor is not itself a filesystem writer; envelope creates no seed",
+  "unsupported_routes": [
+    "six genuine tempfile constructors/probe4-byte write+unlink/rmtree failure paths",
+    "given-basetemp pytest mkdir/rm_rf/native numbered tmp_path/current symlink; not default .lock branch",
+    "original native fake-shell printf drops and arbitrary subprocess stdout/stderr",
+    "all original PRE launcher Docker/Linux supervisor/control/check/native outputs",
+    "unknown pytest/platform/plugin warning/exception/temp failure writes"
+  ]
+}

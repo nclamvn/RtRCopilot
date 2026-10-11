@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "seal_entries": 17,
+  "seal_bytes": 71558,
+  "seal_sha256": "e851fe0db0b442a01b77a145f5fab7fee00408f43bf2cafe753a560c12cbed46",
+  "closure_sha256": "5711153cebade4f6cffd6123e3e6e70c63fb02a5eb57e0531b51af5c57472157",
+  "publication_hashes_point_in_time": {
+    "docs/enterprise-os/IMPLEMENTATION_STATUS.md": "895b45d6e47d1897ed37ca925eeac0300bc27c4a2bace6e4dc1cee72303436e0",
+    "docs/enterprise-os/TASK_GRAPH.md": "a4da3c6e6209530d7b32e2b2bf02f258c2ef2348cabc27bbbbf3932ba54c2104",
+    "vibecode_v2/03_TASK_GRAPH.md": "e932bc71590f8c1e70318a985655d3df96cc01c68e4a0de543e1a915640ac0e7"
+  },
+  "main_unique_test_groups": 7,
+  "scoped_requirements": 4,
+  "sandboxes": 0,
+  "actual_capture": "HOLD",
+  "candidate": "NOT_READY",
+  "serving_executor": "OFF",
+  "tip054_5": "BLOCKED",
+  "authoring_check_correction": {
+    "first_tool_chunk": "9f790a",
+    "first_exit_code": 1,
+    "failure": "Compared wrapped before metadata object with unwrapped after result; result bytes/digests were already identical.",
+    "correction": "Compare before.result with after; no source, test or sealed evidence edits; not a workload retry."
+  },
+  "tool_chunk": "e3f9fe",
+  "exit_code": 0
+}

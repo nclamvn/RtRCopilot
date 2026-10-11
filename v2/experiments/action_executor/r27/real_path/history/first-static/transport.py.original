@@ -1,0 +1,432 @@
+"""Bounded authenticated cooperative IPC; only the host owns artifact writes."""
+
+from __future__ import annotations
+
+import asyncio
+import base64
+import hmac
+import json
+import socket
+import struct
+import threading
+import time
+import uuid
+from pathlib import Path
+from typing import cast
+
+from host import HostPort, OwnedBroker, SnapshotPort
+from ports import Mode, PathPort, RichPath, Stat
+
+FRAME_CAP = 4194304
+RAW_CAP = 2097152
+HEADER = struct.Struct("!I")
+
+
+class RemoteFault(RuntimeError):
+    """Stable client-side fault; no private owner exception/token disclosures."""
+
+
+def pairs(items: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in items:
+        if key in result:
+            raise ValueError("duplicate JSON key")
+        result[key] = value
+    return result
+
+
+def obj(value: object) -> dict[str, object]:
+    if not isinstance(value, dict) or any(type(k) is not str for k in value):
+        raise ValueError("typed object")
+    return cast(dict[str, object], value)
+
+
+def text(value: object) -> str:
+    if type(value) is not str:
+        raise ValueError("typed string")
+    return value
+
+
+def number(value: object) -> int:
+    if type(value) is not int:
+        raise ValueError("typed integer")
+    return value
+
+
+def boolean(value: object) -> bool:
+    if type(value) is not bool:
+        raise ValueError("typed boolean")
+    return value
+
+
+def encode(value: object) -> bytes:
+    raw = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    if len(raw) > FRAME_CAP:
+        raise ValueError("bounded whole transport frame")
+    return HEADER.pack(len(raw)) + raw
+
+
+def decode(raw: bytes) -> dict[str, object]:
+    value: object = json.loads(raw, object_pairs_hook=pairs)
+    return obj(value)
+
+
+def payload(value: object) -> bytes:
+    raw = base64.b64decode(text(value), validate=True)
+    if len(raw) > RAW_CAP:
+        raise ValueError("whole producer payload bound")
+    return raw
+
+
+def keys(args: dict[str, object], expected: set[str]) -> None:
+    if set(args) != expected:
+        raise ValueError("exact operation shape")
+
+
+class HostIPC:
+    def __init__(self, broker: OwnedBroker, address: Path) -> None:
+        self.broker, self.address = broker, address
+        self.token = uuid.uuid4().hex + uuid.uuid4().hex
+        self._server: asyncio.AbstractServer | None = None
+        self._tasks: set[asyncio.Task[None]] = set()
+        self._streams: set[asyncio.StreamWriter] = set()
+        self._lease: str | None = None
+        self._closing = False
+        self._deadline: float | None = None
+        self.drop_ack_once = False  # Explicit local fault seam after real admitted write.
+
+    async def __aenter__(self) -> HostIPC:
+        self._lease = self.broker.begin_operation()
+        try:
+            if self.address.exists() or self.address.is_symlink() or any(
+                p.is_symlink() for p in self.address.parents
+            ):
+                raise ValueError("exclusive safe owned transport address")
+            self._server = await asyncio.start_unix_server(self._connected, path=self.address)
+            self.address.chmod(0o600)
+            return self
+        except BaseException as error:
+            self.broker.capture_fault(error)
+            try:
+                await self.close()
+            except BaseException as cleanup:
+                raise error from cleanup
+            raise
+
+    def _connected(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        task = asyncio.create_task(self._client(reader, writer), name="r27-ipc-client")
+        self._tasks.add(task)
+        task.add_done_callback(self._tasks.discard)
+
+    async def _client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        port: HostPort | None = None
+        accepted_close = False
+        seq = 0
+        self._streams.add(writer)
+        try:
+            if self._closing or len(self._streams) > 4:
+                raise ValueError("finite live client admission")
+            port = HostPort(self.broker)
+            while not accepted_close:
+                header = await reader.readexactly(HEADER.size)
+                length = HEADER.unpack(header)[0]
+                if not 0 < length <= FRAME_CAP:
+                    raise ValueError("pre-body frame length")
+                frame = decode(await reader.readexactly(length))
+                if set(frame) != {"token", "seq", "op", "args"}:
+                    raise ValueError("exact authenticated request")
+                if not hmac.compare_digest(text(frame["token"]), self.token):
+                    raise ValueError("producer authentication")
+                if number(frame["seq"]) != seq:
+                    raise ValueError("uncertain requests never replay")
+                op, args = text(frame["op"]), obj(frame["args"])
+                if op == "close":
+                    keys(args, set())
+                    port.close()
+                    accepted_close = True
+                    result: object = None
+                else:
+                    result = self._dispatch(port, op, args)
+                if self.drop_ack_once and op == "write":
+                    self.drop_ack_once = False
+                    raise ConnectionError("injected lost ack after committed write")
+                writer.write(encode({"seq": seq, "ok": True, "result": result}))
+                await writer.drain()  # ACK follows synchronous admitted write + native flush/fsync.
+                seq += 1
+        except BaseException as error:
+            self.broker.capture_fault(error)
+            try:
+                writer.write(encode({"seq": seq, "ok": False, "error": "RETENTION_STOP"}))
+                await writer.drain()
+            except BaseException:
+                pass
+        finally:
+            if not accepted_close:
+                self.broker.invalidate()
+            if port is not None:
+                try:
+                    port.close()
+                except BaseException as error:
+                    self.broker.capture_fault(error)
+            writer.close()
+            try:
+                await writer.wait_closed()
+            except (ConnectionError, OSError):
+                pass
+            self._streams.discard(writer)
+
+    def _dispatch(self, port: HostPort, op: str, args: dict[str, object]) -> object:
+        if op == "namespace":
+            keys(args, set())
+            return port.namespace
+        if op == "write":
+            keys(args, {"name", "family", "raw", "mode"})
+            mode = text(args["mode"])
+            if mode not in {"w", "a", "x"}:
+                raise ValueError("write mode")
+            return port.write(text(args["name"]), text(args["family"]), payload(args["raw"]),
+                              cast(Mode, mode))
+        if op == "read":
+            keys(args, {"name"})
+            raw = port.read(text(args["name"]))
+            if len(raw) > RAW_CAP:
+                raise ValueError("bounded read response")
+            return base64.b64encode(raw).decode()
+        if op == "stat":
+            keys(args, {"name"})
+            value = port.stat(text(args["name"]))
+            return {"exists": value.exists, "is_dir": value.is_dir, "size": value.size}
+        if op == "listdir":
+            keys(args, {"name"})
+            return port.listdir(text(args["name"]))
+        if op == "mkdir":
+            keys(args, {"name", "parents", "exist_ok"})
+            port.mkdir(text(args["name"]), boolean(args["parents"]), boolean(args["exist_ok"]))
+            return None
+        if op == "delete":
+            keys(args, {"name"})
+            port.delete(text(args["name"]))
+            return None
+        if op == "flush":
+            keys(args, set())
+            port.flush()
+            return None
+        if op == "invalidate":
+            keys(args, set())
+            port.invalidate()
+            return None
+        if op == "record":
+            keys(args, {"family", "raw"})
+            return port.record(text(args["family"]), payload(args["raw"]))
+        if op == "generation":
+            keys(args, {"prefix"})
+            return port.generation(text(args["prefix"]))
+        if op == "snapshot":
+            keys(args, {"prefix"})
+            prefix = text(args["prefix"])
+            files, dirs = port._snapshot_data(prefix)
+            return {"files": {name: base64.b64encode(raw).decode() for name, raw in files.items()},
+                    "dirs": dirs, "generation": port.generation(prefix)}
+        raise ValueError("unsupported producer operation")
+
+    async def close(self) -> None:
+        if self._deadline is None:
+            self._deadline = time.monotonic() + 10
+        self._closing = True
+        waiter: asyncio.Task[None] | None = None
+        if self._server is not None:
+            self._server.close()
+        for writer in tuple(self._streams):
+            writer.close()
+        tasks = set(self._tasks)
+        if self._server is not None:
+            waiter = asyncio.create_task(self._server.wait_closed(), name="r27-ipc-server-join")
+            tasks.add(waiter)
+        if tasks:
+            done, pending = await asyncio.wait(tasks, timeout=max(0, self._deadline-time.monotonic()))
+            for task in done:
+                try:
+                    task.result()
+                except BaseException as error:
+                    self.broker.capture_fault(error)
+            if pending:
+                error = TimeoutError("one shared IPC cleanup deadline; owned task unresolved")
+                self.broker.capture_fault(error)
+                raise error
+        if self._lease is not None:
+            self.broker.end_operation(self._lease)
+            self._lease = None
+        if self.address.exists():
+            self.address.unlink()
+
+    async def __aexit__(self, kind: object, error: BaseException | None, trace: object) -> None:
+        cleanup = asyncio.create_task(self.close(), name="r27-ipc-terminal")
+        original = error
+        while not cleanup.done():
+            try:
+                await asyncio.shield(cleanup)
+            except asyncio.CancelledError as cancellation:
+                original = original or cancellation
+        try:
+            cleanup.result()
+        except BaseException as fault:
+            if original is not None:
+                raise original from fault
+            raise
+        if original is not None and original is not error:
+            raise original
+
+
+class IPCClient:
+    def __init__(self, address: str, token: str) -> None:
+        self._owner = threading.get_ident()
+        self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self._socket.settimeout(10)
+        self._token, self._seq = token, 0
+        self._fault: BaseException | None = None
+        self._files: set[str] = set()
+        self.closed = False
+        try:
+            self._socket.connect(address)
+            self.namespace = text(self._call("namespace", {}))
+        except BaseException:
+            self.closed = True
+            self._socket.close()
+            raise
+
+    @property
+    def first_fault(self) -> BaseException | None:
+        return self._fault
+
+    def check(self) -> None:
+        if self.closed or threading.get_ident() != self._owner:
+            self._fault = self._fault or RemoteFault("creator/live client")
+            raise self._fault
+        if self._fault is not None:
+            raise self._fault
+
+    def _recv(self, amount: int) -> bytes:
+        chunks = bytearray()
+        while len(chunks) < amount:
+            raw = self._socket.recv(amount-len(chunks))
+            if not raw:
+                raise RemoteFault("uncertain lost acknowledgement; never replay")
+            chunks.extend(raw)
+        return bytes(chunks)
+
+    def _call(self, op: str, args: dict[str, object], *, closing: bool = False) -> object:
+        try:
+            if not closing:
+                self.check()
+            self._socket.sendall(encode({"token": self._token, "seq": self._seq,
+                                        "op": op, "args": args}))
+            length = HEADER.unpack(self._recv(HEADER.size))[0]
+            if not 0 < length <= FRAME_CAP:
+                raise RemoteFault("bounded response")
+            response = decode(self._recv(length))
+            if number(response["seq"]) != self._seq or response["ok"] is not True:
+                raise RemoteFault("retention stopped")
+            if set(response) != {"seq", "ok", "result"}:
+                raise RemoteFault("exact ACK shape")
+            self._seq += 1
+            return response["result"]
+        except BaseException as error:
+            self._fault = self._fault or error
+            raise self._fault
+
+    def path(self, name: str = "", family: str = "ephemeral") -> RichPath:
+        self.check()
+        return RichPath(self, name, family)
+
+    def write(self, name: str, family: str, raw: bytes, mode: Mode) -> int:
+        return number(self._call("write", {"name": name, "family": family,
+            "raw": base64.b64encode(raw).decode(), "mode": mode}))
+
+    def read(self, name: str) -> bytes:
+        return payload(self._call("read", {"name": name}))
+
+    def stat(self, name: str) -> Stat:
+        value = obj(self._call("stat", {"name": name}))
+        keys(value, {"exists", "is_dir", "size"})
+        return Stat(boolean(value["exists"]), boolean(value["is_dir"]), number(value["size"]))
+
+    def listdir(self, name: str) -> tuple[str, ...]:
+        value = self._call("listdir", {"name": name})
+        if not isinstance(value, list) or len(value) > 96:
+            raise RemoteFault("bounded directory response")
+        return tuple(text(item) for item in value)
+
+    def mkdir(self, name: str, parents: bool = False, exist_ok: bool = False) -> None:
+        self._call("mkdir", {"name": name, "parents": parents, "exist_ok": exist_ok})
+
+    def delete(self, name: str) -> None:
+        self._call("delete", {"name": name})
+
+    def flush(self) -> None:
+        self._call("flush", {})
+
+    def record(self, family: str, raw: bytes) -> int:
+        return number(self._call("record", {"family": family,
+            "raw": base64.b64encode(raw).decode()}))
+
+    def invalidate(self) -> None:
+        try:
+            self._call("invalidate", {}, closing=True)
+        except BaseException:
+            pass
+        self._fault = self._fault or RemoteFault("local producer invalidated capture")
+
+    def generation(self, prefix: str = "") -> str:
+        return text(self._call("generation", {"prefix": prefix}))
+
+    def snapshot(self, prefix: str = "") -> PathPort:
+        value = obj(self._call("snapshot", {"prefix": prefix}))
+        keys(value, {"files", "dirs", "generation"})
+        files = {name: payload(raw) for name, raw in obj(value["files"]).items()}
+        dirs = value["dirs"]
+        if (sum(map(len, files.values())) > RAW_CAP or len(files) > 32
+                or not isinstance(dirs, list) or len(dirs) > 64):
+            self.invalidate()
+            raise RemoteFault("bounded parser snapshot response")
+        return SnapshotPort(self, prefix, text(value["generation"]), files,
+                            tuple(text(item) for item in dirs))
+
+    def file_open(self) -> str:
+        self.check()
+        if len(self._files) >= 32:
+            self.invalidate()
+            raise RemoteFault("active logical handles")
+        token = uuid.uuid4().hex
+        self._files.add(token)
+        return token
+
+    def file_close(self, token: str) -> None:
+        if self.closed or threading.get_ident() != self._owner or token not in self._files:
+            self.invalidate()
+            raise RemoteFault("owned handle release")
+        self._files.remove(token)
+
+    def close(self) -> None:
+        if not self.closed:
+            try:
+                if threading.get_ident() != self._owner or self._files:
+                    self.invalidate()
+                    raise RemoteFault("unclosed/foreign client")
+                self._call("close", {}, closing=True)
+            finally:
+                self.closed = True
+                self._socket.close()
+
+    def __enter__(self) -> IPCClient:
+        self.check()
+        return self
+
+    def __exit__(self, kind: object, error: BaseException | None, trace: object) -> None:
+        try:
+            self.close()
+        except BaseException as cleanup:
+            if error is None:
+                raise
+            if error is cleanup:
+                raise error
+            raise error from cleanup

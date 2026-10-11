@@ -1,0 +1,22 @@
+{
+  "anchors": {
+    "v2/experiments/action_executor/r22/input-binding.json": "1ae53ce15d2bab4f76df11dd9297640cda2e6af9477b116fd7664d78104e93ab",
+    "v2/experiments/action_executor/r22/main-evidence-binding.sha256": "5f692eacbed727fdd44b653647152b2da47117d2b9e2572540a7ca38ce450871"
+  },
+  "direct": {
+    "v2/experiments/action_executor/r22/main-final-closure.json": "340a1446e0466768b2ca6311697b4faea2617deea9c2f0eb480780cd32c66181",
+    "v2/experiments/action_executor/r22/main-publication-check.json": "26397f408ad05549e75f01e2d17dac00d889f7e26aeaee9226a94e984bbd13a5",
+    "v2/experiments/action_executor/r23/author_initial/feedback.json": "568bd136f0183e89dcb9d38e9811f7fa9521c52f8ffa5de08996aea3c49f1b91",
+    "v2/experiments/action_executor/r23/author_initial/model.py": "2d2754e992c8a0c6dd9accf42f9add3dd754fa569b35482122b9a6a8e3176f12",
+    "v2/experiments/action_executor/r23/author_initial/test_model.py": "a5fec265c2e4597ef6ec384b124d7f7768cbb655578070d6f0aff690b36da3b5",
+    "v2/experiments/action_executor/r23/budget.json": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41",
+    "v2/experiments/action_executor/r23/checks.py": "28a91e9114cc6a7e30c3738c5fe4839f4086f1c4a7c9aabfe424a7a4d9e7f165",
+    "v2/experiments/action_executor/r23/model.py": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024",
+    "v2/experiments/action_executor/r23/test_model.py": "5b33c71b14272c889fb4fea5089d23628e2c813700281f77822a10f2513ee352",
+    "vibecode_v2/R22_REVIEW_REPORT.md": "fc449488b813484af0f184d6efb5259161764e13967d5a0917285bf7e857c868",
+    "vibecode_v2/R23_SCAN_REPORT.md": "8f68a89edf7a5cc28acc92347108e6005fc09fc361452b7c51e979fb8a4474b5",
+    "vibecode_v2/TIP-054.4b-R22_VERIFY_REPORT.md": "f7a17c2e083d420001839c2e7acb3623597c313a794193645d0e0fe3bf11f618",
+    "vibecode_v2/TIP-054.4b-R23_MINIMAL_PHASE_ATTRIBUTION.md": "d78971a4f2fa9e70afee6982cfa519a5c7baedce113fe26d4adf9caaf40492f9"
+  },
+  "schema": "R23-source-and-prior-evidence-v1"
+}

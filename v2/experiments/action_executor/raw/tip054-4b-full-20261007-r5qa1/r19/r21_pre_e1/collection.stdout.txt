@@ -1,0 +1,9 @@
+::R21Controls::test_exact_caller_and_derived_envelopes_before_effects
+::R21Controls::test_fixture_db_closure_and_readiness_scope
+::R21Controls::test_linked_source_history_and_one_use_admission
+::R21Controls::test_original_rows_order_missing_and_quantile_conservation
+::R21Controls::test_packet_summary_controls_oracle_and_corruption
+::R21Controls::test_supervisor_dispatch_and_shell_ownership_failclosed
+::test_captured_load_envelope_without_sql
+
+7 tests collected in 0.05s

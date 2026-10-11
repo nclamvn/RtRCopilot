@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-09",
+  "actor": "Builder retaining Main and independent Reviewer source findings",
+  "source_epoch": "e2",
+  "runtime_not_admitted": true,
+  "findings": [
+    {
+      "priority": "P1",
+      "observation": "finish invokes stop_active in an if ! context; Bash suppresses errexit and failed stop/proof may fall through clearing active ownership",
+      "confirmed_by": [
+        "Main",
+        "Independent Reviewer"
+      ]
+    },
+    {
+      "priority": "P1",
+      "observation": "normal/finally cleanup may call drain twice with a fresh ten-second grace; shared absolute deadline required",
+      "confirmed_by": [
+        "Main"
+      ]
+    },
+    {
+      "priority": "P1",
+      "observation": "checked's still-active branch could return code zero and continue before actual ownership proof",
+      "confirmed_by": ["Main"]
+    }
+  ],
+  "authorized_repair": "explicit stop/proof failure returns; one shared absolute cleanup/reap deadline; fault controls inside existing ownership method; fresh e3 source review",
+  "unchanged": "exact 46 product selectors, six offline methods, no Docker/SQL/HTTP/native/product mutation"
+}

@@ -1,0 +1,17 @@
+{
+  "role": "Contractor independent read-only verification",
+  "date": "2026-10-10",
+  "command": "env PYTHONDONTWRITEBYTECODE=1 v2/apps/backend/.venv/bin/python -B - (stdin: exact source AST selection of R19 PROFILES/OPERATIONS/STATUS/STATES/expected and R21Controls.rows only; json.dumps original row order; no implementation imports, file writes, native subprocesses or suite launch)",
+  "exit_code": 0,
+  "exact_stdin": "import ast, hashlib, json, types\nfrom pathlib import Path\nbase=Path('v2/experiments/action_executor')\npaths=[base/'r19/qualification.py',base/'r21/test_r21_offline.py']\ntrees=[ast.parse(p.read_bytes()) for p in paths]\nns={}\nfor n in trees[0].body:\n    if isinstance(n, ast.Assign) and any(isinstance(t,ast.Name) and t.id in {'PROFILES','OPERATIONS','STATUS','STATES'} for t in n.targets):\n        exec(compile(ast.Module(body=[n],type_ignores=[]),str(paths[0]),'exec'),ns)\nfn=next(n for n in trees[0].body if isinstance(n,ast.FunctionDef) and n.name=='expected')\nexec(compile(ast.Module(body=[fn],type_ignores=[]),str(paths[0]),'exec'),ns)\nprior=types.SimpleNamespace(expected=ns['expected'],STATUS=ns['STATUS'],STATES=ns['STATES'])\nbody=next(n for n in trees[1].body if isinstance(n,ast.ClassDef) and n.name=='R21Controls')\nrows=next(n for n in body.body if isinstance(n,ast.FunctionDef) and n.name=='rows')\nrns={'gate':types.SimpleNamespace(prior=prior)}\nexec(compile(ast.Module(body=[rows],type_ignores=[]),str(paths[1]),'exec'),rns)\nfull=rns['rows'](None)\nresult={}\nfor name, data in [('full',full),('four',full[:4]),('one',full[:1])]:\n    raw=json.dumps(data).encode()\n    journal=''.join(json.dumps(row)+'\\n' for row in data).encode()\n    result[name]={'rows':len(data),'JSON_bytes':len(raw),'JSON_sha256':hashlib.sha256(raw).hexdigest(),'whole_JSONL_bytes':len(journal),'JSONL_sha256':hashlib.sha256(journal).hexdigest()}\nprint(json.dumps({'independent_exact_AST_function_selection_only':True,'source_hashes':{str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},'payloads':result},sort_keys=True))\n",
+  "source_hashes": {
+    "v2/experiments/action_executor/r19/qualification.py": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11",
+    "v2/experiments/action_executor/r21/test_r21_offline.py": "d48f93fc7f420a26d546fd172f80d5d0a10a00cb8f2bd5b5fb384defce3c1dd4"
+  },
+  "payloads": {
+    "full": {"rows": 1600, "JSON_bytes": 235440, "JSON_sha256": "9c78a32b35603393f7881ce1cf4a71bac24be96dbba594a157777993cc54eea1", "whole_JSONL_bytes": 233840, "JSONL_sha256": "fad8333c3eb8e2dbb256c841eb23e72da2094eb30ca092819ea075c8a347745e"},
+    "four": {"rows": 4, "JSON_bytes": 582, "JSON_sha256": "8ca182ea59ec667da91b771c00dda56dc0d0aa93b937568ea8331a5d4a75e3f7", "whole_JSONL_bytes": 578, "JSONL_sha256": "5fc045d56b727d97727cd7bf3395974dd672f02fea793e6a1d99826589014f78"},
+    "one": {"rows": 1, "JSON_bytes": 153, "JSON_sha256": "6dfc8eccf81682ee1384a88f067a4d93f049beb766c1907b159ba94481d68639", "whole_JSONL_bytes": 152, "JSONL_sha256": "6b9dabaee0abac183cb216534d02485113641d71cc01051f8ec05673dbfd25db"}
+  },
+  "limits": "Whole-payload size/fidelity check only. Original suite/campaign, temporary/native writers, SQL and latency NOT_RUN; no full PRE capture fit or routing adoption."
+}

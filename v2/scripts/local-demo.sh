@@ -117,7 +117,7 @@ if [[ ! -f "$PILOT_ENV_FILE" ]]; then
     echo "APP_ENV=development"
     echo "DEV_OIDC_ENABLED=true"
     echo "SESSION_COOKIE_SECURE=false"
-    echo "EXPECTED_SCHEMA_REVISION=0015_generation_term_stats"
+    echo "EXPECTED_SCHEMA_REVISION=0018_action_contracts"
     echo "SOT_SIGNING_SECRET=${SECRET}"
     echo "SOT_STAGING_ROOT=/tmp/rtr-sot-staging"
     echo "API_PORT=18100"

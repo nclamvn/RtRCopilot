@@ -1,0 +1,11 @@
+{
+  "review": "Human/Builder semantic inspection of captured public page bodies; no new source content or raw-byte changes",
+  "otel-genai": {
+    "initial_automated_classification": "rejected-nav-only-or-error (1160 read-view characters below 1500 generic threshold)",
+    "reviewed_classification": "usable-migration-notice",
+    "reason": "The short body contains an explicit notice that the specification moved and the page is no longer maintained; manifest now recognizes only that exact marker. Category and migration constraint only; no capability claim. Raw bytes and capture SHA256 remain unchanged."
+  },
+  "microsoft": {
+    "reason": "Both public HTML responses include generic authorization banners but also full substantive article bodies. Capture used no credentials; exact spans were reviewed in the public article body."
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "scope": "actual peer four-surface backend-config static epoch; strengthened tests await final combined23; no runtime control executed",
+  "source_sha256": {
+    "pytest_seam.py": "26dc802db137dfbcbc6ca0e05d64c47892c649769106e072df44e70fd90a28eb",
+    "logging_seam.py": "d4b57e2774c1ba35065479b5b5fbdf47e1b72a03ac0a8a06313c8a683cb67af1",
+    "plugin_target.py": "c515b869be535cb7755d71643b0facd853df700dfb259025ba25345b060a81a8",
+    "test_plugin_seams.py": "195e0c0e31b1e41485c27a2319315bb19925a4b3ac9dca18c6b454d88dc17cb7"
+  },
+  "source_unchanged_after": true,
+  "results": {
+    "ruff_check": {
+      "command": [
+        "v2/apps/backend/.venv/bin/ruff",
+        "check",
+        "--no-cache",
+        "--config",
+        "v2/apps/backend/pyproject.toml",
+        "v2/experiments/action_executor/r27/runtime_closure/pytest_seam.py",
+        "v2/experiments/action_executor/r27/runtime_closure/logging_seam.py",
+        "v2/experiments/action_executor/r27/runtime_closure/plugin_target.py",
+        "v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.061
+    },
+    "ruff_format": {
+      "command": [
+        "v2/apps/backend/.venv/bin/ruff",
+        "format",
+        "--check",
+        "--no-cache",
+        "--config",
+        "v2/apps/backend/pyproject.toml",
+        "v2/experiments/action_executor/r27/runtime_closure/pytest_seam.py",
+        "v2/experiments/action_executor/r27/runtime_closure/logging_seam.py",
+        "v2/experiments/action_executor/r27/runtime_closure/plugin_target.py",
+        "v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.015
+    },
+    "mypy": {
+      "command": [
+        "v2/apps/backend/.venv/bin/mypy",
+        "--strict",
+        "--follow-imports=silent",
+        "--cache-dir=/dev/null",
+        "--config-file=v2/apps/backend/pyproject.toml",
+        "v2/experiments/action_executor/r27/runtime_closure/pytest_seam.py",
+        "v2/experiments/action_executor/r27/runtime_closure/logging_seam.py",
+        "v2/experiments/action_executor/r27/runtime_closure/plugin_target.py",
+        "v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 7.149
+    }
+  }
+}

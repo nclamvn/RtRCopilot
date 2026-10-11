@@ -1,0 +1,50 @@
+{
+  "schema": "R26-main-final-closure-v1",
+  "scope": "Isolated owned adapter; prototype-only finite contract adoption",
+  "requirement_coverage": {
+    "implemented": 4,
+    "total": 4,
+    "missing": 0,
+    "percentage": 100
+  },
+  "unique_tests": 7,
+  "main_test_chunk": "fd1105",
+  "main_syntax_files": 3,
+  "independent_structural_chunk": "0602d3",
+  "preservation_after_chunk": "365d2c",
+  "prior_pins": 1809,
+  "prior_bytes": 13749891,
+  "prior_manifest_sha256": "26c83990cc6afc9545cad34eca9aa82954c63bb8ecb2254838cb425017011621",
+  "source_counts": {
+    "product": 204,
+    "tests": 192
+  },
+  "frozen_input_binding_sha256": "999167124e38280545959522e25dcc00e4b596779b5e01a74fb9e2601a82abd0",
+  "new_seal_entries": 17,
+  "new_seal_bytes": 71558,
+  "new_seal_path": "v2/experiments/action_executor/r26/main-evidence-binding.sha256",
+  "publication_hashes_point_in_time": {
+    "docs/enterprise-os/IMPLEMENTATION_STATUS.md": "895b45d6e47d1897ed37ca925eeac0300bc27c4a2bace6e4dc1cee72303436e0",
+    "docs/enterprise-os/TASK_GRAPH.md": "a4da3c6e6209530d7b32e2b2bf02f258c2ef2348cabc27bbbbf3932ba54c2104",
+    "vibecode_v2/03_TASK_GRAPH.md": "e932bc71590f8c1e70318a985655d3df96cc01c68e4a0de543e1a915640ac0e7"
+  },
+  "charged_max_bytes": 9778880,
+  "control_bytes": 264,
+  "cap_bytes": 10485760,
+  "test_sandboxes": 0,
+  "actual_capture": "HOLD",
+  "runtime_sla": "R21 FAILED/P1",
+  "issue": "EXE-009 OPEN/P1",
+  "candidate": "NOT_READY",
+  "serving_executor": "OFF",
+  "tip054_5": "BLOCKED",
+  "not_run": [
+    "power loss/process death",
+    "hostile same UID/root",
+    "runtime/async/measured integration",
+    "SQL/Docker/HTTP/external",
+    "build/typecheck/lint"
+  ],
+  "next_prerequisite": "Separately scope default-OFF producer routing and raw fidelity/transparency checks before measurement.",
+  "git_writes": false
+}

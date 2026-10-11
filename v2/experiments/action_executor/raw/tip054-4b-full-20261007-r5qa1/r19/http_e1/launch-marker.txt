@@ -1,0 +1,2 @@
+{"epoch": "http_e1", "binding_sha256": "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4", "contract_sha256": "1f526476214376d8a65c2c5be9bf0f8b1b458fb70e1d051d7bfca238077300ae", "consumed": true, "meaning": "created immediately before spawn; unknown launch consumed"}
+R19_ADMISSION_PASS mark

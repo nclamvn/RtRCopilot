@@ -1,0 +1,15 @@
+{
+  "command": [
+    "v2/apps/backend/.venv/bin/mypy",
+    "--strict",
+    "--follow-imports=silent",
+    "--cache-dir=/dev/null",
+    "--config-file=v2/apps/backend/pyproject.toml",
+    "v2/experiments/action_executor/r27/runtime_closure/pytest_seam.py",
+    "v2/experiments/action_executor/r27/runtime_closure/logging_seam.py",
+    "v2/experiments/action_executor/r27/runtime_closure/plugin_target.py",
+    "v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py"
+  ],
+  "returncode": 1,
+  "scope": "actual first retained draft static epoch; earlier tool draft2errors same repair type, overlapping"
+}

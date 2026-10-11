@@ -1,0 +1,32 @@
+{
+  "actor": "Main",
+  "scope": "R19 e3 frozen read-only static feedback, no tests/SQL/load",
+  "before": {
+    "chunk_id": "5d87e3",
+    "wall_time_seconds": 0.128506834,
+    "exit_code": 0,
+    "original_token_count": 53,
+    "output": "{\"files\": 1086, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+  },
+  "check": {
+    "chunk_id": "3cc92a",
+    "wall_time_seconds": 0.106595292,
+    "exit_code": 0,
+    "original_token_count": 5,
+    "output": "All checks passed!\n"
+  },
+  "format_diff": {
+    "chunk_id": "577495",
+    "wall_time_seconds": 0.000008333,
+    "exit_code": 1,
+    "original_token_count": 364,
+    "output": "2 files would be reformatted, 1 file already formatted\n--- /work/r19/bounded.py\n+++ /work/r19/bounded.py\n@@ -188,10 +188,13 @@\n         # before any cleanup, and the normal supervisor budget still applies.\n         return\n     owner = json.loads(owner_path.read_bytes())\n-    require(type(owner[\"supervisor\"]) is int and owner[\"supervisor\"] > 1,\n-            \"typed supervisor identity\")\n-    require(type(owner[\"supervisor_start\"]) is str and owner[\"supervisor_start\"],\n-            \"typed supervisor start identity\")\n+    require(\n+        type(owner[\"supervisor\"]) is int and owner[\"supervisor\"] > 1, \"typed supervisor identity\"\n+    )\n+    require(\n+        type(owner[\"supervisor_start\"]) is str and owner[\"supervisor_start\"],\n+        \"typed supervisor start identity\",\n+    )\n     group_members(owner)\n     # Validate even the live-supervisor path; malformed ownership is fail-closed.\n     deadline = owner[\"cleanup_deadline\"]\n\n--- /work/r19/qualification.py\n+++ /work/r19/qualification.py\n@@ -77,8 +77,11 @@\n     AREA + \"/format-only-e2.json\",\n     AREA + \"/source-binding-e1.json\",\n     AREA + \"/source-binding-e2.json\",\n-    *(f\"{AREA}/source_e{epoch}/{name}\" for epoch in (1, 2)\n-      for name in (*SOURCES, f\"source-binding-e{epoch}.json\")),\n+    *(\n+        f\"{AREA}/source_e{epoch}/{name}\"\n+        for epoch in (1, 2)\n+        for name in (*SOURCES, f\"source-binding-e{epoch}.json\")\n+    ),\n )\n require = r18.require\n digest = r18.digest\n\n"
+  },
+  "after": {
+    "chunk_id": "e692af",
+    "wall_time_seconds": 0.07879925,
+    "exit_code": 0,
+    "original_token_count": 53,
+    "output": "{\"files\": 1086, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+  }
+}

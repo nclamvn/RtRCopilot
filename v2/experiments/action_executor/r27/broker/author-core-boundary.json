@@ -1,0 +1,11 @@
+{
+  "scope": "Same six core groups; boundary-negative strengthens existing sixth, not additional identities",
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=v2/apps/backend/src v2/apps/backend/.venv/bin/python -B -m pytest -c v2/apps/backend/pyproject.toml --confcutdir=v2/experiments/action_executor/r27/broker -p no:cacheprovider -q v2/experiments/action_executor/r27/broker/test_broker.py",
+  "result": {
+    "chunk_id": "309e8e",
+    "wall_time_seconds": 2.5962020839999997,
+    "exit_code": 0,
+    "original_token_count": 240,
+    "output": "......                                                                   [100%]\n=============================== warnings summary ===============================\nv2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474\n  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_default_test_loop_scope\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\nv2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474\n  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_mode\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n6 passed, 2 warnings in 1.56s\n"
+  }
+}

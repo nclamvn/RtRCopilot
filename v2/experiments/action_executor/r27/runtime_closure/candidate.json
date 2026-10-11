@@ -1,0 +1,59 @@
+{
+  "schema": "r27-runtime-closure-candidate-v1",
+  "sources": {
+    "v2/apps/backend/alembic.ini": "07dd6b70ea594d486fc83e13dc31c5312763c5a47de9e8a5555cf2859c30f4e8",
+    "v2/apps/backend/migrations/env.py": "b7504bb60a02b8172d89bd62075b6fad5a77388b76d27f7c3e56126e474d1eb4",
+    "v2/apps/backend/pyproject.toml": "a70f415c118e99b4e1c7d71cb16b67d8eaab8cce3327a8f12252711612b91c6c",
+    "v2/apps/backend/uv.lock": "cf091ca54b36632e9ed1884e6a1c3aa46cf0114191da8e2a4abe670e767a26dc",
+    "v2/experiments/action_executor/latency_probe.py": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2",
+    "v2/experiments/action_executor/r/run_phase_baseline.py": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7",
+    "v2/experiments/action_executor/r19/bounded.py": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb",
+    "v2/experiments/action_executor/r21/qualification.py": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef",
+    "v2/experiments/action_executor/r21/run-http-qualification.sh": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1",
+    "v2/experiments/action_executor/r21/test_r21_envelope.py": "879414b56aaed8af655dc48c6b40710788bb63e24d1022e18747a5ecef0a7903",
+    "v2/experiments/action_executor/r21/test_r21_offline.py": "d48f93fc7f420a26d546fd172f80d5d0a10a00cb8f2bd5b5fb384defce3c1dd4",
+    "v2/experiments/action_executor/r24/main-historical-coverage.json": "2904aeb02b2811d7b5a5113a73c4d41b93081fb2feaef875bdd951fe84f81836",
+    "v2/experiments/action_executor/r25/contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "v2/experiments/action_executor/r27/real_path/candidate.json": "517eb7af2f8774f5a464b7272192cd511ab209eb77a426ef464f591a14044c0e",
+    "v2/experiments/action_executor/r27/real_path/checks.py": "558ab4c3c28a72040ad45197f48d1aa9a6354339b4528b17055718b5264463dc",
+    "v2/experiments/action_executor/r27/real_path/input-binding.json": "7c61db96c95f2b12a2de56c9e24ed6e325774b2eca3344e9a4c538fc6286fdf2",
+    "v2/experiments/action_executor/r27/runtime_closure/SCOPE.md": "f45f65c3d795dad941051c02f46ded4cbd4260d6fb03a97db6b6d8b7b50ff563",
+    "v2/experiments/action_executor/r27/runtime_closure/acceptance.py": "aa0cdf54c9e58e96a12b85a6dd422b5d2de486ce939ffc2559a7c680ab9f7799",
+    "v2/experiments/action_executor/r27/runtime_closure/capacity.json": "77a8467852a45a6d7e33862be855b84e2e39507da583e66a74faf2fa4ff16519",
+    "v2/experiments/action_executor/r27/runtime_closure/checks.py": "1a3d421cc8deebfb95ad298752e0b488093b807fbebf6ff96331606c7912b004",
+    "v2/experiments/action_executor/r27/runtime_closure/logging_seam.py": "d4b57e2774c1ba35065479b5b5fbdf47e1b72a03ac0a8a06313c8a683cb67af1",
+    "v2/experiments/action_executor/r27/runtime_closure/native_child.py": "bd995ec8b7752dfb2d0fff323fdfa9e9f46a125b8ce8d596734d36c944ae4258",
+    "v2/experiments/action_executor/r27/runtime_closure/native_seam.py": "2cae03082ac78b44bda7d97bf32f99ebb4fa212b263d62b2ac99c3c6281e7ab4",
+    "v2/experiments/action_executor/r27/runtime_closure/plugin_target.py": "c515b869be535cb7755d71643b0facd853df700dfb259025ba25345b060a81a8",
+    "v2/experiments/action_executor/r27/runtime_closure/pytest_seam.py": "26dc802db137dfbcbc6ca0e05d64c47892c649769106e072df44e70fd90a28eb",
+    "v2/experiments/action_executor/r27/runtime_closure/readiness.py": "afca767886970259064554b2620554ae0dead55e702b6215c160e784598a84fb",
+    "v2/experiments/action_executor/r27/runtime_closure/routing.json": "d63a710ac266f8e82f2d5dd39a9854fb6a258dd7b614b2f064f0d6d5576c2743",
+    "v2/experiments/action_executor/r27/runtime_closure/test_acceptance.py": "e585078fbdf693b60b1ba1e6f964009b4177664e683a94b8b73168add13ccb4d",
+    "v2/experiments/action_executor/r27/runtime_closure/test_native.py": "ebf60472f38ab4d410f65c01d46eac9b984459997b9539aebc030d48cb683006",
+    "v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py": "195e0c0e31b1e41485c27a2319315bb19925a4b3ac9dca18c6b454d88dc17cb7"
+  },
+  "dependencies": {
+    "/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/logging/__init__.py": "43f86bbc08fdd5c7b6e697abffe1381f534a92bb32e1f1aee8360d6a142592a1",
+    "/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/logging/config.py": "6b4bdac4318ee794f667a5d5df30040abf70b9786ec5ed8bf597bd8ad0b71d27",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/junitxml.py": "51ea93fb20122b8aa5f2c412b9cf946b6daf719cde470f6ca2c50430bed4135d",
+    "/bin/df": "eb5b6b85a37afa7b201baada03cc6b4173bbdcdd07e4fae586dfd6841ea2f1db"
+  },
+  "execution_admission": "DENY",
+  "full_runtime": "NOT_RUN",
+  "capacity": {
+    "entries": 32,
+    "PRE_records": 32,
+    "adoption": "NONE"
+  },
+  "limits": {
+    "families": 20,
+    "aggregate_bytes": 10485760,
+    "metadata_bytes": 16384,
+    "whole_XML_bytes": 2048,
+    "migration_LogRecord_bytes": 512,
+    "host_df_EOF_bytes_per_stream": 4096
+  },
+  "scope": "D1-D5 bounded local seams only; complete PRE/native scratch closure remains unqualified",
+  "platform_boundary": "APPROVED separate disclosed platform audit; not an outstanding approval",
+  "sealed_packet_source_scope": "Reused broker witnesses frozen real_path sources; external continuation source binding is separate proof"
+}

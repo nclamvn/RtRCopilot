@@ -1,0 +1,11 @@
+{
+  "actor": "Main",
+  "scope": "downstream noncircular final check, outside seal/closure",
+  "result": {
+    "chunk_id": "7e6814",
+    "wall_time_seconds": 0.00000825,
+    "exit_code": 0,
+    "original_token_count": 72,
+    "output": "{\n  \"actor\": \"Main\",\n  \"published_five_and_seal_twenty_match\": true,\n  \"final_closure_sha256\": \"340a1446e0466768b2ca6311697b4faea2617deea9c2f0eb480780cd32c66181\",\n  \"diagnosis\": \"VERIFIED6/6\",\n  \"r21_qualification\": \"FAILED_P1_UNCHANGED\",\n  \"exe009\": \"OPEN\",\n  \"no_new_campaign\": true\n}\n"
+  }
+}

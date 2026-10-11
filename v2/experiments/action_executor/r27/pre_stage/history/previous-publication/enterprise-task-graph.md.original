@@ -1,0 +1,496 @@
+# Task graph · TIP-054 Enterprise OS upgrade
+
+Active consolidated work package: **R27 — Executor integration and tail closure**.
+Producer routing → fidelity/cancellation/cleanup → authorized diagnosis → narrow
+repair → regression/qualification → one final Completion/Verify. Internal steps
+are not separate Homeowner checkpoints. Batching is approved; new campaign or
+material scope authority remains separate. R27 is implemented locally but PARTIAL,
+not a qualified executor or closed latency repair.
+[Consolidated scope](../../vibecode_v2/TIP-054.4b-R27_CONSOLIDATED_EXECUTOR_CLOSURE.md).
+
+Current publication (2026-10-10): **PRE DIAGNOSTIC E1–E4 ACCEPTED4/4;
+full R27 PARTIAL / NOT_READY**. Original whole packet callsites now reach unchanged
+broker through closed temp paths; full/four JSONL and full ephemeral JSON reject
+before artifact I/O, with retained prefix/first fault/no seal. Diagnostic mappings
+are NOT adopted scratch classifications; one-row controls are not original six tests.
+Main28unique groups PASS5.77587450001738s:23frozen+5new; Builder same28 overlap.
+Strict/Ruff/format/syntax4 clean; two configwarnings retained; independent review accepts local scope.
+2249repo pins/seven external interfaces/product204/tests192/deps/HEAD/prior sources intact.
+Known43 scratch writes/14files/six roots;125+14=139 lifetime-file lower bound,
+not a universal upper. Original live stat cap differs from lifetime packet+physical/no-refund.
+Operative32/PRE32/20families/10MiB/16KiB;96/PRE64 insufficient/NOT_ADOPTED.
+Full PRE native/temp/plugin failure routes/deps/Linux/physicalSQL/HTTP/load remain NOT_RUN.
+Actual preflight exit2/source-match/DENY/effects NOT_RUN; scratch removed.
+Next ONE material decision: stage-specific PRE synthetic-input variant within SAME
+10MiB/no-refund with whole-write/lifetime/metadata/native ownership domains.
+NOT_ADOPTED, no count-only growth/uncapped scratch/exclusions/campaign/activation.
+R21 FAILED/P1, EXE-009 OPEN/P1, candidate NOT_READY, executor OFF, .5 BLOCKED.
+[R27 Verify](../../vibecode_v2/TIP-054.4b-R27_VERIFY_REPORT.md) ·
+[PRE contract review](../../vibecode_v2/R27_PRE_CONTRACT_REVIEW_REPORT.md).
+
+Historical R26 publication: **ISOLATED PROTOTYPE VERIFIED4/4,
+scoped READY-with-deferred; prototype-only contract adoption / capture HOLD;
+R21 SLA FAILED (P1)**;
+EXE-009 OPEN, candidate NOT_READY, serving executor OFF, TIP-054.5 BLOCKED.
+Seven real-file groups PASS, syntax3/3 and independent review accepted. Concrete
+writer/recovery logical maximum9,778,880B includes264B controls; ownership/raw
+fidelity and injected local faults covered. Real-source bounds, process/power loss,
+async/cleanup/latency transparency remain unproved. No campaign/core repair.
+Next authority: bounded default-OFF producer routing and fidelity/transparency
+checks before measurement; no measured integration/activation follows automatically.
+See [R26 Verify](../../vibecode_v2/TIP-054.4b-R26_VERIFY_REPORT.md) and
+[implementation status](IMPLEMENTATION_STATUS.md) for current evidence.
+The dated narrative and diagrams below are historical milestones; “current”
+inside those entries means their own epoch, not fresh current certification.
+
+Date: 2026-10-08. Status: **APPROVED LOCAL SEQUENCE / TIP-054.1–.3 LOCALLY
+VERIFIED / .4a LOCAL DBOS SELECTION VERIFIED / .4b-R7 PARTIAL, NOT READY /
+R6 OFFLINE DIAGNOSIS VERIFIED, R7 MANDATORY OFF FAILED**.
+R8 residual contention diagnosis is VERIFIED6/6. Approved R9M exact-cache
+maintenance and R9 diagnosis are now COMPLETE:26 unique controls PASS plus Root
+four overlapping SQL controls; original product56fa/bindings/history preserved.
+Single ON integrity PASS/SLA FAIL (133 errors); unchanged OFF SLA FAIL (14 errors),
+all concurrency50 cells fail. Executor stays defaultOFF/NOT READY and .5 blocked.
+R10 offline critical-path/cohort and cost falsification is now VERIFIED6/6:
+20 groups PASS,3 actual runs×6 byte-identical outputs, all2974 requests/147 errors/
+32 original cells preserved, all1384 ON partitions independently/personally
+checked; OFF internal coverage remains unobserved. Product56fa and all old source/
+history seals unchanged. Sole cause UNRESOLVED; NOT READY/defaultOFF/.5 block remain.
+Exactly one next proposal is a bounded unchanged-product observer-overhead
+measurement comparator, not automatic core tuning/load or silent reference-helper
+timing changes. [R10 Verify](../../vibecode_v2/TIP-054.4b-R10_VERIFY_AND_DESIGN_REPORT.md).
+That bounded proposal is now executed as R11, CLOSED PARTIAL / INTEGRITY STOP:
+12 unique correctness controls PASS, but the single ON hits800000 rows and drops
+17506 observations. Original7/16 cells PASS,121 timeouts/206 missing; no OFF or
+paired analyzer after this integrity fault. Accepted diagnostic requirements3/6;
+product source/history/retained fixture preserved. Exactly one final decision:
+product repair/cause UNRESOLVED. No automatic further loop/core change; executor
+defaultOFF/NOT READY and .5 block remain.
+[Current R11 Verify](../../vibecode_v2/TIP-054.4b-R11_VERIFY_REPORT.md).
+Homeowner subsequently approved R12: minimal outer-callback instrumentation,
+offline reproducible budget and exactly12 local controls before one conditional
+pair. R12 now executed:12 unique controls PASS plus Main8 overlapping structural,
+selected281179 records/all6 faults0, actual643-event chain valid. ON SLA FAIL4/16,
+205 errors/334 missing; mandatory unchanged OFF SLA FAIL10/16,84 errors/144 missing.
+Three actual host analyses yield4 byte-identical outputs; all32 cells/2722 requests/
+289 failures and1266 masks independently/personally verified. Final preservation
+closure PASS with Main current-byte verification; R12 diagnostic requirements6/6
+verified, not product release acceptance. Product repair/cause remains UNRESOLVED; no automatic new loop,
+core tuning or activation. Executor defaultOFF/NOT READY and .5 block remain.
+[R12 scope](../../vibecode_v2/TIP-054.4b-R12_MINIMAL_OBSERVER_AND_BUDGET.md).
+[R12 Verify](../../vibecode_v2/TIP-054.4b-R12_VERIFY_REPORT.md).
+Preparation is implemented; Homeowner approved the Blueprint on 2026-10-06.
+Application milestones proceed through their verification dependencies.
+
+```text
+054.0 Research + scan + requirements + Blueprint + acceptance catalog
+                             │ approval
+                             ▼
+054.1 Existing baseline/recovery and usefulness closure
+                             │
+                  ┌──────────┴───────────┐
+                  ▼                      ▼
+054.2 Company context/memory    054.3 Capability/action contracts
+                  │                      │
+                  │                      ▼
+                  │          054.4a Durable-runtime bake-off
+                  │                      │
+                  │                      ▼
+                  │          054.4b Runner/receipts/recovery integration
+                  └──────────┬───────────┘
+                             ▼
+054.5 Ask → high-quality artifact and action experience
+                             │
+                             ▼
+054.6 MCP gateway and isolated connector contract tests
+                             │
+                             ▼
+054.7 Source read workflows and SOT delta proposals
+                             │
+                             ▼
+054.8 Durable events, watches and workspace briefing
+                             │
+                             ▼
+054.9 Build-bound full acceptance, cost/latency and rollout packet
+```
+
+## Sequencing and capacity
+
+The first product target is .1 → .3 → .4 → .5: a reliable internal draft with
+no business-system connection dependency. Context .2 supplies the useful
+company/workspace inputs; it can be built alongside action contracts once .1
+is verified. Later integration nodes use synthetic adapters while source
+owners complete real applications.
+
+Planning allowance: 8–12 engineering weeks for the first governed internal
+release and synthetic integration acceptance, assuming one full-time core
+engineer working with AI Builders, existing source access and no major baseline
+regression. This is an unvalidated planning range, not a deadline or measured
+AI execution-time estimate. Reestimate after .1 and .4a. Actual connector
+owner readiness, live data validation and production rollout are additional
+dependencies. Standard is demonstrated by acceptance, not by calendar.
+
+Use roughly 60% capacity for the next vertical slice, 25% for source integrity,
+reliability and performance, and 15% for user feedback/unplanned findings.
+Prefer fewer complete workflows over simultaneous unfinished integrations.
+
+## TIP-054.0 · Decision preparation
+
+Priority P0. Dependencies: baseline TIP-053.
+Output: frozen public-source research registry; Builder source scan; RRI matrix;
+solution comparison; Blueprint/task graph; planned synthetic acceptance set;
+Completion and Verify reports.
+
+AC: source snapshots/digests/span evidence rederive; same-vendor mirrors do not
+corroborate; empty performance/license fields remain honest-null; negative
+gate injections fail; all 32 requirements map to milestones; no product test
+or production verdict is fabricated from a documentation validation.
+
+## TIP-054.1 · Baseline and recovery closure
+
+Priority P0. Dependencies: approved Blueprint. Requirements EOS-001/002/016/031.
+Reuse current specialist services. Verify actual serving build/config separately
+from report headers. Reproduce document DB→Redis and stale-render crash seams
+in an isolated local environment, then repair only demonstrated gaps.
+
+Given a committed render job and a failed queue publication, when service/queue
+recover, then the same job is dispatched and exactly one valid artifact is
+registered. Given worker death during rendering, when its ownership expires,
+then work recovers or reports an actionable terminal state instead of remaining
+silently stuck. Given the new IDF retrieval baseline, ordinary noisy/follow-up
+questions still answer their real subject. Validate `use_class` for every
+new disclosure/draft surface and preserve useful partial evidence behavior.
+
+Evidence: crash-injection traces, duplicate-output query, unit/integration
+regression, migration/restore checks if schema changes, focused browser state.
+Live internal-evidence synthesis is a separate bounded authorized campaign.
+
+Execution status: local criteria BRC-001…008 verified on schema 0016 and
+uncommitted source. Backend 894 passed / 17 explicit skips; web 220 passed;
+five mocked browser cases passed. Serving identity/provider latency are not
+certified. See [current implementation status](IMPLEMENTATION_STATUS.md) and
+[Contractor Verify](../../vibecode_v2/TIP-054.1_VERIFY_REPORT.md). Remaining
+nodes below are planned, not implemented by this recovery milestone.
+
+## TIP-054.2 · Company context and workspace memory
+
+Priority P0. Dependencies .1. Requirements EOS-002/008/009/010/011/024.
+Output: canonical entity relations, temporal ownership/source refs,
+`ContextPacket`, scoped memory lifecycle and domain coverage/freshness view.
+Keep SOT and source APIs authoritative. Add PostgreSQL structures only where
+existing records cannot express the required lifecycle.
+
+Given permitted current and stale/missing context, when a project goal is
+planned, then the packet includes supported context, exact revisions and
+explicit gaps. Given revoked/deleted evidence, when remembered context is
+reused, then it cannot disclose that evidence. Given a remembered preference,
+it cannot become a permission or company fact. Correction/deletion is visible.
+
+Evidence: entity collision, revision drift, temporal validity, context budget,
+permission/memory expiry and deletion tests; relevance/coverage holdout cases.
+
+Execution status: CTX-001…009 pass in the governed-SOT/API/memory slice;
+15 unit and 23 SQL integration scenarios. No Ask/UI integration, live state
+connector or company-wide coverage certification. See
+[.2/.3 Contractor Verify](../../vibecode_v2/TIP-054.2_054.3_VERIFY_REPORT.md).
+
+## TIP-054.3 · Action Kernel contracts
+
+Priority P0. Dependencies .1. Requirements EOS-003/007/012/013/014/015/027/030.
+Output: typed capability registry, action plans, policy-action mapping,
+approval/receipt/event models and domain persistence. Reuse PolicyEngine,
+UnitOfWork, AuditRepository, budgets and resource identities.
+
+Given a normal read, the caller's existing rights suffice. Given an explicit
+internal-draft request, no additional per-tool confirmation is inserted.
+Given a tool requesting a higher-risk effect, only its admitted permissions
+apply. Changed input/version/recipient invalidates the previous approval.
+Model-generated tool names/parameters outside the admitted contract fail before
+effects; an error identifies a useful permitted continuation when available.
+
+Evidence: schema and policy contracts; approval-binding adversarial tests;
+correlated receipts; audit redaction; finite run-budget accounting.
+
+Execution status: ACT-001…009 pass; 28 unit and 28 SQL/API scenarios. Fixed
+R0/R1 admission contracts only; no executor, fake effect-success receipt or
+live R2/R3 workflow. Combined frozen gates: backend 1,024 passed/17 explicit
+skips; web 220 passed; populated migration, lint/types/build pass. Effect
+activation still requires .4b, not inference from domain admission.
+
+## TIP-054.4a · Runtime selection
+
+Priority P0. Dependencies .3. Requirements EOS-020; contract behavior .4b.
+Output: isolated DBOS and Temporal experiments using identical fake provider,
+fake source and domain state oracles; raw fault/load runs and selection ADR.
+Add no new runtime dependency to the serving application before selecting.
+
+Given matching workflow inputs and crash schedules, both candidates are
+evaluated on correctness/recovery before performance and idle/operation cost.
+Given a duplicate source effect or false success, the candidate fails a hard
+gate regardless of its speed. Chosen stable SDK versions/licenses/runtime
+compatibility are recorded. No docs-only claim becomes a benchmark score.
+
+Execution status: BKO-001…010 verified in finite local experimental scope;
+DBOS selected for .4b with deferred serving-pin and bounded async-waiter proof.
+Both matrices pass 63/63 source profiles, 1,200 timed samples each; both native
+suites 9/9, cold joint restores and actual final-source fencing pass. Independent
+reverse matrix/native/unit checks pass. Temporal's concurrency-50 extra-p95
+misses twice, retained. No app runtime admission or production ranking.
+See [selection ADR](RUNTIME_SELECTION.md) and
+[Contractor Verify](../../vibecode_v2/TIP-054.4a_VERIFY_REPORT.md).
+
+## TIP-054.4b · Durable executor and business receipts
+
+Priority P0. Dependencies .4a. Requirements EOS-007/010/014/015/016/017/018/019/
+027/030/031. Output: selected runner adapter, isolated state, waits, cancel,
+resume, step attempts, idempotency, reconciliation and outcome verification.
+
+Given crash after a possible source effect, the system queries its source key
+before a retry. A source without a safe query/idempotency mechanism returns
+`needs_review`. Given two workers, stale ownership cannot commit a duplicate
+result. Given approval revoked/expired while waiting, resumption rechecks.
+Given partial irreversible work, cancellation reports completed effects and
+remaining stopped steps accurately. Backup/restore retains pending waits and
+receipts. Deployment-version migration supports paused workflows explicitly.
+
+Evidence: fault-injection suite, deterministic receipt/state oracles, restart,
+restore, worker fencing and workflow version tests, measured overhead.
+
+Execution status: IMPLEMENTED / PARTIAL / NOT READY. Historical4c446 admits DBOS with unchanged serving
+pins; real R0/R1, recovery/restore, current authority/output protection and
+two-live-worker fencing pass finite synthetic tests. Backend 1,095 pass/17
+explicit skips; Contractor's fresh64 independent reruns pass (overlap).
+Actual source-wheel, populated migration and current-byte runtime proofs pass.
+EXE-009 load remains FAIL after A/B/C: admission25/50 p95 768.3/1,511.3ms,
+67/100 submit timeouts at50. Dedicated measured query-budget/batching design is
+next; unchanged gates still apply. No local READY or
+enterprise release GO is inferred. See
+[TIP](../../vibecode_v2/TIP-054.4b_DURABLE_ACTION_EXECUTOR.md) and
+[current status](IMPLEMENTATION_STATUS.md). Existing pipelines remain owners;
+executor default OFF, no serving rebuild/real connector/LLM effects.
+Full [Contractor Verify](../../vibecode_v2/TIP-054.4b_VERIFY_REPORT.md).
+
+### TIP-054.4b-R · Query budget and same-session batching
+
+PARTIAL / NOT READY, local-only. [Approved TIP](../../vibecode_v2/TIP-054.4b-R_QUERY_BUDGET_AND_BATCHING.md)
+produced post-wait fresh authority, bounded evidence fences and Action-only
+batching on current85bf88a9. Fresh234 focused cases and Contractor71 overlapping
+reruns pass; ordinary R0 admission101→29SQL and submit62→21SQL. Unchanged OFF
+admission25/50 p95 531.345/1,147.614ms and14 submit50 timeouts still fail.
+No policy cache/pool/timeout increase; broad/native certification stopped.
+This failure led to R2 below. .5 activation does not proceed on this failure;
+these85bf proofs are historical, not currente6 certification.
+[Verify](../../vibecode_v2/TIP-054.4b-R_VERIFY_REPORT.md).
+
+### Historical prerequisite: TIP-054.4b-R2 · Checkout & audit tail closure
+
+User approved measured checkout/audit-tail optimization before whole-candidate
+certification. [TIP](../../vibecode_v2/TIP-054.4b-R2_CHECKOUT_AND_AUDIT_TAIL.md).
+Fresh85bf OFF baseline again fails admission25/50 p95 624.607/1,173.604ms,
+23 submit50 timeouts/77 downstream samples. No new acceptance or activation.
+Approved narrow design: strict R0 owner-session reads, own-root rollback-only
+contract staging before827004, fresh authority after all fences, no-write duplicate
+guards. Preserve deadline/audit atomicity and R1/legacy/supersedes paths. Proposed
+3 checkouts and6 SQL under the new-plan audit tail are targets, not results.
+Extended audit observer baseline is closed on343 bindings/product85bf: numeric
+metrics and actual786-event chain pass, diagnostic latency fails. Approved
+product is frozen as e6e9bfe8 after wrapper-compatible staging centralization.
+260 fresh SQL/39 units pass; Contractor33 overlapping reruns pass. Actual29/3
+and22/3 checkout budgets plus11→5 audit postgrant statements meet targets, but
+OFF still fails: admission25/50 p95 561.428/955.479ms;32 submit50 timeouts and
+68 downstream samples with2 status/1 cancel failures. Submit audit duration
+worsened, not a universal performance gain. Broad/native/populated migration/
+restore/wheel certification stopped; current defaultOFF and .5 dependency remain.
+Exact-owned4 containers/1 network cleaned, host evidence/unrelated state retained;
+6/8 local criteria verified (75%),006FAIL/007UNVERIFIED. Synthetic tmpfs has no
+exact restore guarantee; all earlier10754b failures retained.
+[Verify](../../vibecode_v2/TIP-054.4b-R2_VERIFY_REPORT.md). Next needs a separate
+measured connection-lifecycle/admission-scheduling design, not looser limits.
+
+### TIP-054.4b-R6 · Offline tail falsification — CLOSED
+
+Six diagnostic criteria verified; analyzer12 checks and Builder/Reviewer/Root
+reruns give four byte-identical outputs,252 selected input hashes unchanged.
+Product624f4a remains NOT READY. All32 failed audited-COMMIT candidate ON submits
+classified:28 final-acquire cancellations before view SQL,4 later-read losses.
+Selected next PROPOSAL: two physical leases/three fresh transactions, retaining
+mutation lease only across acknowledged terminal→NEW final Session/root TX.
+Must preserve fresh authority/state, old-handle revocation, exact joined cleanup,
+poison/no-replay and unchanged pool/timeouts/oracle. Longer second hold may hurt
+admission; no performance gain predicted. Implementation/test/load needs a
+separately approved TIP; no activation or automatic continuation under R6.
+[R6 Verify/design](../../vibecode_v2/TIP-054.4b-R6_VERIFY_AND_DESIGN_REPORT.md).
+
+### TIP-054.4b-R7 · Two-Lease Comparator — CLOSED / NOT READY
+
+The above R6 proposal received separate R7 implementation/test approval.
+Current56fa5d content fingerprint implements two physical leases/three fresh
+logical transactions, without stale-token reuse or cached final authority.
+416 scoped unique PASS (324SQL+92pure), Root16 overlapping PASS; all386 old IDs
+active, five approved old-module/11-ID observation/fault-premise adaptations,
+29 original archives and400 bindings preserved. Current lint/types/imports PASS.
+One diagnostic ON:10PASS/6FAIL,19timeouts; mandatory unchanged OFF:12PASS/4FAIL,
+8timeouts. All concurrency50 cells FAIL (admission p95841.666ms>500, submit4/
+status1/cancel3 errors, downstream96/100 samples). Coverage6/8, TLC006FAIL P1,
+007STOPPED/UNVERIFIED. No broader/native/build/migration/restore certification,
+new load/tuning, activation or hidden rollback. Final integrity/history/unrelated
+inventory PASS; exact fixture retained idle, cleanup not authorized, defaultOFF.
+Serial unpaired observations are not causal improvement or release acceptance.
+[R7 Verify](../../vibecode_v2/TIP-054.4b-R7_VERIFY_REPORT.md).
+
+## TIP-054.5 · High-quality artifacts and work experience
+
+Approved diagnostic continuation: **TIP-054.4b-R8 CLOSED / OFFLINE VERIFIED6/6**.
+277 selected hashes/20 control groups/five deterministic outputs independently
+and personally reproduced; all64 original cells and3060 ON intervals retained.
+R7 product56fa/history/bindings unchanged. Admission-tail acquisition envelopes
+dominate its observed held spans, but pure queue/cleanup/sole cause unresolved.
+Selected next proposal R9: same-candidate boundary telemetry, NOT a product fix
+or automatic load. Separate finite runtime approval needed; R7 FAIL remains.
+[R8 Verify/design](../../vibecode_v2/TIP-054.4b-R8_VERIFY_AND_DESIGN_REPORT.md).
+[R8 TIP](../../vibecode_v2/TIP-054.4b-R8_RESIDUAL_CONTENTION_DIAGNOSIS.md).
+
+Current prerequisite: **TIP-054.4b-R7 PARTIAL / NOT READY**,56fa5d content fingerprint.
+Two-lease comparator correctness416 PASS and Root16 overlap are verified, but
+mandatory OFF fails4/16 cells at concurrency50 with8timeouts. TLC006 P1 remains
+open; TLC007 broad/native/build/migration/restore unverified. .5 remains blocked;
+no serving activation or automatic further tuning. R8 saved-trace diagnosis is
+closed above; remaining boundary blind spots require separate approval before
+any new runtime experiment or implementation.
+[Current Verify](../../vibecode_v2/TIP-054.4b-R7_VERIFY_REPORT.md).
+
+Historical prerequisite: **TIP-054.4b-R5 PARTIAL / NOT READY**,624f4a content fingerprint.
+Three phase-owned leases implemented; scoped386 unique (306SQL+80pure) and Root11
+overlaps PASS,396 bindings/lint/type/import preserved. Archive-first four old
+observation/scaffold adaptations are not business assertion waivers; all356 old
+and30 new IDs active. OFF overall FAIL (10/16 cells PASS,6 FAIL): admission10/25/50 p95632.117/864.136/4170.878ms,
+submit50 eighty-two timeouts, downstream18/100 samples. TPL006FAIL P1,007UNVERIFIED;
+broad/native/build/migration-cycle/restore/live/wheel STOPPED. No serving/provider/
+commit/rebuild/deploy activation. .5 remains blocked, later-return manifest/history
+P1 not certified. R6 offline comparison is closed above; next two-lease design
+requires separate approval, not unapproved tuning. Final bindings/history/resource
+integrity PASS; isolated fixture was retained idle at R5 closure (not re-inspected
+with Docker under R6).
+[R5 TIP](../../vibecode_v2/TIP-054.4b-R5_TRANSACTION_SCOPED_LEASES.md).
+[Final Verify](../../vibecode_v2/TIP-054.4b-R5_FINAL_VERIFY_REPORT.md).
+
+Completed prerequisite diagnosis: **TIP-054.4b-R4**, offline lease/pool/audit
+analysis with independent byte-identical replay, not implementation or latency
+acceptance. Selected next R5 proposal: three phase-owned physical leases with
+unchanged current safety contracts; implementation/count epoch now approved for R5.
+R3 remains NOT READY; no new fixture/load/source changes in R4.
+[TIP](../../vibecode_v2/TIP-054.4b-R4_LEASE_AND_AUDIT_DIAGNOSIS.md).
+[Design/Verify](../../vibecode_v2/TIP-054.4b-R4_DESIGN_AND_VERIFY_REPORT.md).
+
+Historical local prerequisite continuation: **TIP-054.4b-R3**. User approved the next
+connection-lifecycle/outcome step after R2 measured failure. New-day exacte6
+OFF-first baseline and scoped design closed; current content fingerprint
+`56017430e711` implements the approved request-private owner. Fresh 290 unique
+SQL and 66 pure controls PASS, plus Contractor's independent 22 overlapping
+critical reruns. Historical originals are archived byte-for-byte; all 299 old
+cases remain active, with four modules' explicitly approved observation/count
+adaptations. Actual ordinary admission/submit checkouts3→1; unchanged OFF
+FAIL12/16: admission25/50 p95566.832/977.284ms, status50 fourteen and cancel50
+nine timeouts. Broader gates STOPPED/UNVERIFIED. Next requires a separate
+measured lease-lifetime/pool-contention/audit-scheduling design. No current R3
+whole-candidate acceptance or .5 activation claim.
+[TIP](../../vibecode_v2/TIP-054.4b-R3_CONNECTION_LIFECYCLE_AND_OUTCOME.md).
+[Verify](../../vibecode_v2/TIP-054.4b-R3_VERIFY_REPORT.md).
+
+Priority P0. Dependencies .2/.3/.4b. Requirements EOS-003/004/005/006/007.
+Output: Ask-to-draft execution, semantic input binding, flexible structured
+internal draft path, high-fidelity format rendering and UI action history.
+
+Given “làm giúp brief dự án cho buổi họp mai”, return a complete supported
+draft, preview, source refs and saved Files artifact. Missing material is
+labelled rather than invented. Given XLSX formulas, checks verify recalculated
+results; given DOCX/PDF/PPTX, verify full text, Vietnamese glyphs, style/layout
+and overflow. Given a mobile/keyboard user, composer and rail stay aligned and
+cancel/resume are accessible. Ordinary questions never become unintended writes.
+
+Evidence: meaningful file/formula/layout oracles, renderer visual inspection,
+in-app browser real task flows, accessibility/390px geometry and interruption
+tests. Four formats earn separate capability status.
+
+## TIP-054.6 · MCP gateway
+
+Priority P0. Dependencies .3/.4b/.5. Requirements EOS-010/014/018/021/022/023.
+Output: official SDK adapter, server/tool admission, schema/version locking,
+source identity/scopes, limits and fake-server tests. Read-only outbound first;
+optional selected inbound capability exposure is separately configured.
+
+Given an unapproved server, changed schema or wrong token audience, no call
+executes. Given malicious instructions in tool output, they remain data and
+cannot alter capability policy. Given an authenticated tool, caller/source
+row/field scope still applies. Given no real source endpoint, UI reports ready
+contract state instead of showing a connected system. Host risk class never
+trusts annotations as permission. Reconcile ambiguous effects as .4b specifies.
+
+Evidence: HTTP/auth/error contracts, schema drift, redirect/egress, scope
+revocation, poisoned descriptions/results, fake timeouts and call-budget tests.
+
+## TIP-054.7 · Operational read and SOT delta workflows
+
+Priority P0. Dependencies .2/.5/.6. Requirements EOS-009/023/024/025.
+Output: meeting preparation, CRM/MRP/IP source-read contracts and file-to-SOT
+delta proposals. Keep adapters synthetic until actual source owner supplies
+the authoritative endpoint/contract. Enable one real read model at a time.
+
+Given authorized operating state, brief source timestamps and complete relevant
+facts; stale feeds are explicit. Given new file facts, delta identifies new,
+changed and conflicting values with evidence/owner review. Generated proposals
+do not publish SOT. Given source deletions or denied fields, neither answer nor
+draft can reveal the removed values. Transactional writes await specific scope.
+
+Evidence: synthetic transaction oracles, field/row masks, freshness/deletion,
+delta replay/idempotency, conflict and decision tests; real source canary only
+after configuration and activation authorization.
+
+## TIP-054.8 · Events, watches and governed proactivity
+
+Priority P1. Dependencies .4b/.7. Requirements EOS-011/026/027/030.
+Output: durable subscriptions, deduplicated source events, task/workspace
+briefing drafts and rate/noise controls. Deliver through in-app activity first.
+Slack/native-chat delivery remains a configured future adapter.
+
+Given a duplicated/out-of-order event, one relevant proposal is produced with
+accurate source state. Given no meaningful change, there is no repeated noisy
+notification. Given revoked rights or expired subscription, scheduled work no
+longer discloses content. Unsolicited external send/issue is never inferred
+from the subscription to a briefing.
+
+Evidence: event reorder/delete/replay, clock/expiry/restart, noise-rate,
+budget/deduplication and user pause/resume tests.
+
+## TIP-054.9 · Integrated acceptance and rollout packet
+
+Priority P0. Dependencies all prior enabled slices. Requirements all 32,
+especially EOS-001/002/005/006/028/031/032.
+Output: exact build/runtime/schema/corpus/capability binding; applicable full
+synthetic catalog, repeated usefulness holdout, latency/cost profile and honest
+status for source/production dependencies.
+
+Given a release candidate, all evidence cites its digest and exercised feature
+flags. Given a failing critical policy/duplicate/false-success oracle, promotion
+fails. Given AI-simulated review, report it as simulation; no human observation
+is invented. Repeat defined stochastic trials without cherry-pick, retain all
+failures, and compare cost per accepted outcome and p50/p95/p99. Existing Ask,
+Files, Documents and Knowledge Ops remain in regression.
+
+Local release and company-wide production GO are separate verdicts. Operator
+production configuration/real-source acceptance and Homeowner GO are retained
+when actual deployment is requested.
+
+## Delivery protocol
+
+Each application milestone gets its own detailed TIP before Builder starts,
+Completion Report with changed files/AC results/issues/deviations, and
+Contractor Verify with requirement coverage, scenarios, technical health and
+READY/NOT READY. Known failures and deferrals remain visible. A source-level
+risk does not become a confirmed defect until reproduced or proved by a
+specific code path.
+
+Commit/push/build identity is done at coherent verified milestones when
+authorized. Documentation preparation does not modify the serving runtime.
+Builders make routine implementation decisions within the approved contract;
+changes to business effect scope or architecture return to Contractor/Homeowner.

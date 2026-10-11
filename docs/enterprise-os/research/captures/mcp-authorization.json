@@ -1,0 +1,48 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+      "retrieved_at": "2026-10-06T02:15:31.913917+00:00",
+      "source_family": "MCP",
+      "status": "failed"
+    },
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization",
+      "retrieved_at": "2026-10-06T02:15:31.919084+00:00",
+      "source_family": "MCP",
+      "status": "failed"
+    },
+    {
+      "bytes": 492913,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 18696,
+      "read_view_sha256": "ce491a809ef09e701426b6767bff521052b6d418cde164199c14c6c20a886e70",
+      "requested_url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+      "resolved_url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+      "retrieved_at": "2026-10-06T02:15:51.964449+00:00",
+      "sha256": "3ecd60decc88ec328d5e83deb4a7c35934a3c0ea76b88a62d955c1401e4f1698",
+      "snapshot": "mcp-authorization.html",
+      "source_family": "MCP",
+      "status": "usable"
+    }
+  ],
+  "entity": "MCP authorization",
+  "id": "mcp-authorization",
+  "selected": {
+    "bytes": 492913,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 18696,
+    "read_view_sha256": "ce491a809ef09e701426b6767bff521052b6d418cde164199c14c6c20a886e70",
+    "requested_url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+    "resolved_url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+    "retrieved_at": "2026-10-06T02:15:51.964449+00:00",
+    "sha256": "3ecd60decc88ec328d5e83deb4a7c35934a3c0ea76b88a62d955c1401e4f1698",
+    "snapshot": "mcp-authorization.html",
+    "source_family": "MCP",
+    "status": "usable"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "r27-pre-diagnostic-candidate-v1",
+  "dependencies": {
+    "/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/tempfile.py": "2eea4401f4f29d0d3647ed6fc8bcf6aa1daf879c8aa407a8ea310edac9dfc317",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/pathlib.py": "8127808359baaa711775862b32bfbe0a7e5c16a2e8c9923d60ddd45f031b66fa",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/tmpdir.py": "236918c090160c1f6b935e162ff44ab273a700221d5f40ac15892be75e4503ee"
+  },
+  "sources": {
+    "v2/experiments/action_executor/r18/gate.py": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1",
+    "v2/experiments/action_executor/r19/bounded.py": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb",
+    "v2/experiments/action_executor/r19/qualification.py": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11",
+    "v2/experiments/action_executor/r20/env_contract.py": "b347e161a7c3a255c4bb2efeda3eff2bd6df5e0f12f72739d3d204a46418859c",
+    "v2/experiments/action_executor/r21/contract.json": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c",
+    "v2/experiments/action_executor/r21/qualification.py": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef",
+    "v2/experiments/action_executor/r21/run-http-qualification.sh": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1",
+    "v2/experiments/action_executor/r21/test_r21_envelope.py": "879414b56aaed8af655dc48c6b40710788bb63e24d1022e18747a5ecef0a7903",
+    "v2/experiments/action_executor/r21/test_r21_offline.py": "d48f93fc7f420a26d546fd172f80d5d0a10a00cb8f2bd5b5fb384defce3c1dd4",
+    "v2/experiments/action_executor/r25/contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "v2/experiments/action_executor/r27/pre_contract/SCOPE.md": "05d0ec160af29817630dc0369646459d912d806bae6623abdaa3cbafa4505b35",
+    "v2/experiments/action_executor/r27/pre_contract/admission.py": "9c36e2864ee27a226e7523929da7199e5d54e2cc5076a04bcd226629f6e7cfcb",
+    "v2/experiments/action_executor/r27/pre_contract/bridge.py": "047b3db40fe50d06b471d7c4e80632bae0929ea4d4c4e7e6779dffcd4f92df93",
+    "v2/experiments/action_executor/r27/pre_contract/checks.py": "25f0b34a5e58c889691049da91512c08421252a2ed981001bba27184f34434ac",
+    "v2/experiments/action_executor/r27/pre_contract/manifest.json": "3b99972f22fd0533a563da6d1a8ca74961b38ce0729bab83ec1f501fa48d3d63",
+    "v2/experiments/action_executor/r27/pre_contract/test_pre_contract.py": "99d1b8ebb81c334c5f33b4d30e50ee00b8998e5d7b818d1b30847f4f2cc7d4d3",
+    "v2/experiments/action_executor/r27/runtime_closure/checks.py": "1a3d421cc8deebfb95ad298752e0b488093b807fbebf6ff96331606c7912b004",
+    "v2/experiments/action_executor/r27/runtime_closure/input-binding.json": "798b0ee3f6e0abad42d10d4c5ef140a4123c5215fbae9e49b55366964ad6bffc"
+  },
+  "execution_admission": "DENY",
+  "scratch_family_adoption": "NONE",
+  "capacity_adoption": "NONE",
+  "full_original_PRE": "NOT_RUN/UNQUALIFIED",
+  "local_only": "Source-exact packet diagnostic with proposed natural/ephemeral rejection mappings, not synthetic fixture reclassification or measurement",
+  "operative": {
+    "entries": 32,
+    "PRE_records": 32,
+    "families": 20,
+    "aggregate_bytes": 10485760,
+    "metadata_bytes": 16384
+  },
+  "next_material_decision": "Same-budget stage-specific PRE synthetic-input variant and complete native/deleted scratch ownership; NOT adopted"
+}

@@ -1,0 +1,1144 @@
+{
+  "aggregates": {
+    "cells_by_state": {
+      "null": 56,
+      "sourced": 64
+    },
+    "coverage_pct": 100.0,
+    "n_entities": 24,
+    "rollup": {
+      "agent-durability": 2,
+      "agent-evaluation": 1,
+      "agent-methodology": 3,
+      "agent-protocol": 1,
+      "agent-state": 1,
+      "durable-architecture": 1,
+      "durable-step": 2,
+      "durable-workflow": 3,
+      "human-approval": 2,
+      "observability-conventions": 1,
+      "protocol-security": 2,
+      "protocol-tasks": 1,
+      "protocol-tools": 1,
+      "provenance-standard": 1,
+      "workflow-composition": 1,
+      "workflow-queue": 1
+    },
+    "rollup_field": "category",
+    "universe_estimate": 24
+  },
+  "registry": {
+    "Anthropic agent design": {
+      "entity_type": "agent-methodology",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "Describes workflows orchestrated through predefined code paths"
+            }
+          ],
+          "state": "sourced",
+          "value": "Describes workflows orchestrated through predefined code paths"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "agent-methodology"
+            }
+          ],
+          "state": "sourced",
+          "value": "agent-methodology"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "The article flags changes in its tooling landscape since initial publication"
+            }
+          ],
+          "state": "sourced",
+          "value": "The article flags changes in its tooling landscape since initial publication"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "Anthropic agent evaluations": {
+      "entity_type": "agent-evaluation",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "Evaluation applies grading logic to outputs to assess success"
+            }
+          ],
+          "state": "sourced",
+          "value": "Evaluation applies grading logic to outputs to assess success"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "agent-evaluation"
+            }
+          ],
+          "state": "sourced",
+          "value": "agent-evaluation"
+        },
+        "constraint": {
+          "state": "null",
+          "value": null
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "Anthropic context engineering": {
+      "entity_type": "agent-methodology",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "Describes strategies for curating agent context"
+            }
+          ],
+          "state": "sourced",
+          "value": "Describes strategies for curating agent context"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "agent-methodology"
+            }
+          ],
+          "state": "sourced",
+          "value": "agent-methodology"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "Agent context is finite"
+            }
+          ],
+          "state": "sourced",
+          "value": "Agent context is finite"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "Anthropic tool design": {
+      "entity_type": "agent-methodology",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "Recommends evaluating tools with agents"
+            }
+          ],
+          "state": "sourced",
+          "value": "Recommends evaluating tools with agents"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Anthropic",
+              "tier": "A",
+              "value": "agent-methodology"
+            }
+          ],
+          "state": "sourced",
+          "value": "agent-methodology"
+        },
+        "constraint": {
+          "state": "null",
+          "value": null
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "DBOS architecture": {
+      "entity_type": "durable-architecture",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "Stores workflow and step checkpoints in PostgreSQL"
+            }
+          ],
+          "state": "sourced",
+          "value": "Stores workflow and step checkpoints in PostgreSQL"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "durable-architecture"
+            }
+          ],
+          "state": "sourced",
+          "value": "durable-architecture"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "Architecture does not require a separate orchestration server"
+            }
+          ],
+          "state": "sourced",
+          "value": "Architecture does not require a separate orchestration server"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "DBOS queues": {
+      "entity_type": "workflow-queue",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "Queues manage parallel workflow execution and flow control"
+            }
+          ],
+          "state": "sourced",
+          "value": "Queues manage parallel workflow execution and flow control"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "workflow-queue"
+            }
+          ],
+          "state": "sourced",
+          "value": "workflow-queue"
+        },
+        "constraint": {
+          "state": "null",
+          "value": null
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "DBOS steps": {
+      "entity_type": "durable-step",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "Steps wrap complex or external operations in workflows"
+            }
+          ],
+          "state": "sourced",
+          "value": "Steps wrap complex or external operations in workflows"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "durable-step"
+            }
+          ],
+          "state": "sourced",
+          "value": "durable-step"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "Step outputs must be serializable"
+            }
+          ],
+          "state": "sourced",
+          "value": "Step outputs must be serializable"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "DBOS workflows": {
+      "entity_type": "durable-workflow",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "Documents exactly-once commits for workflow database transactions"
+            }
+          ],
+          "state": "sourced",
+          "value": "Documents exactly-once commits for workflow database transactions"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "durable-workflow"
+            }
+          ],
+          "state": "sourced",
+          "value": "durable-workflow"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "DBOS",
+              "tier": "A",
+              "value": "Step attempts are at least once; this is not an exactly-once guarantee for external effects"
+            }
+          ],
+          "state": "sourced",
+          "value": "Step attempts are at least once; this is not an exactly-once guarantee for external effects"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "LangGraph interrupts": {
+      "entity_type": "human-approval",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "LangChain",
+              "tier": "A",
+              "value": "Resuming an interrupted graph restarts the interrupted node from its beginning"
+            }
+          ],
+          "state": "sourced",
+          "value": "Resuming an interrupted graph restarts the interrupted node from its beginning"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "LangChain",
+              "tier": "A",
+              "value": "human-approval"
+            }
+          ],
+          "state": "sourced",
+          "value": "human-approval"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "LangChain",
+              "tier": "A",
+              "value": "Effects before an interrupt must be idempotent because resumed nodes rerun"
+            }
+          ],
+          "state": "sourced",
+          "value": "Effects before an interrupt must be idempotent because resumed nodes rerun"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "LangGraph persistence": {
+      "entity_type": "agent-state",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "LangChain",
+              "tier": "A",
+              "value": "Checkpointers preserve graph state per thread"
+            }
+          ],
+          "state": "sourced",
+          "value": "Checkpointers preserve graph state per thread"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "LangChain",
+              "tier": "A",
+              "value": "agent-state"
+            }
+          ],
+          "state": "sourced",
+          "value": "agent-state"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "LangChain",
+              "tier": "A",
+              "value": "Stores are a separate mechanism for application data outside graph state"
+            }
+          ],
+          "state": "sourced",
+          "value": "Stores are a separate mechanism for application data outside graph state"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "MCP authorization": {
+      "entity_type": "protocol-security",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "Defines transport-level authorization for restricted MCP servers"
+            }
+          ],
+          "state": "sourced",
+          "value": "Defines transport-level authorization for restricted MCP servers"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "protocol-security"
+            }
+          ],
+          "state": "sourced",
+          "value": "protocol-security"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "Authorization support is optional in the protocol; deployment protection must be checked separately"
+            }
+          ],
+          "state": "sourced",
+          "value": "Authorization support is optional in the protocol; deployment protection must be checked separately"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "MCP security practices": {
+      "entity_type": "protocol-security",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "Documents security risks including token passthrough"
+            }
+          ],
+          "state": "sourced",
+          "value": "Documents security risks including token passthrough"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "protocol-security"
+            }
+          ],
+          "state": "sourced",
+          "value": "protocol-security"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "The specification prohibits token passthrough"
+            }
+          ],
+          "state": "sourced",
+          "value": "The specification prohibits token passthrough"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "MCP tasks": {
+      "entity_type": "protocol-tasks",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "Supports polling and deferred retrieval through task state machines"
+            }
+          ],
+          "state": "sourced",
+          "value": "Supports polling and deferred retrieval through task state machines"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "protocol-tasks"
+            }
+          ],
+          "state": "sourced",
+          "value": "protocol-tasks"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "Every task-related request requires permission checks"
+            }
+          ],
+          "state": "sourced",
+          "value": "Every task-related request requires permission checks"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "MCP tools": {
+      "entity_type": "protocol-tools",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "Servers can expose tools"
+            }
+          ],
+          "state": "sourced",
+          "value": "Servers can expose tools"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "protocol-tools"
+            }
+          ],
+          "state": "sourced",
+          "value": "protocol-tools"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "MCP",
+              "tier": "A",
+              "value": "Tool annotations are not trusted merely because they are present"
+            }
+          ],
+          "state": "sourced",
+          "value": "Tool annotations are not trusted merely because they are present"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "Microsoft durable agents": {
+      "entity_type": "agent-durability",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Microsoft",
+              "tier": "A",
+              "value": "The extension makes registered agents durable with persisted sessions"
+            }
+          ],
+          "state": "sourced",
+          "value": "The extension makes registered agents durable with persisted sessions"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Microsoft",
+              "tier": "A",
+              "value": "agent-durability"
+            }
+          ],
+          "state": "sourced",
+          "value": "agent-durability"
+        },
+        "constraint": {
+          "state": "null",
+          "value": null
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "Microsoft functional workflows": {
+      "entity_type": "workflow-composition",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Microsoft",
+              "tier": "A",
+              "value": "Workflow composition uses Python async functions"
+            }
+          ],
+          "state": "sourced",
+          "value": "Workflow composition uses Python async functions"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Microsoft",
+              "tier": "A",
+              "value": "workflow-composition"
+            }
+          ],
+          "state": "sourced",
+          "value": "workflow-composition"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Microsoft",
+              "tier": "A",
+              "value": "This API is experimental and may change or be removed without notice"
+            }
+          ],
+          "state": "sourced",
+          "value": "This API is experimental and may change or be removed without notice"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "OpenTelemetry GenAI conventions": {
+      "entity_type": "observability-conventions",
+      "fields": {
+        "capability": {
+          "state": "null",
+          "value": null
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "OpenTelemetry",
+              "tier": "A",
+              "value": "observability-conventions"
+            }
+          ],
+          "state": "sourced",
+          "value": "observability-conventions"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "OpenTelemetry",
+              "tier": "A",
+              "value": "The captured GenAI conventions page is a migration notice, not a maintained specification"
+            }
+          ],
+          "state": "sourced",
+          "value": "The captured GenAI conventions page is a migration notice, not a maintained specification"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "PydanticAI MCP": {
+      "entity_type": "agent-protocol",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Pydantic",
+              "tier": "A",
+              "value": "Agents can connect to MCP servers and invoke their tools"
+            }
+          ],
+          "state": "sourced",
+          "value": "Agents can connect to MCP servers and invoke their tools"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Pydantic",
+              "tier": "A",
+              "value": "agent-protocol"
+            }
+          ],
+          "state": "sourced",
+          "value": "agent-protocol"
+        },
+        "constraint": {
+          "state": "null",
+          "value": null
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "PydanticAI deferred tools": {
+      "entity_type": "human-approval",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Pydantic",
+              "tier": "A",
+              "value": "Deferred tools support an approval flow"
+            }
+          ],
+          "state": "sourced",
+          "value": "Deferred tools support an approval flow"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Pydantic",
+              "tier": "A",
+              "value": "human-approval"
+            }
+          ],
+          "state": "sourced",
+          "value": "human-approval"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Pydantic",
+              "tier": "A",
+              "value": "Some deferred tools execute externally rather than inline"
+            }
+          ],
+          "state": "sourced",
+          "value": "Some deferred tools execute externally rather than inline"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "PydanticAI durable execution": {
+      "entity_type": "agent-durability",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Pydantic",
+              "tier": "A",
+              "value": "Durable execution preserves an agent run across crashes"
+            }
+          ],
+          "state": "sourced",
+          "value": "Durable execution preserves an agent run across crashes"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Pydantic",
+              "tier": "A",
+              "value": "agent-durability"
+            }
+          ],
+          "state": "sourced",
+          "value": "agent-durability"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Pydantic",
+              "tier": "A",
+              "value": "Durable run execution is distinct from conversation storage"
+            }
+          ],
+          "state": "sourced",
+          "value": "Durable run execution is distinct from conversation storage"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "Restate services": {
+      "entity_type": "durable-workflow",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Restate",
+              "tier": "A",
+              "value": "Provides three service types for different workload needs"
+            }
+          ],
+          "state": "sourced",
+          "value": "Provides three service types for different workload needs"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Restate",
+              "tier": "A",
+              "value": "durable-workflow"
+            }
+          ],
+          "state": "sourced",
+          "value": "durable-workflow"
+        },
+        "constraint": {
+          "state": "null",
+          "value": null
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "Temporal activities": {
+      "entity_type": "durable-step",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Temporal",
+              "tier": "A",
+              "value": "Activity code can be nondeterministic"
+            }
+          ],
+          "state": "sourced",
+          "value": "Activity code can be nondeterministic"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Temporal",
+              "tier": "A",
+              "value": "durable-step"
+            }
+          ],
+          "state": "sourced",
+          "value": "durable-step"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Temporal",
+              "tier": "A",
+              "value": "The documentation recommends idempotent activity effects"
+            }
+          ],
+          "state": "sourced",
+          "value": "The documentation recommends idempotent activity effects"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "Temporal workflows": {
+      "entity_type": "durable-workflow",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Temporal",
+              "tier": "A",
+              "value": "A workflow definition is executable code describing the workflow"
+            }
+          ],
+          "state": "sourced",
+          "value": "A workflow definition is executable code describing the workflow"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "Temporal",
+              "tier": "A",
+              "value": "durable-workflow"
+            }
+          ],
+          "state": "sourced",
+          "value": "durable-workflow"
+        },
+        "constraint": {
+          "state": "null",
+          "value": null
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    },
+    "W3C PROV": {
+      "entity_type": "provenance-standard",
+      "fields": {
+        "capability": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "W3C",
+              "tier": "A",
+              "value": "The PROV document family describes a model and serializations for provenance interchange"
+            }
+          ],
+          "state": "sourced",
+          "value": "The PROV document family describes a model and serializations for provenance interchange"
+        },
+        "category": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "W3C",
+              "tier": "A",
+              "value": "provenance-standard"
+            }
+          ],
+          "state": "sourced",
+          "value": "provenance-standard"
+        },
+        "constraint": {
+          "claims": [
+            {
+              "extraction": "normalized",
+              "source": "W3C",
+              "tier": "A",
+              "value": "This overview is a Working Group Note"
+            }
+          ],
+          "state": "sourced",
+          "value": "This overview is a Working Group Note"
+        },
+        "license_rtr": {
+          "state": "null",
+          "value": null
+        },
+        "performance_rtr": {
+          "state": "null",
+          "value": null
+        }
+      }
+    }
+  }
+}

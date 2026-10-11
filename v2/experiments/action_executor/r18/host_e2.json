@@ -1,0 +1,30 @@
+{
+  "epoch": "host_e2",
+  "source_binding": "source-binding-e2.json",
+  "runtime": "host Python 3.14.6",
+  "scope": "six stdlib controls and syntax/bash only; no Docker/SQL/collection/load/native",
+  "prior_failure": "Main style_e1: 27 lint findings, three format failures, retained with source_e1; new Ruff unverified pending Main recheck",
+  "checks": {
+    "offline": {
+      "chunk_id": "e5cbb1",
+      "wall_time_seconds": 0.559691334,
+      "exit_code": 0,
+      "original_token_count": 229,
+      "output": "test_exact_old_plus_added_selection_and_collection (__main__.AdmissionControls.test_exact_old_plus_added_selection_and_collection) ... ok\ntest_exact_xml_identity_and_zero_skip_conservation (__main__.AdmissionControls.test_exact_xml_identity_and_zero_skip_conservation) ... ok\ntest_manifest_schema_caps_and_malformed_rejection (__main__.AdmissionControls.test_manifest_schema_caps_and_malformed_rejection) ... ok\ntest_owned_stage_epoch_and_process_group_contract (__main__.AdmissionControls.test_owned_stage_epoch_and_process_group_contract) ... ok\ntest_pending_ledger_and_immutable_http_contract (__main__.AdmissionControls.test_pending_ledger_and_immutable_http_contract) ... ok\ntest_source_paths_hashes_scope_and_drift_rejection (__main__.AdmissionControls.test_source_paths_hashes_scope_and_drift_rejection) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.560s\n\nOK\n"
+    },
+    "syntax": {
+      "chunk_id": "c58c5c",
+      "wall_time_seconds": 0.000008,
+      "exit_code": 0,
+      "original_token_count": 23,
+      "output": "3.14.6 (main, Jun 10 2026, 10:03:53) [Clang 21.0.0 (clang-2100.0.123.102)]\nSYNTAX_3_PASS\n"
+    },
+    "shell": {
+      "chunk_id": "ed699b",
+      "wall_time_seconds": 0.000010792,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    }
+  }
+}

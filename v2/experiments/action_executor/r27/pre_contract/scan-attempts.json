@@ -1,0 +1,7 @@
+{
+  "chunk_id": "f519a4",
+  "wall_time_seconds": 0.049913666,
+  "exit_code": 0,
+  "original_token_count": 298,
+  "output": "{\n  \"before_second_packet_calls\": 26,\n  \"deleted_after_second_packet\": [\n    \"/diagnostic/r21_http_e1/run/latency-summary.json\"\n  ],\n  \"diagnostic_root_not_embedded_in_marker\": true,\n  \"final_live_payload_bytes\": 4050,\n  \"first_packet\": [\n    [\n      \"r21_http_e1/binding.json\",\n      18\n    ],\n    [\n      \"r21_http_e1/contract.json\",\n      2108\n    ],\n    [\n      \"r21-campaign-launch.json\",\n      287\n    ],\n    [\n      \"r21_http_e1/run/samples.json\",\n      235440\n    ],\n    [\n      \"r21_http_e1/run/samples.jsonl\",\n      233840\n    ],\n    [\n      \"r21_http_e1/run/latency-summary.json\",\n      3453\n    ],\n    [\n      \"r21_http_e1/run/r-controls.json\",\n      263\n    ],\n    [\n      \"r21_http_e1/load.owner.json\",\n      58\n    ],\n    [\n      \"r21_http_e1/load.process.json\",\n      156\n    ]\n  ],\n  \"first_packet_bytes\": 475623,\n  \"journal_overwrite_calls\": 1,\n  \"largest_whole_write\": 235440,\n  \"mutation_restore_calls\": 16,\n  \"source_body_rebinding\": \"unchanged original write_packet bytecode; Path-compatible pure in-memory sink and original marker bytecode Path lookup only; no OS artifact I/O\",\n  \"total_packet_test_payload_bytes\": 733169,\n  \"total_packet_test_write_attempts\": 35\n}\n"
+}

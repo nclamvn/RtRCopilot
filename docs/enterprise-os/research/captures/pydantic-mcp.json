@@ -1,0 +1,48 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://pydantic.dev/docs/ai/mcp/overview/",
+      "retrieved_at": "2026-10-06T02:15:31.927903+00:00",
+      "source_family": "Pydantic",
+      "status": "failed"
+    },
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://ai.pydantic.dev/mcp/overview/",
+      "retrieved_at": "2026-10-06T02:15:31.928442+00:00",
+      "source_family": "Pydantic",
+      "status": "failed"
+    },
+    {
+      "bytes": 133101,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 2915,
+      "read_view_sha256": "adaa27638d3f785b28554693f85fafbee3ec3168797f686fb04396b5f2d350c2",
+      "requested_url": "https://pydantic.dev/docs/ai/mcp/overview/",
+      "resolved_url": "https://pydantic.dev/docs/ai/mcp/overview/",
+      "retrieved_at": "2026-10-06T02:15:53.470040+00:00",
+      "sha256": "f8b337a526d15aeb8ccf2576b6f1dce8c875071ed1076559af8711cac165547e",
+      "snapshot": "pydantic-mcp.html",
+      "source_family": "Pydantic",
+      "status": "usable"
+    }
+  ],
+  "entity": "PydanticAI MCP",
+  "id": "pydantic-mcp",
+  "selected": {
+    "bytes": 133101,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 2915,
+    "read_view_sha256": "adaa27638d3f785b28554693f85fafbee3ec3168797f686fb04396b5f2d350c2",
+    "requested_url": "https://pydantic.dev/docs/ai/mcp/overview/",
+    "resolved_url": "https://pydantic.dev/docs/ai/mcp/overview/",
+    "retrieved_at": "2026-10-06T02:15:53.470040+00:00",
+    "sha256": "f8b337a526d15aeb8ccf2576b6f1dce8c875071ed1076559af8711cac165547e",
+    "snapshot": "pydantic-mcp.html",
+    "source_family": "Pydantic",
+    "status": "usable"
+  }
+}

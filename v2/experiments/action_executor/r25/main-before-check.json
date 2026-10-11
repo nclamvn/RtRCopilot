@@ -1,0 +1,28 @@
+{
+  "schema": "r25-main-preservation-v1",
+  "tool": {
+    "chunk_id": "c31073",
+    "exit_code": 0
+  },
+  "result": {
+    "scope": "R24 final plus linked R21/R22/R23 immutable input; historical publication hashes not enforced as mutable live status",
+    "pins": 1787,
+    "bytes": 13634646,
+    "pin_manifest_sha256": "94295ba8ac1c58890dfda8b9cc3cf21d7dfaac18b03d60592a3c226ca6b7b0b5",
+    "anchors": {
+      "v2/experiments/action_executor/r24/input-binding.json": "34f6c3f85d1c2468731b0ba0fa103d49c2fd71abc3af44811b71de507ce4ca00",
+      "v2/experiments/action_executor/r24/main-evidence-binding.sha256": "6406b3cfeafd057920594945d5807eaf68f712ba2f8b7b5e513fc8b784fc01cb",
+      "v2/experiments/action_executor/r24/main-final-closure.json": "c844e013dfa641ccc946a6156deafb6b2310b0eaef0cda48240d28cbfdaa6737",
+      "v2/experiments/action_executor/r24/main-publication-check.json": "6ea8e1fc2c671ef685c40db7fa60401a39e92f0415f1edcb0d74626c5d842473"
+    },
+    "source_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "no_measured_imports": true
+  }
+}

@@ -1,0 +1,1 @@
+serving_executor OFF; synthetic queueing true; observer OFF; no workers/providers/native; synthetic subject not OIDC

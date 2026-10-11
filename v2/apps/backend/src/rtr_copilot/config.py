@@ -4,7 +4,7 @@ import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from pydantic import (
     Field,
@@ -74,7 +74,34 @@ class Settings(BaseSettings):
     session_ttl_seconds: int = Field(default=3600, ge=300, le=86400)
     session_cookie_name: str = "rtr_session"
     session_cookie_secure: bool | None = None
-    expected_schema_revision: str = "0015_generation_term_stats"
+    expected_schema_revision: str = "0019_action_executor"
+    action_executor_enabled: bool = False
+    action_workflow_dsn: PostgresDsn | None = None
+    action_executor_version: str = Field(default="action-executor-1", pattern=r"^[a-z0-9-]{1,64}$")
+    action_executor_id: str = Field(default="local-action-worker", pattern=r"^[a-z0-9-]{1,64}$")
+    action_executor_poll_seconds: float = Field(default=0.25, ge=0.05, le=5)
+    action_executor_lease_seconds: int = Field(default=15, ge=2, le=120)
+    action_executor_operation_timeout_seconds: float = Field(default=0.9, ge=0.05, le=1)
+
+    @model_validator(mode="after")
+    def action_runtime_identity(self) -> "Settings":
+        if self.action_executor_enabled and self.action_workflow_dsn is None:
+            raise ValueError("action_workflow_database_required")
+        if self.action_workflow_dsn is not None:
+            if (len(self.action_workflow_dsn.hosts()) != 1
+                    or self.action_workflow_dsn.scheme not in {"postgresql", "postgres"}):
+                raise ValueError("action_workflow_database_profile_invalid")
+            business = self.postgres_dsn.hosts()[0]
+            engine = self.action_workflow_dsn.hosts()[0]
+            engine_user = unquote(str(engine.get("username", "")))
+            business_user = unquote(str(business.get("username", "")))
+            # Dedicated database AND identity, not another schema with business grants.
+            if (unquote(self.action_workflow_dsn.path or "")
+                    == unquote(self.postgres_dsn.path or "")
+                    or not engine_user or engine_user == business_user
+                    or engine_user in {"postgres", "rtr_owner", "rtr_app"}):
+                raise ValueError("action_workflow_database_not_isolated")
+        return self
     sot_staging_root: Path = Path("/tmp/rtr-sot-staging")
     research_staging_root: Path = Path("/tmp/rtr-research-staging")
     sot_signing_secret: SecretStr = SecretStr(
@@ -196,6 +223,9 @@ class Settings(BaseSettings):
     ingestion_temp_bytes: int = Field(default=524_288_000, ge=10_485_760)
     ingestion_job_max_attempts: int = Field(default=3, ge=1, le=20)
     ingestion_lease_seconds: int = Field(default=120, ge=10, le=3600)
+    document_render_lease_seconds: int = Field(default=120, ge=10, le=3600)
+    document_render_max_attempts: int = Field(default=3, ge=1, le=20)
+    document_render_notification_timeout_seconds: float = Field(default=1.0, ge=0.05, le=2.0)
     ingestion_retry_base_seconds: int = Field(default=5, ge=1, le=3600)
     ingestion_ocr_languages: str = "eng"
     ingestion_ocr_enabled: bool = True

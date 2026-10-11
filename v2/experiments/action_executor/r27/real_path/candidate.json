@@ -1,0 +1,375 @@
+{
+  "capacity": "operative32/PRE32;96/PRE64_NOT_ADOPTED",
+  "controller": "original closed commands prepared, native/plugin/effect dispatch DENY",
+  "execution_admission": "DENY",
+  "no_effects": true,
+  "platform_boundary": "APPROVED_SEPARATE_DISCLOSED_AUDIT",
+  "routing": {
+    "capacity": {
+      "historical_minimum_entries": 69,
+      "operative_PRE_records": 32,
+      "operative_entries": 32,
+      "original_PRE_records": 53,
+      "proposed_96_PRE64": "PREPARED_NOT_ADOPTED"
+    },
+    "effects": "DENY_THIS_BATCH",
+    "families": [
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 65536,
+            "max_records": 2,
+            "name": "data"
+          }
+        ],
+        "code": 1,
+        "full_runtime": "NOT_RUN",
+        "id": "frozen_copies",
+        "local_scope": "ACTUAL_LOCAL: exact pinned original binding/contract byte copies"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 512,
+            "max_records": 1,
+            "name": "data"
+          }
+        ],
+        "code": 2,
+        "full_runtime": "NOT_RUN",
+        "id": "literal_controls",
+        "local_scope": "PREPARED: complete baseline original controls AST; engine assertions NOT_RUN"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 256,
+            "max_records": 1,
+            "name": "data"
+          }
+        ],
+        "code": 3,
+        "full_runtime": "NOT_RUN",
+        "id": "literal_scope",
+        "local_scope": "ACTUAL_LOCAL: original shell scope literal"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 1024,
+            "max_records": 3,
+            "name": "data"
+          }
+        ],
+        "code": 4,
+        "full_runtime": "NOT_RUN",
+        "id": "launch_review",
+        "local_scope": "PARTIAL_LOCAL: exclusive broker local marker control; real marker NOT_CONSUMED"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 512,
+            "max_records": 3200,
+            "name": "data"
+          }
+        ],
+        "code": 5,
+        "full_runtime": "NOT_RUN",
+        "id": "journal",
+        "local_scope": "PREPARED: full unchanged driver original append/flush algorithm; load NOT_RUN"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 2097152,
+            "max_records": 1,
+            "name": "data"
+          }
+        ],
+        "code": 6,
+        "full_runtime": "NOT_RUN",
+        "id": "final_samples",
+        "local_scope": "PARTIAL_LOCAL: exact original final JSON writer control; load NOT_RUN"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 16384,
+            "max_records": 3,
+            "name": "data"
+          }
+        ],
+        "code": 7,
+        "full_runtime": "NOT_RUN",
+        "id": "summary_stdout",
+        "local_scope": "PARTIAL_LOCAL: exact original summary/print/oracle block; not HTTP observations"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 512,
+            "max_records": 4096,
+            "name": "data"
+          }
+        ],
+        "code": 8,
+        "full_runtime": "NOT_RUN",
+        "id": "load_stderr",
+        "local_scope": "ACTUAL_LOCAL: whole rendered root/audit/httpx-style LogRecords; HTTP NOT_RUN"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 512,
+            "max_records": 512,
+            "name": "data"
+          }
+        ],
+        "code": 9,
+        "full_runtime": "NOT_RUN",
+        "id": "migration_streams",
+        "local_scope": "UNSUPPORTED_BEFORE_DISPATCH: Alembic fileConfig/native raw stderr boundary"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 1024,
+            "max_records": 8,
+            "name": "data"
+          }
+        ],
+        "code": 10,
+        "full_runtime": "NOT_RUN",
+        "id": "owner_process",
+        "local_scope": "ACTUAL_LOCAL: original begin_cleanup persists one deadline; real process owner NOT_RUN"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 1024,
+            "max_records": 64,
+            "name": "data"
+          }
+        ],
+        "code": 11,
+        "full_runtime": "NOT_RUN",
+        "id": "supervisor_stop",
+        "local_scope": "PREPARED_NOT_RUN: full pinned Linux proc/group/killpg functions; no group claim"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 2048,
+            "max_records": 32,
+            "name": "data"
+          }
+        ],
+        "code": 12,
+        "full_runtime": "NOT_RUN",
+        "id": "source_cap_child",
+        "local_scope": "UNSUPPORTED_BEFORE_DISPATCH: actual pytest JUnit explicit writer needs endpoint"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 8192,
+            "max_records": 8,
+            "name": "data"
+          }
+        ],
+        "code": 13,
+        "full_runtime": "NOT_RUN",
+        "id": "fixture",
+        "local_scope": "NOT_RUN: original external fixture-check outputs; seed is ephemeral, not fixture family"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 2048,
+            "max_records": 64,
+            "name": "data"
+          }
+        ],
+        "code": 14,
+        "full_runtime": "NOT_RUN",
+        "id": "database_admin",
+        "local_scope": "PREPARED_NOT_RUN: all original SQL/admin commands remain qualifying"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 4096,
+            "max_records": 8,
+            "name": "data"
+          }
+        ],
+        "code": 15,
+        "full_runtime": "NOT_RUN",
+        "id": "disk",
+        "local_scope": "PREPARED_NOT_RUN: original host/PG df whole command streams remain qualifying"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 65536,
+            "max_records": 2,
+            "name": "data"
+          }
+        ],
+        "code": 16,
+        "full_runtime": "NOT_RUN",
+        "id": "reconstruction",
+        "local_scope": "PREPARED_NOT_RUN: original analyzer unchanged"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 256,
+            "max_records": 32,
+            "name": "data"
+          }
+        ],
+        "code": 17,
+        "full_runtime": "NOT_RUN",
+        "id": "returncodes",
+        "local_scope": "ACTUAL_LOCAL: exact checked label/returncode line"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 65536,
+            "max_records": 16,
+            "name": "data"
+          }
+        ],
+        "code": 18,
+        "full_runtime": "NOT_RUN",
+        "id": "ephemeral",
+        "local_scope": "ACTUAL_LOCAL: full original signed fixture + genuine parser through logical snapshot"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 32,
+            "max_records": 40000,
+            "name": "data"
+          },
+          {
+            "code": 2,
+            "max_payload_bytes": 1810,
+            "max_records": 1,
+            "name": "framing"
+          }
+        ],
+        "code": 19,
+        "full_runtime": "NOT_RUN",
+        "id": "future_observer",
+        "local_scope": "OFF: original observer remains off; no monitor activation"
+      },
+      {
+        "bounds_unchanged": [
+          {
+            "code": 1,
+            "max_payload_bytes": 1024,
+            "max_records": 128,
+            "name": "data"
+          }
+        ],
+        "code": 20,
+        "full_runtime": "NOT_RUN",
+        "id": "outer_transcript",
+        "local_scope": "APPROVED_BOUNDARY: shell/admin admitted artifacts qualify; platform transcript separate disclosed audit"
+      }
+    ],
+    "platform_boundary": "APPROVED_SEPARATE_DISCLOSED_AUDIT_NOT_ZERO",
+    "readiness_blockers": [
+      "current capacity below full historical paths/PRE",
+      "missing httpx/fastapi/redis",
+      "pytest explicit XML endpoint",
+      "Alembic logger seam",
+      "Linux owned-group execution",
+      "live fixture/capacity/absent owned databases",
+      "human effect authority"
+    ],
+    "schema": "r27-real-path-routing-v1"
+  },
+  "runtime_prerequisites": "NOT_RUN: SQL/Linux/livefixture/plugin/dependency/capacity",
+  "schema": "r27-real-path-candidate-v1",
+  "sources": {
+    "v2/apps/backend/pyproject.toml": "a70f415c118e99b4e1c7d71cb16b67d8eaab8cce3327a8f12252711612b91c6c",
+    "v2/apps/backend/src/rtr_copilot/actions/request_connection.py": "c56d7b09a9845cfe23e4f580849f355c32a40366fd6abc22260f8e85210b93d0",
+    "v2/apps/backend/src/rtr_copilot/api/main.py": "a3a8f760b93a6804487eb4fdc4411537ee5ff500113651f273c4ee93cea9569b",
+    "v2/apps/backend/src/rtr_copilot/auth/audit.py": "13e3da023c2b886725c6fa0270789c6297b58647dbcd8949ef5ad7474fe0fa8e",
+    "v2/apps/backend/src/rtr_copilot/repositories/audit.py": "ed2b90e2e8e24fcb99efc0ccbb2263397c372a920bc719173674e9146e45ec8a",
+    "v2/apps/backend/src/rtr_copilot/sot/models.py": "de4d7d642629f4eb68de217ac6994777a5865dadeb0d8343e93846138a42f2a9",
+    "v2/apps/backend/src/rtr_copilot/sot/package.py": "320391cc732e568c1a9e57b8d0c59045e2a6756faa2341ff8516613661f06e24",
+    "v2/apps/backend/src/rtr_copilot/sot/service.py": "ed10a3b1b6dc8383c28363615531d71fbaacf629799cb07aa4bc3d3a4495cb9f",
+    "v2/apps/backend/tests/sot_fixtures.py": "524e0f00a30b13b0d8844070556f0713ee9e4b7e22e72ac6b16bf9c8e8ccaacd",
+    "v2/apps/backend/tests/test_context_memory_integration.py": "4cae35ed6a550eb03f3cbbe85c0e294ea32ef76970de2ac8f2d2175c570b0425",
+    "v2/apps/backend/tests/test_tip054_baseline_integration.py": "9f459c198ecfe749bd738574ff9b296c27a6ad22c13cea24a1a3dfbeee162181",
+    "v2/apps/backend/uv.lock": "cf091ca54b36632e9ed1884e6a1c3aa46cf0114191da8e2a4abe670e767a26dc",
+    "v2/experiments/action_executor/latency_probe.py": "e94a79a6b0f1695a23db07bfb5f12d5e5746f898893de9cf11cbb6527d6d4ad2",
+    "v2/experiments/action_executor/r/run_phase_baseline.py": "7e4a6136d6a21c2212d2971880644c65fb24472dc51276683b182becfe7711f7",
+    "v2/experiments/action_executor/r18/gate.py": "b44cf3781dc5afd307e4908c5801089167413d46dd53f4723012a40ee8d8f4a1",
+    "v2/experiments/action_executor/r19/bounded.py": "dacc9109adb89437817e58d5b537072f0063f1ce001b5151e5abc5c22fd376bb",
+    "v2/experiments/action_executor/r19/qualification.py": "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11",
+    "v2/experiments/action_executor/r21/contract.json": "f27bc21a10b041ce369d7e69c500f2950b8b05e6b9f81685bd59dff1fbe3dc7c",
+    "v2/experiments/action_executor/r21/qualification.py": "a0d233b2d64bc9cfc3a221b36d298f2b8be255969b52b832abf4df53228862ef",
+    "v2/experiments/action_executor/r21/run-http-qualification.sh": "4a2de34ec8fd9ea33a036f9770e2a9e40289c30ed164954624d0bff547dc43b1",
+    "v2/experiments/action_executor/r21/source-binding-e1.json": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc",
+    "v2/experiments/action_executor/r23/budget.json": "096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41",
+    "v2/experiments/action_executor/r23/model.py": "62b97694a226e81c97cf2fad3762c64121b30f651bd0398a249aeaf89b73c024",
+    "v2/experiments/action_executor/r25/contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "v2/experiments/action_executor/r27/broker/SCOPE.md": "7dc21bff55537e5e1101ead159bb86f1aa3b4eef3e687939a7d1af774f97c0a9",
+    "v2/experiments/action_executor/r27/broker/adapter.py": "490cba655511dcf3b34d20d3e6964c4e8bfa46a92d77af248c4c4d1c773da925",
+    "v2/experiments/action_executor/r27/broker/adapter.pyi": "e7155087836ebf6758fd6979eab129f2646aef5e322be236684f9d267d9f443e",
+    "v2/experiments/action_executor/r27/broker/boundary.json": "66dff0f467b9cc7e7c4cd982580ba9101ee69e95d6be5f9c04c0a9ee439554f2",
+    "v2/experiments/action_executor/r27/broker/broker.py": "322d31435c8eaf6f96e66897873026f4ee8421599a4e6596e042f782fde0861c",
+    "v2/experiments/action_executor/r27/broker/checks.py": "c2911829ef83f98ad13017e3b8dc7cc76186875b750336e4487cc48ba6433d77",
+    "v2/experiments/action_executor/r27/broker/integration.py": "20e2e8f40dabaab585c53c0d97cf288cc7af5a2bb580a8d694c19cbcaf01c2ce",
+    "v2/experiments/action_executor/r27/broker/preflight.py": "c0642af58627f84df7f2bd7e65927f78f99b7a6670170a28b8afcd953dbc17ab",
+    "v2/experiments/action_executor/r27/broker/routing.py": "d70ac91af3828476694ecbc319405399470cbc622fd82118cef8a4900005b510",
+    "v2/experiments/action_executor/r27/broker/supervisor.py": "086eb792c967fc7e5f3859ed76cd68a4573720c9bb426d7de260250eb27948fe",
+    "v2/experiments/action_executor/r27/broker/test_broker.py": "55c7746dae75cf9a4dc8a608f783c597a74762615c8fab9f0881d629077ba0d8",
+    "v2/experiments/action_executor/r27/broker/test_integration.py": "43ae1f1eb54c94b6d58dc53a1dd69b2cd956a9e29067cce35bd7825c3a3eb838",
+    "v2/experiments/action_executor/r27/real_path/SCOPE.md": "5c64dca6f4ae93bc7445cda7c9190d3401406c9460bfd76376e263532bbc6d64",
+    "v2/experiments/action_executor/r27/real_path/adapter.py": "0f2a92fe0574fafc70acedc966b113928676cd78cc4ff7e6a83cb349074f63a2",
+    "v2/experiments/action_executor/r27/real_path/adapter.pyi": "e7155087836ebf6758fd6979eab129f2646aef5e322be236684f9d267d9f443e",
+    "v2/experiments/action_executor/r27/real_path/checks.py": "558ab4c3c28a72040ad45197f48d1aa9a6354339b4528b17055718b5264463dc",
+    "v2/experiments/action_executor/r27/real_path/composition.py": "586ccc5dae621df3a3362c4090a1c19140f27ea5dbb5538aca6d8c0cbe2a0cbd",
+    "v2/experiments/action_executor/r27/real_path/controller.py": "0d1cdbe65fe5a5af761cc7f5d06671cfc1ca113d1cd46dc8768e9218947bf051",
+    "v2/experiments/action_executor/r27/real_path/derivation.json": "b86588ca464450f8a60726138fba95ff6f52bacce1588eb119530bc89449cb9f",
+    "v2/experiments/action_executor/r27/real_path/finite.py": "f275ac895f74f479451f959b2b87a2dd104bdbab20e105dee8d28c9450b256da",
+    "v2/experiments/action_executor/r27/real_path/host.py": "cb390fff74ecfe3cbdb481443cfd76bfc8e90fe11286815ebb0eb3631a31eda8",
+    "v2/experiments/action_executor/r27/real_path/ipc_child.py": "6a269f1266302742dc26c368d02ca1250d3073f32eb79394ee7fc1cdf4b21561",
+    "v2/experiments/action_executor/r27/real_path/ports.py": "d0e48b9f1de9b31a6ac27dcd89672706993a9ad9bdbeaefb808a388bc5739cce",
+    "v2/experiments/action_executor/r27/real_path/routing.py": "99736f7e49e1ceb40bed0727d1618481cf020184283dd5f8f9333ed8ed146872",
+    "v2/experiments/action_executor/r27/real_path/test_core.py": "da5e019e9d9a156e26dc0bc4bac8d1269abc289a100044275c4b879e33084780",
+    "v2/experiments/action_executor/r27/real_path/test_runtime_path.py": "c220e2037358b0fbfc3a5104e185ba8243ce3efa843d4d8047dabbc621a611f6",
+    "v2/experiments/action_executor/r27/real_path/transport.py": "ebfc69cef633efffea972c2bcc82bc9aef925dcf44dc92f08d65bb01ec0dcae0",
+    "v2/experiments/action_executor/r27/real_path/writer.py": "e2b7738807dced6bd7ed20d9f1662de648e09a1317db45ed193bb2db4c6ddeba",
+    "v2/experiments/action_executor/r27/runtime/launcher.py": "d7d1ff030bafa22b58227e4648c63cae0a7dbd242af508432fea44a185781773",
+    "v2/experiments/action_executor/r27/runtime/raw_child.py": "11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f"
+  },
+  "threat_scope": "pinned cooperative source/exact local child, not hostile sameUID"
+}

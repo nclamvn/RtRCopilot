@@ -1,0 +1,25 @@
+"""Two genuine source-contract test items for the installed pytest JUnit pipeline."""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import cast
+
+from composition import compile_functions, source
+
+
+def test_original_off_scope_literal() -> None:
+    raw = source("v2/experiments/action_executor/r21/run-http-qualification.sh").decode()
+    assert "observer OFF; no workers/providers/native" in raw
+    assert '"$container_evidence/run" off' in raw
+
+
+def test_original_child_budget_body() -> None:
+    namespace = compile_functions(
+        "v2/experiments/action_executor/r19/bounded.py",
+        ("child_budget",),
+        {"CAPS": {"http_seconds": 190, "child_seconds": 120}},
+    )
+    budget = cast(Callable[[str, str], int], namespace["child_budget"])
+    assert budget("http", "load") == 190
+    assert budget("pre", "syntax") == 120

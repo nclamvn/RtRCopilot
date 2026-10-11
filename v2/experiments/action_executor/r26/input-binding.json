@@ -1,0 +1,18 @@
+{
+  "schema": "R26-linked-input-v1",
+  "anchors": {
+    "v2/experiments/action_executor/r25/input-binding.json": "87c5aa1ad6cd8009aa7eacf607a060d258dde11c929653f265c4d7af53bf0923",
+    "v2/experiments/action_executor/r25/main-evidence-binding.sha256": "9b68015308c7f9e11e000ffe069a7ee735a30a6f8eb1b84afeaf8998f72f9bf8",
+    "v2/experiments/action_executor/r25/main-final-closure.json": "28b55a2b989ca914ca9628682fdd3445adfed1fe626cbd8d85759ea51e86bd54",
+    "v2/experiments/action_executor/r25/main-publication-check.json": "e2b98326ecbe4eab9e8c8c57aefe60361d46ba007b967eb3a4ac92e0279819c7",
+    "vibecode_v2/TIP-054.4b-R25_VERIFY_REPORT.md": "b34a0c2d9935cc34eee6ed67454b2831f87aeca4fb4567e7ac5cf82a1e45c648",
+    "vibecode_v2/R25_REVIEW_REPORT.md": "260a7feba5ec7a3628bcbb2ab5256843ebffa06c7ae93082d947fa8a0c82aee7"
+  },
+  "direct": {
+    "v2/experiments/action_executor/r26/adapter.py": "f3bebc3bae16c4b6392ecf5ee7edb0f2be66b4a3f64dd0c37a4c2c77cbe2b389",
+    "v2/experiments/action_executor/r26/test_adapter.py": "8ef916740af4624f6768d1f0e742f2046f9f1dd9f64af95264f2b3473f289b68",
+    "v2/experiments/action_executor/r26/checks.py": "7ed29bbe4bfd75d0b2763177b2446e5cb6e58f24db66577bb08449618fc6708e",
+    "vibecode_v2/R26_SCAN_REPORT.md": "d348a396522e8d5830236d10bebe0d9930f8bcb8f90c285b248bd1eae53127a2",
+    "vibecode_v2/TIP-054.4b-R26_OWNED_ENVELOPE_ADAPTER.md": "9794d3600daf092c97a9e5fed33279aa42955b64e1ed84737e354a38d774bb24"
+  }
+}

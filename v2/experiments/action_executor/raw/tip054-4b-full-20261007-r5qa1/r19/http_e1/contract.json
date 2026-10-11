@@ -1,0 +1,65 @@
+{
+  "schema": "R19-finite-v1",
+  "http": {
+    "status": "pending_separate_admission",
+    "allowance_consumed": 0,
+    "observer": "OFF_not_R17_M",
+    "profiles": [
+      1,
+      10,
+      25,
+      50
+    ],
+    "cases_per_profile": 100,
+    "operations": [
+      "admission",
+      "submit",
+      "status",
+      "cancel"
+    ],
+    "cells": 16,
+    "requested_observations": 1600,
+    "samples_per_cell": 100,
+    "errors_per_cell": 0,
+    "quantile": "nearest_rank_ceiling_n_times_q",
+    "p95_admission_ms": 500,
+    "p95_other_ms": 1000,
+    "pool_size": 5,
+    "max_overflow": 5,
+    "pre_ping": true,
+    "route_timeout_seconds": 0.9,
+    "synthetic_rate_quotas": 5000,
+    "seconds": 190,
+    "kill_grace_seconds": 10,
+    "raw_bytes": 10485760,
+    "synthetic_executor_flag": true,
+    "serving_executor_flag": false,
+    "worker_native_provider": false,
+    "missing_downstream": "explicit_missing_not_invented_latency",
+    "historical_r12_off": "FAIL_preserved_not_current_source_proof"
+  },
+  "databases": [
+    "rtr_tip054_r19_local_e1",
+    "rtr_tip054_r19_engine_e1"
+  ],
+  "product_digest": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+  "test_digest": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1",
+  "controls": [
+    "/work/r19/test_r19_offline.py::OfflineControls::test_cell_quantile_and_missing_conservation",
+    "/work/r19/test_r19_offline.py::OfflineControls::test_contract_source_and_one_shot_admission",
+    "/work/r19/test_r19_offline.py::OfflineControls::test_fixture_db_cleanup_and_readiness_ledger",
+    "/work/r19/test_r19_offline.py::OfflineControls::test_oracle_abort_and_original_summary_agreement",
+    "/work/r19/test_r19_offline.py::OfflineControls::test_owned_process_deadline_cap_and_shell_failclosed",
+    "/work/r19/test_r19_offline.py::OfflineControls::test_raw_schema_identity_and_corruption"
+  ],
+  "stages": [
+    "pre",
+    "http"
+  ],
+  "http_epoch": "http_e1",
+  "source_packet_bytes": 1048576,
+  "pre_bytes": 10485760,
+  "candidate": "NOT_READY",
+  "serving_executor": "OFF",
+  "tip054_5": "BLOCKED"
+}

@@ -1,0 +1,55 @@
+{
+  "kind": "Actual final corrected-source feedback; previous failure retained",
+  "records": [
+    {
+      "cmd": "python3 -B v2/experiments/action_executor/r23/checks.py",
+      "result": {
+        "chunk_id": "3f3aed",
+        "wall_time_seconds": 0.136167458,
+        "exit_code": 0,
+        "original_token_count": 78,
+        "output": "{\n  \"bytes\": 13451571,\n  \"digests\": {\n    \"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\",\n    \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"\n  },\n  \"r22_seal_entries\": 20,\n  \"scope\": \"source/evidence only; no runtime proof\",\n  \"unique_pins\": 1750\n}\n"
+      }
+    },
+    {
+      "cmd": "python3 -B -m unittest discover -s v2/experiments/action_executor/r23 -p test_model.py -v",
+      "result": {
+        "chunk_id": "a67ae8",
+        "wall_time_seconds": 2.725615666,
+        "exit_code": 0,
+        "original_token_count": 240,
+        "output": "test_closed_fixed_wire_domains_and_roundtrip (test_model.OfflineControls.test_closed_fixed_wire_domains_and_roundtrip) ... ok\ntest_default_off_arguments_results_errors_and_restore_model_only (test_model.OfflineControls.test_default_off_arguments_results_errors_and_restore_model_only) ... ok\ntest_error_cancel_incomplete_capacity_retained_or_rejected (test_model.OfflineControls.test_error_cancel_incomplete_capacity_retained_or_rejected) ... ok\ntest_exact_reachable_worst_bytes_all_framing (test_model.OfflineControls.test_exact_reachable_worst_bytes_all_framing) ... ok\ntest_nested_unions_residual_not_inclusive_sum (test_model.OfflineControls.test_nested_unions_residual_not_inclusive_sum) ... ok\ntest_origin_trap_unknown_paths_and_no_fake_cancel_generations (test_model.OfflineControls.test_origin_trap_unknown_paths_and_no_fake_cancel_generations) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 2.786s\n\nOK\n"
+      }
+    },
+    {
+      "cmd": "python3 -B -c 'import ast; from pathlib import Path; p=Path(\"v2/experiments/action_executor/r23\"); names=(\"model.py\",\"test_model.py\",\"checks.py\"); allowed={\"json\",\"re\",\"copy\",\"unittest\",\"model\",\"hashlib\",\"pathlib\"}; trees=[ast.parse((p/n).read_text()) for n in names]; [compile(t,str(p/n),\"exec\") for n,t in zip(names,trees)]; assert all((x.module if isinstance(x,ast.ImportFrom) else x.names[0].name).split(\".\")[0] in allowed for t in trees for x in ast.walk(t) if isinstance(x,(ast.Import,ast.ImportFrom))); print(\"SYNTAX_AND_PURE_IMPORT_SURFACE_3_PASS\")'",
+      "result": {
+        "chunk_id": "85dbcc",
+        "wall_time_seconds": 0.000008291,
+        "exit_code": 0,
+        "original_token_count": 10,
+        "output": "SYNTAX_AND_PURE_IMPORT_SURFACE_3_PASS\n"
+      }
+    },
+    {
+      "cmd": "python3 -B v2/experiments/action_executor/r23/model.py",
+      "result": {
+        "chunk_id": "e5d6e5",
+        "wall_time_seconds": 0.000008917,
+        "exit_code": 0,
+        "original_token_count": 152,
+        "output": "{\n  \"capacity_events\": 51200,\n  \"capture_admission\": \"HOLD\",\n  \"event_bytes\": 32,\n  \"framing_bytes\": 1810,\n  \"hypothetical_declared_total_bytes\": null,\n  \"observer_wire_bytes\": 1281810,\n  \"original_bounds_proved\": false,\n  \"original_components\": [\n    \"original_journal_final_json\",\n    \"original_stderr_stdout\",\n    \"process_owner_supervisor\",\n    \"source_contract_checks_and_closure\"\n  ],\n  \"raw_cap_bytes\": 10485760,\n  \"reachable_max_events\": 40000,\n  \"unresolved\": \"No source-proved maxima for original outputs; declarations/reserves and R21 actual sizes are not proofs. Polling cap can overshoot.\"\n}\n"
+      }
+    },
+    {
+      "cmd": "python3 -B v2/experiments/action_executor/r23/checks.py",
+      "result": {
+        "chunk_id": "c74375",
+        "wall_time_seconds": 0.110404708,
+        "exit_code": 0,
+        "original_token_count": 78,
+        "output": "{\n  \"bytes\": 13451571,\n  \"digests\": {\n    \"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\",\n    \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"\n  },\n  \"r22_seal_entries\": 20,\n  \"scope\": \"source/evidence only; no runtime proof\",\n  \"unique_pins\": 1750\n}\n"
+      }
+    }
+  ]
+}

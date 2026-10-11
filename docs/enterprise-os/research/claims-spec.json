@@ -1,0 +1,114 @@
+{
+  "mcp-authorization": [
+    {"field":"category","value":"protocol-security","evidence_span":"Authorization"},
+    {"field":"capability","value":"Defines transport-level authorization for restricted MCP servers","evidence_span":"authorization capabilities at the transport level"},
+    {"field":"constraint","value":"Authorization support is optional in the protocol; deployment protection must be checked separately","evidence_span":"Authorization is <strong>OPTIONAL</strong> for MCP implementations."}
+  ],
+  "mcp-security": [
+    {"field":"category","value":"protocol-security","evidence_span":"Security Best Practices"},
+    {"field":"capability","value":"Documents security risks including token passthrough","evidence_span":"Token Passthrough"},
+    {"field":"constraint","value":"The specification prohibits token passthrough","evidence_span":"Token passthrough is explicitly forbidden"}
+  ],
+  "mcp-tools": [
+    {"field":"category","value":"protocol-tools","evidence_span":"Tools"},
+    {"field":"capability","value":"Servers can expose tools","evidence_span":"allows servers to expose tools"},
+    {"field":"constraint","value":"Tool annotations are not trusted merely because they are present","evidence_span":"be untrusted unless they come from trusted servers."}
+  ],
+  "mcp-tasks": [
+    {"field":"category","value":"protocol-tasks","evidence_span":"Tasks"},
+    {"field":"capability","value":"Supports polling and deferred retrieval through task state machines","evidence_span":"intended for client polling and deferred result retrieval"},
+    {"field":"constraint","value":"Every task-related request requires permission checks","evidence_span":"authentication and authorization checks on each task-related request"}
+  ],
+  "pydantic-durable": [
+    {"field":"category","value":"agent-durability","evidence_span":"Durable Execution"},
+    {"field":"capability","value":"Durable execution preserves an agent run across crashes","evidence_span":"A durable engine keeps one run alive across crashes and restarts."},
+    {"field":"constraint","value":"Durable run execution is distinct from conversation storage","evidence_span":"Durability is not storage"}
+  ],
+  "pydantic-mcp": [
+    {"field":"category","value":"agent-protocol","evidence_span":"Model Context Protocol (MCP)"},
+    {"field":"capability","value":"Agents can connect to MCP servers and invoke their tools","evidence_span":"can connect to MCP servers and use their tools"}
+  ],
+  "pydantic-deferred": [
+    {"field":"category","value":"human-approval","evidence_span":"Deferred Tools"},
+    {"field":"capability","value":"Deferred tools support an approval flow","evidence_span":"require approval"},
+    {"field":"constraint","value":"Some deferred tools execute externally rather than inline","evidence_span":"executed externally"}
+  ],
+  "dbos-workflows": [
+    {"field":"category","value":"durable-workflow","evidence_span":"Workflows"},
+    {"field":"capability","value":"Documents exactly-once commits for workflow database transactions","evidence_span":"commit <em>exactly once</em>"},
+    {"field":"constraint","value":"Step attempts are at least once; this is not an exactly-once guarantee for external effects","evidence_span":"are tried <em>at least once</em>"}
+  ],
+  "dbos-steps": [
+    {"field":"category","value":"durable-step","evidence_span":"Steps"},
+    {"field":"capability","value":"Steps wrap complex or external operations in workflows","evidence_span":"performs complex operations or accesses external APIs or services"},
+    {"field":"constraint","value":"Step outputs must be serializable","evidence_span":"The only requirement is that its outputs should be serializable."}
+  ],
+  "dbos-queues": [
+    {"field":"category","value":"workflow-queue","evidence_span":"Queues"},
+    {"field":"capability","value":"Queues manage parallel workflow execution and flow control","evidence_span":"You can use queues to run many workflows at once with managed concurrency."}
+  ],
+  "dbos-architecture": [
+    {"field":"category","value":"durable-architecture","evidence_span":"DBOS Architecture"},
+    {"field":"capability","value":"Stores workflow and step checkpoints in PostgreSQL","evidence_span":"DBOS checkpoints those workflows and steps to a Postgres database."},
+    {"field":"constraint","value":"Architecture does not require a separate orchestration server","evidence_span":"There&#x27;s no separate orchestration server"}
+  ],
+  "temporal-workflows": [
+    {"field":"category","value":"durable-workflow","evidence_span":"Temporal Workflow"},
+    {"field":"capability","value":"A workflow definition is executable code describing the workflow","evidence_span":"is the code that defines your Workflow."}
+  ],
+  "temporal-activities": [
+    {"field":"category","value":"durable-step","evidence_span":"Temporal Activity"},
+    {"field":"capability","value":"Activity code can be nondeterministic","evidence_span":"otherwise be non-deterministic."},
+    {"field":"constraint","value":"The documentation recommends idempotent activity effects","evidence_span":"We recommend that it be <a class=\"\" href=/activity-definition#idempotency>idempotent</a>"}
+  ],
+  "langgraph-persistence": [
+    {"field":"category","value":"agent-state","evidence_span":"Persistence"},
+    {"field":"capability","value":"Checkpointers preserve graph state per thread","evidence_span":"persist a thread’s graph state as checkpoints."},
+    {"field":"constraint","value":"Stores are a separate mechanism for application data outside graph state","evidence_span":"persist application-defined data outside the graph state."}
+  ],
+  "langgraph-interrupts": [
+    {"field":"category","value":"human-approval","evidence_span":"Interrupts"},
+    {"field":"capability","value":"Resuming an interrupted graph restarts the interrupted node from its beginning","evidence_span":"The node restarts from the beginning of the node"},
+    {"field":"constraint","value":"Effects before an interrupt must be idempotent because resumed nodes rerun","evidence_span":"Side effects called before interrupt must be idempotent"}
+  ],
+  "restate-services": [
+    {"field":"category","value":"durable-workflow","evidence_span":"Services"},
+    {"field":"capability","value":"Provides three service types for different workload needs","evidence_span":"Restate provides three service types optimized for different use cases."}
+  ],
+  "microsoft-durable": [
+    {"field":"category","value":"agent-durability","evidence_span":"Durable Task extension"},
+    {"field":"capability","value":"The extension makes registered agents durable with persisted sessions","evidence_span":"make them automatically durable with persistent sessions"}
+  ],
+  "microsoft-functional": [
+    {"field":"category","value":"workflow-composition","evidence_span":"Functional Workflow API"},
+    {"field":"capability","value":"Workflow composition uses Python async functions","evidence_span":"write workflows as plain Python async functions"},
+    {"field":"constraint","value":"This API is experimental and may change or be removed without notice","evidence_span":"<strong>experimental</strong> and subject to change or removal in future versions without notice"}
+  ],
+  "anthropic-agents": [
+    {"field":"category","value":"agent-methodology","evidence_span":"Building effective agents"},
+    {"field":"capability","value":"Describes workflows orchestrated through predefined code paths","evidence_span":"predefined code paths"},
+    {"field":"constraint","value":"The article flags changes in its tooling landscape since initial publication","evidence_span":"Much of the tooling landscape described in this post has changed"}
+  ],
+  "anthropic-context": [
+    {"field":"category","value":"agent-methodology","evidence_span":"Effective context engineering for AI agents"},
+    {"field":"capability","value":"Describes strategies for curating agent context","evidence_span":"strategies for effectively curating and managing the context"},
+    {"field":"constraint","value":"Agent context is finite","evidence_span":"Context is a critical but finite resource for AI agents."}
+  ],
+  "anthropic-tools": [
+    {"field":"category","value":"agent-methodology","evidence_span":"Writing effective tools for agents"},
+    {"field":"capability","value":"Recommends evaluating tools with agents","evidence_span":"Create and run comprehensive evaluations of your tools with agents"}
+  ],
+  "anthropic-evals": [
+    {"field":"category","value":"agent-evaluation","evidence_span":"Demystifying evals for AI agents"},
+    {"field":"capability","value":"Evaluation applies grading logic to outputs to assess success","evidence_span":"apply grading logic to its output to measure success"}
+  ],
+  "w3c-prov": [
+    {"field":"category","value":"provenance-standard","evidence_span":"PROV-Overview"},
+    {"field":"capability","value":"The PROV document family describes a model and serializations for provenance interchange","evidence_span":"defines a model, corresponding serializations"},
+    {"field":"constraint","value":"This overview is a Working Group Note","evidence_span":"Working Group Note 30 April 2013"}
+  ],
+  "otel-genai": [
+    {"field":"category","value":"observability-conventions","evidence_span":"Generative AI semantic conventions"},
+    {"field":"constraint","value":"The captured GenAI conventions page is a migration notice, not a maintained specification","evidence_span":"This page has moved and is no longer maintained in this repository."}
+  ]
+}

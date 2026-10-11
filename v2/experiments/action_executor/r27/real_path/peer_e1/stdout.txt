@@ -1,0 +1,162 @@
+....FF                                                                   [100%]
+=================================== FAILURES ===================================
+____________ test_original_oracle_and_caught_logger_fault_identity _____________
+
+    def test_original_oracle_and_caught_logger_fault_identity() -> None:
+        tree = ast.parse(source(PROBE))
+        main = next(
+            node for node in tree.body if isinstance(node, ast.AsyncFunctionDef) and node.name == "main"
+        )
+        # Exact genuine source writer/oracle block; static local control cell, NOT HTTP observations.
+        block = next(node for node in ast.walk(main) if isinstance(node, ast.Try))
+        start = next(
+            index
+            for index, node in enumerate(block.body)
+            if isinstance(node, ast.Assign) and ast.unparse(node.targets[0]) == "report"
+        )
+        statements = block.body[start:]
+        final = next(
+            node
+            for node in block.finalbody
+            if isinstance(node, ast.Expr) and "samples.json" in ast.unparse(node)
+        )
+        module = ast.Module(body=[final, *statements], type_ignores=[])
+        code = compile(ast.fix_missing_locations(module), str(ROOT / PROBE), "exec")
+        with TemporaryDirectory(prefix="peer-control-", dir=HERE) as temporary:
+            broker = OwnedBroker(Path(temporary) / "capture")
+            with HostPort(broker) as port:
+                driver = DriverPort(port)
+                root = driver.path("run")
+                root.mkdir()
+                previous = logging.root.handlers
+                logging.root.handlers = []
+                try:
+                    with (
+                        pytest.raises(SystemExit) as captured,
+                        logging_scope(driver, tuple(code_objects(code))),
+                    ):
+                        exec(
+                            code,
+                            {"root": root, "json": json, "records": [], "cells": [{"pass": False}]},
+                        )
+                    assert captured.value.code == 1 and driver.first_fault is None
+                finally:
+                    logging.root.handlers = previous
+            assert broker.finish()["prototype_complete"]
+        with TemporaryDirectory(prefix="peer-control-", dir=HERE) as temporary:
+            broker = OwnedBroker(Path(temporary) / "capture")
+            with HostPort(broker) as port:
+                root_handlers = logging.root.handlers
+                logging.root.handlers = []
+                original = ValueError("formatter primary")
+    
+                class FaultFormatter(logging.Formatter):
+                    def format(self, record: logging.LogRecord) -> str:
+                        raise original
+    
+                try:
+                    with pytest.raises(ValueError) as caught, logging_scope(port):
+                        handler = cast(RenderedHandler, logging.root.handlers[0])
+                        handler.setFormatter(FaultFormatter())
+                        with suppress(Exception):
+                            logging.info("caught by original request-style except Exception")
+                    assert caught.value is original and port.first_fault is original
+                finally:
+                    logging.root.handlers = root_handlers
+>           assert not broker.finish()["prototype_complete"]
+                       ^^^^^^^^^^^^^^^
+
+v2/experiments/action_executor/r27/real_path/test_runtime_path.py:226: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+v2/experiments/action_executor/r27/real_path/writer.py:403: in finish
+    self._guard()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <host.OwnedBroker object at 0x10a098e90>, token = None
+
+    def _guard(self, token: str | None = None) -> None:
+        if (
+            threading.get_ident() != self._owner
+            or self._finished
+            or self._writer.closed
+            or self._writer.finished
+            or (token is not None and token != self._token)
+        ):
+            self.fail("creator/active capability epoch")
+        if self._writer.flags:
+>           raise adapter.PacketError("sticky incomplete epoch")
+E           adapter.PacketError: sticky incomplete epoch
+
+v2/experiments/action_executor/r27/real_path/writer.py:159: PacketError
+___________ test_actual_controller_copy_literal_marker_and_deadline ____________
+
+    def test_actual_controller_copy_literal_marker_and_deadline() -> None:
+        with TemporaryDirectory(prefix="peer-control-", dir=HERE) as temporary:
+            broker = OwnedBroker(Path(temporary) / "capture")
+            with HostPort(broker) as port:
+                controller = Controller(port)
+                controller.copy_sources()
+                assert port.read("controller/binding.json") == source(
+                    "v2/experiments/action_executor/r21/source-binding-e1.json"
+                )
+                assert b"observer OFF" in controller.scope_literal()
+                controller.returncode("syntax", 0)
+                controller.marker_control("a" * 64)
+                owner: dict[str, object] = {"cleanup_deadline": None}
+                first = controller.cleanup_deadline(owner)
+                assert controller.cleanup_deadline(owner) == first
+                assert json.loads(port.read("owner/load.owner.json"))["cleanup_deadline"] == first
+                with pytest.raises(PermissionError):
+                    controller.dispatch(("/usr/bin/docker", "exec"))
+                assert controller.prepared()["effects"] == "DENY_THIS_BATCH"
+            assert broker.finish()["prototype_complete"]
+        with TemporaryDirectory(prefix="peer-control-", dir=HERE) as temporary:
+            broker = OwnedBroker(Path(temporary) / "capture")
+            with HostPort(broker) as port:
+                controller = Controller(port)
+                controller.marker_control("b" * 64)
+                before = broker.charge
+                with pytest.raises(FileExistsError):
+                    controller.marker_control("b" * 64)
+                assert broker.charge == before
+>           assert not broker.finish()["prototype_complete"]
+                       ^^^^^^^^^^^^^^^
+
+v2/experiments/action_executor/r27/real_path/test_runtime_path.py:258: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+v2/experiments/action_executor/r27/real_path/writer.py:403: in finish
+    self._guard()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <host.OwnedBroker object at 0x10a0ac530>, token = None
+
+    def _guard(self, token: str | None = None) -> None:
+        if (
+            threading.get_ident() != self._owner
+            or self._finished
+            or self._writer.closed
+            or self._writer.finished
+            or (token is not None and token != self._token)
+        ):
+            self.fail("creator/active capability epoch")
+        if self._writer.flags:
+>           raise adapter.PacketError("sticky incomplete epoch")
+E           adapter.PacketError: sticky incomplete epoch
+
+v2/experiments/action_executor/r27/real_path/writer.py:159: PacketError
+=============================== warnings summary ===============================
+v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_default_test_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED v2/apps/backend::test_original_oracle_and_caught_logger_fault_identity
+FAILED v2/apps/backend::test_actual_controller_copy_literal_marker_and_deadline
+2 failed, 4 passed, 2 warnings in 1.50s

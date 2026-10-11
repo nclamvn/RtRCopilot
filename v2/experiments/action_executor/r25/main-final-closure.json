@@ -1,0 +1,69 @@
+{
+  "schema": "r25-main-final-closure-v1",
+  "date": "2026-10-10",
+  "scope": "bounded producer envelope design and memory-only model; not adoption/runtime certification",
+  "requirements": {
+    "accepted": 4,
+    "total": 4,
+    "coverage_percent": 100
+  },
+  "controls": {
+    "unique_groups": 6,
+    "passed": 6,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "main_same_groups_overlap": true,
+    "syntax_files": 3
+  },
+  "proposed_budget": {
+    "families": 20,
+    "data_record_ceiling": 48182,
+    "normal_bytes": 9778276,
+    "closure_metadata_bytes": 340,
+    "total_bytes": 9778616,
+    "spare_bytes": 707144,
+    "cap_bytes": 10485760,
+    "source_proof": false
+  },
+  "actual_capture": {
+    "admission": "HOLD",
+    "actual_source_upper_bytes": null,
+    "adoption_authorized": false,
+    "durability_proved": false,
+    "semantic_measurement_completeness_proved": false
+  },
+  "evidence_seal": {
+    "path": "v2/experiments/action_executor/r25/main-evidence-binding.sha256",
+    "sha256": "9b68015308c7f9e11e000ffe069a7ee735a30a6f8eb1b84afeaf8998f72f9bf8",
+    "entries": 19,
+    "artifact_bytes": 108680
+  },
+  "input_binding_sha256": "87c5aa1ad6cd8009aa7eacf607a060d258dde11c929653f265c4d7af53bf0923",
+  "preservation": {
+    "prior_pins": 1787,
+    "prior_bytes": 13634646,
+    "total_bound_pins": 1794,
+    "total_bound_bytes": 13692658,
+    "product_files": 204,
+    "test_files": 192
+  },
+  "publication_epoch": {
+    "docs/enterprise-os/IMPLEMENTATION_STATUS.md": "56d6f3f8266e0740432ecb0c349555f7245294b0202e73bc0d511d7ebdc58b4c",
+    "docs/enterprise-os/TASK_GRAPH.md": "7e4dd2b0173d069c5b72cdcb297b61e60ea99872b8fad8898be929a61bd7f95d",
+    "vibecode_v2/03_TASK_GRAPH.md": "f19974e9fdb74520723bd8b55be9478ffae03d536b2574b95c5e7c11ce99b9b5"
+  },
+  "publication_note": "Current status hashes are point-in-time metadata, not immutable future status requirements.",
+  "gates": {
+    "r21_sla": "FAILED/P1",
+    "exe009": "OPEN/P1",
+    "candidate": "NOT_READY",
+    "serving_executor": "OFF",
+    "tip054_5": "BLOCKED"
+  },
+  "next_proposal": "R26 explicit finite experimental contract adoption and new isolated owned adapter with offline write-fault/replay/ownership/bypass/fidelity tests; no measured integration/campaign/activation",
+  "runtime_executed": false,
+  "external_executed": false,
+  "resources_created": [],
+  "resources_removed": []
+}

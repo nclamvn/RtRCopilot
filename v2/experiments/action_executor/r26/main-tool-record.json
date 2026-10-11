@@ -1,0 +1,10 @@
+{
+  "command": "python3 -B checks.py",
+  "workdir": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r26",
+  "tool_chunk": "fd1105",
+  "exit_code": 0,
+  "wall_time_seconds": 1.180987666,
+  "unique_test_groups": 7,
+  "overlap": "Same seven controls as Builder; not fourteen unique tests.",
+  "frozen_binding_sha256": "999167124e38280545959522e25dcc00e4b596779b5e01a74fb9e2601a82abd0"
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "Main actual offline verification; same six controls overlap, not twelve unique",
+  "records": [
+    {
+      "cmd": "python3 -B v2/experiments/action_executor/r23/checks.py",
+      "result": {
+        "chunk_id": "1483f4",
+        "wall_time_seconds": 0.131155042,
+        "exit_code": 0,
+        "original_token_count": 78,
+        "output": "{\n  \"bytes\": 13451571,\n  \"digests\": {\n    \"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\",\n    \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"\n  },\n  \"r22_seal_entries\": 20,\n  \"scope\": \"source/evidence only; no runtime proof\",\n  \"unique_pins\": 1750\n}\n"
+      }
+    },
+    {
+      "cmd": "python3 -B -m unittest discover -s v2/experiments/action_executor/r23 -p test_model.py -v",
+      "result": {
+        "chunk_id": "9cb9cc",
+        "wall_time_seconds": 2.811409625,
+        "exit_code": 0,
+        "original_token_count": 240,
+        "output": "test_closed_fixed_wire_domains_and_roundtrip (test_model.OfflineControls.test_closed_fixed_wire_domains_and_roundtrip) ... ok\ntest_default_off_arguments_results_errors_and_restore_model_only (test_model.OfflineControls.test_default_off_arguments_results_errors_and_restore_model_only) ... ok\ntest_error_cancel_incomplete_capacity_retained_or_rejected (test_model.OfflineControls.test_error_cancel_incomplete_capacity_retained_or_rejected) ... ok\ntest_exact_reachable_worst_bytes_all_framing (test_model.OfflineControls.test_exact_reachable_worst_bytes_all_framing) ... ok\ntest_nested_unions_residual_not_inclusive_sum (test_model.OfflineControls.test_nested_unions_residual_not_inclusive_sum) ... ok\ntest_origin_trap_unknown_paths_and_no_fake_cancel_generations (test_model.OfflineControls.test_origin_trap_unknown_paths_and_no_fake_cancel_generations) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 2.863s\n\nOK\n"
+      }
+    },
+    {
+      "cmd": "python3 -B - <<'PY'\nimport ast,json,pathlib\nbase=pathlib.Path('v2/experiments/action_executor/r23')\nnames=('model.py','test_model.py','checks.py')\nallowed={'json','re','copy','unittest','model','hashlib','pathlib'}\nimports=[]\nfor name in names:\n    tree=ast.parse((base/name).read_text());compile(tree,str(base/name),'exec')\n    for node in ast.walk(tree):\n        if isinstance(node,ast.Import):\n            for alias in node.names:\n                assert alias.name.split('.')[0] in allowed,alias.name\n                imports.append(alias.name)\n        elif isinstance(node,ast.ImportFrom):\n            assert node.module.split('.')[0] in allowed,node.module\n            imports.append(node.module)\nprint(json.dumps({'compiled':len(names),'import_surface':sorted(set(imports)),'product_or_original_helper_imports':0,'status':'PASS'},indent=2))\nPY",
+      "result": {
+        "chunk_id": "244fc2",
+        "wall_time_seconds": 0.000006667,
+        "exit_code": 0,
+        "original_token_count": 51,
+        "output": "{\n  \"compiled\": 3,\n  \"import_surface\": [\n    \"copy\",\n    \"hashlib\",\n    \"json\",\n    \"model\",\n    \"pathlib\",\n    \"re\",\n    \"unittest\"\n  ],\n  \"product_or_original_helper_imports\": 0,\n  \"status\": \"PASS\"\n}\n"
+      }
+    },
+    {
+      "cmd": "python3 -B - <<'PY'\nimport json,pathlib,hashlib\nbase=pathlib.Path('v2/experiments/action_executor/r23')\nmanifest={'schema':'R23-ASCII32-v1','slots':1600,'events_per_slot':32,'event_bytes':32,'max_us':199999999,'outcomes':'begin_ok_error_cancel_incomplete','capture_admission':'HOLD'}\nheader=b'R23P1\\n'+json.dumps(manifest,sort_keys=True,separators=(',',':')).encode()+b'\\n'\nwidths=(4,1,1,2,1,1,1,9,1,1)\nevent_bytes=sum(widths)+9+1\nmaxevents=400*(32+30+8+30)\nframing=len(header)+(6+1600+1)+14+12\ncalculated=maxevents*event_bytes+framing\nreported=json.loads((base/'budget.json').read_bytes())\nassert (event_bytes,maxevents,framing,calculated)==(reported['event_bytes'],reported['reachable_max_events'],reported['framing_bytes'],reported['observer_wire_bytes'])\nassert reported['original_bounds_proved'] is False and reported['hypothetical_declared_total_bytes'] is None and reported['capture_admission']=='HOLD'\nprint(json.dumps({'status':'PASS','method':'independent arithmetic, no model/helper import','header_bytes':len(header),'event_bytes':event_bytes,'nominal_events':maxevents,'capacity_events':1600*32,'slot_line_bytes':1607,'fault_bytes':14,'trailer_bytes':12,'framing_bytes':framing,'observer_wire_bytes':calculated,'cap_bytes':10485760,'space_remaining_for_unproved_original_output':10485760-calculated,'capture_admission':'HOLD','complete_capture_fit_proved':False,'budget_sha256':hashlib.sha256((base/'budget.json').read_bytes()).hexdigest()},indent=2))\nPY",
+      "result": {
+        "chunk_id": "8d2147",
+        "wall_time_seconds": 0.000031541,
+        "exit_code": 0,
+        "original_token_count": 139,
+        "output": "{\n  \"status\": \"PASS\",\n  \"method\": \"independent arithmetic, no model/helper import\",\n  \"header_bytes\": 177,\n  \"event_bytes\": 32,\n  \"nominal_events\": 40000,\n  \"capacity_events\": 51200,\n  \"slot_line_bytes\": 1607,\n  \"fault_bytes\": 14,\n  \"trailer_bytes\": 12,\n  \"framing_bytes\": 1810,\n  \"observer_wire_bytes\": 1281810,\n  \"cap_bytes\": 10485760,\n  \"space_remaining_for_unproved_original_output\": 9203950,\n  \"capture_admission\": \"HOLD\",\n  \"complete_capture_fit_proved\": false,\n  \"budget_sha256\": \"096d29e84e7925f34bd95683bcdecc80255401b99a919ac56a0bac7a68050e41\"\n}\n"
+      }
+    }
+  ]
+}

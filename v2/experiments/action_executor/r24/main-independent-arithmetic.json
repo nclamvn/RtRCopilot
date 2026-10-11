@@ -1,0 +1,24 @@
+{
+  "schema": "r24-main-independent-arithmetic-v1",
+  "tool": {
+    "chunk_id": "925809",
+    "exit_code": 0
+  },
+  "result": {
+    "scope": "source-frozen OFF targets only, NOT whole/future capture bound",
+    "frozen_copy_bytes": {
+      "r21/source-binding-e1.json": 3538,
+      "r21/contract.json": 2108
+    },
+    "literal_controls_bytes": 283,
+    "literal_scope_bytes": 117,
+    "fixed_subtotal_bytes": 6046,
+    "request_attempt_control_flow_ceiling": 1600,
+    "retain_calls_per_attempt_ceiling": 2,
+    "memory_append_control_flow_ceiling": 3200,
+    "valid_unique_journal_guaranteed_across_recording_faults": false,
+    "complete_capture_fit_proved": false,
+    "capture_admission": "HOLD",
+    "product_helper_imports": 0
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "actor": "Main",
+  "scope": "Once admitted personal frozen e5 six offline controls with explicit owned POSIX child permissions; overlaps six IDs; prior e4/e5 errors retained; no product/SQL/HTTP/external",
+  "before": {
+    "chunk_id": "8d72ef",
+    "wall_time_seconds": 0.098091833,
+    "exit_code": 0,
+    "original_token_count": 53,
+    "output": "{\"files\": 1105, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+  },
+  "run": {
+    "chunk_id": "afb030",
+    "wall_time_seconds": 1.150074708,
+    "exit_code": 0,
+    "original_token_count": 213,
+    "output": "test_cell_quantile_and_missing_conservation (__main__.OfflineControls.test_cell_quantile_and_missing_conservation) ... ok\ntest_contract_source_and_one_shot_admission (__main__.OfflineControls.test_contract_source_and_one_shot_admission) ... ok\ntest_fixture_db_cleanup_and_readiness_ledger (__main__.OfflineControls.test_fixture_db_cleanup_and_readiness_ledger) ... ok\ntest_oracle_abort_and_original_summary_agreement (__main__.OfflineControls.test_oracle_abort_and_original_summary_agreement) ... ok\ntest_owned_process_deadline_cap_and_shell_failclosed (__main__.OfflineControls.test_owned_process_deadline_cap_and_shell_failclosed) ... ok\ntest_raw_schema_identity_and_corruption (__main__.OfflineControls.test_raw_schema_identity_and_corruption) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 1.148s\n\nOK\n"
+  },
+  "after": {
+    "chunk_id": "9565fd",
+    "wall_time_seconds": 0.077047084,
+    "exit_code": 0,
+    "original_token_count": 53,
+    "output": "{\"files\": 1105, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+  }
+}

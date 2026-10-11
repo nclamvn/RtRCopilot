@@ -1,0 +1,11 @@
+{
+  "source_binding": "v2/experiments/action_executor/r17/source-binding-e2.sha256",
+  "scope": "read-only format check",
+  "actual": {
+    "chunk_id": "c25af2",
+    "wall_time_seconds": 0.000008459,
+    "exit_code": 1,
+    "original_token_count": 69,
+    "output": "Would reformat: /work/r17/diagnostic.py\nWould reformat: /work/r17/gate.py\nWould reformat: /work/r17/observer.py\nWould reformat: /work/r17/test_r17_campaign.py\nWould reformat: /work/r17/test_r17_offline.py\nWould reformat: /work/r17/test_r17_sql.py\n6 files would be reformatted\n"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/",
+      "retrieved_at": "2026-10-06T02:15:31.927314+00:00",
+      "source_family": "Pydantic",
+      "status": "failed"
+    },
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://ai.pydantic.dev/durable_execution/overview/",
+      "retrieved_at": "2026-10-06T02:15:31.927768+00:00",
+      "source_family": "Pydantic",
+      "status": "failed"
+    },
+    {
+      "bytes": 130201,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 1528,
+      "read_view_sha256": "f3b81c1ed730162430f2cc2408b84bd6f78f8d25ce849ebda67364da3e2e2cb5",
+      "requested_url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/",
+      "resolved_url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/",
+      "retrieved_at": "2026-10-06T02:15:52.887558+00:00",
+      "sha256": "8ba0156989bc102335d5d08283a6f9398e7f93fc269750766609660e9cd48745",
+      "snapshot": "pydantic-durable.html",
+      "source_family": "Pydantic",
+      "status": "usable"
+    }
+  ],
+  "entity": "PydanticAI durable execution",
+  "id": "pydantic-durable",
+  "selected": {
+    "bytes": 130201,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 1528,
+    "read_view_sha256": "f3b81c1ed730162430f2cc2408b84bd6f78f8d25ce849ebda67364da3e2e2cb5",
+    "requested_url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/",
+    "resolved_url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/",
+    "retrieved_at": "2026-10-06T02:15:52.887558+00:00",
+    "sha256": "8ba0156989bc102335d5d08283a6f9398e7f93fc269750766609660e9cd48745",
+    "snapshot": "pydantic-durable.html",
+    "source_family": "Pydantic",
+    "status": "usable"
+  }
+}

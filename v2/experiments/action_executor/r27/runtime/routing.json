@@ -1,0 +1,231 @@
+{
+  "effects": "DENY",
+  "families": [
+    {
+      "family": "frozen_copies",
+      "full_original_family": "HOLD",
+      "local_scope": "two exact source-pinned copies via precharged native endpoints; shell cp itself not invoked",
+      "max_payload_bytes": 65536,
+      "max_records": 2,
+      "prepared_endpoint": "RoutedLauncher.safe_outputs",
+      "real_producer": "R21 shell cp binding/contract at44-45",
+      "record_boundary": "each full original file copy",
+      "runtime_status": "LOCAL_CONTROL"
+    },
+    {
+      "family": "literal_controls",
+      "full_original_family": "HOLD",
+      "local_scope": "actual pure original controls encoder expression with off; engine/asserts/runpy unexecuted",
+      "max_payload_bytes": 512,
+      "max_records": 1,
+      "prepared_endpoint": "RoutedLauncher.safe_outputs",
+      "real_producer": "r/run_phase_baseline.py r-controls write",
+      "record_boundary": "one original JSON write",
+      "runtime_status": "SOURCE_SUBSET"
+    },
+    {
+      "family": "literal_scope",
+      "full_original_family": "HOLD",
+      "local_scope": "exact decoded original literal bytes precharged; no effectful shell launch",
+      "max_payload_bytes": 256,
+      "max_records": 1,
+      "prepared_endpoint": "RoutedLauncher.safe_outputs",
+      "real_producer": "R21 shell printf executor-scope",
+      "record_boundary": "one fixed complete literal",
+      "runtime_status": "LOCAL_CONTROL"
+    },
+    {
+      "family": "launch_review",
+      "full_original_family": "HOLD",
+      "local_scope": "finite review pin endpoint only; original mark not called or consumed",
+      "max_payload_bytes": 1024,
+      "max_records": 3,
+      "prepared_endpoint": "review_pin + readonly preflight marker check",
+      "real_producer": "R21 review-pin printf /qualification.mark",
+      "record_boundary": "one pin/marker file each",
+      "runtime_status": "PREPARED_HOLD"
+    },
+    {
+      "family": "journal",
+      "full_original_family": "HOLD",
+      "local_scope": "exact producer block on static controls; full original request loop unexecuted",
+      "max_payload_bytes": 512,
+      "max_records": 3200,
+      "prepared_endpoint": "typed producers.DriverOutputs.journal",
+      "real_producer": "latency_probe.main.retain",
+      "record_boundary": "each original observation write call",
+      "runtime_status": "SOURCE_SUBSET"
+    },
+    {
+      "family": "final_samples",
+      "full_original_family": "HOLD",
+      "local_scope": "exact final block; full app/dependency/engine finally remains unexecuted",
+      "max_payload_bytes": 2097152,
+      "max_records": 1,
+      "prepared_endpoint": "typed producers.DriverOutputs.finish",
+      "real_producer": "latency_probe.main finally samples.json",
+      "record_boundary": "one complete final JSON write",
+      "runtime_status": "SOURCE_SUBSET"
+    },
+    {
+      "family": "summary_stdout",
+      "full_original_family": "HOLD",
+      "local_scope": "source block/fixed child only",
+      "max_payload_bytes": 16384,
+      "max_records": 3,
+      "prepared_endpoint": "DriverOutputs.finish + pipes.finite_child",
+      "real_producer": "latency_probe summary/write/print/oracle and R19 child stdout",
+      "record_boundary": "each original write/print; fixed child whole stdout, never read chunks",
+      "runtime_status": "SOURCE_SUBSET"
+    },
+    {
+      "family": "load_stderr",
+      "full_original_family": "HOLD",
+      "local_scope": "full audit emitter only; arbitrary app stderr HOLD",
+      "max_payload_bytes": 512,
+      "max_records": 4096,
+      "prepared_endpoint": "typed scoped logger + finite_child",
+      "real_producer": "StructuredAuditSink.emit, app/repository logs and R19 child stderr",
+      "record_boundary": "original rendered emit; fixed complete raw child stream",
+      "runtime_status": "SOURCE_SUBSET"
+    },
+    {
+      "family": "migration_streams",
+      "full_original_family": "HOLD",
+      "local_scope": "command/argv prepared only; no alembic/Docker/SQL",
+      "max_payload_bytes": 512,
+      "max_records": 512,
+      "prepared_endpoint": "PreparedCommand migration ->future prewrite broker",
+      "real_producer": "R21 checked migration ->R19 native child stdout/stderr",
+      "record_boundary": "unknown complete native write/stream",
+      "runtime_status": "PREPARED_HOLD"
+    },
+    {
+      "family": "owner_process",
+      "full_original_family": "HOLD",
+      "local_scope": "real source metadata writes after safechild; no Linux group authority/pre-spawn persistence",
+      "max_payload_bytes": 1024,
+      "max_records": 8,
+      "prepared_endpoint": "SourceSupervisor.metadata_subset",
+      "real_producer": "R19 supervise owner/process JSON + begin_cleanup owner overwrite",
+      "record_boundary": "actual source JSON expression/whole original overwrite",
+      "runtime_status": "SOURCE_SUBSET"
+    },
+    {
+      "family": "supervisor_stop",
+      "full_original_family": "HOLD",
+      "local_scope": "joined full RequestConnection safechild; original /proc group signal/stop not executed",
+      "max_payload_bytes": 1024,
+      "max_records": 64,
+      "prepared_endpoint": "safe fixed pipe join + metadata stop proof",
+      "real_producer": "R21 stop_active stdout/stderr/drained proof, R19 stop/drain",
+      "record_boundary": "whole stop command streams and proof records",
+      "runtime_status": "SOURCE_SUBSET"
+    },
+    {
+      "family": "source_cap_child",
+      "full_original_family": "HOLD",
+      "local_scope": "source hashes read locally; original checked CLI streams only prepared",
+      "max_payload_bytes": 2048,
+      "max_records": 32,
+      "prepared_endpoint": "preflight.validate_sources + typed recovery",
+      "real_producer": "R21 source/cap/child qualification CLI and redirects",
+      "record_boundary": "each complete original proof stream",
+      "runtime_status": "PREPARED_HOLD"
+    },
+    {
+      "family": "fixture",
+      "full_original_family": "HOLD",
+      "local_scope": "full pure signedfixture is subset, no Docker inspect or SOT publisher/stager",
+      "max_payload_bytes": 8192,
+      "max_records": 8,
+      "prepared_endpoint": "PreparedCommand fixture + pure signedfixture producer",
+      "real_producer": "R21 fixture_check Docker inspect and latency publish SOT stage",
+      "record_boundary": "whole inspection stream/file; pure fixture write calls",
+      "runtime_status": "PREPARED_HOLD"
+    },
+    {
+      "family": "database_admin",
+      "full_original_family": "HOLD",
+      "local_scope": "exact namespace/timeout/argv prepared; zero SQL/admin execution",
+      "max_payload_bytes": 2048,
+      "max_records": 64,
+      "prepared_endpoint": "PreparedCommand +read-only source ledger",
+      "real_producer": "R21 pg_sql role/absence/create/grants/postload/drop/closure",
+      "record_boundary": "one complete psql stdout/stderr invocation",
+      "runtime_status": "PREPARED_HOLD"
+    },
+    {
+      "family": "disk",
+      "full_original_family": "HOLD",
+      "local_scope": "source bound to host>=20GiB PG>=512MiB; current prerequisites unexecuted",
+      "max_payload_bytes": 4096,
+      "max_records": 8,
+      "prepared_endpoint": "PreparedCommand capacity",
+      "real_producer": "R21 capacity hostdf+PGdf at90-92",
+      "record_boundary": "whole each original df stdout/stderr",
+      "runtime_status": "PREPARED_HOLD"
+    },
+    {
+      "family": "reconstruction",
+      "full_original_family": "HOLD",
+      "local_scope": "packet recovery locally tested; original analysis CLI not invoked",
+      "max_payload_bytes": 65536,
+      "max_records": 2,
+      "prepared_endpoint": "PreparedCommand reconstruction +typed recovery",
+      "real_producer": "R21 qualification analyze -> reconstructed.json/stderr",
+      "record_boundary": "whole reconstructed JSON/error output",
+      "runtime_status": "PREPARED_HOLD"
+    },
+    {
+      "family": "returncodes",
+      "full_original_family": "HOLD",
+      "local_scope": "finite exact line endpoint tested, original outer lifecycle not launched",
+      "max_payload_bytes": 256,
+      "max_records": 32,
+      "prepared_endpoint": "RoutedLauncher.returncode",
+      "real_producer": "R21 checked/cleanup/finish/postload/analysis printf returncodes",
+      "record_boundary": "one complete original label/code line",
+      "runtime_status": "SOURCE_SUBSET"
+    },
+    {
+      "family": "ephemeral",
+      "full_original_family": "HOLD",
+      "local_scope": "os.open/os.write can bypass hooks/precharge; temp subsystem NOT covered",
+      "max_payload_bytes": 65536,
+      "max_records": 16,
+      "prepared_endpoint": "registered pure fixture subset; finite native bypass proof",
+      "real_producer": "latency TemporaryDirectory ->publish ->SOT staging/tmp/nativewrites",
+      "record_boundary": "each original write including overwritten/deleted copies",
+      "runtime_status": "BLOCKER"
+    },
+    {
+      "family": "future_observer",
+      "full_original_family": "HOLD",
+      "local_scope": "original mode off; observer absence prepared/verified in local plan, no runtime activation",
+      "max_payload_bytes": 32,
+      "max_records": 40000,
+      "prepared_endpoint": "OFF-only controls/preflight environment",
+      "real_producer": "phase_profiler/pg_monitor branch under mode=on",
+      "record_boundary": "observer records if future separately admitted",
+      "runtime_status": "ABSENT_OFF_PLAN"
+    },
+    {
+      "family": "outer_transcript",
+      "full_original_family": "HOLD",
+      "local_scope": "shell channels can be brokerprepared; Codex platform-service copy cannot be precharged by interpreter",
+      "max_payload_bytes": 1024,
+      "max_records": 128,
+      "prepared_endpoint": "future broker shell pipes; platform copy outsideowner",
+      "real_producer": "R21 inherited shellstdout/stderr + Main tool/raw retained records/platform transcript",
+      "record_boundary": "whole each inherited record/each physical retained copy",
+      "runtime_status": "BLOCKER"
+    }
+  ],
+  "local_control_assertions": "actual tests/health artifact required; authorship alone not PASS",
+  "measurement_admission": "HOLD",
+  "one_design_recommendation": "one bounded top-level prewrite broker owns all admitted child file/pipe/artifact writes with joined cleanup; platform-service transcript remains an explicit boundary/authority decision, not broker-controlled or silently excluded",
+  "schema": "r27-real-path-routing-v1",
+  "shared_cap_bytes": 10485760,
+  "whole_record_rule": "raw original writes/whole finite child streams; no splitting/truncation"
+}

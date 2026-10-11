@@ -1,0 +1,199 @@
+{
+  "status": "FAIL",
+  "cells": [
+    {
+      "concurrency": 1,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 38.639083,
+      "p95_ms": 53.612792,
+      "p99_ms": 56.497041,
+      "p95_limit_ms": 500,
+      "pass": true
+    },
+    {
+      "concurrency": 1,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 31.478416,
+      "p95_ms": 41.474291,
+      "p99_ms": 68.873542,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 1,
+      "operation": "status",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 11.173833,
+      "p95_ms": 14.254833,
+      "p99_ms": 16.724291,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 1,
+      "operation": "cancel",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 19.199666,
+      "p95_ms": 27.015041,
+      "p99_ms": 30.054667,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 248.833875,
+      "p95_ms": 456.912709,
+      "p99_ms": 527.916751,
+      "p95_limit_ms": 500,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 218.256001,
+      "p95_ms": 321.560208,
+      "p99_ms": 336.086916,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "status",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 80.517334,
+      "p95_ms": 124.732542,
+      "p99_ms": 225.679625,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 10,
+      "operation": "cancel",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 159.009333,
+      "p95_ms": 224.660958,
+      "p99_ms": 267.831084,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 25,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 604.218625,
+      "p95_ms": 963.140043,
+      "p99_ms": 1012.916751,
+      "p95_limit_ms": 500,
+      "pass": false
+    },
+    {
+      "concurrency": 25,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 592.815834,
+      "p95_ms": 839.311376,
+      "p99_ms": 954.666584,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 25,
+      "operation": "status",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 205.613375,
+      "p95_ms": 345.657292,
+      "p99_ms": 371.20175,
+      "p95_limit_ms": 1000,
+      "pass": true
+    },
+    {
+      "concurrency": 25,
+      "operation": "cancel",
+      "samples": 100,
+      "failures": 3,
+      "p50_ms": 449.639125,
+      "p95_ms": 743.759833,
+      "p99_ms": 1035.612751,
+      "p95_limit_ms": 1000,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "admission",
+      "samples": 100,
+      "failures": 0,
+      "p50_ms": 1242.678375,
+      "p95_ms": 1840.407626,
+      "p99_ms": 2239.412918,
+      "p95_limit_ms": 500,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "submit",
+      "samples": 100,
+      "failures": 80,
+      "p50_ms": 1021.48075,
+      "p95_ms": 1126.457167,
+      "p99_ms": 1189.17225,
+      "p95_limit_ms": 1000,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "status",
+      "samples": 20,
+      "failures": 1,
+      "p50_ms": 122.229208,
+      "p95_ms": 919.985417,
+      "p99_ms": 994.849959,
+      "p95_limit_ms": 1000,
+      "pass": false
+    },
+    {
+      "concurrency": 50,
+      "operation": "cancel",
+      "samples": 20,
+      "failures": 3,
+      "p50_ms": 170.181167,
+      "p95_ms": 997.366709,
+      "p99_ms": 1011.957417,
+      "p95_limit_ms": 1000,
+      "pass": false
+    }
+  ],
+  "profile": {
+    "runner_cpus": 4,
+    "runner_memory_gib": 4,
+    "postgres_cpus": 2,
+    "postgres_memory_mib": 4096,
+    "postgres_data_tmpfs_gib": 3,
+    "samples_per_operation_load": 100,
+    "corpus": "one permitted signed synthetic SOT reference",
+    "auth": "synthetic current subject dependency only; real API middleware/router/policy/domain paths",
+    "rate_limits_enabled": true,
+    "finite_test_window_render_quota": 5000,
+    "finite_test_window_read_quota": 5000,
+    "rate_window_seconds": 60,
+    "no_worker": true,
+    "no_provider": true,
+    "recorder": "per_observation_host_backed_JSONL_append_flush_final_JSON"
+  },
+  "limits": "Request service time includes pool contention while an acquired case slot is held; semaphore queue excluded. Declared finite synthetic rate quotas cover burst samples, not serving default30 writes/120reads per minute certification. Local ASGI not network/UI/mobile/OIDC latency, provider/render time or production load certification."
+}

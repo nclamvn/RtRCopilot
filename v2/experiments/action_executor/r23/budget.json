@@ -1,0 +1,18 @@
+{
+  "capacity_events": 51200,
+  "capture_admission": "HOLD",
+  "event_bytes": 32,
+  "framing_bytes": 1810,
+  "hypothetical_declared_total_bytes": null,
+  "observer_wire_bytes": 1281810,
+  "original_bounds_proved": false,
+  "original_components": [
+    "original_journal_final_json",
+    "original_stderr_stdout",
+    "process_owner_supervisor",
+    "source_contract_checks_and_closure"
+  ],
+  "raw_cap_bytes": 10485760,
+  "reachable_max_events": 40000,
+  "unresolved": "No source-proved maxima for original outputs; declarations/reserves and R21 actual sizes are not proofs. Polling cap can overshoot."
+}

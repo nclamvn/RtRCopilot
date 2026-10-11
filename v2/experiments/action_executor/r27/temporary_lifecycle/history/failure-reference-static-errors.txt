@@ -1,0 +1,5 @@
+New failure-reference control used native.writer.digest, which strict mypy rejects as a non-exported imported module attribute:
+test_lifecycle.py:296: Module "native" does not explicitly export attribute "writer" [attr-defined]
+test_lifecycle.py:301: Module "native" does not explicitly export attribute "writer" [attr-defined]
+Found 2 errors in 1 file (checked 6 source files)
+Correction: explicit hashlib.sha256(...).hexdigest() in test only. No runtime semantic change.

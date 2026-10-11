@@ -1,0 +1,26 @@
+[
+  {
+    "cmd": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 MYPYPATH=v2/apps/backend/src v2/apps/backend/.venv/bin/python -B -m mypy --strict --follow-imports=silent --cache-dir=/dev/null --no-incremental --config-file=v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/real_path/writer.py v2/experiments/action_executor/r27/real_path/adapter.pyi v2/experiments/action_executor/r27/real_path/ports.py v2/experiments/action_executor/r27/real_path/host.py v2/experiments/action_executor/r27/real_path/transport.py v2/experiments/action_executor/r27/real_path/finite.py v2/experiments/action_executor/r27/real_path/ipc_child.py v2/experiments/action_executor/r27/real_path/test_core.py v2/experiments/action_executor/r27/real_path/checks.py v2/experiments/action_executor/r27/real_path/composition.py v2/experiments/action_executor/r27/real_path/controller.py v2/experiments/action_executor/r27/real_path/routing.py v2/experiments/action_executor/r27/real_path/test_runtime_path.py",
+    "chunk_id": "7914d7",
+    "wall_time_seconds": 6.553808917,
+    "exit_code": 0,
+    "original_token_count": 11,
+    "output": "Success: no issues found in 13 source files\n"
+  },
+  {
+    "cmd": "v2/apps/backend/.venv/bin/python -B -m ruff check --config v2/apps/backend/pyproject.toml --no-cache v2/experiments/action_executor/r27/real_path/writer.py  v2/experiments/action_executor/r27/real_path/ports.py v2/experiments/action_executor/r27/real_path/host.py v2/experiments/action_executor/r27/real_path/transport.py v2/experiments/action_executor/r27/real_path/finite.py v2/experiments/action_executor/r27/real_path/ipc_child.py v2/experiments/action_executor/r27/real_path/test_core.py v2/experiments/action_executor/r27/real_path/checks.py v2/experiments/action_executor/r27/real_path/composition.py v2/experiments/action_executor/r27/real_path/controller.py v2/experiments/action_executor/r27/real_path/routing.py v2/experiments/action_executor/r27/real_path/test_runtime_path.py",
+    "chunk_id": "9dd17c",
+    "wall_time_seconds": 0.000006833,
+    "exit_code": 1,
+    "original_token_count": 168,
+    "output": "SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements\n   --> v2/experiments/action_executor/r27/real_path/test_core.py:333:17\n    |\n331 |                   assert server._server is not None\n332 |                   server._deadline = time.monotonic() + 0.01\n333 | /                 with patch.object(server._server, \"wait_closed\", delayed_join):\n334 | |                     with pytest.raises(TimeoutError):\n    | |_____________________________________________________^\n335 |                           await server.close()\n336 |                   join = server._server_join\n    |\nhelp: Combine `with` statements\n\nFound 1 error.\n"
+  },
+  {
+    "cmd": "v2/apps/backend/.venv/bin/python -B -m ruff format --check --config v2/apps/backend/pyproject.toml --no-cache v2/experiments/action_executor/r27/real_path/writer.py  v2/experiments/action_executor/r27/real_path/ports.py v2/experiments/action_executor/r27/real_path/host.py v2/experiments/action_executor/r27/real_path/transport.py v2/experiments/action_executor/r27/real_path/finite.py v2/experiments/action_executor/r27/real_path/ipc_child.py v2/experiments/action_executor/r27/real_path/test_core.py v2/experiments/action_executor/r27/real_path/checks.py v2/experiments/action_executor/r27/real_path/composition.py v2/experiments/action_executor/r27/real_path/controller.py v2/experiments/action_executor/r27/real_path/routing.py v2/experiments/action_executor/r27/real_path/test_runtime_path.py",
+    "chunk_id": "d90422",
+    "wall_time_seconds": 0.000008125,
+    "exit_code": 0,
+    "original_token_count": 7,
+    "output": "12 files already formatted\n"
+  }
+]

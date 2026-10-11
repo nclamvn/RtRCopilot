@@ -1,0 +1,250 @@
+[
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization",
+    "retrieved_at": "2026-10-06T02:15:31.913917+00:00",
+    "source_family": "MCP",
+    "source_id": "mcp-authorization",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization",
+    "retrieved_at": "2026-10-06T02:15:31.919084+00:00",
+    "source_family": "MCP",
+    "source_id": "mcp-authorization",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices",
+    "retrieved_at": "2026-10-06T02:15:31.914368+00:00",
+    "source_family": "MCP",
+    "source_id": "mcp-security",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://modelcontextprotocol.io/docs/tutorials/security/security_best_practices",
+    "retrieved_at": "2026-10-06T02:15:31.918944+00:00",
+    "source_family": "MCP",
+    "source_id": "mcp-security",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://modelcontextprotocol.io/specification/2026-07-28/server/tools",
+    "retrieved_at": "2026-10-06T02:15:31.914505+00:00",
+    "source_family": "MCP",
+    "source_id": "mcp-tools",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://modelcontextprotocol.io/specification/2025-11-25/server/tools",
+    "retrieved_at": "2026-10-06T02:15:31.919009+00:00",
+    "source_family": "MCP",
+    "source_id": "mcp-tools",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html",
+    "retrieved_at": "2026-10-06T02:15:31.914602+00:00",
+    "source_family": "MCP",
+    "source_id": "mcp-tasks",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks",
+    "retrieved_at": "2026-10-06T02:15:31.918860+00:00",
+    "source_family": "MCP",
+    "source_id": "mcp-tasks",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/",
+    "retrieved_at": "2026-10-06T02:15:31.927314+00:00",
+    "source_family": "Pydantic",
+    "source_id": "pydantic-durable",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://ai.pydantic.dev/durable_execution/overview/",
+    "retrieved_at": "2026-10-06T02:15:31.927768+00:00",
+    "source_family": "Pydantic",
+    "source_id": "pydantic-durable",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://pydantic.dev/docs/ai/mcp/overview/",
+    "retrieved_at": "2026-10-06T02:15:31.927903+00:00",
+    "source_family": "Pydantic",
+    "source_id": "pydantic-mcp",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://ai.pydantic.dev/mcp/overview/",
+    "retrieved_at": "2026-10-06T02:15:31.928442+00:00",
+    "source_family": "Pydantic",
+    "source_id": "pydantic-mcp",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/",
+    "retrieved_at": "2026-10-06T02:15:31.928150+00:00",
+    "source_family": "Pydantic",
+    "source_id": "pydantic-deferred",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://ai.pydantic.dev/deferred-tools/",
+    "retrieved_at": "2026-10-06T02:15:31.928513+00:00",
+    "source_family": "Pydantic",
+    "source_id": "pydantic-deferred",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://docs.dbos.dev/python/tutorials/workflow-tutorial",
+    "retrieved_at": "2026-10-06T02:15:31.928347+00:00",
+    "source_family": "DBOS",
+    "source_id": "dbos-workflows",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://docs.dbos.dev/python/tutorials/step-tutorial",
+    "retrieved_at": "2026-10-06T02:15:31.935936+00:00",
+    "source_family": "DBOS",
+    "source_id": "dbos-steps",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://docs.dbos.dev/python/tutorials/queue-tutorial",
+    "retrieved_at": "2026-10-06T02:15:31.937452+00:00",
+    "source_family": "DBOS",
+    "source_id": "dbos-queues",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://docs.dbos.dev/architecture",
+    "retrieved_at": "2026-10-06T02:15:31.937150+00:00",
+    "source_family": "DBOS",
+    "source_id": "dbos-architecture",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://docs.temporal.io/workflows",
+    "retrieved_at": "2026-10-06T02:15:31.937552+00:00",
+    "source_family": "Temporal",
+    "source_id": "temporal-workflows",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://docs.temporal.io/activities",
+    "retrieved_at": "2026-10-06T02:15:31.943891+00:00",
+    "source_family": "Temporal",
+    "source_id": "temporal-activities",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://docs.langchain.com/oss/python/langgraph/persistence",
+    "retrieved_at": "2026-10-06T02:15:31.946525+00:00",
+    "source_family": "LangChain",
+    "source_id": "langgraph-persistence",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://docs.langchain.com/oss/python/langgraph/interrupts",
+    "retrieved_at": "2026-10-06T02:15:31.946304+00:00",
+    "source_family": "LangChain",
+    "source_id": "langgraph-interrupts",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://docs.restate.dev/foundations/services",
+    "retrieved_at": "2026-10-06T02:15:31.946712+00:00",
+    "source_family": "Restate",
+    "source_id": "restate-services",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://learn.microsoft.com/en-us/azure/durable-task/sdks/durable-agents-microsoft-agent-framework",
+    "retrieved_at": "2026-10-06T02:15:31.951845+00:00",
+    "source_family": "Microsoft",
+    "source_id": "microsoft-durable",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://learn.microsoft.com/en-us/agent-framework/workflows/functional",
+    "retrieved_at": "2026-10-06T02:15:31.954598+00:00",
+    "source_family": "Microsoft",
+    "source_id": "microsoft-functional",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://www.anthropic.com/engineering/building-effective-agents",
+    "retrieved_at": "2026-10-06T02:15:31.955451+00:00",
+    "source_family": "Anthropic",
+    "source_id": "anthropic-agents",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+    "retrieved_at": "2026-10-06T02:15:31.955571+00:00",
+    "source_family": "Anthropic",
+    "source_id": "anthropic-context",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+    "retrieved_at": "2026-10-06T02:15:31.960297+00:00",
+    "source_family": "Anthropic",
+    "source_id": "anthropic-tools",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+    "retrieved_at": "2026-10-06T02:15:31.962984+00:00",
+    "source_family": "Anthropic",
+    "source_id": "anthropic-evals",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://www.w3.org/TR/prov-overview/",
+    "retrieved_at": "2026-10-06T02:15:31.964287+00:00",
+    "source_family": "W3C",
+    "source_id": "w3c-prov",
+    "status": "failed"
+  },
+  {
+    "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+    "requested_url": "https://opentelemetry.io/docs/specs/semconv/gen-ai/",
+    "retrieved_at": "2026-10-06T02:15:31.964455+00:00",
+    "source_family": "OpenTelemetry",
+    "source_id": "otel-genai",
+    "status": "failed"
+  }
+]

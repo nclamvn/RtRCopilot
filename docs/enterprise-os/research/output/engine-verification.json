@@ -1,0 +1,38 @@
+{
+  "aggregates": {
+    "cells_by_state": {
+      "null": 56,
+      "sourced": 64
+    },
+    "coverage_pct": 100.0,
+    "n_entities": 24,
+    "rollup": {
+      "agent-durability": 2,
+      "agent-evaluation": 1,
+      "agent-methodology": 3,
+      "agent-protocol": 1,
+      "agent-state": 1,
+      "durable-architecture": 1,
+      "durable-step": 2,
+      "durable-workflow": 3,
+      "human-approval": 2,
+      "observability-conventions": 1,
+      "protocol-security": 2,
+      "protocol-tasks": 1,
+      "protocol-tools": 1,
+      "provenance-standard": 1,
+      "workflow-composition": 1,
+      "workflow-queue": 1
+    },
+    "rollup_field": "category",
+    "universe_estimate": 24
+  },
+  "bites_exit_code": 0,
+  "bites_not_applicable": 7,
+  "bites_passed": 7,
+  "claims_sha256": "5ec706e735ff7744e949ef70590e5f09043395057d98c7d30e53f7ef6cac37b6",
+  "engine_auditor": true,
+  "engine_idempotent": true,
+  "manifest_sha256": "09a3a993ea634cad7458765b1b9156aa6301419ffb7b4f36d0ebeeceaa66fec7",
+  "registry_sha256": "ec56fd8a629560a3fbbd91130d5e6f70390ade22fa34204a668d8e77fbd2c4f3"
+}

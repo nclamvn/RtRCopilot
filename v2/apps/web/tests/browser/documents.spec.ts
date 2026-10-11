@@ -8,13 +8,24 @@ const fileVersionId = "55555555-5555-4555-8555-555555555555";
 const renditionId = "66666666-6666-4666-8666-666666666666";
 const sha = "a".repeat(64);
 
-async function mockDocuments(page: Page) {
+async function mockDocuments(page: Page, recovery?: {state: "failed" | "rendering"; exhausted?: boolean}) {
+  const requests: Array<{path: string; method: string}> = [];
+  let retried = false;
+  let cancelled = false;
+  // Keep shell reads hermetic too; no request reaches an operational backend.
+  await page.route("**/api/ask/conversations**", route => route.fulfill({json: {
+    items: [], next_cursor: null,
+  }}));
+  await page.route("**/api/status", route => route.fulfill({status: 503, json: {
+    error: {code: "service_unavailable"},
+  }}));
   await page.route("**/api/auth/me", route => route.fulfill({json: {
     user_id: "77777777-7777-4777-8777-777777777777",
     email: "staff@rtrobotics.com", display_name: "RtR Staff", roles: ["staff"],
   }}));
   await page.route("**/api/document-os/**", async route => {
     const path = new URL(route.request().url()).pathname;
+    requests.push({path, method: route.request().method()});
     if (path === "/api/document-os/templates") return route.fulfill({json: {items: [{
       template_id: templateId, version_id: templateVersionId,
       stable_key: "official.report", display_name: "Báo cáo vận hành",
@@ -45,6 +56,28 @@ async function mockDocuments(page: Page) {
     }});
     if (path.endsWith("/render") && route.request().method() === "POST") {
       return route.fulfill({json: {render_job_id: renderJobId, state: "pending", progress: 0}});
+    }
+    if (path.endsWith(`/render-jobs/${renderJobId}/retry`)) {
+      retried = true;
+      return route.fulfill({json: {
+        render_job_id: renderJobId, state: "pending", progress: 0,
+        attempt: 1, max_attempts: 3, retryable: false,
+      }});
+    }
+    if (path.endsWith(`/render-jobs/${renderJobId}/cancel`)) {
+      cancelled = true;
+      return route.fulfill({json: {
+        render_job_id: renderJobId, state: "cancelled", progress: 100,
+        attempt: 1, max_attempts: 3, retryable: true,
+      }});
+    }
+    if (path.endsWith(`/render-jobs/${renderJobId}`) && recovery && !retried) {
+      return route.fulfill({json: {
+        render_job_id: renderJobId, state: cancelled ? "cancelled" : recovery.state,
+        progress: 100, attempt: recovery.exhausted ? 3 : 1, max_attempts: 3,
+        retryable: recovery.state === "failed" && !recovery.exhausted,
+        error_code: "render_lease_expired", message: "api_key=NEVER-SHOW-SYNTHETIC",
+      }});
     }
     if (path.endsWith(`/render-jobs/${renderJobId}`)) return route.fulfill({json: {
       render_job_id: renderJobId, state: "completed", progress: 100,
@@ -92,6 +125,7 @@ async function mockDocuments(page: Page) {
     }]}});
     return route.fulfill({status: 404, json: {error: {code: "not_found"}}});
   });
+  return requests;
 }
 
 test("authorized user binds SOT, renders and sees official draft truth", async ({page}) => {
@@ -132,4 +166,43 @@ test("mobile Documents workspace has no page overflow and opens both drawers", a
   await expect(page.getByRole("complementary", {name: "Bằng chứng & xuất xứ"})).not.toHaveClass(/open/);
   await page.waitForTimeout(250);
   await page.screenshot({path: "test-results/tip009-documents-mobile.png", fullPage: true});
+});
+
+test("TIP054 expired render explains recovery and retries the same job to preview", async ({page}) => {
+  const requests = await mockDocuments(page, {state: "failed"});
+  await page.goto("/documents");
+  await page.getByRole("button", {name: "Tạo bản xem"}).click();
+  await expect(page.getByText("Bản dựng đã dừng vì quá thời gian xử lý.")).toBeVisible();
+  await page.getByRole("button", {name: "Thử lại bản dựng"}).click();
+  await expect(page.getByRole("region", {name: "Lưới bảng tính"})).toBeVisible();
+  expect(requests.filter(request => request.path.endsWith("/render"))).toHaveLength(1);
+  expect(requests.filter(request => request.path.endsWith("/retry"))).toEqual([{
+    path: `/api/document-os/documents/render-jobs/${renderJobId}/retry`, method: "POST",
+  }]);
+  await expect(page.locator("body")).not.toContainText("NEVER-SHOW-SYNTHETIC");
+  await expect(page.locator(".top-state")).toContainText("Hoàn tất");
+});
+
+test("TIP054 pending cancellation stops polling and has honest cancelled state", async ({page}) => {
+  const requests = await mockDocuments(page, {state: "rendering"});
+  await page.goto("/documents");
+  await page.getByRole("button", {name: "Tạo bản xem"}).click();
+  await page.getByRole("button", {name: "Hủy bản dựng"}).click();
+  await expect(page.locator(".top-state")).toContainText("Đã hủy");
+  const polls = requests.filter(request => request.path.endsWith(`/render-jobs/${renderJobId}`)).length;
+  await page.waitForTimeout(900);
+  expect(requests.filter(request => request.path.endsWith(`/render-jobs/${renderJobId}`)))
+    .toHaveLength(polls);
+  await expect(page.locator(".assembly-desk").getByRole("alert")).toHaveCount(0);
+  await expect(page.getByRole("button", {name: "Hủy bản dựng"})).toHaveCount(0);
+});
+
+test("TIP054 exhausted render has an actionable explanation without another retry", async ({page}) => {
+  await mockDocuments(page, {state: "failed", exhausted: true});
+  await page.goto("/documents");
+  await page.getByRole("button", {name: "Tạo bản xem"}).click();
+  await expect(page.getByText(/Đã hết số lần thử cho công việc này/)).toBeVisible();
+  await expect(page.getByRole("button", {name: "Thử lại bản dựng"})).toHaveCount(0);
+  await expect(page.locator("body")).not.toContainText("render_lease_expired");
+  await expect(page.locator("body")).not.toContainText("NEVER-SHOW-SYNTHETIC");
 });

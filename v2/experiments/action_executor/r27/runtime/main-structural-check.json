@@ -1,0 +1,29 @@
+{
+  "schema": "r27-runtime-main-structural-v1",
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 v2/apps/backend/.venv/bin/python -B - <<'PY'\nimport ast,hashlib,json,xml.etree.ElementTree as ET\nfrom pathlib import Path\nR=Path('/Users/os/RtR/KnowledgeBase/RtR_Copilot')\nH=R/'v2/experiments/action_executor/r27/runtime'\ndef sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()\nbinding=json.loads((H/'input-binding.json').read_bytes())\ncandidate=json.loads((H/'candidate.json').read_bytes())\nassert sha(H/'input-binding.json')=='192974e7042b8c3d0aa966732fa23ea2760c69a785cd5f79dfe87a6ff57264d0'\nassert sha(H/'candidate.json')=='3c3feb38f12c94c116a63eb2e9f868aaa62d62af90cb41b2ac23f240f6ec4e40'\nfor group in ('anchors','direct'):\n for name,value in binding[group].items():\n  p=R/name\n  assert not any(q.is_symlink() for q in (p,*p.parents))\n  assert sha(p)==value\nfor name,value in candidate['sources'].items():\n assert sha(R/name)==value\nown=sorted(p.name for p in H.iterdir() if p.suffix in ('.py','.pyi'))\nassert len(own)==14\nassert all(str((H/n).relative_to(R)) in candidate['sources'] for n in own)\nfor n in own: ast.parse((H/n).read_bytes())\nold=R/'v2/experiments/action_executor/r27/retention/adapter.py'\nexpected=old.read_bytes().replace(b'R27 retention derived',b'R27 runtime derived').replace(b'outside retention',b'outside runtime').replace(b'R27OWNR1',b'R27OWNR2').replace(b'R27SEAR1',b'R27SEAR2')\nassert (H/'adapter.py').read_bytes()==expected\nxml=ET.parse(H/'runtime-unit.xml')\ncases=xml.findall('.//testcase')\nassert len(cases)==len({(e.attrib.get('classname'),e.attrib['name']) for e in cases})==27\nassert not xml.findall('.//failure') and not xml.findall('.//error') and not xml.findall('.//skipped')\nroutes=json.loads((H/'routing.json').read_bytes())\nassert len(routes['families'])==20 and all(r['full_original_family']=='HOLD' for r in routes['families'])\nplan=candidate['plan']\nassert plan['databases']==['rtr_tip054_r27_local_e1','rtr_tip054_r27_engine_e1']\nassert plan['epoch']=='r27_runtime_http_e1' and plan['dispatch_surface']=='NONE'\nassert plan['whole_record_cap_bytes']==10485760\nmarker=R/'v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1/r19/r27-runtime-campaign-launch.json'\nassert not marker.exists()\nscratch=[p.name for p in H.iterdir() if p.is_dir() and (p.name.startswith('.runtime-') or p.name.startswith('.retention-test-') or p.name.startswith('codex-tmp-r27-launcher-'))]\nassert not scratch\nassert not (R/'.mypy_cache').exists()\nhistory=ET.parse(H/'launcher-unit-e1.xml')\ninitial=history.find('.//testsuite')\nassert initial is not None and initial.attrib['tests']=='8' and initial.attrib['failures']=='2'\nprint(json.dumps({'status':'PASS','direct_pins':len(binding['direct']),'anchors':len(binding['anchors']),'candidate_source_pins':len(candidate['sources']),'authored_syntax_files':len(own),'adapter_derivation':'EXACT_ONLY_ROOT_VERSION_MAGIC_SUBSTITUTIONS','full_class_unique_units':len(cases),'full_routes':'20/20 HOLD','fresh_marker':'ABSENT_UNTOUCHED','namespace':'R27_NEW_PREPARED_ONLY','failed_launcher_epoch':'6 PASS/2 FAIL preserved','owned_scratch':scratch,'mypy_cache':'ABSENT','binding_sha256':sha(H/'input-binding.json'),'candidate_sha256':sha(H/'candidate.json'),'effects':'NONE'},indent=2,sort_keys=True))\nPY",
+  "result": {
+    "chunk_id": "3751ca",
+    "wall_time_seconds": 0.000008334,
+    "exit_code": 0,
+    "original_token_count": 160,
+    "output": "{\n  \"adapter_derivation\": \"EXACT_ONLY_ROOT_VERSION_MAGIC_SUBSTITUTIONS\",\n  \"anchors\": 1,\n  \"authored_syntax_files\": 14,\n  \"binding_sha256\": \"192974e7042b8c3d0aa966732fa23ea2760c69a785cd5f79dfe87a6ff57264d0\",\n  \"candidate_sha256\": \"3c3feb38f12c94c116a63eb2e9f868aaa62d62af90cb41b2ac23f240f6ec4e40\",\n  \"candidate_source_pins\": 33,\n  \"direct_pins\": 42,\n  \"effects\": \"NONE\",\n  \"failed_launcher_epoch\": \"6 PASS/2 FAIL preserved\",\n  \"fresh_marker\": \"ABSENT_UNTOUCHED\",\n  \"full_class_unique_units\": 27,\n  \"full_routes\": \"20/20 HOLD\",\n  \"mypy_cache\": \"ABSENT\",\n  \"namespace\": \"R27_NEW_PREPARED_ONLY\",\n  \"owned_scratch\": [],\n  \"status\": \"PASS\"\n}\n"
+  },
+  "feedback": {
+    "adapter_derivation": "EXACT_ONLY_ROOT_VERSION_MAGIC_SUBSTITUTIONS",
+    "anchors": 1,
+    "authored_syntax_files": 14,
+    "binding_sha256": "192974e7042b8c3d0aa966732fa23ea2760c69a785cd5f79dfe87a6ff57264d0",
+    "candidate_sha256": "3c3feb38f12c94c116a63eb2e9f868aaa62d62af90cb41b2ac23f240f6ec4e40",
+    "candidate_source_pins": 33,
+    "direct_pins": 42,
+    "effects": "NONE",
+    "failed_launcher_epoch": "6 PASS/2 FAIL preserved",
+    "fresh_marker": "ABSENT_UNTOUCHED",
+    "full_class_unique_units": 27,
+    "full_routes": "20/20 HOLD",
+    "mypy_cache": "ABSENT",
+    "namespace": "R27_NEW_PREPARED_ONLY",
+    "owned_scratch": [],
+    "status": "PASS"
+  }
+}

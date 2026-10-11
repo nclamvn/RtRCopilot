@@ -1,0 +1,140 @@
+{
+  "schema": "r27-retention-routing-v1",
+  "scope": "isolated cooperative Python helper interpreter",
+  "default_enabled": false,
+  "measurement_admission": "HOLD",
+  "retention_adoption": "APPROVED isolated experimental finite retention by 2026-10-10 user decision/SCOPE.md; old R25 proposal label is historical, no campaign/full-capture grant",
+  "shared_cap": 10485760,
+  "prepaid_reserve": 16988,
+  "accounting": "340 closure +264 packet controls +16384 native metadata reserve, each packet11+payload and each physical write charged before I/O, no refund on overwrite/delete/failure; each stdout original write/StreamHandler.emit is a record, fixed child pipe is a whole stream not chunks",
+  "boundaries": "open/io.open/os.mkdir only canonical registered roots; selected logger state restored, no arbitrary native/cached descriptor/Bash/Docker/outer coverage",
+  "families": [
+    {
+      "id": "frozen_copies",
+      "coverage": "ABSENT",
+      "invocation": "No original shell cp invoked; native copy API capacity alone not original route.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "literal_controls",
+      "coverage": "HOLD",
+      "invocation": "Original run_phase_baseline literal writer unconnected.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "literal_scope",
+      "coverage": "HOLD",
+      "invocation": "Original shell printf unconnected.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "launch_review",
+      "coverage": "HOLD",
+      "invocation": "Original launch-marker/review shell path unconnected.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "journal",
+      "coverage": "SUBSET",
+      "invocation": "Exact retain39–42 source body with1600 static records through real owned file +packet; no original requests/main.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "final_samples",
+      "coverage": "SUBSET",
+      "invocation": "Exact finally samples.json write expression through real owned file +packet; not entire driver finally/app/engine.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "summary_stdout",
+      "coverage": "SUBSET",
+      "invocation": "Exact summary/report/write/print/FAIL oracle source block; physical summary+raw stdout write calls +packet charged.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "load_stderr",
+      "coverage": "SUBSET",
+      "invocation": "Actual full StructuredAuditSink.emit/AuditEvent, scoped StreamHandler original rendered writes. Finite raw child whole stderr also tested; arbitrary app logging unconnected.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "migration_streams",
+      "coverage": "HOLD",
+      "invocation": "Effectful migration command disabled.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "owner_process",
+      "coverage": "HOLD",
+      "invocation": "Original bounded owner/process direct files unconnected.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "supervisor_stop",
+      "coverage": "HOLD",
+      "invocation": "Original signal/cleanup supervisor disabled.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "source_cap_child",
+      "coverage": "SUBSET",
+      "invocation": "New native metadata hash binding; original source/cap child output paths unconnected.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "fixture",
+      "coverage": "HOLD",
+      "invocation": "Full signed file builder tested, but full publication/staging/fixture inspection path not invoked.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "database_admin",
+      "coverage": "HOLD",
+      "invocation": "No SQL/admin effects or command output route executed.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "disk",
+      "coverage": "ABSENT",
+      "invocation": "No capacity command producer invoked by this helper.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "reconstruction",
+      "coverage": "HOLD",
+      "invocation": "New strict owned recovery works; original CLI output remains unconnected.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "returncodes",
+      "coverage": "HOLD",
+      "invocation": "Original shell process/cleanup output writer unconnected.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "ephemeral",
+      "coverage": "SUBSET",
+      "invocation": "Actual full build_package pure file/schema/HMAC producer: fivefiles/sixwrites (attestation overwritten); not publisher/stager/temp subsystem globally.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "future_observer",
+      "coverage": "ABSENT",
+      "invocation": "No observer installed or attribution event emitted.",
+      "full_original_family": "HOLD"
+    },
+    {
+      "id": "outer_transcript",
+      "coverage": "HOLD",
+      "invocation": "Parent/tool/raw outer transcript not exclusive owned by helper.",
+      "full_original_family": "HOLD"
+    }
+  ],
+  "full_producer_calls": [
+    "sot_fixtures.build_package (pure owned files/schema/HMAC only)",
+    "StructuredAuditSink.emit/AuditEvent (pure scoped logging only)",
+    "RequestConnection full constructor/join_terminal (real awaits/fake nonconnecting engine; no SQL/lease)"
+  ],
+  "execution_gate": "DENY campaign until original Bash/admin/launch/supervisor/native/cached descriptor/tmp/outer routes are exclusively mapped and bounded. Twenty local closure receipts cannot override this gate.",
+  "reference_status": "R21 SLA FAILED/EXE009 OPEN; no performance tuning/repair or serving activation"
+}

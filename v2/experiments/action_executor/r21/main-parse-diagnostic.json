@@ -1,0 +1,9 @@
+{
+  "actor": "Main",
+  "initial_readonly_parse": {"chunk_id": "7b5fd6", "exit_code": 1, "output": "AssertionError at successful-state assertion"},
+  "cause": "Main independent inline parser guessed draft instead of original admission contract_ready; actual original constant and all 400 successful admission rows are contract_ready",
+  "correction": "Correct Main read-only parser constant to original contract_ready and reparse retained raw; no source/workload modification or campaign retry",
+  "inspection_chunk": "81b10c",
+  "large_display_chunk": "a316f2",
+  "large_display_limitation": "stderr and missing-array display was truncated; do not substitute displayed excerpt for complete raw parsing"
+}

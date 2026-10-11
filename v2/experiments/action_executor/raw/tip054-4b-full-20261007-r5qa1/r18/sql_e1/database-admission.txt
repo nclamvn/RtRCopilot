@@ -1,0 +1,2 @@
+rtr_tip054_r15_local_e1 existing=0 host_kib=86905056 pg_kib=1443844
+rtr_tip054_r18_local_e1 existing=0 host_kib=86904308 pg_kib=1443844

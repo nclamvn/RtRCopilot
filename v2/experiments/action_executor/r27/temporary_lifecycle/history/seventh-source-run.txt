@@ -1,0 +1,7 @@
+{
+  "chunk_id": "735542",
+  "wall_time_seconds": 0.769039875,
+  "exit_code": 1,
+  "original_token_count": 212,
+  "output": "Traceback (most recent call last):\n  File \"<string>\", line 5, in <module>\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/native.py\", line 757, in finish\n    return recover(self.root)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/native.py\", line 1212, in recover\n    records = cast(list[adapter.Record], packet[\"records\"])\n                        ^^^^^^^^^^^^^^\nAttributeError: module 'adapter' has no attribute 'Record'\nORIGINAL {'testsRun': 1, 'failures': [], 'errors': [], 'successful': True, 'first_owner_fault': None, 'cleanup_errors': []}\nPYTEST {'exit_code': 1, 'tests': 2, 'intentional_failures': 1, 'xml_source_parts': [38, 635], 'stdout_bytes': 679, 'stderr_bytes': 21}\nCOUNTS 282 122 77 58268\n"
+}

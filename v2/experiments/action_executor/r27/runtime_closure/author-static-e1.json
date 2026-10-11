@@ -1,0 +1,1 @@
+{"lint_chunk":"4f823a","lint_exit":1,"lint_errors":24,"strict_chunk":"17b93f","strict_exit":1,"strict_errors":6,"strict_configuration_issue":"MYPYPATH omitted frozen real_path imports; one genuine tuple annotation debt","controls":"NOT_RUN","source":"history/author-static-e1"}

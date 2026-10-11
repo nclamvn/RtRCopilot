@@ -1,0 +1,67 @@
+{
+  "after": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13790869,
+    "prior_bytes": 13749891,
+    "prior_pins": 1809,
+    "scope_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "total_pins": 1814
+  },
+  "before": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13790869,
+    "prior_bytes": 13749891,
+    "prior_pins": 1809,
+    "scope_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "total_pins": 1814
+  },
+  "budget": {
+    "actual_capture_admission": "HOLD",
+    "cap": 10485760,
+    "controls": 264,
+    "normal": 9778276,
+    "terminal": 340,
+    "total": 9778880
+  },
+  "compiled_files": 3,
+  "errors": 0,
+  "failures": 0,
+  "not_run": [
+    "lint",
+    "types",
+    "power loss/process death",
+    "hostile same UID/root",
+    "runtime/async/measured integration",
+    "SQL/Docker/HTTP/external"
+  ],
+  "sandboxes_after": [],
+  "sandboxes_before": [],
+  "seconds": 0.39138454099884257,
+  "skips": 0,
+  "source_after": {
+    "adapter.py": "f3bebc3bae16c4b6392ecf5ee7edb0f2be66b4a3f64dd0c37a4c2c77cbe2b389",
+    "checks.py": "7ed29bbe4bfd75d0b2763177b2446e5cb6e58f24db66577bb08449618fc6708e",
+    "input-binding.json": "999167124e38280545959522e25dcc00e4b596779b5e01a74fb9e2601a82abd0",
+    "test_adapter.py": "8ef916740af4624f6768d1f0e742f2046f9f1dd9f64af95264f2b3473f289b68"
+  },
+  "source_before": {
+    "adapter.py": "f3bebc3bae16c4b6392ecf5ee7edb0f2be66b4a3f64dd0c37a4c2c77cbe2b389",
+    "checks.py": "7ed29bbe4bfd75d0b2763177b2446e5cb6e58f24db66577bb08449618fc6708e",
+    "input-binding.json": "999167124e38280545959522e25dcc00e4b596779b5e01a74fb9e2601a82abd0",
+    "test_adapter.py": "8ef916740af4624f6768d1f0e742f2046f9f1dd9f64af95264f2b3473f289b68"
+  },
+  "stdout": "test_exact_full_aggregate_and_control_reserve (test_adapter.FileControls.test_exact_full_aggregate_and_control_reserve) ... ok\ntest_input_closure_and_unsealed_crash_fail_closed (test_adapter.FileControls.test_input_closure_and_unsealed_crash_fail_closed) ... ok\ntest_ownership_stale_and_serialized_concurrency (test_adapter.FileControls.test_ownership_stale_and_serialized_concurrency) ... ok\ntest_real_roundtrip_raw_and_immutable_epoch (test_adapter.FileControls.test_real_roundtrip_raw_and_immutable_epoch) ... ok\ntest_real_write_flush_fsync_and_seal_faults (test_adapter.FileControls.test_real_write_flush_fsync_and_seal_faults) ... ok\ntest_strict_recovery_corruption_and_identity (test_adapter.FileControls.test_strict_recovery_corruption_and_identity) ... ok\ntest_unsafe_paths_and_contract_mismatch (test_adapter.FileControls.test_unsafe_paths_and_contract_mismatch) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.391s\n\nOK\n",
+  "tests_run": 7
+}

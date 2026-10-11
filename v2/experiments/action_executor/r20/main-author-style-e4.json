@@ -1,0 +1,32 @@
+{
+  "actor": "Main",
+  "binding_sha256": "9ee11e8257402c9038abcc8d07d5b4e3d9a09efa146a1e62b2f52702a65333ae",
+  "source_before": {
+    "chunk_id": "ec71f3",
+    "wall_time_seconds": 0.114727167,
+    "exit_code": 0,
+    "original_token_count": 4,
+    "output": "R20_PASS source\n"
+  },
+  "lint": {
+    "chunk_id": "99a333",
+    "wall_time_seconds": 0.006141167,
+    "exit_code": 0,
+    "original_token_count": 5,
+    "output": "All checks passed!\n"
+  },
+  "format": {
+    "chunk_id": "21a3c2",
+    "wall_time_seconds": 0.000009208,
+    "exit_code": 0,
+    "original_token_count": 7,
+    "output": "3 files already formatted\n"
+  },
+  "source_after": {
+    "chunk_id": "bffd2e",
+    "wall_time_seconds": 0.084711167,
+    "exit_code": 0,
+    "original_token_count": 4,
+    "output": "R20_PASS source\n"
+  }
+}

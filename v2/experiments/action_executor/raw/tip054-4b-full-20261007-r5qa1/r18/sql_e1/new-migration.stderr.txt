@@ -1,0 +1,21 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_extensions, Install cryptographic and vector extensions.
+INFO  [alembic.runtime.migration] Running upgrade 0001_extensions -> 0002_identity_persistence, Persist immutable identities and authorization assignments.
+INFO  [alembic.runtime.migration] Running upgrade 0002_identity_persistence -> 0003_resource_object_foundation, Create authorization resources and immutable object metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_resource_object_foundation -> 0004_append_only_audit, Create append-only, hash-chained audit storage and runtime grants.
+INFO  [alembic.runtime.migration] Running upgrade 0004_append_only_audit -> 0005_ingestion_renditions, Add durable ingestion, delivery and rendition provenance.
+INFO  [alembic.runtime.migration] Running upgrade 0005_ingestion_renditions -> 0006_sot_publish_provenance, Add the canonical SOT publish, provenance and reindex boundary.
+INFO  [alembic.runtime.migration] Running upgrade 0006_sot_publish_provenance -> 0007_hybrid_rag_grounded_answers, Add policy-filtered hybrid retrieval and grounded answer storage.
+INFO  [alembic.runtime.migration] Running upgrade 0007_hybrid_rag_grounded_answers -> 0008_document_operating_system, Add governed templates, deterministic render manifests and issuance.
+INFO  [alembic.runtime.migration] Running upgrade 0008_document_operating_system -> 0009_governance_research, Add governance queues, research trust zone and graduation storage.
+INFO  [alembic.runtime.migration] Running upgrade 0009_governance_research -> 0010_file_retrieval, Add immutable private-context chunks and polymorphic citations.
+INFO  [alembic.runtime.migration] Running upgrade 0010_file_retrieval -> 0011_ingestion_pub_deferred, Repair publication_deferred on upload_sessions for drifted local databases.
+INFO  [alembic.runtime.migration] Running upgrade 0011_ingestion_pub_deferred -> 0012_enterprise_governance, Add enterprise corpus, ontology and evaluation governance ledgers.
+INFO  [alembic.runtime.migration] Running upgrade 0012_enterprise_governance -> 0013_real_embedding_dim, Widen embedding columns for real semantic vectors (TIP-014RE).
+INFO  [alembic.runtime.migration] Running upgrade 0013_real_embedding_dim -> 0014_document_outbox_repair, Repair the Document OS publication outbox on drifted databases.
+INFO  [alembic.runtime.migration] Running upgrade 0014_document_outbox_repair -> 0015_generation_term_stats, Add immutable per-generation lexical term frequencies for corpus-aware IDF.
+INFO  [alembic.runtime.migration] Running upgrade 0015_generation_term_stats -> 0016_document_render_lease, Bound render ownership and fence obsolete attempts without a new runtime.
+INFO  [alembic.runtime.migration] Running upgrade 0016_document_render_lease -> 0017_context_memory, Reference-only packets and explicit bounded memory; no copied SOT facts.
+INFO  [alembic.runtime.migration] Running upgrade 0017_context_memory -> 0018_action_contracts, Immutable action contracts and bounded local domain accounting; no executor.
+INFO  [alembic.runtime.migration] Running upgrade 0018_action_contracts -> 0019_action_executor, Separate bounded execution ledger; DBOS history lives in a different database.

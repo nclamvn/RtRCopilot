@@ -1,0 +1,54 @@
+{
+  "compiled": [
+    "audit.py",
+    "test_audit.py"
+  ],
+  "errors": 0,
+  "failures": 0,
+  "health_not_run": [
+    "Ruff",
+    "type checker",
+    "runtime/async transparency",
+    "SQL",
+    "Docker",
+    "HTTP/campaign"
+  ],
+  "preservation_after": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13548945,
+    "prior_bytes": 13498377,
+    "prior_pins": 1762,
+    "total_pins": 1767
+  },
+  "preservation_before": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13548945,
+    "prior_bytes": 13498377,
+    "prior_pins": 1762,
+    "total_pins": 1767
+  },
+  "scope": "Own stdlib audit + memory-only controls; no measured source/helper import",
+  "seconds": 0.0033238339819945395,
+  "skips": 0,
+  "source_after": {
+    "audit.py": "c7c064a4c569c1de430f71353164af1af314cefe3e5e05672b336f1baa90c35a",
+    "input-binding.json": "89c65f067adfac58d738e5a315167e52d927c6b2081e5381dacfa2bb3af158a2",
+    "ledger.json": "621cb6f0f6ce07875d4b6162835301a14ee777e1de74199858505510295914aa",
+    "test_audit.py": "1b907be2af0cd72560210a8c3d858b95c0ae38b6056a3c1829b9b602b78dd1ae"
+  },
+  "source_before": {
+    "audit.py": "c7c064a4c569c1de430f71353164af1af314cefe3e5e05672b336f1baa90c35a",
+    "input-binding.json": "89c65f067adfac58d738e5a315167e52d927c6b2081e5381dacfa2bb3af158a2",
+    "ledger.json": "621cb6f0f6ce07875d4b6162835301a14ee777e1de74199858505510295914aa",
+    "test_audit.py": "1b907be2af0cd72560210a8c3d858b95c0ae38b6056a3c1829b9b602b78dd1ae"
+  },
+  "source_unchanged": true,
+  "stdout": "test_cap_exceedance_and_numeric_models (test_audit.AuditControls.test_cap_exceedance_and_numeric_models) ... ok\ntest_changed_fingerprints_and_witnesses (test_audit.AuditControls.test_changed_fingerprints_and_witnesses) ... ok\ntest_domains_framing_and_types (test_audit.AuditControls.test_domains_framing_and_types) ... ok\ntest_missing_duplicate_unknown_producers (test_audit.AuditControls.test_missing_duplicate_unknown_producers) ... ok\ntest_positive_model_never_admits_capture (test_audit.AuditControls.test_positive_model_never_admits_capture) ... ok\ntest_unproved_quantities_cannot_be_promoted (test_audit.AuditControls.test_unproved_quantities_cannot_be_promoted) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.003s\n\nOK\n",
+  "tests_run": 6
+}

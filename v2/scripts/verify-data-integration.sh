@@ -217,7 +217,7 @@ run_migration upgrade 0013_real_embedding_dim
 run_migration upgrade 0014_document_outbox_repair
 owner_sql "SELECT to_regclass('public.document_publication_outbox') IS NOT NULL" \
   | grep -q "t"
-run_migration upgrade 0015_generation_term_stats
+run_migration upgrade 0018_action_contracts
 owner_sql "SELECT to_regclass('public.search_generation_term_stats') IS NOT NULL
   AND EXISTS (
     SELECT 1 FROM pg_indexes
@@ -226,7 +226,7 @@ owner_sql "SELECT to_regclass('public.search_generation_term_stats') IS NOT NULL
 run_migration downgrade 0014_document_outbox_repair
 owner_sql "SELECT to_regclass('public.search_generation_term_stats') IS NULL" \
   | grep -q "t"
-run_migration upgrade 0015_generation_term_stats
+run_migration upgrade 0018_action_contracts
 run_migration downgrade 0004_append_only_audit
 owner_sql "SELECT to_regclass('public.ingestion_jobs') IS NULL" | grep -q "t"
 run_migration upgrade 0005_ingestion_renditions

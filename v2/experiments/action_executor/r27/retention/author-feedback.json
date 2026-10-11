@@ -1,0 +1,89 @@
+{
+  "schema": "r27-retention-builder-feedback-v1",
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/bin/python -B v2/experiments/action_executor/r27/retention/checks.py",
+  "launch_tool": {
+    "chunk_id": "f63eb7",
+    "wall_time_seconds": 1.001810042,
+    "session_id": 15399,
+    "original_token_count": 0,
+    "output": ""
+  },
+  "final_tool": {
+    "chunk_id": "c97f1e",
+    "wall_time_seconds": 0.000008417,
+    "exit_code": 0,
+    "original_token_count": 1271,
+    "output": "Executing <Task pending name='Task-2' coro=<AsyncControls.test_unframed_pipes_full_terminal_class_and_repeated_cancellation() running at /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/retention/test_retention.py:420> wait_for=<Future pending cb=[shield.<locals>._outer_done_callback() at /Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/asyncio/tasks.py:922, Task.task_wakeup()] created at /Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/asyncio/base_events.py:448> cb=[_run_until_complete_cb() at /Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/asyncio/base_events.py:181] created at /Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/asyncio/runners.py:100> took 0.297 seconds\n{\n  \"after\": {\n    \"digests\": {\n      \"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\",\n      \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"\n    },\n    \"input_bytes\": 14010648,\n    \"prior_bytes\": 13886903,\n    \"prior_pins\": 1840,\n    \"scope_counts\": {\n      \"product\": 204,\n      \"tests\": 192\n    },\n    \"total_pins\": 1862\n  },\n  \"before\": {\n    \"digests\": {\n      \"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\",\n      \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"\n    },\n    \"input_bytes\": 14010648,\n    \"prior_bytes\": 13886903,\n    \"prior_pins\": 1840,\n    \"scope_counts\": {\n      \"product\": 204,\n      \"tests\": 192\n    },\n    \"total_pins\": 1862\n  },\n  \"compiled_files\": 7,\n  \"errors\": 0,\n  \"failures\": 0,\n  \"measurement_admission\": \"HOLD\",\n  \"not_run\": [\n    \"SQL/Docker/HTTP/load\",\n    \"native/cached fd/outer/Bash exclusivity\",\n    \"physical lease proof\",\n    \"hostile same UID/root\",\n    \"power-loss proof\"\n  ],\n  \"sandboxes_after\": [],\n  \"sandboxes_before\": [],\n  \"scope\": \"Real isolated Python producers/files/copies/logging/unframed finite pipes; not full campaign\",\n  \"seconds\": 1.0531717499834485,\n  \"skips\": 0,\n  \"source_after\": {\n    \"adapter.py\": \"260d7bec194b05a9f7368ddea9f60b5b706a707f6dfce6d417a6ecdf1a1ba441\",\n    \"checks.py\": \"8f7f27f3b30253d5eef571fc0db6287116a5fc8910f7848e0ccfeb7352825f53\",\n    \"envelope.py\": \"5a450b5454ed34165530ccdf43af89c6da75c7968e9bf5798855d9978b2f4dfb\",\n    \"input-binding.json\": \"50c40567df3179c774760a7e2d8616e4a8910f7ec753170f527354aff4abf2da\",\n    \"pipes.py\": \"01bc850a07380c90d3c074f3be7d51edc63b7b6b493d2302f365191ec4fb92ae\",\n    \"producers.py\": \"fb46e50e5562a01a0f2c46510d44c1f44aba542ceb52d84e376d52c5503b2d75\",\n    \"raw_child.py\": \"11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f\",\n    \"routing.json\": \"dc5051241cba06aa34070d785e5918e479c13a39987ff8e76956829cd657c205\",\n    \"test_retention.py\": \"8667ced0365884f0bdd2ec8d3203a6b679e612f44f794e156aad8c1de82adfe3\"\n  },\n  \"source_before\": {\n    \"adapter.py\": \"260d7bec194b05a9f7368ddea9f60b5b706a707f6dfce6d417a6ecdf1a1ba441\",\n    \"checks.py\": \"8f7f27f3b30253d5eef571fc0db6287116a5fc8910f7848e0ccfeb7352825f53\",\n    \"envelope.py\": \"5a450b5454ed34165530ccdf43af89c6da75c7968e9bf5798855d9978b2f4dfb\",\n    \"input-binding.json\": \"50c40567df3179c774760a7e2d8616e4a8910f7ec753170f527354aff4abf2da\",\n    \"pipes.py\": \"01bc850a07380c90d3c074f3be7d51edc63b7b6b493d2302f365191ec4fb92ae\",\n    \"producers.py\": \"fb46e50e5562a01a0f2c46510d44c1f44aba542ceb52d84e376d52c5503b2d75\",\n    \"raw_child.py\": \"11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f\",\n    \"routing.json\": \"dc5051241cba06aa34070d785e5918e479c13a39987ff8e76956829cd657c205\",\n    \"test_retention.py\": \"8667ced0365884f0bdd2ec8d3203a6b679e612f44f794e156aad8c1de82adfe3\"\n  },\n  \"stdout\": \"test_unframed_pipes_full_terminal_class_and_repeated_cancellation (test_retention.AsyncControls.test_unframed_pipes_full_terminal_class_and_repeated_cancellation) ... ok\\ntest_caught_source_serialization_model_and_logging_faults_sticky (test_retention.Controls.test_caught_source_serialization_model_and_logging_faults_sticky) ... ok\\ntest_exclusive_hooks_foreign_threads_unsafe_and_bypass (test_retention.Controls.test_exclusive_hooks_foreign_threads_unsafe_and_bypass) ... ok\\ntest_full_signed_fixture_and_actual_audit_logging_restoration (test_retention.Controls.test_full_signed_fixture_and_actual_audit_logging_restoration) ... ok\\ntest_off_and_source_journal_summary_final_physical_copies (test_retention.Controls.test_off_and_source_journal_summary_final_physical_copies) ... ok\\ntest_real_write_flush_cleanup_fault_and_original_identity (test_retention.Controls.test_real_write_flush_cleanup_fault_and_original_identity) ... ok\\ntest_shared_prewrite_budget_overwrites_and_all_copies (test_retention.Controls.test_shared_prewrite_budget_overwrites_and_all_copies) ... ok\\ntest_strict_recovery_missing_extra_corrupt_and_identity (test_retention.Controls.test_strict_recovery_missing_extra_corrupt_and_identity) ... ok\\n\\n----------------------------------------------------------------------\\nRan 8 tests in 1.053s\\n\\nOK\\n\",\n  \"tests_run\": 8\n}\n"
+  },
+  "result": {
+    "after": {
+      "digests": {
+        "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+        "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+      },
+      "input_bytes": 14010648,
+      "prior_bytes": 13886903,
+      "prior_pins": 1840,
+      "scope_counts": {
+        "product": 204,
+        "tests": 192
+      },
+      "total_pins": 1862
+    },
+    "before": {
+      "digests": {
+        "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+        "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+      },
+      "input_bytes": 14010648,
+      "prior_bytes": 13886903,
+      "prior_pins": 1840,
+      "scope_counts": {
+        "product": 204,
+        "tests": 192
+      },
+      "total_pins": 1862
+    },
+    "compiled_files": 7,
+    "errors": 0,
+    "failures": 0,
+    "measurement_admission": "HOLD",
+    "not_run": [
+      "SQL/Docker/HTTP/load",
+      "native/cached fd/outer/Bash exclusivity",
+      "physical lease proof",
+      "hostile same UID/root",
+      "power-loss proof"
+    ],
+    "sandboxes_after": [],
+    "sandboxes_before": [],
+    "scope": "Real isolated Python producers/files/copies/logging/unframed finite pipes; not full campaign",
+    "seconds": 1.0531717499834485,
+    "skips": 0,
+    "source_after": {
+      "adapter.py": "260d7bec194b05a9f7368ddea9f60b5b706a707f6dfce6d417a6ecdf1a1ba441",
+      "checks.py": "8f7f27f3b30253d5eef571fc0db6287116a5fc8910f7848e0ccfeb7352825f53",
+      "envelope.py": "5a450b5454ed34165530ccdf43af89c6da75c7968e9bf5798855d9978b2f4dfb",
+      "input-binding.json": "50c40567df3179c774760a7e2d8616e4a8910f7ec753170f527354aff4abf2da",
+      "pipes.py": "01bc850a07380c90d3c074f3be7d51edc63b7b6b493d2302f365191ec4fb92ae",
+      "producers.py": "fb46e50e5562a01a0f2c46510d44c1f44aba542ceb52d84e376d52c5503b2d75",
+      "raw_child.py": "11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f",
+      "routing.json": "dc5051241cba06aa34070d785e5918e479c13a39987ff8e76956829cd657c205",
+      "test_retention.py": "8667ced0365884f0bdd2ec8d3203a6b679e612f44f794e156aad8c1de82adfe3"
+    },
+    "source_before": {
+      "adapter.py": "260d7bec194b05a9f7368ddea9f60b5b706a707f6dfce6d417a6ecdf1a1ba441",
+      "checks.py": "8f7f27f3b30253d5eef571fc0db6287116a5fc8910f7848e0ccfeb7352825f53",
+      "envelope.py": "5a450b5454ed34165530ccdf43af89c6da75c7968e9bf5798855d9978b2f4dfb",
+      "input-binding.json": "50c40567df3179c774760a7e2d8616e4a8910f7ec753170f527354aff4abf2da",
+      "pipes.py": "01bc850a07380c90d3c074f3be7d51edc63b7b6b493d2302f365191ec4fb92ae",
+      "producers.py": "fb46e50e5562a01a0f2c46510d44c1f44aba542ceb52d84e376d52c5503b2d75",
+      "raw_child.py": "11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f",
+      "routing.json": "dc5051241cba06aa34070d785e5918e479c13a39987ff8e76956829cd657c205",
+      "test_retention.py": "8667ced0365884f0bdd2ec8d3203a6b679e612f44f794e156aad8c1de82adfe3"
+    },
+    "stdout": "test_unframed_pipes_full_terminal_class_and_repeated_cancellation (test_retention.AsyncControls.test_unframed_pipes_full_terminal_class_and_repeated_cancellation) ... ok\ntest_caught_source_serialization_model_and_logging_faults_sticky (test_retention.Controls.test_caught_source_serialization_model_and_logging_faults_sticky) ... ok\ntest_exclusive_hooks_foreign_threads_unsafe_and_bypass (test_retention.Controls.test_exclusive_hooks_foreign_threads_unsafe_and_bypass) ... ok\ntest_full_signed_fixture_and_actual_audit_logging_restoration (test_retention.Controls.test_full_signed_fixture_and_actual_audit_logging_restoration) ... ok\ntest_off_and_source_journal_summary_final_physical_copies (test_retention.Controls.test_off_and_source_journal_summary_final_physical_copies) ... ok\ntest_real_write_flush_cleanup_fault_and_original_identity (test_retention.Controls.test_real_write_flush_cleanup_fault_and_original_identity) ... ok\ntest_shared_prewrite_budget_overwrites_and_all_copies (test_retention.Controls.test_shared_prewrite_budget_overwrites_and_all_copies) ... ok\ntest_strict_recovery_missing_extra_corrupt_and_identity (test_retention.Controls.test_strict_recovery_missing_extra_corrupt_and_identity) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 1.053s\n\nOK\n",
+    "tests_run": 8
+  },
+  "scope": "First controls execution after one retained pre-test derivation failure; no campaign or SQL retry."
+}

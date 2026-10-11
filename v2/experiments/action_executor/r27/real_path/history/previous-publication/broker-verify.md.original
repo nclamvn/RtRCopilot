@@ -1,0 +1,158 @@
+# TIP-054.4b-R27 consolidated verification
+
+2026-10-10 · Contractor · **Approved broker continuation VERIFIED locally; wider R27 PARTIAL / NOT READY.**
+
+The Homeowner's “chốt và triển khai” decision has been implemented: a host-owned
+broker controls admitted qualifying artifacts and streams; platform transcripts
+are separately retained, disclosed audit outside that packet. This boundary is
+approved and pinned, not another decision awaiting approval. It does not grant
+SQL/Docker/HTTP/load, external processing, Git writes/rebuild or executor activation.
+
+The supported cooperative producer/fixed-child implementation is independently
+accepted. R21 SLA FAILED/P1, EXE-009 OPEN/P1, candidate NOT_READY, serving executor
+OFF and TIP-054.5 BLOCKED remain unchanged. This work improves evidence ownership
+and lifecycle correctness; no product latency repair or release certification occurred.
+
+## Requirement coverage
+
+| Criterion | Disposition | Evidence and remaining output |
+|---|---|---|
+| R27-001 | PARTIAL | Sole-writer opaque ports, prewrite copy/temp accounting and real source bridges implemented. Complete original shell/admin/migration/native routing remains unexecuted and unqualified. |
+| R27-002 | PARTIAL | Fourteen local controls and 27 separate full-class units PASS. Exact finite-child lifecycle, active-operation seal guard and cleanup-fault conservation verified; physical SQL leases, Linux group/descendants and complete original-path transparency remain unqualified. |
+| R27-003 | PENDING | No new campaign, measured attribution, performance delta or attributable core repair. |
+| R27-004 | PENDING | New authored/interface static health passes the actual backend configuration. No full repaired-serving-candidate correctness/security/performance qualification. |
+| R27-005 | PASS for this checkpoint | One current consolidated Verify, current Completion, frozen candidate, independent review, actual outputs and preserved failed epochs. |
+
+Reporting criterion: 1/5; fully achieved original technical criteria: 0/4.
+Approved local continuation B1–B4: **4/4 verified**. Those scoped counts do not
+represent product completion percentages or closure of the wider R27 objective.
+
+## Delivered and frozen
+
+Implementation is confined to `v2/experiments/action_executor/r27/broker`.
+Sealed original, retention and runtime sources/candidates/Completion/reviews remain
+unchanged. No new micro-TIP, framework or changed product/dependency source was needed.
+
+Broker-only physical I/O serves opaque logical Path/File ports without exported
+storage paths or descriptors. Cached native `open`/`os.open` on those ports
+reject before artifact I/O. Explicit bridges replace filesystem monkeypatching.
+This is a pinned cooperative-producer boundary, not a hostile same-UID,
+Python-introspection or universal OS sandbox. Unknown native writers remain DENY.
+
+One logical **10 MiB** prewrite/no-refund counter charges complete packet records,
+framing and every physical copy/overwrite attempt. Family/count, combined bytes
+and the complete predicted manifest are admitted before destructive open.
+Deletion never refunds; raw overwritten/deleted attempts and ordered tombstones
+remain recoverable. Reserve **16,988B =340 closure +264 controls +16,384 metadata**;
+the final **90B** manifest-binding record is admitted before manifest I/O.
+No truncation, read-chunk record splitting or digest replacement manufactures PASS.
+
+Local domains: 32 file entries, 32 active ports, 32 active operations, 64 directories
+and 64 deletion records. These do not prove the historical 63-file original campaign
+fits. The budget is logical write accounting, not filesystem-block allocation.
+Finish validates raw/native inventory and accounting before seal; recovery rejects
+missing/extra/symlink/corrupt files. Immutable committed epochs and tamper rejection
+are verified locally; power-cut durability and hostile races are not proved.
+
+Real source bridges cover exact original journal/summary/write/print/oracle/final
+blocks, the full pure signed fixture (five final files/six writes), actual audit
+sink/restoration, safe original copy/literal expressions and R19 deadline/metadata
+bodies. A legitimate source oracle SLA FAIL remains integrity-valid evidence;
+unknown exceptions, serialization/storage/finalization faults remain INCOMPLETE.
+
+The unchanged fixed child receives no broker root in argv/env/cwd or descriptors.
+Concurrent bounded drains retain each entire stdout/stderr stream once at EOF.
+One cleanup deadline is never renewed. All owned reader/waiter/operation joins
+are attempted after faults; primary exception/cancellation identity is preserved.
+An active-operation token prevents sealing before observed reap/join. Tests inspect
+pending named owned tasks before event-loop shutdown, not after automatic runner
+cancellation. Result metadata states Linux/group authority false and observed
+reap/task/EOF state; unresolved ownership is HOLD, never inferred success.
+
+The derived codec has exactly four approved root/identity substitutions, genuine
+typed interface and AST/real-return conformance. **Its implementation body is not
+strict-type/style body-audited**; old 246-error evidence remains historical.
+
+Frozen identity is HEAD `0e88f48588dc3228f1ae9eca7a7597d96589af8b` plus dirty
+source bytes, not a new commit or deployed runtime. Candidate includes **34 source
+pins**, all ten owned Python/interface files. Binding has 139 direct pins and one
+recursive anchor.
+
+- Binding SHA256: `f991ad0495ccd60abed4d85efc6d0dd2bf7f0395bff0d37e93547bc7b00a5db6`.
+- Candidate SHA256: `553542c994785a3882e416cef25830852cac9b47f3d4f743fb4343f6c263186f`.
+- Completion SHA256: `d0ca2b836c95585ba3f2de1aff5f68f5dfdaa6163d86042793a259484da41fa4`.
+- Independent review SHA256: `6d36a4d91839fd960f2d1d81f8eced2c651097d55be4184d88423c685f32eaf7`.
+
+## Actual verification
+
+| Check | Main result | Scope and limits |
+|---|---|---|
+| Exact combined controls | 14/14 PASS, 5.463251s; wrapper0, zero failure/error/skip | Six core +eight integration groups. Builder repeats the same fourteen in 2.994769s; not 28 identities or load observations. |
+| Full RequestConnection units | 27/27 PASS, 0.97s | Unchanged full-class tests with deliberate fake engines/delegates; not physical SQL lease proof. |
+| Syntax | 10/10 PASS | Includes actual codec implementation and interface. |
+| Strict mypy | 0 errors /9 checked surfaces | Explicit backend config, strict, follow-imports=silent, no-incremental/devnull cache; codec body excluded, interface included. |
+| Ruff / format | 0 errors /9 already formatted | Actual backend configuration, no-cache, no blanket ignores or relaxed project rules. |
+| Independent review and Main hash/AST/XML | Scoped B1–B4 accepted | All source/graph/counts preserved; source-only Reviewer did not execute implementation/helpers. |
+| Actual read-only preflight | Expected exit2/DENY | Source/boundary true, approved platform audit, marker ABSENT/unwritten, effect dispatch false, runtime prerequisites NOT_RUN. |
+| Full backend/build, SQL/HTTP/load, original native/Linux group, migrations/restore, provider, process/power-loss | NOT RUN | No whole-runtime, latency or release qualification. |
+
+Two actual pytest configuration warnings remain: plugin autoload is disabled while
+the reused backend config names asyncio settings. These local async paths use
+`asyncio.run`; zero skips. The separate 27 units use the explicit asyncio plugin.
+This is not clean whole-backend health. The 1,600 fixed producer rows are synthetic
+controls, not observed requests or an SLA measurement.
+
+Before/after: **1,910 prior pins /14,510,687B; 2,010 total /15,420,190B**.
+The prior graph includes the sealed runtime binding itself. Product204/tests192
+inventories and digests, pyproject/uv.lock, all prior sealed candidates/reviews and
+source bytes remain unchanged. Main independently reconstructed the graph rather
+than relying only on the implementation's preservation helper.
+
+## Preserved failures and cleanup
+
+Core/peer failures, exact snapshots, initial format/type failures and the first
+frozen candidate remain retained. Initial fourteen-PASS runs had wrapper exit1
+because concurrent Builder/Main scratch snapshots differed; they are not claimed
+wrapper PASS. Final verification is serial, with empty before/after scratch lists.
+
+Main's actual backend-config check exposed 24 lint errors and seven formatting
+differences despite earlier default-config checks. Repairs and refreeze preserve
+those failed outputs and bytes; the final exact project-config checks pass.
+A Main structural check wrongly assumed globally absent backend cache; that
+failed assertion is retained. The unrelated old 92 MiB cache was preserved;
+current commands use devnull/no-cache. No claim of globally empty caches is made.
+
+Owned small test directories were automatically removed. No new dependency/venv,
+whole-project copy, task build tree or Docker/SQL resource was created. No campaign,
+external company-data/provider operation, Git write, rebuild, serving activation
+or TIP-054.5 transition occurred. Existing unrelated dirty work remains intact.
+
+## Next cohesive step
+
+Complete **original-runtime broker routing and prerequisite validation within R27**:
+the remaining shell/admin/migration/analysis/native emitters need actual admitted
+ownership and source-compatible whole-record bounds; exact Linux child/group and
+physical SQL lifecycle require separately authorized local runtime checks.
+The existing 32-file domain must not be advertised as covering all historical output.
+
+Only after those paths and prerequisites genuinely qualify should one exact
+source-bound measurement grant be requested. Platform-audit approval is already
+settled. No empty family receipt, synthetic grant JSON or earlier consumed allowance
+authorizes effects. No further generic toy model or speculative latency tuning.
+
+Preserve the unchanged 16 cells/1,600 requested observations, c1/10/25/50,
+100 cases per operation, admission/submit/status/cancel, p95 500ms admission/
+1,000ms others, zero errors, pool5+5/pre_ping, timeout0.9s, quotas5,000,
+load190s/shared cleanup10s and retained10MiB. No retry, threshold relaxation,
+release or executor activation follows automatically.
+
+## Evidence
+
+- [Approved scope](../v2/experiments/action_executor/r27/broker/SCOPE.md) · [approved boundary](../v2/experiments/action_executor/r27/broker/boundary.json)
+- [Current Completion](../v2/experiments/action_executor/r27/broker/COMPLETION.md) · [independent broker review](R27_BROKER_REVIEW_REPORT.md)
+- [Binding](../v2/experiments/action_executor/r27/broker/input-binding.json) · [candidate](../v2/experiments/action_executor/r27/broker/candidate.json) · [twenty-family routing](../v2/experiments/action_executor/r27/broker/routing.json)
+- [Main actual controls](../v2/experiments/action_executor/r27/broker/main-feedback.json) · [health](../v2/experiments/action_executor/r27/broker/main-health.json) · [preflight](../v2/experiments/action_executor/r27/broker/main-preflight.json) · [independent structural audit](../v2/experiments/action_executor/r27/broker/main-structural-check.json)
+- [Fresh Main27 units](../v2/experiments/action_executor/r27/broker/main-runtime-controls.json) · [XML](../v2/experiments/action_executor/r27/broker/runtime-unit.xml)
+- [Builder controls](../v2/experiments/action_executor/r27/broker/author-feedback.json) · [project health](../v2/experiments/action_executor/r27/broker/author-health-project.json) · [final preflight](../v2/experiments/action_executor/r27/broker/author-preflight-final.json)
+- [Main first wrapper failure](../v2/experiments/action_executor/r27/broker/main-feedback-first.json) · [first project-health failure](../v2/experiments/action_executor/r27/broker/main-health-first.json) · [structural premise failure](../v2/experiments/action_executor/r27/broker/main-structural-first.json)
+- [Historical runtime Completion](../v2/experiments/action_executor/r27/runtime/COMPLETION.md) · [runtime review](R27_RUNTIME_REVIEW_REPORT.md) · [retention review](R27_RETENTION_REVIEW_REPORT.md)

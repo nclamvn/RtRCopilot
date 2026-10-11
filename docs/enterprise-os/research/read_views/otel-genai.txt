@@ -1,0 +1,22 @@
+Moved: Generative AI semantic conventions | OpenTelemetry For AI agents: a documentation index is available at /llms.txt.
+This page has a Markdown version at /docs/specs/semconv/gen-ai/index.md. 
+View Markdown View page source Edit this page Create child page Create documentation issue Create project issue 
+Moved: Generative AI semantic conventions 
+Important 
+GenAI semantic conventions have moved to the OpenTelemetry GenAI semantic conventions repository .
+This page has moved and is no longer maintained in this repository. 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Moved: Generative AI semantic conventions 
+Feedback 
+Was this page helpful? 
+Thank you. Your feedback is appreciated! 
+Please let us know how we can improve this page . Your feedback is appreciated!

@@ -1,0 +1,8 @@
+{
+  "origin": "installed Codex skill refinery v1.3 (refinery.py and bites.py)",
+  "description": "Unmodified Refinery v1.3 local skill engine; copied for offline reproduction. No engine source changes.",
+  "sha256": {
+    "bites.py": "47beff1bee1a2a0b4509a57aad6499fdd6f610f30a205ae4c2fab79098ef0847",
+    "refinery.py": "075f442ba50d3d4e129550b24ae9c6f4b6d31d1dda23a43416c7150e3f3074e1"
+  }
+}

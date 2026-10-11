@@ -1,0 +1,102 @@
+{
+  "actor": "Main",
+  "date": "2026-10-09",
+  "status": "FAILED_BOOTSTRAP_NOT_HTTP_LATENCY_PROOF",
+  "source_binding_sha256": "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4",
+  "controls": {
+    "unique": 6,
+    "pre_pass": 6,
+    "pre_fail": 0,
+    "pre_errors": 0,
+    "pre_skips": 0,
+    "pre_seconds": 2.06,
+    "personal_overlap_seconds": 1.148,
+    "prior_builder_host_errors_retained": true
+  },
+  "campaign": {
+    "launches": 1,
+    "consumed": true,
+    "stage_exit": 1,
+    "load_exit": 1,
+    "load_wall_seconds": 3.2986383349925745,
+    "requested": 1600,
+    "observed": 0,
+    "missing": 1600,
+    "evaluable_cells": 0,
+    "requested_cells": 16,
+    "latency_percentiles_available": false,
+    "retried": false,
+    "reason": "R19 clean environment omitted INTEGRATION_DATABASE_DSN required by unchanged transitive synthetic_settings helper; explicit empty postgres_dsn caused validation before HTTP loop; not product latency regression"
+  },
+  "bytes": {
+    "pre": 227858,
+    "http": 228108
+  },
+  "closure": {
+    "source": {
+      "chunk_id": "8cc30b",
+      "wall_time_seconds": 0.077916334,
+      "exit_code": 0,
+      "original_token_count": 53,
+      "output": "{\"files\": 1105, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+    },
+    "fixture": {
+      "chunk_id": "df1c31",
+      "wall_time_seconds": 0.144499375,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "R19_ADMISSION_PASS fixture\n"
+    },
+    "catalog": {
+      "chunk_id": "869586",
+      "wall_time_seconds": 0.000016209,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    },
+    "pg_disk": {
+      "chunk_id": "8c2c20",
+      "wall_time_seconds": 0.000008083,
+      "exit_code": 0,
+      "original_token_count": 33,
+      "output": "Filesystem     1K-blocks    Used Available Use% Mounted on\ntmpfs            3145728 1685500   1460228  54% /var/lib/postgresql/data\n"
+    },
+    "host_disk": {
+      "chunk_id": "1c13cf",
+      "wall_time_seconds": 0.000010666,
+      "exit_code": 0,
+      "original_token_count": 38,
+      "output": "Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s1s1   460Gi    13Gi    82Gi    14%    484k  859M    0%   /\n"
+    },
+    "prune": {
+      "chunk_id": "6f614c",
+      "wall_time_seconds": 0.000008833,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "Total reclaimed space: 0B\n"
+    },
+    "head": {
+      "chunk_id": "fb71ae",
+      "wall_time_seconds": 0.000008167,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "0e88f48588dc3228f1ae9eca7a7597d96589af8b\n"
+    }
+  },
+  "boundaries": {
+    "product_unchanged": true,
+    "serving_executor": "OFF",
+    "candidate": "NOT_READY",
+    "tip054_5": "BLOCKED",
+    "external": false,
+    "git_writes": false,
+    "rebuild": false,
+    "native": false
+  },
+  "notes": [
+    "Independent source review and Main scan missed a transitive seed environment prerequisite; do not repair or overwrite consumed R19.",
+    "Prior host .05-second controlled drain and PermissionError observation does not establish general root cause; separate same-source permissioned controls pass.",
+    "Only two acknowledged owned synthetic DBs were migrated/created and dropped; final exact catalog empty; no container/volume deletion.",
+    "Next selected scope is local-only fixture bootstrap environment-contract remediation and focused positive/negative proof before a separately admitted future campaign."
+  ]
+}

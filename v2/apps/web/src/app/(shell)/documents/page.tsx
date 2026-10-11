@@ -38,6 +38,7 @@ type BindResult = {valid: boolean; fields: BoundField[]; missing: string[]; bloc
 type RenderStatus = {
   render_job_id: string; state: string; progress: number; generated_file_id?: string | null;
   version_id?: string | null; checksum?: string | null; error_code?: string | null;
+  attempt?: number; max_attempts?: number; retryable?: boolean;
 };
 type Generated = {
   lifecycle: string; checksum: string; created_at: string; approvals: Array<{
@@ -60,6 +61,14 @@ const api = (path: string, init?: RequestInit) => fetch(`/api/document-os/${path
   headers: {"content-type": "application/json", ...(init?.headers ?? {})},
 });
 
+const ACTIVE_RENDER_STATES = new Set(["pending", "binding", "rendering", "validating"]);
+const RENDER_STATE_LABELS: Record<string, MessageKey> = {
+  pending: "documents.renderState.pending", binding: "documents.renderState.binding",
+  rendering: "documents.renderState.rendering", validating: "documents.renderState.validating",
+  completed: "documents.renderState.completed", failed: "documents.renderState.failed",
+  cancelled: "documents.renderState.cancelled",
+};
+
 export default function DocumentsPage() {
   const {t, locale} = useI18n();
   const [identity, setIdentity] = useState<Identity | null>(null);
@@ -70,6 +79,7 @@ export default function DocumentsPage() {
   const [parameters, setParameters] = useState<Record<string, string>>({});
   const [binding, setBinding] = useState<BindResult | null>(null);
   const [renderJob, setRenderJob] = useState<RenderStatus | null>(null);
+  const [renderActionPending, setRenderActionPending] = useState(false);
   const [generated, setGenerated] = useState<Generated | null>(null);
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [manifest, setManifest] = useState<ViewerManifest | null>(null);
@@ -79,9 +89,13 @@ export default function DocumentsPage() {
   const [ledgerOpen, setLedgerOpen] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const poll = useRef<AbortController | null>(null);
+  // A delayed mutation must not restore another template's job or busy state.
+  const requestContext = useRef(0);
 
   const loseAccess = useCallback(() => {
+    requestContext.current += 1;
     poll.current?.abort();
+    setRenderActionPending(false);
     setIdentity(null); setTemplates([]); setSelected(null); setDetail(null);
     setManifest(null); setGenerated(null); setRenderJob(null);
   }, []);
@@ -90,7 +104,7 @@ export default function DocumentsPage() {
     fetch("/api/auth/me", {cache: "no-store"})
       .then(async response => setIdentity(response.ok ? await response.json() as Identity : null))
       .catch(() => setIdentity(null)).finally(() => setAuthReady(true));
-    return () => poll.current?.abort();
+    return () => {requestContext.current += 1; poll.current?.abort();};
   }, []);
   useEffect(() => {
     const close = (event: KeyboardEvent) => {
@@ -120,24 +134,32 @@ export default function DocumentsPage() {
   }, [identity, loadTemplates]);
   useEffect(() => {
     if (!selected) return;
+    const context = ++requestContext.current;
+    poll.current?.abort();
     history.replaceState({}, "", `/documents?template=${encodeURIComponent(selected.version_id)}`);
     Promise.resolve().then(() => {
+      if (requestContext.current !== context) return null;
+      setRenderActionPending(false);
       setBinding(null); setRenderJob(null); setGenerated(null); setManifest(null);
       setHistoryItems([]); setError("");
       return api(`templates/${selected.template_id}/versions/${selected.version_id}`);
     })
       .then(async response => {
+        if (!response || requestContext.current !== context) return null;
         if ([401, 403, 404].includes(response.status)) throw new Error("access");
         if (!response.ok) throw new Error("detail");
         return response.json() as Promise<TemplateDetail>;
       })
       .then(value => {
+        if (!value || requestContext.current !== context) return;
         setDetail(value);
         setParameters(Object.fromEntries(
           value.schema.bindings.filter(item => item.source === "user")
             .map(item => [item.field_path, ""]),
         ));
-      }).catch(() => setError("documents.error.schema"));
+      }).catch(() => {
+        if (requestContext.current === context) setError("documents.error.schema");
+      });
   }, [selected]);
 
   const userBindings = useMemo(
@@ -163,52 +185,127 @@ export default function DocumentsPage() {
     setBinding(await response.json() as BindResult);
   }
 
-  async function pollRender(jobId: string) {
+  async function pollRender(jobId: string, context: number) {
+    if (requestContext.current !== context) return;
     poll.current?.abort();
     const controller = new AbortController();
     poll.current = controller;
-    while (!controller.signal.aborted) {
-      await new Promise(resolve => setTimeout(resolve, 650));
-      const response = await api(`documents/render-jobs/${jobId}`, {signal: controller.signal});
-      if ([401, 403].includes(response.status)) return loseAccess();
-      if (!response.ok) throw new Error("render_status");
-      const status = await response.json() as RenderStatus;
-      setRenderJob(status);
-      if (status.state === "completed" && status.version_id && status.generated_file_id) {
-        const [viewerResponse, generatedResponse] = await Promise.all([
-          fetch(`/api/files/versions/${status.version_id}/viewer-manifest`, {cache: "no-store"}),
-          api(`documents/generated/${status.generated_file_id}`),
-        ]);
-        if (viewerResponse.ok) setManifest(parseManifest(await viewerResponse.json()));
-        if (generatedResponse.ok) setGenerated(await generatedResponse.json() as Generated);
-        if (selected) {
-          const historyResponse = await api(
-            `documents/history?template_id=${encodeURIComponent(selected.template_id)}`,
-          );
-          if (historyResponse.ok) {
-            setHistoryItems((await historyResponse.json() as {items: HistoryItem[]}).items);
+    const current = () => !controller.signal.aborted && requestContext.current === context;
+    try {
+      while (current()) {
+        await new Promise(resolve => setTimeout(resolve, 650));
+        if (!current()) return;
+        const response = await api(`documents/render-jobs/${jobId}`, {signal: controller.signal});
+        if (!current()) return;
+        if ([401, 403].includes(response.status)) return loseAccess();
+        if (!response.ok) throw new Error("render_status");
+        const status = await response.json() as RenderStatus;
+        if (!current()) return;
+        setRenderJob(status);
+        if (status.state === "completed" && status.version_id && status.generated_file_id) {
+          const [viewerResponse, generatedResponse] = await Promise.all([
+            fetch(`/api/files/versions/${status.version_id}/viewer-manifest`, {
+              cache: "no-store", signal: controller.signal,
+            }),
+            api(`documents/generated/${status.generated_file_id}`, {signal: controller.signal}),
+          ]);
+          if (!current()) return;
+          const viewer = viewerResponse.ok ? parseManifest(await viewerResponse.json()) : null;
+          const generatedDetail = generatedResponse.ok
+            ? await generatedResponse.json() as Generated : null;
+          if (!current()) return;
+          if (viewer) setManifest(viewer);
+          if (generatedDetail) setGenerated(generatedDetail);
+          if (selected) {
+            const historyResponse = await api(
+              `documents/history?template_id=${encodeURIComponent(selected.template_id)}`,
+              {signal: controller.signal},
+            );
+            if (historyResponse.ok) {
+              const items = (await historyResponse.json() as {items: HistoryItem[]}).items;
+              if (current()) setHistoryItems(items);
+            }
           }
+          return;
         }
-        return;
+        if (["failed", "cancelled"].includes(status.state)) return;
       }
-      if (["failed", "cancelled"].includes(status.state)) return;
+    } catch (failure) {
+      if (current()) throw failure;
     }
   }
 
-  async function renderDocument() {
-    if (!selected) return;
-    setError(""); setManifest(null); setGenerated(null);
-    const response = await api(`templates/${selected.version_id}/render`, {
-      method: "POST",
-      body: JSON.stringify({idempotency_key: crypto.randomUUID(), parameters}),
+  function trackRender(jobId: string, context: number) {
+    void pollRender(jobId, context).catch(() => {
+      if (requestContext.current === context) setError("documents.error.renderLost");
     });
-    if (!response.ok) return setError("documents.error.render");
-    const status = await response.json() as RenderStatus;
-    setRenderJob(status);
-    try { await pollRender(status.render_job_id); } catch {
-      setError("documents.error.renderLost");
+  }
+
+  async function renderDocument() {
+    if (!selected || renderActionPending) return;
+    const context = requestContext.current;
+    setRenderActionPending(true);
+    setError(""); setManifest(null); setGenerated(null);
+    try {
+      const response = await api(`templates/${selected.version_id}/render`, {
+        method: "POST",
+        body: JSON.stringify({idempotency_key: crypto.randomUUID(), parameters}),
+      });
+      if (requestContext.current !== context) return;
+      if ([401, 403].includes(response.status)) return loseAccess();
+      if (!response.ok) return setError("documents.error.render");
+      const status = await response.json() as RenderStatus;
+      if (requestContext.current !== context) return;
+      setRenderJob(status);
+      trackRender(status.render_job_id, context);
+    } catch {
+      if (requestContext.current === context) setError("documents.error.render");
+    } finally {
+      if (requestContext.current === context) setRenderActionPending(false);
     }
   }
+
+  async function renderAction(action: "retry" | "cancel") {
+    if (!renderJob || renderActionPending) return;
+    const context = requestContext.current;
+    const jobId = renderJob.render_job_id;
+    setRenderActionPending(true); setError("");
+    try {
+      const response = await api(`documents/render-jobs/${jobId}/${action}`, {
+        method: "POST",
+      });
+      if (requestContext.current !== context) return;
+      if ([401, 403].includes(response.status)) return loseAccess();
+      if (!response.ok) {
+        const result = await response.json().catch(() => null) as {error?: {code?: string}} | null;
+        if (requestContext.current !== context) return;
+        if (result?.error?.code === "render_retry_exhausted") {
+          setRenderJob(current => current?.render_job_id === jobId
+            ? {...current, retryable: false} : current);
+          return setError("documents.error.retryExhausted");
+        }
+        return setError("documents.error.action");
+      }
+      const status = await response.json() as RenderStatus;
+      if (requestContext.current !== context) return;
+      if (status.render_job_id !== jobId) return setError("documents.error.action");
+      poll.current?.abort();
+      setRenderJob(status);
+      if (ACTIVE_RENDER_STATES.has(status.state)) trackRender(status.render_job_id, context);
+    } catch {
+      if (requestContext.current === context) setError("documents.error.action");
+    } finally {
+      if (requestContext.current === context) setRenderActionPending(false);
+    }
+  }
+
+  const renderActive = renderJob !== null && ACTIVE_RENDER_STATES.has(renderJob.state);
+  const retryExhausted = renderJob?.attempt !== undefined && renderJob.max_attempts !== undefined
+    && renderJob.attempt >= renderJob.max_attempts;
+  const retryAllowed = renderJob?.retryable === true && !retryExhausted
+    && ["failed", "cancelled"].includes(renderJob.state);
+  const renderStateLabel = renderJob
+    ? t(RENDER_STATE_LABELS[renderJob.state] ?? "documents.renderState.unknown") : "";
 
   async function generatedAction(action: string, withReason = false) {
     if (!renderJob?.generated_file_id) return;
@@ -238,7 +335,7 @@ export default function DocumentsPage() {
     <PageHeader eyebrow={t("documents.eyebrow")} title={t("documents.title")}
       actions={<div className="page-actions">
         <span className="top-state">
-          {renderJob ? `${renderJob.state} ${renderJob.progress}%` : t("documents.ready")}
+          {renderJob ? `${renderStateLabel} ${renderJob.progress}%` : t("documents.ready")}
         </span>
         <button className="ledger-toggle" type="button"
           onClick={() => {setRailOpen(false); setLedgerOpen(true);}}>
@@ -259,7 +356,13 @@ export default function DocumentsPage() {
             onClick={() => setLedgerOpen(false)}>×</button></div>
         <ol>{templates.map(item => <li key={item.version_id}><button type="button"
           aria-current={selected?.version_id === item.version_id ? "true" : undefined}
-          onClick={() => {setSelected(item); setLedgerOpen(false);}}>
+          onClick={() => {
+            if (selected?.version_id !== item.version_id) {
+              requestContext.current += 1;
+              poll.current?.abort();
+            }
+            setSelected(item); setLedgerOpen(false);
+          }}>
           <span>{item.format} · V{item.version_ordinal}</span><strong>{item.display_name}</strong>
           <small>{item.category} · {item.document_class}</small>
         </button></li>)}</ol>
@@ -278,8 +381,12 @@ export default function DocumentsPage() {
               }))}/></label>)}
           <div className="assembly-actions">
             <button type="button" onClick={() => void bind()}>{t("documents.bind")}</button>
-            <button className="primary" type="button" disabled={!detail}
+            <button className="primary" type="button" disabled={!detail || renderActive || renderActionPending}
               onClick={() => void renderDocument()}>{t("documents.render")}</button>
+            {retryAllowed && <button type="button" disabled={renderActionPending}
+              onClick={() => void renderAction("retry")}>{t("documents.action.retry")}</button>}
+            {renderActive && <button type="button" disabled={renderActionPending}
+              onClick={() => void renderAction("cancel")}>{t("documents.action.cancel")}</button>}
           </div>
           {binding && <p role="status" className={binding.valid ? "valid" : "invalid"}>
             {binding.valid ? t("documents.bind.valid") :
@@ -288,8 +395,14 @@ export default function DocumentsPage() {
                 binding.blocked.map(x => x.code).join(", ") || t("documents.bind.none")}`}
           </p>}
           {renderJob && !manifest && <div className="render-progress" aria-live="polite">
-            <progress max="100" value={renderJob.progress}/><span>{renderJob.state}</span>
+            <progress max="100" value={renderJob.progress}/><span>{renderStateLabel}</span>
           </div>}
+          {renderJob?.state === "failed" && <p role="status" className="invalid">
+            {t(renderJob.error_code === "render_lease_expired"
+              ? "documents.error.renderExpired" : "documents.error.renderFailed")}
+          </p>}
+          {retryExhausted && ["failed", "cancelled"].includes(renderJob?.state ?? "")
+            && <p role="status" className="invalid">{t("documents.error.retryExhausted")}</p>}
           {error && <p role="alert" className="invalid">{t(error)}</p>}
         </div>
         <div className="document-preview">

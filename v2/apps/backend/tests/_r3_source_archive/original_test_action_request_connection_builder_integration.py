@@ -1,0 +1,354 @@
+"""Real private lifecycle/proxy controls; no native SDK or network-loss claim."""
+
+import asyncio
+import os
+import uuid
+from pathlib import Path
+from typing import Any
+
+import pytest
+import pytest_asyncio
+import test_action_contracts_integration as fixtures
+import test_action_execution_adversarial as adversarial
+from sqlalchemy import event, text
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
+from sqlalchemy.util import greenlet_spawn
+
+from rtr_copilot.actions.execution import ExecutionService
+from rtr_copilot.actions.models import PlanRequest, StepRequest
+from rtr_copilot.actions.request_connection import (
+    LegacyInitialRequired,
+    RequestConnection,
+    _OwnerConnection,
+)
+
+pytestmark = fixtures.pytestmark
+
+
+@pytest_asyncio.fixture
+async def factory() -> Any:
+    dsn = os.environ["INTEGRATION_DATABASE_DSN"]
+    assert "/rtr_tip054_" in dsn
+    engine = create_async_engine(
+        dsn.replace("postgresql://", "postgresql+asyncpg://", 1),
+        pool_size=5,
+        max_overflow=5,
+        pool_pre_ping=True,
+    )
+    yield async_sessionmaker(engine, expire_on_commit=False)
+    assert engine.pool.checkedout() == 0
+    await engine.dispose()
+
+
+@pytest.fixture
+def local_boundaries(monkeypatch: pytest.MonkeyPatch, factory: Any) -> Any:
+    return adversarial.local_boundaries.__wrapped__(monkeypatch, factory)
+
+
+@pytest.fixture
+def execution_config(monkeypatch: pytest.MonkeyPatch) -> Any:
+    return adversarial.execution_config.__wrapped__(monkeypatch)
+
+
+def requested(refs: Any) -> PlanRequest:
+    return PlanRequest(
+        idempotency_key=f"RLC-{uuid.uuid4()}",
+        objective="Synthetic lifecycle proof",
+        source_refs=refs,
+        steps=(
+            StepRequest(
+                step_key="read",
+                capability_id="sot.read",
+                capability_version="2",
+                arguments={"record_key": refs[0].record_key},
+            ),
+        ),
+    )
+
+
+@pytest.mark.asyncio
+async def test_actual_owned_proxy_three_transactions_and_independent_lock_release(
+    factory: Any,
+) -> None:
+    engine = factory.kw["bind"]
+    observer_engine = create_async_engine(engine.url, poolclass=NullPool)
+    counts = {"checkout": 0, "checkin": 0}
+    drivers = []
+    retained = []
+    frames = []
+
+    def checkout(dbapi: Any, *args: Any) -> None:
+        counts["checkout"] += 1
+        drivers.append(dbapi.driver_connection)
+
+    def checkin(*args: Any) -> None:
+        counts["checkin"] += 1
+
+    event.listen(engine.sync_engine, "checkout", checkout)
+    event.listen(engine.sync_engine, "checkin", checkin)
+    try:
+        async with observer_engine.connect() as observer, RequestConnection(factory) as owner:
+            for phase in (
+                owner.read_phase(),
+                owner.mutation_phase(),
+                owner.read_phase(commit=True),
+            ):
+                async with phase as session:
+                    retained.append(session)
+                    row = (
+                        await session.execute(
+                            text("SELECT txid_current(),transaction_timestamp(),pg_backend_pid()")
+                        )
+                    ).one()
+                    frames.append(row)
+                    proxy = await session.connection()
+                    assert proxy is owner.connection and isinstance(proxy, _OwnerConnection)
+                    assert await proxy.scalar(text("SELECT 19")) == 19
+                    await session.execute(text("SELECT pg_advisory_xact_lock(827004)"))
+                    await session.execute(text("SELECT pg_advisory_xact_lock(827005)"))
+                assert not owner.connection.in_transaction() and not drivers[0].is_in_transaction()
+                async with observer.begin():
+                    available = (
+                        await observer.execute(
+                            text(
+                                "SELECT pg_try_advisory_xact_lock(827004),"
+                                "pg_try_advisory_xact_lock(827005)"
+                            )
+                        )
+                    ).one()
+                    assert available == (True, True)
+            assert len({id(session) for session in retained}) == 3
+            assert len({row[0] for row in frames}) == 3
+            assert frames[0][1] < frames[1][1] < frames[2][1]
+            assert len({row[2] for row in frames}) == 1
+        assert counts == {"checkout": 1, "checkin": 1}
+        assert engine.pool.checkedout() == 0 and not drivers[0].is_in_transaction()
+    finally:
+        event.remove(engine.sync_engine, "checkout", checkout)
+        event.remove(engine.sync_engine, "checkin", checkin)
+        await observer_engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_actual_yielded_session_and_proxy_child_sql_cannot_reenter(factory: Any) -> None:
+    engine = factory.kw["bind"]
+    sql = []
+
+    def before(*args: Any) -> None:
+        sql.append(args[2])
+
+    event.listen(engine.sync_engine, "before_cursor_execute", before)
+    try:
+        async with RequestConnection(factory) as owner, owner.read_phase() as session:
+            assert await session.scalar(text("SELECT 17")) == 17
+            proxy = await session.connection()
+            starts = len(sql)
+            for target in (session, proxy):
+                for method in ("execute", "scalar"):
+                    with pytest.raises(RuntimeError, match="task_mismatch"):
+                        await asyncio.create_task(getattr(target, method)(text("SELECT 23")))
+            assert len(sql) == starts
+            with pytest.raises(RuntimeError, match="phase_reentry"):
+                async with owner.mutation_phase():
+                    pytest.fail("nested phase")
+            assert await session.scalar(text("SELECT 19")) == 19
+        assert engine.pool.checkedout() == 0
+    finally:
+        event.remove(engine.sync_engine, "before_cursor_execute", before)
+
+
+@pytest.mark.asyncio
+async def test_actual_preexisting_external_root_is_rejected_not_joined(factory: Any) -> None:
+    async with RequestConnection(factory) as owner:
+        # Deliberate test-only structural fault; not a supported host SQL path.
+        connection = owner.connection.sync_connection
+        assert connection is not None
+        transaction = await greenlet_spawn(connection.begin)
+        await greenlet_spawn(connection.execute, text("SELECT 17"))
+        try:
+            with pytest.raises(RuntimeError, match="existing_transaction"):
+                async with owner.read_phase():
+                    pytest.fail("joined preexisting root")
+            assert owner.session is None and connection.in_transaction()
+        finally:
+            await greenlet_spawn(transaction.rollback)
+        async with owner.read_phase() as session:
+            assert await session.scalar(text("SELECT 19")) == 19
+
+
+@pytest.mark.asyncio
+async def test_actual_sql_cancellation_returns_physical_record(factory: Any) -> None:
+    engine = factory.kw["bind"]
+    started = asyncio.Event()
+
+    def before(connection: Any, cursor: Any, statement: str, *args: Any) -> None:
+        if "pg_sleep(10)" in statement:
+            started.set()
+
+    async def run() -> None:
+        async with RequestConnection(factory) as owner, owner.read_phase() as session:
+            await session.scalar(text("SELECT pg_sleep(10)"))
+
+    event.listen(engine.sync_engine, "before_cursor_execute", before)
+    task = asyncio.create_task(run())
+    try:
+        await asyncio.wait_for(started.wait(), 5)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await asyncio.wait_for(task, 5)
+        assert engine.pool.checkedout() == 0
+        async with factory() as session:
+            assert await session.scalar(text("SELECT 19")) == 19
+    finally:
+        if not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+        event.remove(engine.sync_engine, "before_cursor_execute", before)
+
+
+@pytest.mark.asyncio
+async def test_actual_repeated_cancel_joins_one_close_child_and_checkin(
+    factory: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    engine = factory.kw["bind"]
+    entered, release = asyncio.Event(), asyncio.Event()
+    closes = []
+    real_close = _OwnerConnection.close
+
+    async def close(connection: Any) -> None:
+        closes.append(asyncio.current_task())
+        entered.set()
+        await release.wait()
+        await real_close(connection)
+
+    async def run() -> None:
+        async with RequestConnection(factory) as owner, owner.read_phase() as session:
+            assert await session.scalar(text("SELECT 17")) == 17
+
+    monkeypatch.setattr(_OwnerConnection, "close", close)
+    task = asyncio.create_task(run())
+    try:
+        await asyncio.wait_for(entered.wait(), 5)
+        task.cancel()
+        await asyncio.sleep(0)
+        task.cancel()
+        await asyncio.sleep(0)
+        assert not task.done() and len(closes) == 1 and engine.pool.checkedout() == 1
+        release.set()
+        with pytest.raises(asyncio.CancelledError):
+            await asyncio.wait_for(task, 5)
+        assert closes[0].done() and engine.pool.checkedout() == 0
+    finally:
+        release.set()
+        if not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+async def test_two_requests_on_one_service_have_distinct_physical_owners(
+    factory: Any,
+    tmp_path: Path,
+    local_boundaries: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    left, right = await asyncio.gather(
+        actions.create_plan(actor, requested(refs), request_id="RLC-left"),
+        actions.create_plan(actor, requested(refs), request_id="RLC-right"),
+    )
+    assert left.plan_id != right.plan_id and left.run_id != right.run_id
+    assert factory.kw["bind"].pool.checkedout() == 0
+    async with factory() as session:
+        assert (
+            await session.scalar(
+                text("SELECT count(*) FROM action_plans WHERE plan_id=ANY(:plans)"),
+                {"plans": [left.plan_id, right.plan_id]},
+            )
+            == 2
+        )
+
+
+@pytest.mark.asyncio
+async def test_postcommit_view_observes_real_concurrent_cancel_not_precommit_snapshot(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    local_boundaries: Any,
+    execution_config: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    plan = await actions.create_plan(actor, requested(refs), request_id="RLC-current-view-plan")
+    executor = ExecutionService(actions.uow, actions=actions)
+    executor.settings = execution_config
+    other = ExecutionService(actions.uow, actions=actions)
+    other.settings = execution_config
+    real_view = executor._view
+    observed = []
+
+    async def view(run: Any, *, _owner: Any = None) -> Any:
+        assert _owner is not None and not _owner.connection.in_transaction()
+        # A distinct request sees the genuine committed row, then fences cancel.
+        cancelled = await asyncio.create_task(other.cancel(actor, run))
+        observed.append(cancelled)
+        return await real_view(run, _owner=_owner)
+
+    monkeypatch.setattr(executor, "_view", view)
+    result = await executor.submit(
+        actor, plan.plan_id, plan.plan_digest, request_id="RLC-current-view-submit"
+    )
+    assert result.state == "cancelled" and result.cancel_requested
+    assert result == observed[0]
+    assert result.spent_tool_calls == 0 and result.receipts == ()
+    assert factory.kw["bind"].pool.checkedout() == 0
+
+
+@pytest.mark.asyncio
+async def test_late_fallback_signal_after_real_metadata_guard_never_replays_initial(
+    factory: Any,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    local_boundaries: Any,
+) -> None:
+    actions, actor, refs, _, _ = await adversarial.domain(factory, tmp_path)
+    request = requested(refs)
+    real_metadata, real_legacy = actions._metadata_plan, actions._legacy_initial_plan
+    persisted = []
+    legacy_calls = []
+
+    async def metadata(*args: Any, **kwargs: Any) -> Any:
+        persisted.append(await real_metadata(*args, **kwargs))
+        raise LegacyInitialRequired("controlled late signal AFTER genuine final guard")
+
+    async def legacy(*args: Any, **kwargs: Any) -> Any:
+        legacy_calls.append(True)
+        return await real_legacy(*args, **kwargs)
+
+    monkeypatch.setattr(actions, "_metadata_plan", metadata)
+    monkeypatch.setattr(actions, "_legacy_initial_plan", legacy)
+    with pytest.raises(LegacyInitialRequired, match="controlled late"):
+        await actions.create_plan(actor, request, request_id="RLC-no-late-replay")
+    assert legacy_calls == [] and len(persisted) == 1
+    assert factory.kw["bind"].pool.checkedout() == 0
+    async with factory() as session:
+        assert (
+            await session.scalar(
+                text(
+                    "SELECT count(*) FROM action_plans WHERE actor_id=:actor "
+                    "AND idempotency_key=:key"
+                ),
+                {"actor": uuid.UUID(actor.user_id), "key": request.idempotency_key},
+            )
+            == 1
+        )
+        assert (
+            await session.scalar(
+                text(
+                    "SELECT count(*) FROM audit_events WHERE actor_user_id=:actor "
+                    "AND action='action.plan.create'"
+                ),
+                {"actor": uuid.UUID(actor.user_id)},
+            )
+            == 1
+        )

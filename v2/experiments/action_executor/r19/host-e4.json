@@ -1,0 +1,49 @@
+{
+  "actor": "Builder",
+  "scope": "Once-authorized frozen e4 host-only feedback; no product imports, Docker, SQL or HTTP load",
+  "binding_sha256": "49222a3bb0a56d851120c7c90157b5b3b834f995e2e9e7e1a6447af534c3ea4a",
+  "commands": {
+    "source_before": "python3 -B v2/experiments/action_executor/r19/qualification.py source v2/experiments/action_executor/r19/source-binding-e4.json",
+    "syntax": "python3 -B -c 'import sys; from pathlib import Path; [compile(Path(p).read_text(),p,\"exec\") for p in sys.argv[1:]]; print(\"SYNTAX_3_PASS\")' v2/experiments/action_executor/r19/qualification.py v2/experiments/action_executor/r19/bounded.py v2/experiments/action_executor/r19/test_r19_offline.py",
+    "bash": "/bin/bash -n v2/experiments/action_executor/r19/run-http-qualification.sh",
+    "offline": "python3 -B v2/experiments/action_executor/r19/test_r19_offline.py",
+    "source_after": "python3 -B v2/experiments/action_executor/r19/qualification.py source v2/experiments/action_executor/r19/source-binding-e4.json"
+  },
+  "actual": {
+    "source_before": {
+      "chunk_id": "4f6b5b",
+      "wall_time_seconds": 0.08214125,
+      "exit_code": 0,
+      "original_token_count": 53,
+      "output": "{\"files\": 1096, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+    },
+    "syntax": {
+      "chunk_id": "e18d1c",
+      "wall_time_seconds": 0.00000775,
+      "exit_code": 0,
+      "original_token_count": 4,
+      "output": "SYNTAX_3_PASS\n"
+    },
+    "bash": {
+      "chunk_id": "e44b41",
+      "wall_time_seconds": 0.000006875,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    },
+    "offline": {
+      "chunk_id": "8a52dd",
+      "wall_time_seconds": 0.354869167,
+      "exit_code": 1,
+      "original_token_count": 786,
+      "output": "test_cell_quantile_and_missing_conservation (__main__.OfflineControls.test_cell_quantile_and_missing_conservation) ... ok\ntest_contract_source_and_one_shot_admission (__main__.OfflineControls.test_contract_source_and_one_shot_admission) ... ok\ntest_fixture_db_cleanup_and_readiness_ledger (__main__.OfflineControls.test_fixture_db_cleanup_and_readiness_ledger) ... ok\ntest_oracle_abort_and_original_summary_agreement (__main__.OfflineControls.test_oracle_abort_and_original_summary_agreement) ... ok\ntest_owned_process_deadline_cap_and_shell_failclosed (__main__.OfflineControls.test_owned_process_deadline_cap_and_shell_failclosed) ... ERROR\ntest_raw_schema_identity_and_corruption (__main__.OfflineControls.test_raw_schema_identity_and_corruption) ... ok\n\n======================================================================\nERROR: test_owned_process_deadline_cap_and_shell_failclosed (__main__.OfflineControls.test_owned_process_deadline_cap_and_shell_failclosed)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r19/test_r19_offline.py\", line 351, in test_owned_process_deadline_cap_and_shell_failclosed\n    result = subprocess.run(\n        [\n    ...<13 lines>...\n        check=True,\n    )\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py\", line 578, in run\n    raise CalledProcessError(retcode, process.args,\n                             output=stdout, stderr=stderr)\nsubprocess.CalledProcessError: Command '['/bin/bash', '-c', 'set -euo pipefail\\nevidence=$1\\nactive_pid=\\'\\'\\nuncertain_database=\\'\\'\\nowned_databases=()\\nowned_count=0\\ndocker_path=stub_docker\\npg=synthetic\\nstub_docker() { return 1; }\\nabsence() { echo 0; }\\ncleanup() {\\n  [[ -z \"$active_pid\" ]] || return 2\\n  local target count index\\n  for ((index=owned_count-1; index>=0; index--)); do\\n    target=${owned_databases[$index]}\\n    [[ \"$target\" == rtr_tip054_r19_local_e1 || \"$target\" == rtr_tip054_r19_engine_e1 ]] || return 2\\n    \"$docker_path\" exec \"$pg\" psql -U rtr_tip054_local -d postgres -v ON_ERROR_STOP=1 \\\\\\n      -c \"DROP DATABASE \\\\\"$target\\\\\";\" > \"$evidence/$target-cleanup.stdout.txt\" \\\\\\n      2> \"$evidence/$target-cleanup.stderr.txt\" || return 1\\n    printf \\'database_cleanup %s 0\\\\n\\' \"$target\" >> \"$evidence/returncodes.txt\"\\n    unset \\'owned_databases[index]\\'\\n    owned_count=$((owned_count - 1))\\n    count=$(absence \"$target\") || return 1\\n    printf \\'%s absence_after_cleanup %s\\\\n\\' \"$target\" \"$count\" >> \"$evidence/database-closure.txt\"\\n    [[ \"$count\" == 0 ]] || return 1\\n  done\\n  [[ -z \"$uncertain_database\" ]] || return 1\\n}owned_databases=(rtr_tip054_r19_local_e1); owned_count=1\\n\\nif ! cleanup; then echo HELD:$owned_count; else echo CLEAN:$owned_count; fi', 'control', '/var/folders/81/y445_2554tb49zsn_qtb_9v80000gn/T/codex-tmp-r19-controls-20261009-jh1e4bsa/http_e1']' returned non-zero exit status 2.\n\n----------------------------------------------------------------------\nRan 6 tests in 0.366s\n\nFAILED (errors=1)\n"
+    },
+    "source_after": {
+      "chunk_id": "92f917",
+      "wall_time_seconds": 0.066445125,
+      "exit_code": 0,
+      "original_token_count": 53,
+      "output": "{\"files\": 1096, \"digests\": {\"product\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\", \"tests\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"}}\nR19_ADMISSION_PASS source\n"
+    }
+  }
+}

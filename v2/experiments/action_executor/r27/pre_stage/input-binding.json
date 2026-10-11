@@ -1,0 +1,42 @@
+{
+  "schema": "r27-pre-stage-frozen-binding-v1",
+  "direct": {
+    "v2/experiments/action_executor/r27/pre_stage/SCOPE.md": "781eb387a7210a1615b476a2284559a3c7d5bf189f95d10e960122c078169a7a",
+    "v2/experiments/action_executor/r27/pre_stage/checks.py": "91f6931b33b6ea9990e5a73b722db5f43bc49957c3662cb70ddcb9afe57743ef",
+    "v2/experiments/action_executor/r27/pre_stage/contract.json": "3fd5e054fa3febf0e0405191acee2099be42b7fdbccae8cd5736f52e95ae957b",
+    "v2/experiments/action_executor/r27/pre_stage/derive.py": "09ccfdc6b9b049e4b62971a2fabc9e2f7e3424d941b1fcd36842f8423c625b8d",
+    "v2/experiments/action_executor/r27/pre_stage/history/previous-publication/enterprise-task-graph.md.original": "bff8274d4d555e632a831e2098d49af0cdedaa727464b5aa8778cbd21a755369",
+    "v2/experiments/action_executor/r27/pre_stage/history/previous-publication/implementation-status.md.original": "d1bd18642a50380ec9df6f9c60f519266e220b712bc4516d78b6793378cca93f",
+    "v2/experiments/action_executor/r27/pre_stage/history/previous-publication/task-graph.md.original": "25031831bbcbcc40738730aadc05f4ce0d13e73fb257241adc8f76b8a34a75ce",
+    "v2/experiments/action_executor/r27/pre_stage/history/previous-publication/verify.md.original": "c1a074a5748836ce1364e8574741047034191a7698032e7b90437d442f986a9c",
+    "v2/experiments/action_executor/r27/pre_stage/source_run.py": "cfac09162135f0af77919a3c3e69ce215a077417a35d2a7f603b171992a506c6",
+    "v2/experiments/action_executor/r27/pre_stage/stage.py": "35d17c7afa886beba8e010accd1e059ee8045a5d615411cc6f2258424d076fe7",
+    "v2/experiments/action_executor/r27/pre_stage/test_stage.py": "72508d35c9bd25bd5cd2b7bccb189d4329c4776b35b01a29458a5e4e86f93f4d"
+  },
+  "preceding_stage_pins": {
+    "checks": "25f0b34a5e58c889691049da91512c08421252a2ed981001bba27184f34434ac",
+    "binding": "1e7dfca6f0dc4bb89f80d94b4926ff28ae48faf35e7bb7da9241e5218bc1c770"
+  },
+  "previous_preservation": {
+    "dependencies": 3,
+    "direct": 43,
+    "prior": {
+      "dependency_interface_pins": 4,
+      "direct_pins": 115,
+      "prior": {
+        "digests": {
+          "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+          "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+        },
+        "input_bytes": 16438294,
+        "prior_bytes": 15440912,
+        "prior_pins": 2011,
+        "scope_counts": {
+          "product": 204,
+          "tests": 192
+        },
+        "total_pins": 2117
+      }
+    }
+  }
+}

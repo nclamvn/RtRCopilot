@@ -1,0 +1,191 @@
+{
+  "after": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13691151,
+    "prior_bytes": 13634646,
+    "prior_pins": 1787,
+    "scope_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "total_pins": 1793
+  },
+  "before": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 13691151,
+    "prior_bytes": 13634646,
+    "prior_pins": 1787,
+    "scope_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "total_pins": 1793
+  },
+  "compiled_files": 3,
+  "errors": 0,
+  "failures": 0,
+  "model_budget": {
+    "actual_capture_admission": "HOLD",
+    "actual_source_upper_bytes": null,
+    "cap_bytes": 10485760,
+    "families": [
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 131094,
+        "family": "frozen_copies",
+        "max_records": 2
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 523,
+        "family": "literal_controls",
+        "max_records": 1
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 267,
+        "family": "literal_scope",
+        "max_records": 1
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 3105,
+        "family": "launch_review",
+        "max_records": 3
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 1673600,
+        "family": "journal",
+        "max_records": 3200
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 2097163,
+        "family": "final_samples",
+        "max_records": 1
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 49185,
+        "family": "summary_stdout",
+        "max_records": 3
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 2142208,
+        "family": "load_stderr",
+        "max_records": 4096
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 267776,
+        "family": "migration_streams",
+        "max_records": 512
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 8280,
+        "family": "owner_process",
+        "max_records": 8
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 66240,
+        "family": "supervisor_stop",
+        "max_records": 64
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 65888,
+        "family": "source_cap_child",
+        "max_records": 32
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 65624,
+        "family": "fixture",
+        "max_records": 8
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 131776,
+        "family": "database_admin",
+        "max_records": 64
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 32856,
+        "family": "disk",
+        "max_records": 8
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 131094,
+        "family": "reconstruction",
+        "max_records": 2
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 8544,
+        "family": "returncodes",
+        "max_records": 32
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 1048752,
+        "family": "ephemeral",
+        "max_records": 16
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 1721821,
+        "family": "future_observer",
+        "max_records": 40001
+      },
+      {
+        "classification": "proposed model only",
+        "encoded_upper_bytes": 132480,
+        "family": "outer_transcript",
+        "max_records": 128
+      }
+    ],
+    "normal_upper_bytes": 9778276,
+    "spare_bytes": 707144,
+    "terminal_reserve_bytes": 340,
+    "total_model_upper_bytes": 9778616
+  },
+  "not_run": [
+    "lint",
+    "types",
+    "runtime/async/durability",
+    "SQL",
+    "Docker",
+    "HTTP/load",
+    "external/native/provider"
+  ],
+  "seconds": 0.042987666005501524,
+  "skips": 0,
+  "source_after": {
+    "checks.py": "0475446e0f89f0ad5a895d3e40cd0fa8268003f799f87a2e91b2a79f19c818da",
+    "contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "input-binding.json": "2d6e8c19f6cb11045746d0c0f5b80d44636e425b77be0017a9bef449f1d0c643",
+    "model.py": "5912d03f4d8f02235ee7d320c8fdd8b4e753a2b9b8b06230bf866dfefdf2a43d",
+    "test_model.py": "7962d5ffd77985edca90ce8434d6e941951f911e081d08e82bef4e552176d00c"
+  },
+  "source_before": {
+    "checks.py": "0475446e0f89f0ad5a895d3e40cd0fa8268003f799f87a2e91b2a79f19c818da",
+    "contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "input-binding.json": "2d6e8c19f6cb11045746d0c0f5b80d44636e425b77be0017a9bef449f1d0c643",
+    "model.py": "5912d03f4d8f02235ee7d320c8fdd8b4e753a2b9b8b06230bf866dfefdf2a43d",
+    "test_model.py": "7962d5ffd77985edca90ce8434d6e941951f911e081d08e82bef4e552176d00c"
+  },
+  "stdout": "test_contract_domains_cap_framing_and_families (test_model.EnvelopeControls.test_contract_domains_cap_framing_and_families) ... ok\ntest_full_proposed_budget_and_copies (test_model.EnvelopeControls.test_full_proposed_budget_and_copies) ... ok\ntest_missing_duplicate_and_closed_snapshot (test_model.EnvelopeControls.test_missing_duplicate_and_closed_snapshot) ... ok\ntest_positive_exact_bytes_and_zero_receipts (test_model.EnvelopeControls.test_positive_exact_bytes_and_zero_receipts) ... ok\ntest_rejected_raw_saturation_and_bypass (test_model.EnvelopeControls.test_rejected_raw_saturation_and_bypass) ... ok\ntest_storage_cleanup_crash_and_reserve (test_model.EnvelopeControls.test_storage_cleanup_crash_and_reserve) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.043s\n\nOK\n",
+  "tests_run": 6
+}

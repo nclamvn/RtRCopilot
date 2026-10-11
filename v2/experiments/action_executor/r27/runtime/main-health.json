@@ -1,0 +1,109 @@
+{
+  "schema": "r27-runtime-main-health-v1",
+  "source_binding_sha256": "192974e7042b8c3d0aa966732fa23ea2760c69a785cd5f79dfe87a6ff57264d0",
+  "sources": {
+    "SCOPE.md": "f8192c758e231d1c655d862a84b85a4d2b26e41058aa132bc618e402070d45d2",
+    "adapter.py": "fb2aaac6812d33ddd206d1d8ba1a5d658b53925d52ce03414137184b0623fa21",
+    "adapter.pyi": "096df18ceb818c2866e2821388408ae1e240766ee43e60464a5d6ba637077461",
+    "checks.py": "462057209c6a4f9557a0d9809fac7ddfd213284d6b7cb7500feffe16a57c288e",
+    "envelope.py": "ea20b7fb00cc585419bfbcb49020de400a77272db5b4dd5aea9bb48fa25430cb",
+    "input-binding.json": "192974e7042b8c3d0aa966732fa23ea2760c69a785cd5f79dfe87a6ff57264d0",
+    "launcher.py": "d7d1ff030bafa22b58227e4648c63cae0a7dbd242af508432fea44a185781773",
+    "pipes.py": "f90d1632e9f739a72eff1dc3e6eb1ae2b035c45635f086eac0eee0d2f8ac19cb",
+    "preflight.py": "267838d414cc7258a8da11e7d40ea06e7ce34f367a0be6fd3664c56505990b13",
+    "producers.py": "916a22184421ec3f15a37177bdb341baf6819593da1c3f0c19a7bd98a0db55c8",
+    "raw_child.py": "11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f",
+    "routing_manifest.py": "563d4c3f4eb9cfd09ba607b3be966827e9ddf3cebde2faa75cddcd33083b9db6",
+    "schemas.py": "ab2474e021983804e17ee33009620f2d5dfdd9c5e548ae693b4e7fabc8f57118",
+    "supervisor.py": "fe159a5b65dac1d733783128a71387b507bb1ba2cb05a21a4d873ac21d241577",
+    "test_launcher.py": "adb40c56b06459e20911e93fca9478b6316a9f34654e0ee88c90e1d5e0082f20",
+    "test_retention.py": "e62d5005900ed08f528398e2e07104657a2457f28693bf474a349e7c9057c9a9"
+  },
+  "codec_body_strict_audit": false,
+  "scope": "13 newly authored typed surfaces including precise adapter.pyi, excluding exact derived adapter.py body; follow-imports=silent; no broad ignore or new cache.",
+  "strict": {
+    "label": "strict",
+    "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 MYPYPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src PYTHONPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/runtime v2/apps/backend/.venv/bin/python -B -m mypy --strict --follow-imports=silent --cache-dir=/dev/null --no-incremental --config-file v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/runtime/adapter.pyi v2/experiments/action_executor/r27/runtime/schemas.py v2/experiments/action_executor/r27/runtime/envelope.py v2/experiments/action_executor/r27/runtime/producers.py v2/experiments/action_executor/r27/runtime/pipes.py v2/experiments/action_executor/r27/runtime/raw_child.py v2/experiments/action_executor/r27/runtime/test_retention.py v2/experiments/action_executor/r27/runtime/checks.py v2/experiments/action_executor/r27/runtime/launcher.py v2/experiments/action_executor/r27/runtime/supervisor.py v2/experiments/action_executor/r27/runtime/preflight.py v2/experiments/action_executor/r27/runtime/routing_manifest.py v2/experiments/action_executor/r27/runtime/test_launcher.py",
+    "result": {
+      "chunk_id": "e1eede",
+      "wall_time_seconds": 1.001885083,
+      "session_id": 12069,
+      "original_token_count": 0,
+      "output": ""
+    },
+    "names": [
+      "adapter.pyi",
+      "schemas.py",
+      "envelope.py",
+      "producers.py",
+      "pipes.py",
+      "raw_child.py",
+      "test_retention.py",
+      "checks.py",
+      "launcher.py",
+      "supervisor.py",
+      "preflight.py",
+      "routing_manifest.py",
+      "test_launcher.py"
+    ],
+    "final": {
+      "chunk_id": "a3640e",
+      "wall_time_seconds": 0.000008208,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 13 source files\n"
+    }
+  },
+  "ruff": {
+    "label": "ruff",
+    "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 MYPYPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src PYTHONPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/runtime v2/apps/backend/.venv/bin/python -B -m ruff check --no-cache --config v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/runtime/adapter.pyi v2/experiments/action_executor/r27/runtime/schemas.py v2/experiments/action_executor/r27/runtime/envelope.py v2/experiments/action_executor/r27/runtime/producers.py v2/experiments/action_executor/r27/runtime/pipes.py v2/experiments/action_executor/r27/runtime/raw_child.py v2/experiments/action_executor/r27/runtime/test_retention.py v2/experiments/action_executor/r27/runtime/checks.py v2/experiments/action_executor/r27/runtime/launcher.py v2/experiments/action_executor/r27/runtime/supervisor.py v2/experiments/action_executor/r27/runtime/preflight.py v2/experiments/action_executor/r27/runtime/routing_manifest.py v2/experiments/action_executor/r27/runtime/test_launcher.py",
+    "result": {
+      "chunk_id": "611c3a",
+      "wall_time_seconds": 0.000008417,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    },
+    "names": [
+      "adapter.pyi",
+      "schemas.py",
+      "envelope.py",
+      "producers.py",
+      "pipes.py",
+      "raw_child.py",
+      "test_retention.py",
+      "checks.py",
+      "launcher.py",
+      "supervisor.py",
+      "preflight.py",
+      "routing_manifest.py",
+      "test_launcher.py"
+    ]
+  },
+  "format": {
+    "label": "format",
+    "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 MYPYPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src PYTHONPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/runtime v2/apps/backend/.venv/bin/python -B -m ruff format --check --no-cache --config v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/runtime/adapter.pyi v2/experiments/action_executor/r27/runtime/schemas.py v2/experiments/action_executor/r27/runtime/envelope.py v2/experiments/action_executor/r27/runtime/producers.py v2/experiments/action_executor/r27/runtime/pipes.py v2/experiments/action_executor/r27/runtime/raw_child.py v2/experiments/action_executor/r27/runtime/test_retention.py v2/experiments/action_executor/r27/runtime/checks.py v2/experiments/action_executor/r27/runtime/launcher.py v2/experiments/action_executor/r27/runtime/supervisor.py v2/experiments/action_executor/r27/runtime/preflight.py v2/experiments/action_executor/r27/runtime/routing_manifest.py v2/experiments/action_executor/r27/runtime/test_launcher.py",
+    "result": {
+      "chunk_id": "775e54",
+      "wall_time_seconds": 0.000008542,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "13 files already formatted\n"
+    },
+    "names": [
+      "adapter.pyi",
+      "schemas.py",
+      "envelope.py",
+      "producers.py",
+      "pipes.py",
+      "raw_child.py",
+      "test_retention.py",
+      "checks.py",
+      "launcher.py",
+      "supervisor.py",
+      "preflight.py",
+      "routing_manifest.py",
+      "test_launcher.py"
+    ]
+  }
+}

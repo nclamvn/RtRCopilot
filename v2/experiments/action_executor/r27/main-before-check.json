@@ -1,0 +1,28 @@
+{
+  "schema": "r27-main-preservation-v1",
+  "tool": {
+    "chunk_id": "3f7d9b",
+    "exit_code": 0
+  },
+  "result": {
+    "pins": 1829,
+    "bytes": 13826460,
+    "manifest_sha256": "ae147901890308d24d11523097d45635d5e5e32f265eb9cbac3c47c0aba44230",
+    "anchors": {
+      "v2/experiments/action_executor/r26/input-binding.json": "999167124e38280545959522e25dcc00e4b596779b5e01a74fb9e2601a82abd0",
+      "v2/experiments/action_executor/r26/main-evidence-binding.sha256": "e851fe0db0b442a01b77a145f5fab7fee00408f43bf2cafe753a560c12cbed46",
+      "v2/experiments/action_executor/r26/main-final-closure.json": "5711153cebade4f6cffd6123e3e6e70c63fb02a5eb57e0531b51af5c57472157",
+      "v2/experiments/action_executor/r26/main-publication-check.json": "f4c7df95f08dd79453eb563ed40c8ad8f9c666d81e5316f7fc8f7dc75ac86e68"
+    },
+    "source_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "scope": "R26 final and linked prior immutable graph; mutable publication hashes historical",
+    "measured_imports": 0
+  }
+}

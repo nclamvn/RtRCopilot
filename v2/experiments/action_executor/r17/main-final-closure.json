@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-09",
+  "actor": "Main",
+  "status": "diagnostic_pass_broader_candidate_not_ready",
+  "source": "Actual Main final read-only checks after single compare_e1; no runtime rerun",
+  "head": "0e88f48588dc3228f1ae9eca7a7597d96589af8b",
+  "product_sha256_before": "4a0bb4921ed0e310e6064070d945aab16837ab3de5ac525eb14bc15f8fc88708",
+  "product_sha256_after": "4a0bb4921ed0e310e6064070d945aab16837ab3de5ac525eb14bc15f8fc88708",
+  "r17_source_binding_sha256": "b6133d5bb71b5b64a3927d0e718ff5af22c8670782da17e6977acc98c519715e",
+  "r17_final_pins": {"checked": 251, "matched": 251},
+  "r16_source_pins": {"checked": 4, "matched": 4},
+  "protected_r12_pins": {"checked": 5, "matched": 5},
+  "r16_verify_sha256": "db1ace88585cb986b194585e8141cc833500c4a2df71e335e91ff81dd2531bea",
+  "r16_main_verification_sha256": "6bc0b797bb183b7bc5bff3359803b62935d42b66f3eeacfe832b28e81e44f9b7",
+  "local_correctness": {"pre_epoch": "pre_e3", "sql_epoch": "sql_e2", "unique": 44, "passed": 44, "failures": 0, "errors": 0, "skips": 0},
+  "personal_overlap": {"path": "main-personal-e5.json", "passed": 8, "additional_unique": 0},
+  "preserved_failures": ["e1 source review two P1", "style_e2 lint 92 and format six", "pre_e1 inventory root mismatch", "sql_e1 new grouped control failed"],
+  "campaign": {
+    "epoch": "compare_e1", "runs": 1, "retries": 0,
+    "scheduled": 800, "started": 800, "retained": 800, "successes": 800,
+    "errors": 0, "timeouts": 0, "missing": 0,
+    "cells_passed": 8, "cells_total": 8,
+    "events": 12063, "lag_samples": 81, "physical_generations_observed": 21,
+    "application_sql": 2800, "hold_samples": 1600,
+    "jsonl_bytes": 2521830, "output_cap_bytes": 10485760,
+    "unmatched_spans": 0, "collector_faults": 0,
+    "metadata_unchanged": true, "pool_checkedout": 0, "held_records": 0,
+    "main_raw_reconstruction_matches_saved_and_summary_common_fields": true,
+    "cell_p95_ms": [148.377458, 111.183417, 105.695917, 128.014667, 148.825375, 107.361417, 113.821208, 140.81775],
+    "interpretation": "R15 c25 adverse tail not reproduced; no retrospective correction, pure-queue/CPU attribution, uniform causal gain or full-candidate certification"
+  },
+  "databases": {
+    "exact_targets": ["rtr_tip054_r15_local_e1", "rtr_tip054_r17_local_e1"],
+    "created_only_after_absence_and_capacity": true,
+    "owned_cleanup_exits": {"sql_e1_R15": 0, "sql_e1_R17": 0, "sql_e2_R15": 0, "sql_e2_R17": 0, "compare_e1_R17": 0},
+    "final_live_matching_catalog_rows": 0
+  },
+  "fixture": {
+    "name": "tip054-4b-full-20261007-r5qa1",
+    "original_container_ids_match": 4, "running": 4,
+    "paused": 0, "restarting": 0, "oom": 0, "restart_count_each": 0,
+    "runner_commands": ["sh", "sleep"], "pg_free_kib": 1443844,
+    "containers_deleted": 0, "volumes_deleted": 0
+  },
+  "disk_hygiene": {
+    "host_initial_available_gib": 85, "host_final_available_gib": 84,
+    "docker_image_prune_reclaimed_bytes": 0,
+    "whole_project_copy": false, "dependency_install": false, "next_distdir_created": false,
+    "small_unittest_tempdirs_auto_removed": true,
+    "removed_generated_cache": ["v2/experiments/action_executor/r17/__pycache__/gate.cpython-314.pyc", "v2/experiments/action_executor/r17/__pycache__"]
+  },
+  "scope": {"product_changed": false, "executor": "OFF", "tip054_5": "blocked", "external_calls": 0, "git_mutation": false, "rebuild_or_deploy": false, "full_candidate_certification": false}
+}

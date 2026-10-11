@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r17/gate.py", line 155, in <module>
+    collection(*arguments)
+    ~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r17/gate.py", line 103, in collection
+    expected_group(campaign, "campaign")
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r17/gate.py", line 49, in expected_group
+    assert identities == [
+           ^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    ]
+    ^
+AssertionError

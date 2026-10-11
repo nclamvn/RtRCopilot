@@ -1,0 +1,39 @@
+{
+  "schema": "r27-lifecycle-harness-static-epoch-v1",
+  "runtime_executed": false,
+  "freeze_claim": false,
+  "results": [
+    {
+      "command": "v2/apps/backend/.venv/bin/ruff check --no-cache v2/experiments/action_executor/r27/temporary_lifecycle/checks.py",
+      "chunk_id": "72a8c5",
+      "wall_time_seconds": 0.000007166,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    },
+    {
+      "command": "v2/apps/backend/.venv/bin/ruff format --check --no-cache v2/experiments/action_executor/r27/temporary_lifecycle/checks.py",
+      "chunk_id": "b9602d",
+      "wall_time_seconds": 0.000018834,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "1 file already formatted\n"
+    },
+    {
+      "command": "env PYTHONDONTWRITEBYTECODE=1 v2/apps/backend/.venv/bin/mypy --strict --follow-imports=skip --no-incremental --cache-dir=/dev/null v2/experiments/action_executor/r27/temporary_lifecycle/checks.py",
+      "chunk_id": "c89d1b",
+      "wall_time_seconds": 0.753534291,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 1 source file\n"
+    },
+    {
+      "command": "shasum -a 256 v2/experiments/action_executor/r27/temporary_lifecycle/*.py v2/experiments/action_executor/r27/temporary_lifecycle/contract.json v2/experiments/action_executor/r27/temporary_lifecycle/pytest.ini v2/experiments/action_executor/r27/temporary_lifecycle/SCOPE.md",
+      "chunk_id": "99e367",
+      "wall_time_seconds": 0.000008666,
+      "exit_code": 0,
+      "original_token_count": 331,
+      "output": "50dec76c45a9708f6fa7d34c083da2b26fee723106de2853f2d5ae24636de1b1  v2/experiments/action_executor/r27/temporary_lifecycle/checks.py\n347cadbdd05f30243747622e7063e4512b31ea60a73c66cd46c8845ded283f89  v2/experiments/action_executor/r27/temporary_lifecycle/flows.py\n8cfef987ff267d9417a0f6cf9612f3814701ed9add96a2daab87c26801f876c4  v2/experiments/action_executor/r27/temporary_lifecycle/genuine.py\n2edc8ce4c78f61ecd236838eb437799299674d34f4bfff2708e08a30392be3b9  v2/experiments/action_executor/r27/temporary_lifecycle/native.py\n1bf7d217205117451322764b6e7e81d88d981ebb9b47f1d76cd3aa2a42e451d5  v2/experiments/action_executor/r27/temporary_lifecycle/policy.py\n1745217d1fb6fcb614708fbf2d252ffc4f5f46e6f19bf96384a213f0f398465b  v2/experiments/action_executor/r27/temporary_lifecycle/target.py\nb3ee9d460976876a1b243b9d49853ffe0898774850ac1c714750ec7fd8799b2b  v2/experiments/action_executor/r27/temporary_lifecycle/test_lifecycle.py\n57e32a432f791acb829b1741147cc1d538dfea1622e80ca37c04c2ba32fa79ad  v2/experiments/action_executor/r27/temporary_lifecycle/contract.json\n7f27864a95e67a40bd388f27b18881c258d62070e5d6710b663c8fe06a8a7450  v2/experiments/action_executor/r27/temporary_lifecycle/pytest.ini\n475c6a62c17e190ef894a7e7abeccd68f25647f57669967721b1fc4742ab7542  v2/experiments/action_executor/r27/temporary_lifecycle/SCOPE.md\n"
+    }
+  ]
+}

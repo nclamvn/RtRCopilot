@@ -1,0 +1,19 @@
+{
+  "command": [
+    "v2/apps/backend/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-c",
+    "v2/apps/backend/pyproject.toml",
+    "--confcutdir",
+    "v2/experiments/action_executor/r27/runtime_closure",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py"
+  ],
+  "returncode": 0,
+  "stdout_bytes": 958,
+  "stderr_bytes": 0
+}

@@ -1,0 +1,282 @@
+[
+  {
+    "entity": "Anthropic agent design",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Anthropic agent design",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Anthropic agent evaluations",
+    "field": "constraint",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Anthropic agent evaluations",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Anthropic agent evaluations",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Anthropic context engineering",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Anthropic context engineering",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Anthropic tool design",
+    "field": "constraint",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Anthropic tool design",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Anthropic tool design",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "DBOS architecture",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "DBOS architecture",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "DBOS queues",
+    "field": "constraint",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "DBOS queues",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "DBOS queues",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "DBOS steps",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "DBOS steps",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "DBOS workflows",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "DBOS workflows",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "LangGraph interrupts",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "LangGraph interrupts",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "LangGraph persistence",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "LangGraph persistence",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "MCP authorization",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "MCP authorization",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "MCP security practices",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "MCP security practices",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "MCP tasks",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "MCP tasks",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "MCP tools",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "MCP tools",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Microsoft durable agents",
+    "field": "constraint",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Microsoft durable agents",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Microsoft durable agents",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Microsoft functional workflows",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Microsoft functional workflows",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "OpenTelemetry GenAI conventions",
+    "field": "capability",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "OpenTelemetry GenAI conventions",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "OpenTelemetry GenAI conventions",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "PydanticAI MCP",
+    "field": "constraint",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "PydanticAI MCP",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "PydanticAI MCP",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "PydanticAI deferred tools",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "PydanticAI deferred tools",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "PydanticAI durable execution",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "PydanticAI durable execution",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Restate services",
+    "field": "constraint",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Restate services",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Restate services",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Temporal activities",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Temporal activities",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Temporal workflows",
+    "field": "constraint",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Temporal workflows",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "Temporal workflows",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "W3C PROV",
+    "field": "performance_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  },
+  {
+    "entity": "W3C PROV",
+    "field": "license_rtr",
+    "reason": "No verified claim in bounded source review; not evidence of absence"
+  }
+]

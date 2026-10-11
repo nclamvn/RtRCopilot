@@ -1,0 +1,42 @@
+{
+  "actor": "Main",
+  "method": "personally read exact collection, both XML, ten owner/process records and stage/raw guards",
+  "tests": [
+    {
+      "file": "envelope.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 2.843,
+      "ids": [
+        "::test_captured_load_envelope_without_sql"
+      ]
+    },
+    {
+      "file": "offline.xml",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.977,
+      "ids": [
+        ".R21Controls::test_exact_caller_and_derived_envelopes_before_effects",
+        ".R21Controls::test_fixture_db_closure_and_readiness_scope",
+        ".R21Controls::test_linked_source_history_and_one_use_admission",
+        ".R21Controls::test_original_rows_order_missing_and_quantile_conservation",
+        ".R21Controls::test_packet_summary_controls_oracle_and_corruption",
+        ".R21Controls::test_supervisor_dispatch_and_shell_ownership_failclosed"
+      ]
+    }
+  ],
+  "children": 10,
+  "all_children_completed_drained": true,
+  "stage_exit": 0,
+  "raw_bytes": 14712,
+  "marker_exists": false,
+  "database_closure": "rtr_tip054_r21_local_e1 final_absence 0\nrtr_tip054_r21_engine_e1 final_absence 0\n",
+  "source_after": "R21_PASS source\n",
+  "fixture_after": "R21_PASS fixture\n",
+  "warnings": "five retained SWIG deprecation warnings in envelope output; not errors or waived assertions"
+}

@@ -1,0 +1,42 @@
+{
+  "digests": {
+    "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+    "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+  },
+  "files": {
+    "v2/experiments/action_executor/r19/main-evidence-binding.sha256": "f99638aa32e497220eb6240f9e9147184bf93d350014ab40801c49e4d7e771cd",
+    "v2/experiments/action_executor/r19/source-binding-e5.json": "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4",
+    "v2/experiments/action_executor/r20/env_contract.py": "d5913f87c7182d8a3f7215f4884929325a4b45149cfeb8532ec156b55ceccffd",
+    "v2/experiments/action_executor/r20/host-e2.json": "ebc447c4757f75009e2461519f7926824f6332e5bfa349665aa6ea2067913497",
+    "v2/experiments/action_executor/r20/main-author-format-e1.diff": "e05cb8fbebbd63966de4ed7faf086cd47096bc72bfcd398efd46c846ea3674e0",
+    "v2/experiments/action_executor/r20/main-author-import-e2.diff": "44c26fb4b108a68a27293fc4d68ff3027e4f7d16b4fef22c0160c92a9cdcd9b5",
+    "v2/experiments/action_executor/r20/main-author-style-e1.json": "f96662d80b72e8988d002de8c20d6a901eecaf0ae47ee26f1c0438decb87ed48",
+    "v2/experiments/action_executor/r20/main-author-style-e2.json": "9bbfd19ce52d8bde6a442cbc92a23b18d6fcd71374305dd1598673c005520490",
+    "v2/experiments/action_executor/r20/manifest.json": "9ad96e283538e1fe7d8703261f60435b22e864fe601103aebd97d97fc781278e",
+    "v2/experiments/action_executor/r20/run-bootstrap-closure.sh": "d6b51085147b273ca642493fba524de14cc610a81dcdf7f7771e79fbfad49909",
+    "v2/experiments/action_executor/r20/source-binding-e1.json": "ba5d3f274dbc9c8ac7963f6eeb7671ba27af534a22a3e644b47df832c8855a91",
+    "v2/experiments/action_executor/r20/source-binding-e2.json": "f93c84062211d782502f209859942e3d629b9d040501c6c919c27f7d0e902ec8",
+    "v2/experiments/action_executor/r20/source_e1/env_contract.py": "c980550ed48eb81488a09550914a348d61057b585f02f7b98fca36bc01c428ab",
+    "v2/experiments/action_executor/r20/source_e1/manifest.json": "9ad96e283538e1fe7d8703261f60435b22e864fe601103aebd97d97fc781278e",
+    "v2/experiments/action_executor/r20/source_e1/run-bootstrap-closure.sh": "7b91283df34dd6c9074354f06ed6d0b37ecfaeaab62cb23d4006368d10539225",
+    "v2/experiments/action_executor/r20/source_e1/source-binding-e1.json": "ba5d3f274dbc9c8ac7963f6eeb7671ba27af534a22a3e644b47df832c8855a91",
+    "v2/experiments/action_executor/r20/source_e1/test_r20_bootstrap.py": "a428a3bca8ab695f824b1f78b3c521099a7c1ea2b08088ee78526eda34c1f45d",
+    "v2/experiments/action_executor/r20/source_e1/test_r20_offline.py": "87dc1c7826dc4f3ceb48b85737c4eb6215afdb039611390f44cf53d3e578997b",
+    "v2/experiments/action_executor/r20/source_e2/env_contract.py": "cdc5c48deac016dbb08e6c030edd9f6473fa2945e07d3d61d8f1f508f2160a47",
+    "v2/experiments/action_executor/r20/source_e2/manifest.json": "9ad96e283538e1fe7d8703261f60435b22e864fe601103aebd97d97fc781278e",
+    "v2/experiments/action_executor/r20/source_e2/run-bootstrap-closure.sh": "d6b51085147b273ca642493fba524de14cc610a81dcdf7f7771e79fbfad49909",
+    "v2/experiments/action_executor/r20/source_e2/source-binding-e2.json": "f93c84062211d782502f209859942e3d629b9d040501c6c919c27f7d0e902ec8",
+    "v2/experiments/action_executor/r20/source_e2/test_r20_bootstrap.py": "ef9d8199f2c71cee8cb11824e790ca8973dab59e496f1cf7faac8f069fa1c49d",
+    "v2/experiments/action_executor/r20/source_e2/test_r20_offline.py": "5a84065065d7de91b08b1766db53befc6aa1fcba35bd0034656fdc822161312a",
+    "v2/experiments/action_executor/r20/test_r20_bootstrap.py": "9920e9ceaa3a1b351f6e24428dbcd571d862b74d9443a0e742435707ca73d528",
+    "v2/experiments/action_executor/r20/test_r20_offline.py": "335285d089a3f6a939da79e7d85fd2cd3d7e2868bf4f4e7e13b3064d0cde7a7d",
+    "vibecode_v2/R20_SCAN_REPORT.md": "b12b6c5275151ab77a32cf62742907e597ad5ed3f2f1f8f47808aaf999bcb1ea",
+    "vibecode_v2/TIP-054.4b-R19_FINAL_RESULT_REVIEW.md": "330984add1ccbfa3734379088aa90b0e6bd1879f1b232ff978989bc1b6efc83d",
+    "vibecode_v2/TIP-054.4b-R19_VERIFY_REPORT.md": "52defb55d58197340427f7d98a276468a926850fcc49a918cc8ab915246ebeb5",
+    "vibecode_v2/TIP-054.4b-R20_DESIGN_PROPOSAL.md": "5c8224fbead550947c4788ba6beada4e0d148ee54d23bd339d7dd2862e9df126",
+    "vibecode_v2/TIP-054.4b-R20_SYNTHETIC_FIXTURE_BOOTSTRAP_CLOSURE.md": "8d979fb0e7f692a17e3fcce96239ebc20e3a85789765e202537714828e2f4169"
+  },
+  "prior_evidence_sha256": "f99638aa32e497220eb6240f9e9147184bf93d350014ab40801c49e4d7e771cd",
+  "prior_source_sha256": "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4",
+  "schema": "R20-linked-source-v1"
+}

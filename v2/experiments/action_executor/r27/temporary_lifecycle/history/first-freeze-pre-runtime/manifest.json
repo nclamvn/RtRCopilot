@@ -1,0 +1,159 @@
+{
+  "conservative_physical_packet_metadata_maximum": 2725881,
+  "contract": {
+    "bounds": {
+      "artifacts": 32,
+      "attempts": 512,
+      "collision": 32,
+      "depth": 8,
+      "descriptors": 16,
+      "directories": 48,
+      "discovery": 32,
+      "events": 192,
+      "links": 4,
+      "path_bytes": 256
+    },
+    "cap_bytes": 10485760,
+    "domains": {
+      "closure": [
+        "source_cap_child",
+        1,
+        1,
+        80
+      ],
+      "native_small": [
+        "ephemeral",
+        2,
+        24,
+        4096
+      ],
+      "owned_link": [
+        "ephemeral",
+        3,
+        4,
+        256
+      ],
+      "pytest_xml": [
+        "source_cap_child",
+        2,
+        1,
+        8192
+      ],
+      "stream": [
+        "outer_transcript",
+        1,
+        2,
+        8192
+      ],
+      "synthetic_input": [
+        "ephemeral",
+        1,
+        35,
+        235440
+      ],
+      "warning": [
+        "future_observer",
+        1,
+        4,
+        1024
+      ]
+    },
+    "epoch": "R27LIFECYCLE0001",
+    "metadata_bytes": 65536,
+    "schema": "r27-owned-native-lifecycle-v1",
+    "stage": "LOCAL_NATIVE_LIFECYCLE",
+    "synthetic": {
+      "r21-campaign-launch.json": [
+        4,
+        287
+      ],
+      "r21_http_e1/binding.json": [
+        2,
+        18
+      ],
+      "r21_http_e1/contract.json": [
+        2,
+        2108
+      ],
+      "r21_http_e1/load.owner.json": [
+        4,
+        60
+      ],
+      "r21_http_e1/load.process.json": [
+        6,
+        164
+      ],
+      "r21_http_e1/run/latency-summary.json": [
+        6,
+        3473
+      ],
+      "r21_http_e1/run/r-controls.json": [
+        6,
+        263
+      ],
+      "r21_http_e1/run/samples.json": [
+        2,
+        235440
+      ],
+      "r21_http_e1/run/samples.jsonl": [
+        3,
+        233840
+      ]
+    }
+  },
+  "descriptor_claim": "selected domain, not process-wide FD or syscall bound",
+  "executor": "OFF",
+  "host_selected_safe_fd_rmtree": true,
+  "measurement": "NONE: original elapsed_ms=1.0 oracle inputs remain synthetic",
+  "metadata_reserve": 65536,
+  "nested_pytest": {
+    "expected_exit": 1,
+    "intentional_failures": 1,
+    "outer_coverage_contribution": 0,
+    "source_cases": 2
+  },
+  "no_refund": true,
+  "original_PRE": "DENY",
+  "original_source_case": "R21Controls.test_packet_summary_controls_oracle_and_corruption",
+  "original_source_payload_bytes": 733169,
+  "original_source_whole_writes": 35,
+  "outer_scenarios": {
+    "new": 5,
+    "preceding_unchanged": 33,
+    "total": 38
+  },
+  "overall_status": "NOT_READY",
+  "payload_ceiling": 1329440,
+  "qualified_original_PRE": false,
+  "schema": "r27-local-genuine-lifecycle-evidence-v1",
+  "selected_fixed_control_descriptors": 4,
+  "selected_shared_producer_transient_descriptors": 12,
+  "source_pins": {
+    "/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/shutil.py": "f9f0102a9ed087271f914d74b07866464d3e716afe9ee10760a5eb90f7db0f33",
+    "/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/tempfile.py": "2eea4401f4f29d0d3647ed6fc8bcf6aa1daf879c8aa407a8ea310edac9dfc317",
+    "/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/unittest/case.py": "45bac6d80a4fc3a0dea8340a80681e30b263f017b4a5002cb8f489a632e0f987",
+    "/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/unittest/result.py": "5db286bdd3821d64150377e554d7edbdd58db7bb8b950772f977e9ec1d535617",
+    "/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/weakref.py": "56f8d313fb74019e53eb9287400702fbce788b7fe30e097b0b6e06296f3f080c",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/junitxml.py": "51ea93fb20122b8aa5f2c412b9cf946b6daf719cde470f6ca2c50430bed4135d",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/pathlib.py": "8127808359baaa711775862b32bfbe0a7e5c16a2e8c9923d60ddd45f031b66fa",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/tmpdir.py": "236918c090160c1f6b935e162ff44ab273a700221d5f40ac15892be75e4503ee",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/real_path/adapter.py": "0f2a92fe0574fafc70acedc966b113928676cd78cc4ff7e6a83cb349074f63a2",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/real_path/writer.py": "e2b7738807dced6bd7ed20d9f1662de648e09a1317db45ed193bb2db4c6ddeba",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/SCOPE.md": "475c6a62c17e190ef894a7e7abeccd68f25647f57669967721b1fc4742ab7542",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/checks.py": "5214f0b323b2d196d6077c4b7eb48d72d89f53fb789fa30bd00d1ab5fbb7f728",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/contract.json": "57e32a432f791acb829b1741147cc1d538dfea1622e80ca37c04c2ba32fa79ad",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/flows.py": "0586efda7982378fb95da69861f36689aefebfb7f66daea27ffefe24daebbbe7",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/genuine.py": "abd239389598594f350af8a6cf6b23f7cc5c1c4e7941b00344c3168b1421251a",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/native.py": "eac0155d050425675335bd9044b9d3e4e3f79eb82e83914b89f898565bc86c48",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/policy.py": "42075c42f88621f6b499969c242a057f9417c99feed5f2215c781c6a05f73905",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/target.py": "1745217d1fb6fcb614708fbf2d252ffc4f5f46e6f19bf96384a213f0f398465b",
+    "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/test_lifecycle.py": "cefa5296e71e5781686fde66343182362c9e87dd97e8a632236e7056e4c4f40b"
+  },
+  "stage": "LOCAL_NATIVE_LIFECYCLE",
+  "unqualified": [
+    "default pytest user/lock/PID/garbage/atexit lifecycle",
+    "arbitrary native child or file writer",
+    "complete six-suite/launcher PRE",
+    "other platforms and unknown plugin/error routes"
+  ]
+}

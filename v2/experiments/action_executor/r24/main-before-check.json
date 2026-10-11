@@ -1,0 +1,26 @@
+{
+  "tool_chunk": "b2a58c",
+  "exit_code": 0,
+  "stage": "main_r24_before",
+  "status": "PASS",
+  "linked_pins": 1762,
+  "linked_bytes": 13498377,
+  "source_sets": {
+    "product": 204,
+    "tests": 192
+  },
+  "digests": {
+    "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+    "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+  },
+  "r23_final_anchors": {
+    "v2/experiments/action_executor/r23/input-binding.json": "9caf0d67084eb189f896e6bfcdb48258f3730de31a3f9b6002447e5cc11d208a",
+    "v2/experiments/action_executor/r23/main-final-closure.json": "2637de5a6e213fef82019caf88c0c9d29692939b687527e4457aac51c5bf1b4e",
+    "v2/experiments/action_executor/r23/main-publication-check.json": "c96cdb7c3916ccdf997049e9880b68c8f25c70b8b7ecafa4ae20f31368caa8af"
+  },
+  "r23_seal": {
+    "sha256": "b3c9c76e7a329d222b9010630810a00e2ce0b1a71ae29ad5e1a023310d383a5e",
+    "entries": 21,
+    "bytes": 108978
+  }
+}

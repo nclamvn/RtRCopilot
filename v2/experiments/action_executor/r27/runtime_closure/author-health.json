@@ -1,0 +1,29 @@
+{
+  "commands": [
+    {
+      "cmd": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 MYPYPATH=v2/apps/backend/src:v2/experiments/action_executor/r27/real_path v2/apps/backend/.venv/bin/python -B -m mypy --strict --follow-imports=silent --cache-dir=/dev/null --no-incremental --config-file=v2/apps/backend/pyproject.toml v2/experiments/action_executor/r27/runtime_closure/acceptance.py v2/experiments/action_executor/r27/runtime_closure/checks.py v2/experiments/action_executor/r27/runtime_closure/logging_seam.py v2/experiments/action_executor/r27/runtime_closure/native_child.py v2/experiments/action_executor/r27/runtime_closure/native_seam.py v2/experiments/action_executor/r27/runtime_closure/plugin_target.py v2/experiments/action_executor/r27/runtime_closure/pytest_seam.py v2/experiments/action_executor/r27/runtime_closure/readiness.py v2/experiments/action_executor/r27/runtime_closure/test_acceptance.py v2/experiments/action_executor/r27/runtime_closure/test_native.py v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py",
+      "chunk_id": "292b47",
+      "wall_time_seconds": 6.819925875,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 11 source files\n"
+    },
+    {
+      "cmd": "v2/apps/backend/.venv/bin/python -B -m ruff check --config v2/apps/backend/pyproject.toml --no-cache v2/experiments/action_executor/r27/runtime_closure/acceptance.py v2/experiments/action_executor/r27/runtime_closure/checks.py v2/experiments/action_executor/r27/runtime_closure/logging_seam.py v2/experiments/action_executor/r27/runtime_closure/native_child.py v2/experiments/action_executor/r27/runtime_closure/native_seam.py v2/experiments/action_executor/r27/runtime_closure/plugin_target.py v2/experiments/action_executor/r27/runtime_closure/pytest_seam.py v2/experiments/action_executor/r27/runtime_closure/readiness.py v2/experiments/action_executor/r27/runtime_closure/test_acceptance.py v2/experiments/action_executor/r27/runtime_closure/test_native.py v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py",
+      "chunk_id": "af27fa",
+      "wall_time_seconds": 0.000007458,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    },
+    {
+      "cmd": "v2/apps/backend/.venv/bin/python -B -m ruff format --check --config v2/apps/backend/pyproject.toml --no-cache v2/experiments/action_executor/r27/runtime_closure/acceptance.py v2/experiments/action_executor/r27/runtime_closure/checks.py v2/experiments/action_executor/r27/runtime_closure/logging_seam.py v2/experiments/action_executor/r27/runtime_closure/native_child.py v2/experiments/action_executor/r27/runtime_closure/native_seam.py v2/experiments/action_executor/r27/runtime_closure/plugin_target.py v2/experiments/action_executor/r27/runtime_closure/pytest_seam.py v2/experiments/action_executor/r27/runtime_closure/readiness.py v2/experiments/action_executor/r27/runtime_closure/test_acceptance.py v2/experiments/action_executor/r27/runtime_closure/test_native.py v2/experiments/action_executor/r27/runtime_closure/test_plugin_seams.py",
+      "chunk_id": "d7e8a4",
+      "wall_time_seconds": 0.000008916,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "11 files already formatted\n"
+    }
+  ],
+  "scope": "11 new Python modules; explicit backend config; old codec body not newly strict-audited"
+}

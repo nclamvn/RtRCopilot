@@ -1,0 +1,13 @@
+{
+  "actor": "Main",
+  "stage": "pre",
+  "epoch": "pre_e1",
+  "binding_sha256": "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4",
+  "review": "vibecode_v2/TIP-054.4b-R19_CODE_REVIEW_E5_REPORT.md",
+  "review_sha256": "c481427cb0f8df1ed309e6aa5716d889fa31c985e658273e0f6b1d02048d350e",
+  "basis": "Main six permissioned offline controls PASS, frozen final style PASS, independent source accepted for pre; retained prior host errors",
+  "scope": "eight finite pre children only; no CREATE/migration/HTTP/native/provider",
+  "http_allowance_consumed": false,
+  "serving_executor": "OFF",
+  "tip054_5": "BLOCKED"
+}

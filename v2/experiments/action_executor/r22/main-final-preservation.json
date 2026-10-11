@@ -1,0 +1,10 @@
+{
+  "actor": "Main",
+  "stage": "final preservation after R22 publication",
+  "unique_frozen_pins": 1722,
+  "input_bytes": 13274883,
+  "all_input_and_prior_R21_downstream_match": true,
+  "analysis_and_Main_output_match": true,
+  "input_binding_sha256": "1ae53ce15d2bab4f76df11dd9297640cda2e6af9477b116fd7664d78104e93ab",
+  "runtime_calls": 0
+}

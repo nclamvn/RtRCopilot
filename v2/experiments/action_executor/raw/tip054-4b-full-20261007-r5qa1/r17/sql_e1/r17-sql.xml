@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="3" time="3.941" timestamp="2026-10-09T07:30:20.963976+00:00" hostname="cb30f7e2244c"><testcase classname="" name="test_canonical_legacy_equivalence" time="0.585" /><testcase classname="" name="test_creation_reuse_overflow_and_isolation" time="0.202" /><testcase classname="" name="test_cancel_query_close_fault_attribution_and_restoration" time="0.362"><failure message="assert 1 == 0">factory = async_sessionmaker(class_='AsyncSession', bind=&lt;sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0xffffa48b0090&gt;, autoflush=True, expire_on_commit=False)
+oracle = async_sessionmaker(class_='AsyncSession', bind=&lt;sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0xffffa484fa90&gt;, autoflush=True, expire_on_commit=False)
+tmp_path = PosixPath('/evidence/r17/sql_e1/pytest-tmp/r17-sql/test_cancel_query_close_fault_0')
+execution_config = Settings(postgres_dsn=PostgresDsn('postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r17_local_...failure_threshold=5, limits_breaker_cooldown_seconds=30, limits_queue_retry_after_seconds=15, worker_metrics_port=9100)
+local_boundaries = &lt;test_document_recovery_integration.MemoryStorage object at 0xffffa48fa300&gt;
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0xffffa48fa6f0&gt;
+
+    @pytest.mark.asyncio
+    async def test_cancel_query_close_fault_attribution_and_restoration(
+        factory, oracle, tmp_path: Path, execution_config, local_boundaries, monkeypatch
+    ):
+        base, legacy, new = services(execution_config)
+        _, actor, _, _, _, view = await adversarial.submitted(factory, tmp_path, execution_config)
+        before = await fusion.immutable_snapshot(oracle, view.run_id)
+        observer = Observation(base)
+        originals = (base.pool.connect, AsyncConnection.close, AsyncSession.close)
+        async with AsyncExitStack() as held:
+            for _ in range(10):
+                await held.enter_async_context(base.connect())
+            with observer.watching("D"):
+                with tagged("acquisition_cancel"):
+                    task = asyncio.create_task(new.status(actor, view.run_id))
+                try:
+                    for _ in range(100):
+                        if base.pool._pool._queue._getters:
+                            break
+                        await asyncio.sleep(0.01)
+                    assert base.pool._pool._queue._getters
+                    task.cancel()
+                    with pytest.raises(asyncio.CancelledError):
+                        await task
+                finally:
+                    if not task.done():
+                        task.cancel()
+                    await asyncio.gather(task, return_exceptions=True)
+                assert any(
+                    e["attempt"] == "acquisition_cancel"
+                    and e["kind"] == "acquisition_error"
+                    and e["error_type"] == "CancelledError"
+                    for e in observer.collector.events
+                )
+    
+        def fault(connection, cursor, statement, parameters, *args):
+            if "FROM action_execution_receipts c" in statement:
+                statement = statement.replace(
+                    "SELECT c.receipt_id", "SELECT c.r17_absent_column,c.receipt_id"
+                )
+            return statement, parameters
+    
+        with observer.watching("D"):
+            event.listen(base.sync_engine, "before_cursor_execute", fault, retval=True)
+            try:
+                with tagged("receipt_error"), pytest.raises(DBAPIError):
+                    await new.status(actor, view.run_id)
+            finally:
+                event.remove(base.sync_engine, "before_cursor_execute", fault)
+            assert any(
+                e["attempt"] == "receipt_error"
+                and e["kind"] == "query_error"
+                and e["classification"] == "receipt"
+                for e in observer.collector.events
+            )
+            real_close = _OwnerSession.close
+            original_fault = RuntimeError("r17_labelled_close_ack_fault")
+    
+            async def close_fault(session):
+                await real_close(session)
+                raise original_fault
+    
+            with monkeypatch.context() as scoped:
+                scoped.setattr(_OwnerSession, "close", close_fault)
+                with tagged("close_fault"), pytest.raises(RuntimeError) as caught:
+                    await new.status(actor, view.run_id)
+                assert caught.value is original_fault
+            assert any(
+                e["attempt"] == "close_fault" and e["kind"] == "owner_terminal_join_terminal_error"
+                for e in observer.collector.events
+            )
+        # Original legacy __aexit__ shields a close child but does not join it when
+        # its service parent is cancelled. D observes; M uses only exact coroutine
+        # code and same-pool ownership after service/timer completion, never a hook.
+        for mode in ("D", "M"):
+            ready, release = asyncio.Event(), asyncio.Event()
+            real_legacy_close = AsyncSession.close
+            identity = "legacy_close_cancel_" + mode
+    
+            async def slow_legacy_close(
+                session,
+                *args,
+                identity=identity,
+                ready=ready,
+                release=release,
+                real_legacy_close=real_legacy_close,
+                **kwargs,
+            ):
+                if TAG.get() == identity:
+                    ready.set()
+                    await release.wait()
+                return await real_legacy_close(session, *args, **kwargs)
+    
+            with monkeypatch.context() as scoped:
+                scoped.setattr(AsyncSession, "close", slow_legacy_close)
+                with observer.watching(mode):
+                    with tagged(identity):
+                        task = asyncio.create_task(legacy.status(actor, view.run_id))
+                    await asyncio.wait_for(ready.wait(), 5)
+                    task.cancel()
+                    with pytest.raises(asyncio.CancelledError):
+                        await task
+                    drain = asyncio.create_task(observer.drain(mode))
+                    await asyncio.sleep(0)
+                    drain.cancel()
+                    await asyncio.sleep(0)
+                    drain.cancel()
+                    assert not drain.done()
+                    release.set()
+                    with pytest.raises(asyncio.CancelledError):
+                        await drain
+                    row = observer.row(identity, mode)
+&gt;                   assert row["checkout"] == row["checkin"] &gt;= 1
+E                   assert 1 == 0
+
+/work/r17/test_r17_sql.py:263: AssertionError</failure></testcase></testsuite></testsuites>

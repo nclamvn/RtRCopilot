@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://docs.dbos.dev/architecture",
+      "retrieved_at": "2026-10-06T02:15:31.937150+00:00",
+      "source_family": "DBOS",
+      "status": "failed"
+    },
+    {
+      "bytes": 39163,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 12378,
+      "read_view_sha256": "8e5a5323e3ed74fbae1ccd16adda51a7d89db82cf074dae97b90224c73ab3c25",
+      "requested_url": "https://docs.dbos.dev/architecture",
+      "resolved_url": "https://docs.dbos.dev/architecture",
+      "retrieved_at": "2026-10-06T02:15:54.948685+00:00",
+      "sha256": "fe4d6f4501456a409931bd98153c8793650fa0c1585b7acebd149fa640ddf02c",
+      "snapshot": "dbos-architecture.html",
+      "source_family": "DBOS",
+      "status": "usable"
+    }
+  ],
+  "entity": "DBOS architecture",
+  "id": "dbos-architecture",
+  "selected": {
+    "bytes": 39163,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 12378,
+    "read_view_sha256": "8e5a5323e3ed74fbae1ccd16adda51a7d89db82cf074dae97b90224c73ab3c25",
+    "requested_url": "https://docs.dbos.dev/architecture",
+    "resolved_url": "https://docs.dbos.dev/architecture",
+    "retrieved_at": "2026-10-06T02:15:54.948685+00:00",
+    "sha256": "fe4d6f4501456a409931bd98153c8793650fa0c1585b7acebd149fa640ddf02c",
+    "snapshot": "dbos-architecture.html",
+    "source_family": "DBOS",
+    "status": "usable"
+  }
+}

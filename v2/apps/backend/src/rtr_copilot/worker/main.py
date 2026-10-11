@@ -35,6 +35,8 @@ HEARTBEAT = "rtr:worker:heartbeat"
 #: How often the worker re-verifies the audit hash-chain and republishes the
 #: integrity gauge (the verify scans the chain, so it runs on a slow cadence).
 AUDIT_VERIFY_INTERVAL_SECONDS = 60.0
+QUEUE_MAINTENANCE_TIMEOUT_SECONDS = 2.0
+QUEUE_POP_TIMEOUT_SECONDS = 7.0
 logger = logging.getLogger("rtr_copilot.worker")
 
 
@@ -58,7 +60,7 @@ async def execute(
         return
     if job.get("name") == "document.render":
         with observe_job("render"):
-            await DocumentOSService().process_render(uuid.UUID(job_id))
+            await DocumentOSService().process_render(uuid.UUID(job_id), worker_id=worker_id)
         return
     if job.get("name") != "system.ping":
         return
@@ -160,16 +162,30 @@ async def verify_audit_chain(jobs: JobRepository) -> None:
 async def run() -> None:
     settings = get_settings()
     start_worker_metrics_server(settings.worker_metrics_port)
-    client: Redis = Redis.from_url(settings.redis_url, decode_responses=True)
+    client: Redis = Redis.from_url(settings.redis_url, decode_responses=True,
+                                   socket_connect_timeout=1, socket_timeout=6)
     worker_id = str(uuid.uuid4())
     index_saturated = False
     last_audit_verify = 0.0
     try:
         while True:
+            # DB-backed render work is independent of Redis notification/uptime.
+            try:
+                with observe_job("render"):
+                    await DocumentOSService().process_next(worker_id=worker_id)
+            except Exception as error:
+                logger.error(json.dumps({
+                    "event": "document_poll_error",
+                    "error_fingerprint": hashlib.sha256(type(error).__name__.encode()).hexdigest(),
+                }))
             heartbeat = json.dumps({"worker_id": worker_id, "at": time.time()})
-            await client.set(HEARTBEAT, heartbeat, ex=15)
             jobs = JobRepository()
-            await jobs.dispatch_outbox(client)
+            try:
+                async with asyncio.timeout(QUEUE_MAINTENANCE_TIMEOUT_SECONDS):
+                    await client.set(HEARTBEAT, heartbeat, ex=15)
+                    await jobs.dispatch_outbox(client)
+            except Exception:
+                logger.warning(json.dumps({"event": "worker_queue_unavailable"}))
             await jobs.refresh_metrics()
             await refresh_job_queue_depth(jobs)
             refresh_db_pool_metrics()
@@ -189,10 +205,16 @@ async def run() -> None:
                         type(error).__name__.encode(),
                     ).hexdigest(),
                 }))
-            item = await cast(
-                Awaitable[list[str] | None],
-                client.brpop([INGESTION_QUEUE, QUEUE], timeout=5),
-            )
+            try:
+                async with asyncio.timeout(QUEUE_POP_TIMEOUT_SECONDS):
+                    item = await cast(
+                        Awaitable[list[str] | None],
+                        client.brpop([INGESTION_QUEUE, QUEUE], timeout=5),
+                    )
+            except Exception:
+                # Bound outage spin while continuing persisted render polling.
+                await asyncio.sleep(1)
+                item = None
             if item:
                 try:
                     await execute(client, json.loads(item[1]), worker_id=worker_id)

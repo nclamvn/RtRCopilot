@@ -1,0 +1,6 @@
+rtr_tip054_r15_local_e1 initial_absence 0
+rtr_tip054_r18_local_e1 initial_absence 0
+rtr_tip054_r15_local_e1 absence_after_cleanup 0
+rtr_tip054_r18_local_e1 absence_after_cleanup 0
+rtr_tip054_r15_local_e1 final_absence 0
+rtr_tip054_r18_local_e1 final_absence 0

@@ -1,0 +1,198 @@
+"""Exact installed JUnit producer: two source writes -> one admitted whole XML file.
+
+Staging is bounded transport memory, not retained evidence. No native file is opened
+or truncated before the successful original writer context admits the complete XML.
+Only this plugin module's open/os names are scoped; builtins and global os stay intact.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import importlib
+import os
+import sys
+import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
+from types import CodeType, ModuleType, SimpleNamespace
+from typing import cast
+
+from ports import PathPort
+
+ROOT = Path(__file__).absolute().parents[5]
+HERE = Path(__file__).absolute().parent
+JUNIT = ROOT / "v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest/junitxml.py"
+JUNIT_SHA = "51ea93fb20122b8aa5f2c412b9cf946b6daf719cde470f6ca2c50430bed4135d"
+DECLARATION = '<?xml version="1.0" encoding="utf-8"?>'
+XML_CAP = 2048
+_LOCK = threading.Lock()
+_ABSENT = object()
+
+
+def pinned(path: Path, expected: str) -> bytes:
+    if any(item.is_symlink() for item in (path, *path.parents)) or path.stat().st_size > 131072:
+        raise ValueError("bounded nonsymlink dependency source")
+    with path.open("rb") as stream:
+        raw = stream.read(131073)
+    if len(raw) > 131072 or hashlib.sha256(raw).hexdigest() != expected:
+        raise ValueError("actual dependency source drift")
+    return raw
+
+
+def installed_junit() -> tuple[ModuleType, CodeType]:
+    pinned(JUNIT, JUNIT_SHA)  # Before importing actual installed code.
+    module = importlib.import_module("_pytest.junitxml")
+    if Path(cast(str, vars(module)["__file__"])).absolute() != JUNIT:
+        raise ValueError("genuine installed JUnit module identity")
+    code = module.LogXML.pytest_sessionfinish.__code__
+    if code.co_filename != str(JUNIT) or code.co_firstlineno != 639:
+        raise ValueError("exact JUnit writer code point")
+    return module, code
+
+
+class XMLSink:
+    def __init__(
+        self, port: PathPort, logical: str, declared: str, code: CodeType, writer: object
+    ) -> None:
+        self._port, self._logical, self._declared, self._code = port, logical, declared, code
+        self._creator = threading.get_ident()
+        self._writer = writer
+        self._parts: list[bytes] = []
+        self.active, self.closed = True, False
+        self.committed = False
+
+    def _guard(self) -> None:
+        self._port.check()
+        frame = sys._getframe(2)
+        if (
+            not self.active
+            or self.closed
+            or threading.get_ident() != self._creator
+            or frame.f_code is not self._code
+            or frame.f_locals.get("self") is not self._writer
+            or getattr(self._writer, "logfile", None) != self._declared
+        ):
+            raise ValueError("exact active creator JUnit writer only")
+
+    def write(self, text: str) -> int:
+        try:
+            self._guard()
+            if type(text) is not str or len(text) > XML_CAP or len(self._parts) >= 2:
+                raise ValueError("exact two original XML text writes")
+            raw = text.encode("utf-8")
+            if not self._parts and text != DECLARATION:
+                raise ValueError("original declaration must remain exact")
+            if sum(map(len, self._parts)) + len(raw) > XML_CAP:
+                raise ValueError("whole final XML exceeds unchanged 2048-byte domain")
+            self._parts.append(raw)
+            return len(text)
+        except BaseException as error:
+            self._port.capture_fault(error)
+            raise
+
+    def fileno(self) -> int:
+        error = ValueError("no JUnit artifact descriptor export")
+        self._port.capture_fault(error)
+        raise error
+
+    def __enter__(self) -> XMLSink:
+        return self
+
+    def __exit__(self, typ: object, error: object, trace: object) -> None:
+        try:
+            self._guard()
+            if error is not None:
+                if isinstance(error, BaseException):
+                    self._port.capture_fault(error)
+                return  # A failed original serialization never commits even a header.
+            if len(self._parts) != 2:
+                raise ValueError("incomplete original XML writer")
+            raw = b"".join(self._parts)
+            self._port.write(self._logical, "source_cap_child", raw, "w")
+            self._port.flush()
+            self.committed = True
+        except BaseException as failure:
+            self._port.capture_fault(failure)
+            if isinstance(error, BaseException) and error is not failure:
+                raise error from failure
+            raise
+        finally:
+            self.closed = True
+
+
+@contextmanager
+def pytest_scope(port: PathPort, logical: str = "plugins/report.xml") -> Iterator[str]:
+    if not _LOCK.acquire(blocking=False):
+        error = ValueError("exclusive JUnit source scope")
+        port.capture_fault(error)
+        raise error
+    module: ModuleType | None = None
+    old_open: object = _ABSENT
+    old_os: object = _ABSENT
+    sinks: list[XMLSink] = []
+    try:
+        if logical not in {"plugins/report.xml", "plugins/negative.xml"}:
+            raise ValueError("closed declared JUnit logical sink")
+        module, code = installed_junit()
+        producer_class = vars(module)["LogXML"]
+        target = port.path(logical, "source_cap_child")
+        port.mkdir("plugins", exist_ok=True)  # Owner preparation, no report header/file I/O.
+        declared, directory = target.logical_path, target.parent.logical_path
+        old_open, old_os = vars(module).get("open", _ABSENT), vars(module)["os"]
+
+        def call_guard() -> object:
+            frame = sys._getframe(2)
+            port.check()
+            writer: object = frame.f_locals.get("self")
+            if (
+                frame.f_code is not code
+                or type(writer) is not producer_class
+                or getattr(writer, "logfile", None) != declared
+            ):
+                raise ValueError("unknown plugin writer outside exact original code")
+            return writer
+
+        def mkdir(name: object, *, exist_ok: object = False) -> None:
+            try:
+                call_guard()
+                if name != directory or exist_ok is not True:
+                    raise ValueError("only original declared JUnit directory")
+            except BaseException as error:
+                port.capture_fault(error)
+                raise
+
+        def opener(*args: object, **kwargs: object) -> XMLSink:
+            try:
+                writer = call_guard()
+                if args != (declared, "w") or kwargs != {"encoding": "utf-8"} or sinks:
+                    raise ValueError("exact original JUnit open operation")
+                sink = XMLSink(port, logical, declared, code, writer)
+                sinks.append(sink)
+                return sink
+            except BaseException as error:
+                port.capture_fault(error)
+                raise
+
+        vars(module)["os"] = SimpleNamespace(path=os.path, makedirs=mkdir)
+        vars(module)["open"] = opener
+        yield declared
+        if port.first_fault is not None:
+            raise port.first_fault
+        if len(sinks) != 1 or not sinks[0].closed or not sinks[0].committed:
+            raise ValueError("nominal JUnit scope requires one successful complete original writer")
+    except BaseException as error:
+        port.capture_fault(error)
+        raise
+    finally:
+        try:
+            for sink in sinks:
+                sink.active = False
+            if module is not None and old_os is not _ABSENT:
+                vars(module)["os"] = old_os
+                if old_open is _ABSENT:
+                    vars(module).pop("open", None)
+                else:
+                    vars(module)["open"] = old_open
+        finally:
+            _LOCK.release()

@@ -1,0 +1,21 @@
+{
+  "pins": 1809,
+  "bytes": 13749891,
+  "manifest_sha256": "26c83990cc6afc9545cad34eca9aa82954c63bb8ecb2254838cb425017011621",
+  "anchors": {
+    "v2/experiments/action_executor/r25/input-binding.json": "87c5aa1ad6cd8009aa7eacf607a060d258dde11c929653f265c4d7af53bf0923",
+    "v2/experiments/action_executor/r25/main-evidence-binding.sha256": "9b68015308c7f9e11e000ffe069a7ee735a30a6f8eb1b84afeaf8998f72f9bf8",
+    "v2/experiments/action_executor/r25/main-final-closure.json": "28b55a2b989ca914ca9628682fdd3445adfed1fe626cbd8d85759ea51e86bd54",
+    "v2/experiments/action_executor/r25/main-publication-check.json": "e2b98326ecbe4eab9e8c8c57aefe60361d46ba007b967eb3a4ac92e0279819c7"
+  },
+  "source_counts": {
+    "product": 204,
+    "tests": 192
+  },
+  "digests": {
+    "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+    "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+  },
+  "scope": "R25 final and linked prior immutablegraph; mutable status hashes historical",
+  "measured_imports": 0
+}

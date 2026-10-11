@@ -1,0 +1,47 @@
+{
+  "schema": "r27-lifecycle-harness-static-epoch-v1",
+  "runtime_executed": false,
+  "freeze_claim": false,
+  "results": [
+    {
+      "command": "v2/apps/backend/.venv/bin/ruff check --no-cache v2/experiments/action_executor/r27/temporary_lifecycle/checks.py",
+      "chunk_id": "6d1bf5",
+      "wall_time_seconds": 0.0000125,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    },
+    {
+      "command": "v2/apps/backend/.venv/bin/ruff format --check --no-cache v2/experiments/action_executor/r27/temporary_lifecycle/checks.py",
+      "chunk_id": "f29a03",
+      "wall_time_seconds": 0.000008625,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "1 file already formatted\n"
+    },
+    {
+      "command": "env PYTHONDONTWRITEBYTECODE=1 v2/apps/backend/.venv/bin/mypy --strict --follow-imports=skip --no-incremental --cache-dir=/dev/null v2/experiments/action_executor/r27/temporary_lifecycle/checks.py",
+      "chunk_id": "289ee8",
+      "wall_time_seconds": 0.957483375,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 1 source file\n"
+    },
+    {
+      "command": "shasum -a 256 v2/experiments/action_executor/r27/temporary_lifecycle/*.py v2/experiments/action_executor/r27/temporary_lifecycle/contract.json v2/experiments/action_executor/r27/temporary_lifecycle/pytest.ini v2/experiments/action_executor/r27/temporary_lifecycle/SCOPE.md",
+      "chunk_id": "ba259f",
+      "wall_time_seconds": 0.0000085,
+      "exit_code": 0,
+      "original_token_count": 331,
+      "output": "5214f0b323b2d196d6077c4b7eb48d72d89f53fb789fa30bd00d1ab5fbb7f728  v2/experiments/action_executor/r27/temporary_lifecycle/checks.py\n0586efda7982378fb95da69861f36689aefebfb7f66daea27ffefe24daebbbe7  v2/experiments/action_executor/r27/temporary_lifecycle/flows.py\n214d54c121698fd9ea3e8d83b1fd82c91e99bdf803ae2498b0098faa6cfddf12  v2/experiments/action_executor/r27/temporary_lifecycle/genuine.py\n90f580af965c2103026058110bb0af5866f253c7a5e4e482698eb468bb999428  v2/experiments/action_executor/r27/temporary_lifecycle/native.py\n42075c42f88621f6b499969c242a057f9417c99feed5f2215c781c6a05f73905  v2/experiments/action_executor/r27/temporary_lifecycle/policy.py\n1745217d1fb6fcb614708fbf2d252ffc4f5f46e6f19bf96384a213f0f398465b  v2/experiments/action_executor/r27/temporary_lifecycle/target.py\n730b5a9d03ef26c64037a72bf0d7379c444ccc131cb33074b0b9a7992603f420  v2/experiments/action_executor/r27/temporary_lifecycle/test_lifecycle.py\n57e32a432f791acb829b1741147cc1d538dfea1622e80ca37c04c2ba32fa79ad  v2/experiments/action_executor/r27/temporary_lifecycle/contract.json\n7f27864a95e67a40bd388f27b18881c258d62070e5d6710b663c8fe06a8a7450  v2/experiments/action_executor/r27/temporary_lifecycle/pytest.ini\n475c6a62c17e190ef894a7e7abeccd68f25647f57669967721b1fc4742ab7542  v2/experiments/action_executor/r27/temporary_lifecycle/SCOPE.md\n"
+    },
+    {
+      "command": "git rev-parse HEAD",
+      "chunk_id": "204c63",
+      "wall_time_seconds": 0.000011375,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "0e88f48588dc3228f1ae9eca7a7597d96589af8b\n"
+    }
+  ]
+}

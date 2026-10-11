@@ -1,0 +1,89 @@
+{
+  "schema": "r24-main-feedback-v1",
+  "audit": {
+    "chunk_id": "c544e8",
+    "exit_code": 0,
+    "result": {
+      "after": {
+        "digests": {
+          "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+          "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+        },
+        "input_bytes": 13587654,
+        "prior_bytes": 13498377,
+        "prior_pins": 1762,
+        "total_pins": 1771
+      },
+      "audit": {
+        "blockers": [
+          "launch_review",
+          "journal",
+          "final_samples",
+          "summary_stdout",
+          "load_stderr",
+          "migration_streams",
+          "owner_process",
+          "supervisor_stop",
+          "source_cap_child",
+          "fixture",
+          "database_admin",
+          "disk",
+          "reconstruction",
+          "returncodes",
+          "ephemeral",
+          "future_observer",
+          "outer_transcript"
+        ],
+        "capture_admission": "HOLD",
+        "fixed_subtotal_bytes": 6046,
+        "historical_bytes": 943953,
+        "historical_files": 63,
+        "historical_sibling_marker_bytes": 287,
+        "observer_nominal_model_bytes": 1281810,
+        "producer_groups": 20,
+        "reason": "Unknown/conditional/all-error producers have no ex-ante complete bound.",
+        "total_upper_bytes": null
+      },
+      "before": {
+        "digests": {
+          "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+          "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+        },
+        "input_bytes": 13587654,
+        "prior_bytes": 13498377,
+        "prior_pins": 1762,
+        "total_pins": 1771
+      }
+    }
+  },
+  "controls": {
+    "chunk_id": "152ccd",
+    "wall_time_seconds": 0.00000925,
+    "exit_code": 0,
+    "original_token_count": 194,
+    "output": "test_cap_exceedance_and_numeric_models (test_audit.AuditControls.test_cap_exceedance_and_numeric_models) ... ok\ntest_changed_fingerprints_and_witnesses (test_audit.AuditControls.test_changed_fingerprints_and_witnesses) ... ok\ntest_domains_framing_and_types (test_audit.AuditControls.test_domains_framing_and_types) ... ok\ntest_missing_duplicate_unknown_producers (test_audit.AuditControls.test_missing_duplicate_unknown_producers) ... ok\ntest_positive_model_never_admits_capture (test_audit.AuditControls.test_positive_model_never_admits_capture) ... ok\ntest_unproved_quantities_cannot_be_promoted (test_audit.AuditControls.test_unproved_quantities_cannot_be_promoted) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.003s\n\nOK\n"
+  },
+  "syntax": {
+    "chunk_id": "79f5d6",
+    "wall_time_seconds": 0.000025917,
+    "exit_code": 0,
+    "original_token_count": 89,
+    "output": "{\n  \"syntax_files\": 2,\n  \"syntax_failures\": 0,\n  \"import_surface\": {\n    \"audit.py\": [\n      \"ast\",\n      \"hashlib\",\n      \"json\",\n      \"pathlib\"\n    ],\n    \"test_audit.py\": [\n      \"audit\",\n      \"copy\",\n      \"unittest\"\n    ]\n  },\n  \"analysis_sha256\": \"2c38e4a7b5852b6341b026ca8b9a7f9c76d0b820d77346549e031d1caf3701f3\",\n  \"no_measured_imports\": true\n}\n"
+  },
+  "tool_note": "After successful audit, an orchestration store(undefined) failed; this did not rerun the audit or alter source. Its printed result is transcribed here; exact serialization comparison follows.",
+  "unique_control_groups": 6,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "not_run": [
+    "runtime",
+    "SQL",
+    "Docker",
+    "HTTP/load",
+    "external",
+    "native/provider",
+    "build",
+    "lint/typecheck",
+    "Git writes"
+  ]
+}

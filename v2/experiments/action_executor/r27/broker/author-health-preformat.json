@@ -1,0 +1,32 @@
+[
+  {
+    "command": "env -i PATH=/usr/bin:/bin MYPYPATH=v2/apps/backend/src v2/apps/backend/.venv/bin/mypy --strict --cache-dir=/dev/null --follow-imports=silent --no-incremental v2/experiments/action_executor/r27/broker/adapter.pyi v2/experiments/action_executor/r27/broker/broker.py v2/experiments/action_executor/r27/broker/test_broker.py v2/experiments/action_executor/r27/broker/checks.py v2/experiments/action_executor/r27/broker/integration.py v2/experiments/action_executor/r27/broker/supervisor.py v2/experiments/action_executor/r27/broker/routing.py v2/experiments/action_executor/r27/broker/preflight.py v2/experiments/action_executor/r27/broker/test_integration.py",
+    "result": {
+      "chunk_id": "77a721",
+      "wall_time_seconds": 3.061774459,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 9 source files\n"
+    }
+  },
+  {
+    "command": "v2/apps/backend/.venv/bin/ruff check --no-cache v2/experiments/action_executor/r27/broker/adapter.pyi v2/experiments/action_executor/r27/broker/broker.py v2/experiments/action_executor/r27/broker/test_broker.py v2/experiments/action_executor/r27/broker/checks.py v2/experiments/action_executor/r27/broker/integration.py v2/experiments/action_executor/r27/broker/supervisor.py v2/experiments/action_executor/r27/broker/routing.py v2/experiments/action_executor/r27/broker/preflight.py v2/experiments/action_executor/r27/broker/test_integration.py",
+    "result": {
+      "chunk_id": "e559aa",
+      "wall_time_seconds": 0.00001225,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    }
+  },
+  {
+    "command": "v2/apps/backend/.venv/bin/ruff format --no-cache --check v2/experiments/action_executor/r27/broker/adapter.pyi v2/experiments/action_executor/r27/broker/broker.py v2/experiments/action_executor/r27/broker/test_broker.py v2/experiments/action_executor/r27/broker/checks.py v2/experiments/action_executor/r27/broker/integration.py v2/experiments/action_executor/r27/broker/supervisor.py v2/experiments/action_executor/r27/broker/routing.py v2/experiments/action_executor/r27/broker/preflight.py v2/experiments/action_executor/r27/broker/test_integration.py",
+    "result": {
+      "chunk_id": "863b57",
+      "wall_time_seconds": 0.000044209,
+      "exit_code": 1,
+      "original_token_count": 122,
+      "output": "Would reformat: v2/experiments/action_executor/r27/broker/checks.py\nWould reformat: v2/experiments/action_executor/r27/broker/integration.py\nWould reformat: v2/experiments/action_executor/r27/broker/preflight.py\nWould reformat: v2/experiments/action_executor/r27/broker/routing.py\nWould reformat: v2/experiments/action_executor/r27/broker/supervisor.py\nWould reformat: v2/experiments/action_executor/r27/broker/test_integration.py\n6 files would be reformatted, 3 files already formatted\n"
+    }
+  }
+]

@@ -1,24 +1,28 @@
+import asyncio
 import base64
 import binascii
 import hashlib
 import hmac
 import io
 import json
+import logging
 import re
 import uuid
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from redis.asyncio import Redis
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from rtr_copilot.auth.audit import StructuredAuditSink
 from rtr_copilot.auth.models import PolicyContext, Role, Subject
 from rtr_copilot.auth.policy import PolicyEngine
 from rtr_copilot.config import get_settings
 from rtr_copilot.db.uow import UnitOfWork
+from rtr_copilot.documents.jobs import RenderClaim, RenderJobRepository, RenderLeaseLost
 from rtr_copilot.documents.models import (
     ApprovalEvent,
     ArtifactPlanRequest,
@@ -60,6 +64,7 @@ policy = PolicyEngine(StructuredAuditSink())
 RENDERER_VERSION = "rtr-doc-os-1"
 DOCUMENT_QUEUE = "rtr:jobs"
 LOCKED_PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]{0,127})\}")
+logger = logging.getLogger("rtr_copilot.documents")
 
 
 def hash_json(value: Any) -> str:
@@ -166,11 +171,46 @@ def safe_error(error: Exception) -> str:
     return str(error) if str(error) in allowed else "render_failed"
 
 
+def _render_status(row: Any) -> RenderStatus:
+    return RenderStatus(
+        render_job_id=row["render_job_id"], state=row["state"], progress=row["progress"],
+        generated_file_id=row["generated_file_id"], version_id=row["version_id"],
+        checksum=str(row["checksum"]) if row["checksum"] else None,
+        error_code=row["error_code"], attempt=row["attempt"], max_attempts=row["max_attempts"],
+        retryable=(row["state"] in {"failed", "cancelled"}
+                   and row["attempt"] < row["max_attempts"]),
+    )
+
+
 class DocumentOSService:
     def __init__(self, uow: UnitOfWork | None = None) -> None:
         self.uow = uow or UnitOfWork()
         self.settings = get_settings()
         self.storage = S3ObjectStorage(self.settings)
+        self.jobs = RenderJobRepository(self.uow)
+
+    async def _notify_render(self, job_id: uuid.UUID, request_id: str) -> None:
+        # The job is already durable. A failed/lost notification must not turn
+        # accepted work into an API failure or require user resubmission.
+        deadline = asyncio.get_running_loop().time() + (
+            self.settings.document_render_notification_timeout_seconds
+        )
+        try:
+            client = Redis.from_url(self.settings.redis_url, decode_responses=True)
+            try:
+                async with asyncio.timeout_at(deadline):
+                    await client.lpush(DOCUMENT_QUEUE, json.dumps({
+                        "name": "document.render", "job_id": str(job_id),
+                        "request_id": request_id,
+                    }))
+            finally:
+                try:
+                    async with asyncio.timeout_at(deadline):
+                        await client.aclose()
+                except Exception:
+                    pass
+        except Exception:
+            logger.warning(json.dumps({"event": "document_render_hint_unavailable"}))
 
     async def _audit_import_rejection(
         self,
@@ -912,6 +952,11 @@ class DocumentOSService:
         request: RenderRequest,
         *,
         request_id: str,
+        admission_guard: Callable[[AsyncSession], Awaitable[None]] | None = None,
+        accepted_callback: (
+            Callable[[AsyncSession, uuid.UUID, bool, str], Awaitable[None]] | None
+        ) = None,
+        action_policy_digest: str | None = None,
     ) -> RenderStatus:
         binding = await self.bind(
             subject, version_id, BindRequest(parameters=request.parameters),
@@ -925,34 +970,54 @@ class DocumentOSService:
             "parameters": request.parameters,
             "fields": [field.model_dump(mode="json") for field in binding.fields],
         })
+        if action_policy_digest is not None:
+            # Host-owned security namespace: no collision with ordinary canonical
+            # jobs whose outputs have independently-owned policy and cancellation.
+            canonical_hash = hash_json({
+                "input": canonical_hash, "action_policy": action_policy_digest,
+            })
         actor = uuid.UUID(subject.user_id)
         job_id = uuid.uuid4()
         created = False
         async with self.uow.transaction() as session:
+            # Serialize this actor's two alternative unique keys together.
+            # Concurrent equal canonical input (even with different request
+            # keys) must return one accepted job, not a unique-constraint 500.
+            await session.execute(text("""
+                SELECT pg_advisory_xact_lock(hashtextextended(:scope,0))
+            """), {"scope": f"document-render:{actor}"})
+            if admission_guard is not None:
+                await admission_guard(session)
             existing = (await session.execute(text("""
-                SELECT render_job_id,state,progress FROM render_jobs
-                WHERE requester_id=:actor AND (
-                  idempotency_key=:key OR
-                  (template_version_id=:version_id AND canonical_input_hash=:input_hash)
-                ) ORDER BY created_at LIMIT 1
+                SELECT j.*,g.generated_file_id,g.version_id,g.checksum FROM render_jobs j
+                LEFT JOIN generated_files g USING(render_job_id)
+                WHERE j.requester_id=:actor AND (
+                  j.idempotency_key=:key OR
+                  (j.template_version_id=:version_id AND j.canonical_input_hash=:input_hash)
+                ) ORDER BY j.created_at LIMIT 1
             """), {
                 "actor": actor, "key": request.idempotency_key,
                 "version_id": version_id, "input_hash": canonical_hash,
             })).mappings().one_or_none()
             if existing:
-                return await self.status(subject, existing["render_job_id"], request_id=request_id)
+                if accepted_callback is not None:
+                    await accepted_callback(
+                        session, existing["render_job_id"], False, canonical_hash,
+                    )
+                return _render_status(existing)
             await session.execute(text("""
                 INSERT INTO render_jobs(
                   render_job_id,requester_id,idempotency_key,canonical_input_hash,
-                  template_version_id,sot_revision,state,progress,request_id
+                  template_version_id,sot_revision,state,progress,request_id,max_attempts
                 ) VALUES (
                   :job_id,:actor,:key,:input_hash,:version_id,:revision,
-                  'pending',0,:request_id
+                  'pending',0,:request_id,:max_attempts
                 )
             """), {
                 "job_id": job_id, "actor": actor, "key": request.idempotency_key,
                 "input_hash": canonical_hash, "version_id": version_id,
                 "revision": binding.sot_revision, "request_id": request_id,
+                "max_attempts": self.settings.document_render_max_attempts,
             })
             await session.execute(text("""
                 INSERT INTO document_publication_outbox(
@@ -994,16 +1059,12 @@ class DocumentOSService:
                     "freshness": field.freshness_state,
                 })
             created = True
+            if accepted_callback is not None:
+                await accepted_callback(session, job_id, True, canonical_hash)
         if created:
-            client = Redis.from_url(self.settings.redis_url, decode_responses=True)
-            try:
-                await client.lpush(DOCUMENT_QUEUE, json.dumps({
-                    "name": "document.render", "job_id": str(job_id),
-                    "request_id": request_id,
-                }))
-            finally:
-                await client.aclose()
-        return RenderStatus(render_job_id=job_id, state="pending", progress=0)
+            await self._notify_render(job_id, request_id)
+        return RenderStatus(render_job_id=job_id, state="pending", progress=0,
+                            max_attempts=self.settings.document_render_max_attempts)
 
     async def status(
         self,
@@ -1015,6 +1076,7 @@ class DocumentOSService:
         async with self.uow.factory() as session:
             row = (await session.execute(text("""
                 SELECT j.render_job_id,j.requester_id,j.state,j.progress,j.error_code,
+                  j.attempt,j.max_attempts,
                   g.generated_file_id,g.version_id,g.checksum
                 FROM render_jobs j LEFT JOIN generated_files g
                   ON g.render_job_id=j.render_job_id
@@ -1022,13 +1084,7 @@ class DocumentOSService:
             """), {"job_id": job_id})).mappings().one_or_none()
         if row is None or str(row["requester_id"]) != subject.user_id:
             raise LookupError("not_found")
-        return RenderStatus(
-            render_job_id=row["render_job_id"], state=row["state"],
-            progress=row["progress"], generated_file_id=row["generated_file_id"],
-            version_id=row["version_id"], checksum=(
-                str(row["checksum"]) if row["checksum"] else None
-            ), error_code=row["error_code"],
-        )
+        return _render_status(row)
 
     async def generated_detail(
         self,
@@ -1045,6 +1101,13 @@ class DocumentOSService:
             """), {"generated_id": generated_id})).mappings().one_or_none()
             if row is None:
                 raise LookupError("not_found")
+            from rtr_copilot.actions.execution import action_output_guard
+            from rtr_copilot.actions.registry import ActionError
+
+            try:
+                await action_output_guard(session, self.uow, row["version_id"], subject)
+            except ActionError as error:
+                raise LookupError("not_found") from error
             principals = await _effective_principal_ids(session, subject)
             effective = await ResourceRepository().effective_policy_attributes(
                 session, row["version_id"], action="view", principal_ids=principals,
@@ -1117,6 +1180,13 @@ class DocumentOSService:
                 LIMIT 200
             """), {"template_id": template_id})).mappings().all()
             for raw_row in rows:
+                from rtr_copilot.actions.execution import action_output_guard
+                from rtr_copilot.actions.registry import ActionError
+
+                try:
+                    await action_output_guard(session, self.uow, raw_row["version_id"], subject)
+                except ActionError:
+                    continue
                 effective = await ResourceRepository().effective_policy_attributes(
                     session, raw_row["version_id"], action="view",
                     principal_ids=principals,
@@ -1181,17 +1251,31 @@ class DocumentOSService:
             raise ValueError("invalid_request")
         actor = uuid.UUID(subject.user_id)
         target = "cancelled" if action == "cancel" else "pending"
-        allowed = ("pending",) if action == "cancel" else ("failed", "cancelled")
+        allowed = (
+            ("pending", "binding", "rendering", "validating")
+            if action == "cancel" else ("failed", "cancelled")
+        )
         async with self.uow.transaction() as session:
             version_id = await session.scalar(text("""
                 SELECT template_version_id FROM render_jobs
                 WHERE render_job_id=:job_id AND requester_id=:actor
+                FOR UPDATE
             """), {"job_id": job_id, "actor": actor})
+            if action == "retry":
+                exhausted = await session.scalar(text("""
+                    SELECT attempt>=max_attempts FROM render_jobs
+                    WHERE render_job_id=:job_id AND requester_id=:actor
+                      AND state IN ('failed','cancelled')
+                """), {"job_id": job_id, "actor": actor})
+                if exhausted:
+                    raise ValueError("render_retry_exhausted")
             result = await session.execute(text("""
                 UPDATE render_jobs SET state=:target,progress=0,error_code=NULL,
-                  started_at=NULL,finished_at=NULL
+                  started_at=NULL,finished_at=CASE WHEN :target='cancelled' THEN now()
+                    ELSE NULL END,lease_token=NULL,lease_expires_at=NULL
                 WHERE render_job_id=:job_id AND requester_id=:actor
                   AND state=ANY(:allowed)
+                  AND (:target='cancelled' OR attempt<max_attempts)
             """), {
                 "target": target, "job_id": job_id, "actor": actor,
                 "allowed": list(allowed),
@@ -1214,17 +1298,35 @@ class DocumentOSService:
                 details={"render_job_id": str(job_id)},
             )
         if action == "retry":
-            client = Redis.from_url(self.settings.redis_url, decode_responses=True)
-            try:
-                await client.lpush(DOCUMENT_QUEUE, json.dumps({
-                    "name": "document.render", "job_id": str(job_id),
-                    "request_id": request_id,
-                }))
-            finally:
-                await client.aclose()
+            await self._notify_render(job_id, request_id)
         return await self.status(subject, job_id, request_id=request_id)
 
-    async def process_render(self, job_id: uuid.UUID) -> None:
+    async def process_next(self, *, worker_id: str = "document-poller") -> bool:
+        claim = await self.jobs.claim(lease_seconds=self.settings.document_render_lease_seconds)
+        if claim is None:
+            return False
+        await self._run_render(claim, worker_id)
+        return True
+
+    async def process_render(self, job_id: uuid.UUID, *,
+                             worker_id: str = "document-worker") -> None:
+        claim = await self.jobs.claim(
+            lease_seconds=self.settings.document_render_lease_seconds, job_id=job_id,
+        )
+        if claim is not None:
+            await self._run_render(claim, worker_id)
+
+    async def _run_render(self, claim: RenderClaim, worker_id: str) -> None:
+        try:
+            # Absolute budget, deliberately not renewed indefinitely. Unknown
+            # staged effects after a crash/timeout become actionable failure.
+            async with asyncio.timeout(self.settings.document_render_lease_seconds):
+                await self._process_render(claim, worker_id)
+        except TimeoutError:
+            await self.jobs.expire(claim.job_id)
+
+    async def _process_render(self, claim: RenderClaim, worker_id: str) -> None:
+        job_id = claim.job_id
         async with self.uow.factory() as session:
             job = (await session.execute(text("""
                 SELECT j.*,tv.format,tv.source_sha256,tv.source_object_id,
@@ -1243,7 +1345,7 @@ class DocumentOSService:
                 FROM render_job_bindings WHERE render_job_id=:job_id
                 ORDER BY field_path
             """), {"job_id": job_id})).mappings().all()
-        if job is None or job["state"] == "completed":
+        if job is None:
             return
         # AC-09: log the originating request-id the api persisted on the job row
         # while the worker processes it (proves the ingress→api→worker chain).
@@ -1251,20 +1353,6 @@ class DocumentOSService:
         created: dict[str, Any] | None = None
         cleanup_keys: list[str] = []
         try:
-            async with self.uow.transaction() as session:
-                changed = await session.execute(text("""
-                    UPDATE render_jobs SET state='rendering',progress=35,started_at=now()
-                    WHERE render_job_id=:job_id AND state='pending'
-                """), {"job_id": job_id})
-                if getattr(changed, "rowcount", 0) != 1:
-                    return
-                preparing = await session.execute(text("""
-                    UPDATE document_publication_outbox
-                    SET state='preparing',attempts=attempts+1,updated_at=now()
-                    WHERE render_job_id=:job_id AND state IN ('pending','failed')
-                """), {"job_id": job_id})
-                if getattr(preparing, "rowcount", 0) != 1:
-                    raise ValueError("render_failed")
             template = io.BytesIO()
             await self.storage.download_to(str(job["object_key"]), template)
             values = {str(item["field_path"]): item["canonical_value"] for item in fields}
@@ -1289,6 +1377,11 @@ class DocumentOSService:
                 source_zone="private_context",
                 lifecycle_state="active",
             )
+            from rtr_copilot.actions.execution import action_output_classification
+
+            inherited = await action_output_classification(self.uow, job_id)
+            if inherited is not None:
+                parent.classification = inherited
 
             async def chunks() -> AsyncIterator[bytes]:
                 yield output
@@ -1296,14 +1389,14 @@ class DocumentOSService:
             ingestion = IngestionService()
             upload_id, validation_job = await ingestion.receive(
                 chunks(), content_length=len(output), parent=parent,
-                logical_name=f"generated-{job_id}",
+                logical_name=f"generated-{job_id}-attempt-{claim.attempt}",
                 original_filename=f"generated-{job_id}.{job['format']}",
                 declared_mime=MIME_BY_FORMAT[str(job["format"])],
                 declared_sha256=checksum, requested_by=job["requester_id"],
                 request_id=str(job["request_id"]),
                 defer_publication=True,
             )
-            await ingestion.process_job(validation_job, worker_id=f"document-{job_id}")
+            await ingestion.process_job(validation_job, worker_id=worker_id)
             async with self.uow.factory() as session:
                 created = dict((await session.execute(text("""
                     SELECT document_id,version_id,object_id,state FROM upload_sessions
@@ -1315,11 +1408,21 @@ class DocumentOSService:
                 """), {"version_id": created["version_id"]})
             if created["state"] != "accepted" or not render_job:
                 raise ValueError("render_failed")
-            await ingestion.process_job(render_job, worker_id=f"document-{job_id}")
+            await ingestion.process_job(render_job, worker_id=worker_id)
+            async with self.uow.factory() as session:
+                pipeline_state = await session.scalar(text("""
+                    SELECT status FROM ingestion_jobs WHERE job_id=:job
+                """), {"job": render_job})
+            if pipeline_state != "succeeded":
+                raise ValueError("render_failed")
             # The render and Files pipelines can take seconds. Recheck policy,
             # template state and exact fact snapshots after all staged artifacts
             # exist, immediately before the one observable publication commit.
-            await self._publication_guard(job, fields, requester)
+            requester = await PostgresSubjectRepository(
+                self.uow.factory, request_id=str(job["request_id"]),
+            ).get_by_user_id(job["requester_id"])
+            if requester is None:
+                raise ValueError("fact_policy_denied")
             manifest = {
                 "schema_version": 1, "template_version_id": str(job["template_version_id"]),
                 "template_sha256": str(job["source_sha256"]),
@@ -1348,6 +1451,10 @@ class DocumentOSService:
             }
             generated_id = uuid.uuid4()
             async with self.uow.transaction() as session:
+                await self.jobs.assert_owned(session, claim)
+                await self._publication_guard(job, fields, requester, session=session,
+                                              audit_writing=True)
+                await self.jobs.assert_owned(session, claim)
                 await session.execute(text("""
                     INSERT INTO generated_files(
                       generated_file_id,render_job_id,document_id,version_id,object_id,
@@ -1363,9 +1470,10 @@ class DocumentOSService:
                     "checksum": checksum, "manifest": json.dumps(manifest),
                 })
                 await session.execute(text("""
-                    UPDATE render_jobs SET state='completed',progress=100,finished_at=now()
-                    WHERE render_job_id=:job_id
-                """), {"job_id": job_id})
+                    UPDATE render_jobs SET state='completed',progress=100,finished_at=now(),
+                      lease_token=NULL,lease_expires_at=NULL
+                    WHERE render_job_id=:job_id AND lease_token=:token
+                """), {"job_id": job_id, "token": claim.token})
                 related_ids = [
                     created["document_id"], created["version_id"], created["object_id"],
                     *list((await session.execute(text("""
@@ -1413,22 +1521,28 @@ class DocumentOSService:
                     resource_type="document_version",
                     details={"checksum": checksum, "render_job_id": str(job_id)},
                 )
+        except RenderLeaseLost:
+            return
         except Exception as error:
             async with self.uow.transaction() as session:
+                try:
+                    await self.jobs.assert_owned(session, claim)
+                except RenderLeaseLost:
+                    return
                 if created is not None:
                     rendition_ids = list((await session.execute(text("""
                         SELECT rendition_id FROM renditions WHERE version_id=:version_id
                     """), {"version_id": created["version_id"]})).scalars())
                     await session.execute(text("""
                         UPDATE resources SET lifecycle_state='deleted',updated_at=now()
-                        WHERE resource_id=ANY(:ids)
+                        WHERE resource_id=ANY(:ids) AND lifecycle_state='quarantined'
                     """), {"ids": [
                         created["document_id"], created["version_id"],
                         created["object_id"], *rendition_ids,
                     ]})
                     cleanup_keys = list((await session.execute(text("""
                         SELECT object_key FROM object_blobs
-                        WHERE object_id IN (
+                        WHERE storage_state='staged' AND object_id IN (
                           SELECT object_id FROM document_versions
                           WHERE version_id=:version_id
                           UNION
@@ -1441,9 +1555,9 @@ class DocumentOSService:
                     """), {"version_id": created["version_id"]})).scalars())
                 await session.execute(text("""
                     UPDATE render_jobs SET state='failed',progress=100,error_code=:code,
-                      finished_at=now() WHERE render_job_id=:job_id
-                      AND state<>'completed'
-                """), {"job_id": job_id, "code": safe_error(error)})
+                      finished_at=now(),lease_token=NULL,lease_expires_at=NULL
+                    WHERE render_job_id=:job_id AND lease_token=:token
+                """), {"job_id": job_id, "code": safe_error(error), "token": claim.token})
                 await session.execute(text("""
                     UPDATE document_publication_outbox
                     SET state='failed',error_code=:code,updated_at=now()
@@ -1467,45 +1581,72 @@ class DocumentOSService:
         job: Any,
         fields: Any,
         requester: Subject,
+        *,
+        session: AsyncSession | None = None,
+        audit_writing: bool = False,
     ) -> None:
-        async with self.uow.factory() as session:
-            state = (await session.execute(text("""
-                SELECT tv.status,t.lifecycle
-                FROM template_versions tv
-                JOIN templates t ON t.template_id=tv.template_id
-                WHERE tv.version_id=:version_id
-            """), {"version_id": job["template_version_id"]})).mappings().one_or_none()
-            if (
-                state is None
-                or state["status"] != "approved"
-                or state["lifecycle"] != "approved"
-            ):
-                raise ValueError("template_not_approved")
-            principals = await _effective_principal_ids(session, requester)
-            effective = await ResourceRepository().effective_policy_attributes(
-                session, job["template_version_id"],
-                action="render", principal_ids=principals,
+        if session is None:
+            async with self.uow.factory() as current_session:
+                await self._publication_guard(job, fields, requester, session=current_session,
+                                              audit_writing=False)
+            return
+        from rtr_copilot.actions.execution import (
+            action_publication_guard,
+            lock_action_publication_inputs,
+        )
+
+        await lock_action_publication_inputs(session, self.uow, job["render_job_id"])
+        authority = (await session.execute(text("""
+            SELECT status,security_version FROM subjects WHERE user_id=:actor FOR SHARE
+        """), {"actor": job["requester_id"]})).mappings().one_or_none()
+        if (authority is None or authority["status"] != "active"
+                or authority["security_version"] != requester.security_version):
+            raise ValueError("fact_policy_denied")
+        state = (await session.execute(text("""
+            SELECT tv.status,t.lifecycle
+            FROM template_versions tv JOIN templates t ON t.template_id=tv.template_id
+            WHERE tv.version_id=:version_id FOR SHARE OF tv,t
+        """), {"version_id": job["template_version_id"]})).mappings().one_or_none()
+        if (state is None or state["status"] != "approved" or state["lifecycle"] != "approved"):
+            raise ValueError("template_not_approved")
+        principals = await _effective_principal_ids(session, requester)
+        effective = await ResourceRepository().effective_policy_attributes(
+            session, job["template_version_id"], action="render", principal_ids=principals,
+        )
+        if effective is None or not policy.decide(
+            requester, "render", effective[0], PolicyContext(request_id=str(job["request_id"])),
+        ).allow:
+            raise ValueError("fact_policy_denied")
+        for field in fields:
+            if field["record_version_id"] is None:
+                continue
+            current = (await session.execute(text("""
+                SELECT r.record_id,rv.content_sha256,rv.freshness_state,
+                  rv.effective_from,rv.effective_to
+                FROM records r JOIN record_versions rv ON rv.version_id=r.current_version_id
+                JOIN sot_packages p ON p.package_id=rv.package_id
+                WHERE rv.version_id=:version_id AND rv.lifecycle='active'
+                  AND r.lifecycle='active' AND p.lifecycle='active'
+                FOR SHARE OF r,rv,p
+            """), {"version_id": field["record_version_id"]})).mappings().one_or_none()
+            now = datetime.now(UTC)
+            if (current is None
+                    or str(current["content_sha256"]) != str(field["record_checksum"])
+                    or current["freshness_state"] != "current"
+                    or current["effective_from"] > now
+                    or (current["effective_to"] is not None and current["effective_to"] <= now)):
+                raise ValueError("fact_stale")
+            fact_policy = await ResourceRepository().effective_policy_attributes(
+                session, current["record_id"], action="view", principal_ids=principals,
             )
-            if effective is None or not policy.decide(
-                requester, "render", effective[0],
+            if fact_policy is None or not policy.decide(
+                requester, "view", fact_policy[0],
                 PolicyContext(request_id=str(job["request_id"])),
             ).allow:
                 raise ValueError("fact_policy_denied")
-            for field in fields:
-                if field["record_version_id"] is None:
-                    continue
-                current = (await session.execute(text("""
-                    SELECT rv.content_sha256,rv.freshness_state
-                    FROM records r JOIN record_versions rv
-                      ON rv.version_id=r.current_version_id
-                    WHERE rv.version_id=:version_id AND rv.lifecycle='active'
-                """), {"version_id": field["record_version_id"]})).mappings().one_or_none()
-                if (
-                    current is None
-                    or str(current["content_sha256"]) != str(field["record_checksum"])
-                    or current["freshness_state"] != "current"
-                ):
-                    raise ValueError("fact_stale")
+
+        await action_publication_guard(session, self.uow, job["render_job_id"],
+                                       audit_writing=audit_writing)
 
     async def submit(
         self, subject: Subject, generated_id: uuid.UUID, *, request_id: str,

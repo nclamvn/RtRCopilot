@@ -1,0 +1,11 @@
+syntax 0
+pins 0
+ruff 0
+format 0
+collection 0
+inventory 0
+offline 0
+offline-xml 0
+envelope 0
+envelope-xml 0
+stage pre exit 0

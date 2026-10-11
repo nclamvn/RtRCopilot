@@ -1,0 +1,11 @@
+{
+  "command": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/bin/python -B checks.py",
+  "workdir": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27",
+  "tool_chunk": "9c156e",
+  "exit_code": 0,
+  "wall_time_seconds": 1.176190291,
+  "python_version": "3.12.11",
+  "unique_test_groups": 7,
+  "overlap": "Same seven as Builder Python3.14; not fourteen unique controls.",
+  "frozen_binding_sha256": "b8d761511ba1ff5b7ee81852a2542eff10f8e0a5a2f9663ac292485e3bab63d3"
+}

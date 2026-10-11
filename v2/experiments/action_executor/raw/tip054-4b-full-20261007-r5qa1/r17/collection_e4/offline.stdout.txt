@@ -1,0 +1,10 @@
+::OfflineControls::test_child_cleanup_held_record_ownership
+::OfflineControls::test_collector_caps_stop_and_original_failure_retention
+::OfflineControls::test_complete_summary_error_missing_populations
+::OfflineControls::test_connection_generation_and_ledger_semantics
+::OfflineControls::test_deterministic_analysis_and_validation_corruption
+::OfflineControls::test_ids_time_order_and_finite_values
+::OfflineControls::test_lag_bounds_and_no_catchup
+::OfflineControls::test_minimal_detailed_fields_and_transparent_restoration
+
+8 tests collected in 0.04s

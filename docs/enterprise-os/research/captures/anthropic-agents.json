@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "retrieved_at": "2026-10-06T02:15:31.955451+00:00",
+      "source_family": "Anthropic",
+      "status": "failed"
+    },
+    {
+      "bytes": 174616,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 18727,
+      "read_view_sha256": "e069baa78a288b9574898b8c52f6104cf153ea1ea5d725c836e29dc0f53851c9",
+      "requested_url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "resolved_url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "retrieved_at": "2026-10-06T02:15:59.795017+00:00",
+      "sha256": "19f3994aa82c48f1d01eff623dfa647ff190be549e71c250c04862ad929a9b32",
+      "snapshot": "anthropic-agents.html",
+      "source_family": "Anthropic",
+      "status": "usable"
+    }
+  ],
+  "entity": "Anthropic agent design",
+  "id": "anthropic-agents",
+  "selected": {
+    "bytes": 174616,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 18727,
+    "read_view_sha256": "e069baa78a288b9574898b8c52f6104cf153ea1ea5d725c836e29dc0f53851c9",
+    "requested_url": "https://www.anthropic.com/engineering/building-effective-agents",
+    "resolved_url": "https://www.anthropic.com/engineering/building-effective-agents",
+    "retrieved_at": "2026-10-06T02:15:59.795017+00:00",
+    "sha256": "19f3994aa82c48f1d01eff623dfa647ff190be549e71c250c04862ad929a9b32",
+    "snapshot": "anthropic-agents.html",
+    "source_family": "Anthropic",
+    "status": "usable"
+  }
+}

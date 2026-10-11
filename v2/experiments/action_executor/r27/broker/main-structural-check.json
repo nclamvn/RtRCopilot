@@ -1,0 +1,112 @@
+{
+  "schema": "r27-broker-main-independent-structural-v1",
+  "scope": "Independent stdlib hash/AST/XML inspection; no broker/checks implementation imports or execution",
+  "previous_attempt": "main-structural-first.json asserts globally absent cache incorrectly; existing92MiB backend cache dated August15 retained, not created by current devnull-cache verification",
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 v2/apps/backend/.venv/bin/python -B - <<'PY'\nimport ast, hashlib, json, xml.etree.ElementTree as ET\nfrom pathlib import Path\nR=Path('/Users/os/RtR/KnowledgeBase/RtR_Copilot'); H=R/'v2/experiments/action_executor/r27/broker'\nsha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()\nbinding=json.loads((H/'input-binding.json').read_bytes())\npins={}; expanded=set(); pending=list(binding['anchors'])\ndef add(rows):\n for name, value in rows.items():\n  assert name not in pins or pins[name]==value\n  pins[name]=value\nadd(binding['anchors'])\nwhile pending:\n name=pending.pop()\n if name in expanded: continue\n expanded.add(name); p=R/name\n assert not p.is_symlink() and sha(p)==pins[name]\n if name.endswith('.sha256'):\n  add(dict(line.split('  ',1)[::-1] for line in p.read_text().splitlines()))\n elif name.endswith('input-binding.json') or '/source-binding-e' in name:\n  b=json.loads(p.read_bytes()); add(b.get('files',{})); add(b.get('direct',{}))\n  for f in ('anchors','links'):\n   add(b.get(f,{})); pending.extend(b.get(f,{}))\nprior=(len(pins),sum((R/n).stat().st_size for n in pins))\nadd(binding['direct'])\nfor name, value in pins.items(): assert sha(R/name)==value,name\ncandidate=json.loads((H/'candidate.json').read_bytes())\nfor name,value in candidate['sources'].items(): assert sha(R/name)==value,name\nown=sorted(p.name for p in H.iterdir() if p.suffix in ('.py','.pyi'))\nassert len(own)==10\nassert {str((H/n).relative_to(R)) for n in own}.issubset(candidate['sources'])\nbase=json.loads((R/'v2/experiments/action_executor/r18/source-binding-e3.json').read_bytes())\ninventories={}\nfor scope,paths in base['scopes'].items():\n dirs=('src','migrations') if scope=='product' else ('tests',)\n actual=[]\n for d in dirs:\n  for p in (R/'v2/apps/backend'/d).rglob('*'):\n   if {'__pycache__','.pytest_cache','.ruff_cache'}.intersection(p.parts) or p.suffix=='.pyc':continue\n   assert not p.is_symlink()\n   if p.is_file():actual.append(p.relative_to(R).as_posix())\n actual += [p for p in paths if not any('/'+d+'/' in p for d in dirs)]\n assert sorted(actual)==paths\n digest=hashlib.sha256(''.join(pins[p]+'  '+p+'\\n' for p in paths).encode()).hexdigest()\n assert digest==base['digests'][scope]; inventories[scope]={'count':len(paths),'digest':digest}\ntests={}\nfor n in ('test_broker.py','test_integration.py'):\n tests[n]=sorted(x.name for x in ast.walk(ast.parse((H/n).read_bytes())) if isinstance(x,(ast.FunctionDef,ast.AsyncFunctionDef)) and x.name.startswith('test_'))\nassert len(tests['test_broker.py'])==6 and len(tests['test_integration.py'])==8\nxmls={}\nfor p in H.glob('*.xml'):\n cases=list(ET.parse(p).iter('testcase'))\n xmls[p.name]={'tests':len(cases),'failures':sum(len(list(c.iter('failure'))) for c in cases),'errors':sum(len(list(c.iter('error'))) for c in cases),'skips':sum(len(list(c.iter('skipped'))) for c in cases)}\nassert xmls['runtime-unit.xml']=={'tests':27,'failures':0,'errors':0,'skips':0}\nbaseline=json.loads(json.loads((H/'main-before.json').read_bytes())['result']['output'])\nfor n,v in baseline['reference_hashes'].items():assert sha(R/n)==v,n\nold=(R/'v2/experiments/action_executor/r27/runtime/adapter.py').read_bytes()\nexpected=old.replace(b'R27 runtime derived',b'R27 broker derived').replace(b'outside runtime',b'outside broker').replace(b'R27OWNR2',b'R27OWNB1').replace(b'R27SEAR2',b'R27SEAB1')\nassert (H/'adapter.py').read_bytes()==expected\nraw_child=R/'v2/experiments/action_executor/r27/runtime/raw_child.py'\nassert sha(raw_child)=='11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f'\nscratch=[p.name for p in H.iterdir() if p.is_dir() and (p.name.startswith('.broker-') or p.name.startswith('codex-tmp-'))]\nassert not scratch\ncache=R/'v2/apps/backend/.mypy_cache'\ncache_state={'exists':cache.exists(),'directory_mtime':cache.stat().st_mtime if cache.exists() else None,'policy':'Existing unrelated cache retained; Main strict command --cache-dir=/dev/null --no-incremental, no claim of globally absent old cache'}\nassert not (R/candidate['marker']).exists()\nassert candidate['effects']=='DENY_THIS_BATCH' and candidate['campaign_authority'] is False\nprint(json.dumps({'prior_graph':{'pins':prior[0],'bytes':prior[1]},'total_graph':{'pins':len(pins),'bytes':sum((R/n).stat().st_size for n in pins)},'direct_count':len(binding['direct']),'anchor_count':len(binding['anchors']),'candidate_sources':len(candidate['sources']),'own_source_count':len(own),'tests':tests,'xmls':xmls,'baseline_references_unchanged':True,'inventories':inventories,'scratch':scratch,'preexisting_cache':cache_state,'marker_absent':True,'exact_adapter_derivation':True,'dependencies_unchanged':True,'current_hashes':{n:sha(H/n) for n in ('input-binding.json','candidate.json','COMPLETION.md','SCOPE.md','boundary.json')}},indent=2,sort_keys=True))\nPY",
+  "result": {
+    "chunk_id": "fe86a8",
+    "wall_time_seconds": 0.061998416,
+    "exit_code": 0,
+    "original_token_count": 764,
+    "output": "{\n  \"anchor_count\": 1,\n  \"baseline_references_unchanged\": true,\n  \"candidate_sources\": 34,\n  \"current_hashes\": {\n    \"COMPLETION.md\": \"d0ca2b836c95585ba3f2de1aff5f68f5dfdaa6163d86042793a259484da41fa4\",\n    \"SCOPE.md\": \"7dc21bff55537e5e1101ead159bb86f1aa3b4eef3e687939a7d1af774f97c0a9\",\n    \"boundary.json\": \"66dff0f467b9cc7e7c4cd982580ba9101ee69e95d6be5f9c04c0a9ee439554f2\",\n    \"candidate.json\": \"553542c994785a3882e416cef25830852cac9b47f3d4f743fb4343f6c263186f\",\n    \"input-binding.json\": \"f991ad0495ccd60abed4d85efc6d0dd2bf7f0395bff0d37e93547bc7b00a5db6\"\n  },\n  \"dependencies_unchanged\": true,\n  \"direct_count\": 139,\n  \"exact_adapter_derivation\": true,\n  \"inventories\": {\n    \"product\": {\n      \"count\": 204,\n      \"digest\": \"b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641\"\n    },\n    \"tests\": {\n      \"count\": 192,\n      \"digest\": \"5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1\"\n    }\n  },\n  \"marker_absent\": true,\n  \"own_source_count\": 10,\n  \"preexisting_cache\": {\n    \"directory_mtime\": 1786777821.00101,\n    \"exists\": true,\n    \"policy\": \"Existing unrelated cache retained; Main strict command --cache-dir=/dev/null --no-incremental, no claim of globally absent old cache\"\n  },\n  \"prior_graph\": {\n    \"bytes\": 14510687,\n    \"pins\": 1910\n  },\n  \"scratch\": [],\n  \"tests\": {\n    \"test_broker.py\": [\n      \"test_binary_text_empty_overwrite_delete_recreate_and_copies\",\n      \"test_immutable_boundary_and_foreign_token\",\n      \"test_opaque_cached_native_unsafe_foreign_and_closed_ports\",\n      \"test_precommit_and_recovery_missing_extra_symlink_corruption\",\n      \"test_preio_domain_count_metadata_and_combined_cap\",\n      \"test_storage_fault_reservations_cleanup_and_primary_identity\"\n    ],\n    \"test_integration.py\": [\n      \"test_child_repeated_cancel_one_deadline_and_overflow\",\n      \"test_exact_driver_journal_summary_final_and_known_oracle\",\n      \"test_exact_owned_child_whole_eof_and_no_root_delivery\",\n      \"test_frozen_preflight_readonly_fresh_namespace_untrusted_grant_deny\",\n      \"test_full_pure_fixture_copy_temp_and_cached_native_denial\",\n      \"test_original_shell_copy_literals_and_actual_audit_restoration\",\n      \"test_scoped_fault_stale_foreign_and_close_restore_primary\",\n      \"test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap\"\n    ]\n  },\n  \"total_graph\": {\n    \"bytes\": 15420190,\n    \"pins\": 2010\n  },\n  \"xmls\": {\n    \"peer-e2-tests.xml\": {\n      \"errors\": 0,\n      \"failures\": 6,\n      \"skips\": 0,\n      \"tests\": 8\n    },\n    \"peer-e3-tests.xml\": {\n      \"errors\": 0,\n      \"failures\": 3,\n      \"skips\": 0,\n      \"tests\": 8\n    },\n    \"peer-e4-tests.xml\": {\n      \"errors\": 0,\n      \"failures\": 0,\n      \"skips\": 0,\n      \"tests\": 8\n    },\n    \"peer-e6-tests.xml\": {\n      \"errors\": 0,\n      \"failures\": 1,\n      \"skips\": 0,\n      \"tests\": 8\n    },\n    \"peer-e7-tests.xml\": {\n      \"errors\": 0,\n      \"failures\": 0,\n      \"skips\": 0,\n      \"tests\": 8\n    },\n    \"runtime-unit.xml\": {\n      \"errors\": 0,\n      \"failures\": 0,\n      \"skips\": 0,\n      \"tests\": 27\n    }\n  }\n}\n"
+  },
+  "parsed": {
+    "anchor_count": 1,
+    "baseline_references_unchanged": true,
+    "candidate_sources": 34,
+    "current_hashes": {
+      "COMPLETION.md": "d0ca2b836c95585ba3f2de1aff5f68f5dfdaa6163d86042793a259484da41fa4",
+      "SCOPE.md": "7dc21bff55537e5e1101ead159bb86f1aa3b4eef3e687939a7d1af774f97c0a9",
+      "boundary.json": "66dff0f467b9cc7e7c4cd982580ba9101ee69e95d6be5f9c04c0a9ee439554f2",
+      "candidate.json": "553542c994785a3882e416cef25830852cac9b47f3d4f743fb4343f6c263186f",
+      "input-binding.json": "f991ad0495ccd60abed4d85efc6d0dd2bf7f0395bff0d37e93547bc7b00a5db6"
+    },
+    "dependencies_unchanged": true,
+    "direct_count": 139,
+    "exact_adapter_derivation": true,
+    "inventories": {
+      "product": {
+        "count": 204,
+        "digest": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641"
+      },
+      "tests": {
+        "count": 192,
+        "digest": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+      }
+    },
+    "marker_absent": true,
+    "own_source_count": 10,
+    "preexisting_cache": {
+      "directory_mtime": 1786777821.00101,
+      "exists": true,
+      "policy": "Existing unrelated cache retained; Main strict command --cache-dir=/dev/null --no-incremental, no claim of globally absent old cache"
+    },
+    "prior_graph": {
+      "bytes": 14510687,
+      "pins": 1910
+    },
+    "scratch": [],
+    "tests": {
+      "test_broker.py": [
+        "test_binary_text_empty_overwrite_delete_recreate_and_copies",
+        "test_immutable_boundary_and_foreign_token",
+        "test_opaque_cached_native_unsafe_foreign_and_closed_ports",
+        "test_precommit_and_recovery_missing_extra_symlink_corruption",
+        "test_preio_domain_count_metadata_and_combined_cap",
+        "test_storage_fault_reservations_cleanup_and_primary_identity"
+      ],
+      "test_integration.py": [
+        "test_child_repeated_cancel_one_deadline_and_overflow",
+        "test_exact_driver_journal_summary_final_and_known_oracle",
+        "test_exact_owned_child_whole_eof_and_no_root_delivery",
+        "test_frozen_preflight_readonly_fresh_namespace_untrusted_grant_deny",
+        "test_full_pure_fixture_copy_temp_and_cached_native_denial",
+        "test_original_shell_copy_literals_and_actual_audit_restoration",
+        "test_scoped_fault_stale_foreign_and_close_restore_primary",
+        "test_spawn_and_postspawn_metadata_faults_retain_primary_and_reap"
+      ]
+    },
+    "total_graph": {
+      "bytes": 15420190,
+      "pins": 2010
+    },
+    "xmls": {
+      "peer-e2-tests.xml": {
+        "errors": 0,
+        "failures": 6,
+        "skips": 0,
+        "tests": 8
+      },
+      "peer-e3-tests.xml": {
+        "errors": 0,
+        "failures": 3,
+        "skips": 0,
+        "tests": 8
+      },
+      "peer-e4-tests.xml": {
+        "errors": 0,
+        "failures": 0,
+        "skips": 0,
+        "tests": 8
+      },
+      "peer-e6-tests.xml": {
+        "errors": 0,
+        "failures": 1,
+        "skips": 0,
+        "tests": 8
+      },
+      "peer-e7-tests.xml": {
+        "errors": 0,
+        "failures": 0,
+        "skips": 0,
+        "tests": 8
+      },
+      "runtime-unit.xml": {
+        "errors": 0,
+        "failures": 0,
+        "skips": 0,
+        "tests": 27
+      }
+    }
+  }
+}

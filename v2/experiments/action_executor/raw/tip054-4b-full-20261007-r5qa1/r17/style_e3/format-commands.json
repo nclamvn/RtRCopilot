@@ -1,0 +1,71 @@
+{
+  "scope": "existing fixed runner stdin import-sort and formatter only; no SQL/load",
+  "initial": {
+    "diagnostic.py": {
+      "imports": {
+        "exit_code": 0,
+        "chunk_id": "c03b79"
+      },
+      "format": {
+        "exit_code": 0,
+        "chunk_id": "c3deb1"
+      }
+    },
+    "observer.py": {
+      "imports": {
+        "exit_code": 0,
+        "chunk_id": "0718f2"
+      },
+      "format": {
+        "exit_code": 0,
+        "chunk_id": "b68493"
+      }
+    },
+    "gate.py": {
+      "imports": {
+        "exit_code": 0,
+        "chunk_id": "6ee315"
+      },
+      "format": {
+        "exit_code": 0,
+        "chunk_id": "92a5bd"
+      }
+    },
+    "test_r17_offline.py": {
+      "imports": {
+        "exit_code": 0,
+        "chunk_id": "a5f9f9"
+      },
+      "format": {
+        "exit_code": 0,
+        "chunk_id": "b3dbdc"
+      }
+    },
+    "test_r17_sql.py": {
+      "imports": {
+        "exit_code": 0,
+        "chunk_id": "86f385"
+      },
+      "format": {
+        "exit_code": 0,
+        "chunk_id": "44777d"
+      }
+    },
+    "test_r17_campaign.py": {
+      "imports": {
+        "exit_code": 0,
+        "chunk_id": "880825"
+      },
+      "format": {
+        "exit_code": 0,
+        "chunk_id": "aad1c6"
+      }
+    }
+  },
+  "literal_wrap_final": [
+    "gate.py",
+    "test_r17_campaign.py"
+  ],
+  "stderr_quiet": true,
+  "stdout_retained": "style_e3/*.formatted.py and *.final-formatted.py"
+}

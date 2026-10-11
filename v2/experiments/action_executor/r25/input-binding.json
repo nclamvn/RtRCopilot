@@ -1,0 +1,21 @@
+{
+  "schema": "R25-linked-input-v1",
+  "input_cap_bytes": 33554432,
+  "anchors": {
+    "v2/experiments/action_executor/r24/input-binding.json": "34f6c3f85d1c2468731b0ba0fa103d49c2fd71abc3af44811b71de507ce4ca00",
+    "v2/experiments/action_executor/r24/main-evidence-binding.sha256": "6406b3cfeafd057920594945d5807eaf68f712ba2f8b7b5e513fc8b784fc01cb",
+    "v2/experiments/action_executor/r24/main-final-closure.json": "c844e013dfa641ccc946a6156deafb6b2310b0eaef0cda48240d28cbfdaa6737",
+    "v2/experiments/action_executor/r24/main-publication-check.json": "6ea8e1fc2c671ef685c40db7fa60401a39e92f0415f1edcb0d74626c5d842473",
+    "vibecode_v2/TIP-054.4b-R24_VERIFY_REPORT.md": "870a04f052355fb6c4532303fb8033c88837c56b8352ae5fa0e0f6ca1c03eb04",
+    "vibecode_v2/R24_REVIEW_REPORT.md": "eea95596181c5caaf1315d3c54cd8b471aa89e1dd18929a2d666d135e4e717b3"
+  },
+  "direct": {
+    "v2/experiments/action_executor/r25/model.py": "5912d03f4d8f02235ee7d320c8fdd8b4e753a2b9b8b06230bf866dfefdf2a43d",
+    "v2/experiments/action_executor/r25/test_model.py": "7962d5ffd77985edca90ce8434d6e941951f911e081d08e82bef4e552176d00c",
+    "v2/experiments/action_executor/r25/checks.py": "0475446e0f89f0ad5a895d3e40cd0fa8268003f799f87a2e91b2a79f19c818da",
+    "v2/experiments/action_executor/r25/contract.json": "43e24fdef2e1acfd3f00b409e9fd5a46853c4105d4b3c71f329b93c6f1eccbcc",
+    "vibecode_v2/R25_SCAN_REPORT.md": "2fe87facf9789ca992fbf02aee5ea3e62e9c024b05ed343b70451470fbc1a69c",
+    "vibecode_v2/TIP-054.4b-R25_BOUNDED_PRODUCER_ENVELOPE_DESIGN.md": "55c0add42147b73912e7292ef14bb7a81a536be395a5d224ab9628941c93a8ce",
+    "v2/experiments/action_executor/r25/wording-correction.json": "a06919f44ef0fb64aff9afa719b62c595dacd537cac7ed469416f8e4425316f0"
+  }
+}

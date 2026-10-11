@@ -173,6 +173,13 @@ async def _version_authorized(
         """), {"version_id": version_id})).mappings().one_or_none()
         if effective is None or row is None:
             return None
+        from rtr_copilot.actions.execution import action_output_guard
+        from rtr_copilot.actions.registry import ActionError
+
+        try:
+            await action_output_guard(session, uow, version_id, subject)
+        except ActionError:
+            return None
         attributes = effective[0]
     decision = policy.decide(
         subject,

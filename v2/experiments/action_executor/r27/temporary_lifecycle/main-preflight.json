@@ -1,0 +1,8 @@
+{
+  "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/pre_stage:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/pre_contract:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/runtime_closure:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/real_path /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/bin/python -B /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/checks.py --preflight",
+  "chunk_id": "edd36c",
+  "wall_time_seconds": 0.939001792,
+  "exit_code": 2,
+  "original_token_count": 38,
+  "output": "{\"effects\": \"NOT_RUN\", \"execution_admission\": \"DENY\", \"reason\": \"Original PRE DENY: closed local lifecycle is not six-suite/native-launch authority\"}\n"
+}

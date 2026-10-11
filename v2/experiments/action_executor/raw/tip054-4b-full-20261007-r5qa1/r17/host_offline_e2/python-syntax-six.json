@@ -1,0 +1,11 @@
+{
+  "phase": "python-syntax-six",
+  "source_binding": "v2/experiments/action_executor/r17/source-binding-e2.sha256",
+  "actual": {
+    "chunk_id": "e89e0a",
+    "wall_time_seconds": 0.0000085,
+    "exit_code": 0,
+    "original_token_count": 4,
+    "output": "SYNTAX_6_PASS\n"
+  }
+}

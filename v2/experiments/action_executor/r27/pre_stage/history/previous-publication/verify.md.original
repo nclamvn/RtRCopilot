@@ -1,0 +1,136 @@
+# TIP-054.4b-R27 consolidated verification
+
+2026-10-10 · Contractor/Main · **PRE diagnostic E1–E4 accepted4/4; full R27 PARTIAL / NOT_READY.**
+
+The same consolidated package now has source-connected temporary fixture writes,
+before-I/O rejection, lifetime accounting, before-dispatch admission and combined
+regression. No micro-TIP, new budget or scratch exclusion was introduced.
+Vibecode Builder/Contractor/independent source Reviewer separation was maintained.
+
+R21 SLA FAILED/P1, EXE-009 OPEN/P1, candidate NOT_READY, serving executor OFF and
+TIP-054.5 BLOCKED remain. This is diagnostic local integration, not full original
+PRE qualification, measured tail repair, serving certification or release.
+
+## Requirement coverage
+
+| ID | Current result | Remaining outcome |
+|---|---|---|
+| R27-001 | PARTIAL | Original packet writer reaches unchanged broker; full native/temp/plugin/PRE outputs and adopted stage contract remain unqualified. |
+| R27-002 | PARTIAL | Real local fidelity/rejection/overwrite/delete/no-refund/ownership and old cancellation controls pass; physical SQL/Linux lifecycle remains unqualified. |
+| R27-003 | PENDING | No authorized campaign, causal performance attribution or measured repair. |
+| R27-004 | PENDING | Local regression/health only; no full candidate correctness/security/performance qualification. |
+| R27-005 | PASS for this checkpoint | One current Verify/status, frozen Completion/binding/candidate, actual failures/results, independent review and preserved prior publication. |
+
+Original reporting criterion1/5; fully achieved original technical criteria0/4.
+Declared local E1–E4 accepted4/4, not product completion100%.
+Earlier D1–D5 seams are preserved and their23 tests are included in the current28.
+
+## Implemented output
+
+Four small modules in `v2/experiments/action_executor/r27/pre_contract`, reusing
+unchanged runtime_closure/real_path/broker and original R21 producer bodies.
+
+- E1: Exact pinned original rows/write_packet/marker algorithms and mutation expressions
+  quantify raw bytes and known lifecycles. Pure bounded memory preview is analysis,
+  not a qualifying storage substitute or execution of all six original tests.
+- E2: The exact packet callsite executes through genuine OwnedBroker/HostPort and
+  a closed logical temporary path. Full/four-row natural diagnostic mappings reject
+  the whole JSONL before that artifact I/O; ephemeral diagnostic mapping rejects
+  the whole full JSON. Both mappings are proposals only, not adopted scratch routing.
+  Prefix artifacts/bytes, unchanged rejected charge, original traceback/first fault
+  and absent seal are checked. Rejected bytes are test memory, not captured evidence.
+  One-row uses the existing producer parameter for nine-write fidelity and delete/
+  recreate/no-refund controls; it does not replace original1600-row qualification.
+- E3: Source-bound entry always denies full PRE before root/child/marker dispatch.
+  Booleans, mappings, count claims and candidate objects cannot grant permission.
+  Genuine tempfile/pytest/native/shell routes remain named uncovered paths.
+- E4: Combined regression, static/source/raw-byte preservation and independent
+  verification/review. Frozen existing sources/product/dependencies are unchanged.
+
+Previously verified genuine pytest XML, original fileConfig/logging, whole native
+host-df EOF, signed fixture/parser and shared recovery flow remain covered by the
+unchanged23 regression groups. The reused packet seal witnesses its old real_path
+source set; new external binding separately verifies additions before/after.
+Neither is full-runtime certification or a universal hostile-native-FD sandbox.
+
+## Actual verification
+
+| Check | Main observed result | Scope |
+|---|---|---|
+| Combined controls | 28/28 PASS; wrapper0;5.77587450001738s;zero failure/error/skip | 23 frozen regressions +5 new outer groups. |
+| Builder repeat | Same28 PASS;5.919770709006116s | Overlap, not56; earlier five/nested targets are overlaps. |
+| Strict mypy / Ruff / format / syntax | Zero errors;four new files formatted and compiled | Explicit backend config, no incremental/cache/bytecode; old codec not newly strict-body audited. |
+| Independent pure graph audit | 2249repo pins /17,458,659B;seven external interfaces | Prior2218/17,154,176B includes old closure binding;43 direct, candidate18 incl four Python additions. |
+| Complete source inventories | product204/tests192 and digests unchanged | Before/after; HEAD0e88f48588dc3228f1ae9eca7a7597d96589af8b unchanged. |
+| Main independent raw reconstruction | Full/four/one JSON+JSONL sizes/hashes match | Original AST only, no new helper import, suite/native/storage execution. |
+| Independent source review | Declared local E1–E4 accepted4/4 | Full original runtime explicitly NOT_READY. |
+| Actual preflight | exit2/source_matches/DENY/effects NOT_RUN | Expected rejection, not failed qualification or marker-absence proof. |
+
+Two pytest unknown asyncio-option warnings remain with automatic plugins disabled;
+no async groups skipped (local controls use asyncio.run). Not whole-backend health.
+Initial four type/seven E501 findings and exact source snapshots are retained.
+Both diagnostic author test batches passed; no failed campaign retry/cherry-pick.
+Source before/after matches; scratch[]→[]; owned roots auto-cleaned.
+
+Frozen addition identities:
+binding `1e7dfca6f0dc4bb89f80d94b4926ff28ae48faf35e7bb7da9241e5218bc1c770`;
+candidate `09eb6fd832c0eb6a23068c9ac873ca450ddba887aa24a9167402fc693e183d4d`;
+Completion `c3e245f68273e5a6bd79e03d59de3cad2560eacf50bed4d43afe59fe6c295b15`;
+checks `25f0b34a5e58c889691049da91512c08421252a2ed981001bba27184f34434ac`;
+manifest `3b99972f22fd0533a563da6d1a8ca74961b38ce0729bab83ec1f501fa48d3d63`.
+These are dirty-source file hashes, not new commits/deployments.
+
+## Root obstruction now quantified
+
+| Source-generated payload/control | Observed size/lifecycle |
+|---|---|
+| Full1600 synthetic rows, samples.json | 235,440B |
+| Same whole samples.jsonl write | 233,840B, not1600 source write calls |
+| Four-row JSON / JSONL | 582B /578B (whole journal still exceeds512) |
+| Corruption method | 35 writes /733,169B lifetime payload; final live4050B |
+| Six-method known successful scratch writes | 43 explicit calls;14 lifetime files;6TemporaryDirectory roots |
+| Launcher +known scratch files | At least125+14=139, before native/plugin/probe/failure additions |
+
+Eight mutation/restore pairs, one journal truncation and summary deletion are counted.
+The original cap sums surviving file sizes under the epoch; intended TMPDIR and
+basetemp are inside while live. Poll/postcheck may miss deleted/overwritten bytes.
+The new broker precharges lifetime attempts and packet+physical copies without refund.
+These are different semantics; final live4050B is not733,169B retained history.
+
+Genuine first-use tempfile probe/unlink/fallback/rmtree, pytest given-basetemp
+mkdir/rm_rf/numbered tmp_path/current symlink, fake-shell printf and unknown plugin/
+native failure writers remain unqualified. Given --basetemp does not take the
+ordinary session cleanup-lock branch. synthetic_settings is a constructor, not
+itself a filesystem/seed producer. Known lower bounds are not universal upper bounds.
+
+Current32 entries/PRE32, twenty families,10MiB aggregate and16KiB metadata remain.
+Earlier96/PRE64 is insufficient and NOT_ADOPTED. Existing conditional launcher
+metadata forecasts exclude scratch/interleaved/error history; they are not seals
+or complete fit proofs. Synthetic input copies are not genuine measurement journal/
+final_samples observations; diagnostics must not silently adopt that classification.
+
+## One next material decision, not another count-only round
+
+Recommend a **stage-specific PRE synthetic-input variant within the SAME shared
+10MiB/no-refund boundary**, with complete source-derived whole-write, lifetime-file,
+metadata and native/deleted-scratch ownership domains. Preserve original whole
+serialization and fail before I/O; no uncapped second plane, omission or splitting.
+This is a proposed contract change requiring explicit Homeowner adoption, not
+permission supplied by passing tests. Exact domain/bounds and all native writer
+routes still need closure before full PRE or any campaign request.
+
+Missing dependency/Linux/physical SQL/effect prerequisites stay separate. No install,
+SQL/Docker/HTTP/load/provider/network/Git write/rebuild/executor activation occurred.
+No future marker consumed; no live absence check claimed. Existing unrelated dirty
+work/cache preserved; no project copy, new distDir/venv/Docker resource created.
+Keep the same R27 package; preserve baseline thresholds, workload and old failed
+evidence. No measured latency repair or full candidate certification has occurred.
+
+## Evidence
+
+- [Scope](../v2/experiments/action_executor/r27/pre_contract/SCOPE.md) · [Completion](../v2/experiments/action_executor/r27/pre_contract/COMPLETION.md) · [independent review](R27_PRE_CONTRACT_REVIEW_REPORT.md)
+- [Binding](../v2/experiments/action_executor/r27/pre_contract/input-binding.json) · [candidate](../v2/experiments/action_executor/r27/pre_contract/candidate.json) · [producer manifest](../v2/experiments/action_executor/r27/pre_contract/manifest.json)
+- [Main actual controls](../v2/experiments/action_executor/r27/pre_contract/main-feedback.json) · [health](../v2/experiments/action_executor/r27/pre_contract/main-health.json) · [preflight](../v2/experiments/action_executor/r27/pre_contract/main-preflight.json)
+- [Independent structural audit](../v2/experiments/action_executor/r27/pre_contract/main-structural-check.json) · [independent payload AST check](../v2/experiments/action_executor/r27/pre_contract/main-independent-payload.json)
+- [Builder controls](../v2/experiments/action_executor/r27/pre_contract/author-feedback.json) · [Builder health](../v2/experiments/action_executor/r27/pre_contract/author-health.json)
+- [Previous current Verify, byte-exact](../v2/experiments/action_executor/r27/pre_contract/history/previous-publication/real-path-verify.md.original) · [prior D1–D5 review](R27_RUNTIME_CLOSURE_REVIEW_REPORT.md)

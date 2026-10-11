@@ -1,0 +1,609 @@
+{
+  "PG_capacity": "Filesystem     1K-blocks    Used Available Use% Mounted on\ntmpfs            3145728 1758972   1386756  56% /var/lib/postgresql/data\n",
+  "PG_free_kib": 1386756,
+  "calls": 8,
+  "containers": [
+    {
+      "Caps": {
+        "CapDrop": null,
+        "Memory": 805306368,
+        "NanoCpus": 1000000000,
+        "PidsLimit": 128,
+        "ReadonlyRootfs": false,
+        "SecurityOpt": null,
+        "Tmpfs": {
+          "/data": "rw,size=512m",
+          "/tmp": "rw,size=64m"
+        }
+      },
+      "ExecutorOwner": "tip054-4b-full-20261007-r5qa1",
+      "Id": "0ec914b6cf8e95fc1c299ae39b7d4f67b1865409a14939785c9dcc228d87e9d3",
+      "ImageId": "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e",
+      "ImageRef": "quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z",
+      "Mounts": [],
+      "Name": "/tip054-4b-full-20261007-r5qa1-minio",
+      "Networks": {
+        "tip054-4b-full-20261007-r5qa1-offline": {
+          "Aliases": [
+            "tip054-minio"
+          ],
+          "DNSNames": [
+            "tip054-4b-full-20261007-r5qa1-minio",
+            "tip054-minio",
+            "0ec914b6cf8e"
+          ],
+          "DriverOpts": null,
+          "EndpointID": "deaae5c3c843fd2171ba557b7b90a7110afea7f55ddf2afd3db38af6c846cb3b",
+          "Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "GwPriority": 0,
+          "IPAMConfig": null,
+          "IPAddress": "172.20.0.4",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "Links": null,
+          "MacAddress": "16:8a:94:cd:88:89",
+          "NetworkID": "49f99f89841a957ad9bcdc6bb3029ecc4dc1e97870fde8d9ae2d204d8328d550"
+        }
+      },
+      "OOMKilled": false,
+      "Paused": false,
+      "Ports": {
+        "9000/tcp": null
+      },
+      "RestartCount": 0,
+      "Restarting": false,
+      "Running": true
+    },
+    {
+      "Caps": {
+        "CapDrop": null,
+        "Memory": 4294967296,
+        "NanoCpus": 2000000000,
+        "PidsLimit": 256,
+        "ReadonlyRootfs": false,
+        "SecurityOpt": null,
+        "Tmpfs": {
+          "/tmp": "rw,size=128m",
+          "/var/lib/postgresql/data": "rw,size=3g"
+        }
+      },
+      "ExecutorOwner": "tip054-4b-full-20261007-r5qa1",
+      "Id": "16f2f9e7a933ab98ba7d5aadf50b000de9c76c6f07b569ac280345cb10cc02b7",
+      "ImageId": "sha256:1d533553fefe4f12e5d80c7b80622ba0c382abb5758856f52983d8789179f0fb",
+      "ImageRef": "pgvector/pgvector:pg16",
+      "Mounts": [],
+      "Name": "/tip054-4b-full-20261007-r5qa1-pg",
+      "Networks": {
+        "tip054-4b-full-20261007-r5qa1-offline": {
+          "Aliases": [
+            "tip054-pg"
+          ],
+          "DNSNames": [
+            "tip054-4b-full-20261007-r5qa1-pg",
+            "tip054-pg",
+            "16f2f9e7a933"
+          ],
+          "DriverOpts": null,
+          "EndpointID": "223de4c7bf3f884121f4ec24060a0ef4d7560498201d92b70b0a9b5c4bb17d85",
+          "Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "GwPriority": 0,
+          "IPAMConfig": null,
+          "IPAddress": "172.20.0.2",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "Links": null,
+          "MacAddress": "0a:a0:2f:b2:79:bd",
+          "NetworkID": "49f99f89841a957ad9bcdc6bb3029ecc4dc1e97870fde8d9ae2d204d8328d550"
+        }
+      },
+      "OOMKilled": false,
+      "Paused": false,
+      "Ports": {
+        "5432/tcp": null
+      },
+      "RestartCount": 0,
+      "Restarting": false,
+      "Running": true
+    },
+    {
+      "Caps": {
+        "CapDrop": null,
+        "Memory": 268435456,
+        "NanoCpus": 1000000000,
+        "PidsLimit": 64,
+        "ReadonlyRootfs": false,
+        "SecurityOpt": null,
+        "Tmpfs": {
+          "/data": "rw,size=128m"
+        }
+      },
+      "ExecutorOwner": "tip054-4b-full-20261007-r5qa1",
+      "Id": "2afbb661c6188631079f27b27ae93822c0614e8619adef6a836d17a6c613f69d",
+      "ImageId": "sha256:7aec734b2bb298a1d769fd8729f13b8514a41bf90fcdd1f38ec52267fbaa8ee6",
+      "ImageRef": "redis:7-alpine",
+      "Mounts": [],
+      "Name": "/tip054-4b-full-20261007-r5qa1-redis",
+      "Networks": {
+        "tip054-4b-full-20261007-r5qa1-offline": {
+          "Aliases": [
+            "tip054-redis"
+          ],
+          "DNSNames": [
+            "tip054-4b-full-20261007-r5qa1-redis",
+            "tip054-redis",
+            "2afbb661c618"
+          ],
+          "DriverOpts": null,
+          "EndpointID": "79663fec1cb8a63e137a13500e5d0bacb2e3008eb12ab4c48e2bfae67904f0f5",
+          "Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "GwPriority": 0,
+          "IPAMConfig": null,
+          "IPAddress": "172.20.0.3",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "Links": null,
+          "MacAddress": "fa:05:5a:24:39:b2",
+          "NetworkID": "49f99f89841a957ad9bcdc6bb3029ecc4dc1e97870fde8d9ae2d204d8328d550"
+        }
+      },
+      "OOMKilled": false,
+      "Paused": false,
+      "Ports": {
+        "6379/tcp": null
+      },
+      "RestartCount": 0,
+      "Restarting": false,
+      "Running": true
+    },
+    {
+      "Caps": {
+        "CapDrop": null,
+        "Memory": 4294967296,
+        "NanoCpus": 4000000000,
+        "PidsLimit": 512,
+        "ReadonlyRootfs": true,
+        "SecurityOpt": null,
+        "Tmpfs": {
+          "/qa": "rw,exec,mode=1777,size=2g",
+          "/tmp": "rw,exec,mode=1777,size=512m"
+        }
+      },
+      "ExecutorOwner": "tip054-4b-full-20261007-r5qa1",
+      "Id": "cb30f7e2244c78e8b6b6a772d2fb69b4ab5ba1ff92405c6b93517c056c024432",
+      "ImageId": "sha256:a0ce9debbc30cea1d61343138c6a8c6dc71d345dd622b82ef75ffaec6c1060f2",
+      "ImageRef": "rtr-tip054-local-qa:20261006",
+      "Mounts": [
+        {
+          "Destination": "/evidence",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": true,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/work",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/phase1_pilot/copilot_server.py",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/phase1_pilot/copilot_server.py",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/.env.example",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/.env.example",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/.gitignore",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/.gitignore",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/Makefile",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/Makefile",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/compose.yaml",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/compose.yaml",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/scripts",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/scripts",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/eval/lib",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/lib",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/eval/migrate",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/migrate",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/eval/parity",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/parity",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/eval/pilot",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/pilot",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/eval/quality",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/quality",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/eval/real_world",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/real_world",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/eval/run_eval.py",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/run_eval.py",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/eval/run_parity.py",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/run_parity.py",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/eval/run_real_world_acceptance.py",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/run_real_world_acceptance.py",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/apps/backend/alembic.ini",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/alembic.ini",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/apps/backend/migrations",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/migrations",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/apps/backend/pyproject.toml",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/pyproject.toml",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/apps/backend/src",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/apps/backend/tests",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/tests",
+          "Type": "bind"
+        },
+        {
+          "Destination": "/workspace/v2/apps/backend/uv.lock",
+          "Mode": "",
+          "Propagation": "rprivate",
+          "RW": false,
+          "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/uv.lock",
+          "Type": "bind"
+        }
+      ],
+      "Name": "/tip054-4b-full-20261007-r5qa1-runner",
+      "Networks": {
+        "tip054-4b-full-20261007-r5qa1-offline": {
+          "Aliases": [],
+          "DNSNames": [
+            "tip054-4b-full-20261007-r5qa1-runner",
+            "cb30f7e2244c"
+          ],
+          "DriverOpts": {},
+          "EndpointID": "8ab60eb04fd6981fc8c3a3f265a49240ad166ece38ab449084ff88a89a65f2dd",
+          "Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "GwPriority": 0,
+          "IPAMConfig": {},
+          "IPAddress": "172.20.0.5",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "Links": null,
+          "MacAddress": "2a:6c:52:26:9a:a5",
+          "NetworkID": "49f99f89841a957ad9bcdc6bb3029ecc4dc1e97870fde8d9ae2d204d8328d550"
+        }
+      },
+      "OOMKilled": false,
+      "Paused": false,
+      "Ports": {},
+      "RestartCount": 0,
+      "Restarting": false,
+      "Running": true
+    }
+  ],
+  "network": {
+    "Containers": {
+      "0ec914b6cf8e95fc1c299ae39b7d4f67b1865409a14939785c9dcc228d87e9d3": {
+        "EndpointID": "deaae5c3c843fd2171ba557b7b90a7110afea7f55ddf2afd3db38af6c846cb3b",
+        "IPv4Address": "172.20.0.4/16",
+        "IPv6Address": "",
+        "MacAddress": "16:8a:94:cd:88:89",
+        "Name": "tip054-4b-full-20261007-r5qa1-minio"
+      },
+      "16f2f9e7a933ab98ba7d5aadf50b000de9c76c6f07b569ac280345cb10cc02b7": {
+        "EndpointID": "223de4c7bf3f884121f4ec24060a0ef4d7560498201d92b70b0a9b5c4bb17d85",
+        "IPv4Address": "172.20.0.2/16",
+        "IPv6Address": "",
+        "MacAddress": "0a:a0:2f:b2:79:bd",
+        "Name": "tip054-4b-full-20261007-r5qa1-pg"
+      },
+      "2afbb661c6188631079f27b27ae93822c0614e8619adef6a836d17a6c613f69d": {
+        "EndpointID": "79663fec1cb8a63e137a13500e5d0bacb2e3008eb12ab4c48e2bfae67904f0f5",
+        "IPv4Address": "172.20.0.3/16",
+        "IPv6Address": "",
+        "MacAddress": "fa:05:5a:24:39:b2",
+        "Name": "tip054-4b-full-20261007-r5qa1-redis"
+      },
+      "cb30f7e2244c78e8b6b6a772d2fb69b4ab5ba1ff92405c6b93517c056c024432": {
+        "EndpointID": "8ab60eb04fd6981fc8c3a3f265a49240ad166ece38ab449084ff88a89a65f2dd",
+        "IPv4Address": "172.20.0.5/16",
+        "IPv6Address": "",
+        "MacAddress": "2a:6c:52:26:9a:a5",
+        "Name": "tip054-4b-full-20261007-r5qa1-runner"
+      }
+    },
+    "Driver": "bridge",
+    "ExecutorOwner": "tip054-4b-full-20261007-r5qa1",
+    "Id": "49f99f89841a957ad9bcdc6bb3029ecc4dc1e97870fde8d9ae2d204d8328d550",
+    "Internal": true,
+    "Name": "tip054-4b-full-20261007-r5qa1-offline"
+  },
+  "no_ConfigEnv_or_private_environment": true,
+  "no_SQL_tests_CREATE_import_load_startup_cleanup": true,
+  "normalized_mounts": {
+    "0ec914b6cf8e95fc1c299ae39b7d4f67b1865409a14939785c9dcc228d87e9d3": [],
+    "16f2f9e7a933ab98ba7d5aadf50b000de9c76c6f07b569ac280345cb10cc02b7": [],
+    "2afbb661c6188631079f27b27ae93822c0614e8619adef6a836d17a6c613f69d": [],
+    "cb30f7e2244c78e8b6b6a772d2fb69b4ab5ba1ff92405c6b93517c056c024432": [
+      {
+        "Destination": "/evidence",
+        "Propagation": "rprivate",
+        "RW": true,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/work",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/phase1_pilot/copilot_server.py",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/phase1_pilot/copilot_server.py",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/.env.example",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/.env.example",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/.gitignore",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/.gitignore",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/Makefile",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/Makefile",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/apps/backend/alembic.ini",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/alembic.ini",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/apps/backend/migrations",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/migrations",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/apps/backend/pyproject.toml",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/pyproject.toml",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/apps/backend/src",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/apps/backend/tests",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/tests",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/apps/backend/uv.lock",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/uv.lock",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/compose.yaml",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/compose.yaml",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/eval/lib",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/lib",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/eval/migrate",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/migrate",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/eval/parity",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/parity",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/eval/pilot",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/pilot",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/eval/quality",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/quality",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/eval/real_world",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/real_world",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/eval/run_eval.py",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/run_eval.py",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/eval/run_parity.py",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/run_parity.py",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/eval/run_real_world_acceptance.py",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/eval/run_real_world_acceptance.py",
+        "Type": "bind"
+      },
+      {
+        "Destination": "/workspace/v2/scripts",
+        "Propagation": "rprivate",
+        "RW": false,
+        "Source": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/scripts",
+        "Type": "bind"
+      }
+    ]
+  },
+  "runner_capacity": "Filesystem     1K-blocks  Used Available Use% Mounted on\ntmpfs             524288   168    524120   1% /tmp\ntmpfs            2097152 61660   2035492   3% /qa\n",
+  "runner_idle": true,
+  "runner_processes": "PID                 COMMAND             COMMAND\n14271               sh                  /bin/sh -c sleep infinity\n14291               sleep               sleep infinity\n",
+  "status": "PASS/HOLD exact retained fixture"
+}

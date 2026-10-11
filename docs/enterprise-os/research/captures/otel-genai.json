@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://opentelemetry.io/docs/specs/semconv/gen-ai/",
+      "retrieved_at": "2026-10-06T02:15:31.964455+00:00",
+      "source_family": "OpenTelemetry",
+      "status": "failed"
+    },
+    {
+      "bytes": 172981,
+      "content_type": "text/html; charset=UTF-8",
+      "http_status": 200,
+      "read_view_characters": 1160,
+      "read_view_sha256": "c1c96ee9d7e553f55211da20252902aa3befcec05b91e0eb1198affa4cde6518",
+      "requested_url": "https://opentelemetry.io/docs/specs/semconv/gen-ai/",
+      "resolved_url": "https://opentelemetry.io/docs/specs/semconv/gen-ai/",
+      "retrieved_at": "2026-10-06T02:16:00.623922+00:00",
+      "sha256": "c2a9e236d1f1dae21e71c7c2177101484bf0fcb2877913b30082ea9a2854ba4c",
+      "snapshot": "otel-genai.html",
+      "source_family": "OpenTelemetry",
+      "status": "usable-migration-notice"
+    }
+  ],
+  "entity": "OpenTelemetry GenAI conventions",
+  "id": "otel-genai",
+  "selected": {
+    "bytes": 172981,
+    "content_type": "text/html; charset=UTF-8",
+    "http_status": 200,
+    "read_view_characters": 1160,
+    "read_view_sha256": "c1c96ee9d7e553f55211da20252902aa3befcec05b91e0eb1198affa4cde6518",
+    "requested_url": "https://opentelemetry.io/docs/specs/semconv/gen-ai/",
+    "resolved_url": "https://opentelemetry.io/docs/specs/semconv/gen-ai/",
+    "retrieved_at": "2026-10-06T02:16:00.623922+00:00",
+    "sha256": "c2a9e236d1f1dae21e71c7c2177101484bf0fcb2877913b30082ea9a2854ba4c",
+    "snapshot": "otel-genai.html",
+    "source_family": "OpenTelemetry",
+    "status": "usable-migration-notice"
+  }
+}

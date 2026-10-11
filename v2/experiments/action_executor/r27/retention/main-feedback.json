@@ -1,0 +1,70 @@
+{
+  "after": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 14165189,
+    "prior_bytes": 13886903,
+    "prior_pins": 1840,
+    "scope_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "total_pins": 1868
+  },
+  "before": {
+    "digests": {
+      "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+      "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+    },
+    "input_bytes": 14165189,
+    "prior_bytes": 13886903,
+    "prior_pins": 1840,
+    "scope_counts": {
+      "product": 204,
+      "tests": 192
+    },
+    "total_pins": 1868
+  },
+  "compiled_files": 7,
+  "errors": 0,
+  "failures": 0,
+  "measurement_admission": "HOLD",
+  "not_run": [
+    "SQL/Docker/HTTP/load",
+    "native/cached fd/outer/Bash exclusivity",
+    "physical lease proof",
+    "hostile same UID/root",
+    "power-loss proof"
+  ],
+  "sandboxes_after": [],
+  "sandboxes_before": [],
+  "scope": "Real isolated Python producers/files/copies/logging/unframed finite pipes; not full campaign",
+  "seconds": 1.299927124986425,
+  "skips": 0,
+  "source_after": {
+    "adapter.py": "260d7bec194b05a9f7368ddea9f60b5b706a707f6dfce6d417a6ecdf1a1ba441",
+    "checks.py": "8f7f27f3b30253d5eef571fc0db6287116a5fc8910f7848e0ccfeb7352825f53",
+    "envelope.py": "de1143e5148e3f32e4c6127d2ff8c2a2d255a2b5d9540f55cc0de9896c16bcbd",
+    "input-binding.json": "0b5f74f36df0fb3d535e2b38bbecefef694a047cb29f2a734259d9d2c2a8af36",
+    "pipes.py": "01bc850a07380c90d3c074f3be7d51edc63b7b6b493d2302f365191ec4fb92ae",
+    "producers.py": "baa45e76426380108cf65f56e2f23a363ae0dfb437f480977d8eafc4178411df",
+    "raw_child.py": "11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f",
+    "routing.json": "dc5051241cba06aa34070d785e5918e479c13a39987ff8e76956829cd657c205",
+    "test_retention.py": "70538ab15ce3851fc780fcc0a35f78850d88d2990ad537742cee171f904fdb03"
+  },
+  "source_before": {
+    "adapter.py": "260d7bec194b05a9f7368ddea9f60b5b706a707f6dfce6d417a6ecdf1a1ba441",
+    "checks.py": "8f7f27f3b30253d5eef571fc0db6287116a5fc8910f7848e0ccfeb7352825f53",
+    "envelope.py": "de1143e5148e3f32e4c6127d2ff8c2a2d255a2b5d9540f55cc0de9896c16bcbd",
+    "input-binding.json": "0b5f74f36df0fb3d535e2b38bbecefef694a047cb29f2a734259d9d2c2a8af36",
+    "pipes.py": "01bc850a07380c90d3c074f3be7d51edc63b7b6b493d2302f365191ec4fb92ae",
+    "producers.py": "baa45e76426380108cf65f56e2f23a363ae0dfb437f480977d8eafc4178411df",
+    "raw_child.py": "11b47b29c61e8d577bdbdd8ccf63e2148e3fcb71876c5990a68c45c3269c9b0f",
+    "routing.json": "dc5051241cba06aa34070d785e5918e479c13a39987ff8e76956829cd657c205",
+    "test_retention.py": "70538ab15ce3851fc780fcc0a35f78850d88d2990ad537742cee171f904fdb03"
+  },
+  "stdout": "test_unframed_pipes_full_terminal_class_and_repeated_cancellation (test_retention.AsyncControls.test_unframed_pipes_full_terminal_class_and_repeated_cancellation) ... ok\ntest_caught_source_serialization_model_and_logging_faults_sticky (test_retention.Controls.test_caught_source_serialization_model_and_logging_faults_sticky) ... ok\ntest_exclusive_hooks_foreign_threads_unsafe_and_bypass (test_retention.Controls.test_exclusive_hooks_foreign_threads_unsafe_and_bypass) ... ok\ntest_full_signed_fixture_and_actual_audit_logging_restoration (test_retention.Controls.test_full_signed_fixture_and_actual_audit_logging_restoration) ... ok\ntest_off_and_source_journal_summary_final_physical_copies (test_retention.Controls.test_off_and_source_journal_summary_final_physical_copies) ... ok\ntest_real_write_flush_cleanup_fault_and_original_identity (test_retention.Controls.test_real_write_flush_cleanup_fault_and_original_identity) ... ok\ntest_shared_prewrite_budget_overwrites_and_all_copies (test_retention.Controls.test_shared_prewrite_budget_overwrites_and_all_copies) ... ok\ntest_strict_recovery_missing_extra_corrupt_and_identity (test_retention.Controls.test_strict_recovery_missing_extra_corrupt_and_identity) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 1.300s\n\nOK\n",
+  "tests_run": 8
+}

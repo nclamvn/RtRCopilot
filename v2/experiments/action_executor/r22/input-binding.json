@@ -1,0 +1,28 @@
+{
+  "direct": {
+    "v2/experiments/action_executor/r21/main-final-closure.json": "8c70df801f6484597eda54df66d88da1d83b4f87b3d2ff052c3d4b6b3fb721ef",
+    "v2/experiments/action_executor/r21/main-publication-check.json": "f3f4b51301394b816af8c4730f6c6e306f4febc8fc28d6d4eb2af4f59f2d740c",
+    "v2/experiments/action_executor/r22/analyzer.py": "bee4cb216dff2cc06174fd0dfbebb2f96fb5a2ca994fe24e62dea0374eb05027",
+    "v2/experiments/action_executor/r22/author_initial/analysis.json": "237d8b658959647e8b72f5fd6cba2f6c9ae198d287c85781a6490a46f1fce09b",
+    "v2/experiments/action_executor/r22/author_initial/author-feedback.json": "3f8d4d040a660ff23e43de6b2d2d31dcd9c49398e4b4cd679e914a50d5c55fda",
+    "v2/experiments/action_executor/r22/author_initial/input-binding.json": "17d47ad78e365da43f66905bccf4f6bf159d9d8770a6ebfcd3f9ff29f50ffa40",
+    "v2/experiments/action_executor/r22/test_analyzer.py": "ed513192b6a430570eb771116f0eb9b62f95c4dad8f1bfabed406793c7a8ec96",
+    "vibecode_v2/R22_SCAN_REPORT.md": "41e2e985dbb7b0522dd7e02f3febc078ce9bc0b2ce60a595e720b3310f6f1aac",
+    "vibecode_v2/TIP-054.4b-R21_FINAL_RESULT_REVIEW.md": "4170df87118ff73d2fac1de2ff1d810b8cc6a656bc70be0aac02d1186201a45f",
+    "vibecode_v2/TIP-054.4b-R21_VERIFY_REPORT.md": "070afa18ac1fbb64a837349fd265f65c901c4591407445a02a802523ad29449b",
+    "vibecode_v2/TIP-054.4b-R22_OFFLINE_TAIL_DIAGNOSIS.md": "60062665e3ebc1d02f59a0555714f19f034171a7415b4821915d568b52266a21"
+  },
+  "input_cap_bytes": 33554432,
+  "links": {
+    "v2/experiments/action_executor/r18/main-raw-binding.sha256": "baf98899e8c67ad1a9acfeb3039c80444518e28f2613586b1ea5d9633763fd6a",
+    "v2/experiments/action_executor/r18/source-binding-e3.json": "5bb847ef6bee176454cc14ae4bd35024b847aef8f969d7f12f0c877a87f7b0f5",
+    "v2/experiments/action_executor/r19/main-evidence-binding.sha256": "f99638aa32e497220eb6240f9e9147184bf93d350014ab40801c49e4d7e771cd",
+    "v2/experiments/action_executor/r19/source-binding-e5.json": "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4",
+    "v2/experiments/action_executor/r20/main-evidence-binding.sha256": "f8c3f11790ec4c624845e8151c0ee9beebb709b26d00acdef2f732ca011fb1af",
+    "v2/experiments/action_executor/r20/source-binding-e4.json": "9ee11e8257402c9038abcc8d07d5b4e3d9a09efa146a1e62b2f52702a65333ae",
+    "v2/experiments/action_executor/r21/main-evidence-binding.sha256": "1cf5eaf9f88f03655b8d93a34c93bb75fb18f0e06f9bf54a489c06d8478bc756",
+    "v2/experiments/action_executor/r21/source-binding-e1.json": "29698a84acda3109402a48a7c311050d7b9d59edc6223f77b685bd7ea12b55cc"
+  },
+  "output_cap_bytes": 131072,
+  "schema": "R22-linked-input-v1"
+}

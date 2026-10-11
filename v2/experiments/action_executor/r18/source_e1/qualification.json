@@ -1,0 +1,143 @@
+{
+  "schema": "R18-finite-v1",
+  "groups": {
+    "pure": [
+      "tests/test_action_status_fusion_unit.py::test_origin_gate_rejects_unknown_custom_overridden_and_mismatched_before_db[custom_factory]",
+      "tests/test_action_status_fusion_unit.py::test_origin_gate_rejects_unknown_custom_overridden_and_mismatched_before_db[custom_session]",
+      "tests/test_action_status_fusion_unit.py::test_origin_gate_rejects_unknown_custom_overridden_and_mismatched_before_db[connection_bind]",
+      "tests/test_action_status_fusion_unit.py::test_origin_gate_rejects_unknown_custom_overridden_and_mismatched_before_db[unsupported_options]",
+      "tests/test_action_status_fusion_unit.py::test_origin_gate_rejects_unknown_custom_overridden_and_mismatched_before_db[policy_override]",
+      "tests/test_action_status_fusion_unit.py::test_origin_gate_rejects_unknown_custom_overridden_and_mismatched_before_db[mismatched_policy_factory_same_url]",
+      "tests/test_action_status_fusion_unit.py::test_origin_gate_rejects_unknown_custom_overridden_and_mismatched_before_db[default_unknown_isolation]",
+      "tests/test_action_status_fusion_unit.py::test_origin_gate_rejects_unknown_custom_overridden_and_mismatched_before_db[repeatable_read]",
+      "tests/test_action_status_fusion_unit.py::test_origin_gate_rejects_unknown_custom_overridden_and_mismatched_before_db[serializable]",
+      "tests/test_action_standard_status_factory_unit.py::test_canonical_factory_selected_without_write_factory_change",
+      "tests/test_action_standard_status_factory_unit.py::test_unknown_injected_and_mismatched_origins_never_construct_default_cache",
+      "tests/test_action_standard_status_factory_unit.py::test_cached_derived_factory_tamper_rejected_without_repair",
+      "tests/test_action_standard_status_factory_unit.py::test_runtime_cache_clear_and_factory_rebind_fall_back",
+      "tests/test_action_standard_status_factory_unit.py::test_existing_explicit_rc_original_factory_retained",
+      "tests/test_action_execution_unit.py::test_default_off_and_v1_immutable",
+      "tests/test_action_execution_unit.py::test_api_timeout_cleans_async_waiter_without_result_thread",
+      "tests/test_action_execution_unit.py::test_isolated_configuration_and_output_schema"
+    ],
+    "old_sql": [
+      "tests/test_action_status_fusion_integration.py::test_supported_owner_three_sql_one_checkout_after_joined_cleanup",
+      "tests/test_action_status_fusion_integration.py::test_current_actor_owner_errors_and_receipt_shape_cap",
+      "tests/test_action_status_fusion_integration.py::test_isolation_and_cancel_before_row_are_fresh",
+      "tests/test_action_status_fusion_integration.py::test_unknown_nonstandard_and_mismatched_origins_keep_old_path",
+      "tests/test_action_status_fusion_integration.py::test_status_metadata_survives_source_revoke_without_output_grant",
+      "tests/test_action_status_fusion_integration.py::test_acquisition_cancel_receipt_sql_error_and_repeated_query_close_cancel_join",
+      "tests/test_action_status_fusion_integration.py::test_concurrent_status_uses_task_local_session_and_child_handle_is_inert",
+      "tests/test_action_standard_status_factory_integration.py::test_runtime_status_private_pool_and_reset_isolation",
+      "tests/test_action_standard_status_factory_integration.py::test_standard_default_status_fresh_owner_cleanup_invariants",
+      "tests/test_action_standard_status_factory_integration.py::test_interleaved_status_keeps_two_lease_write_and_postcommit_outcomes",
+      "tests/test_action_execution_adversarial.py::test_owner_status_cancel_survive_revoked_source_but_content_does_not",
+      "tests/test_action_execution_adversarial.py::test_sql_budget_deadline_attempts_and_foreign_ownership_are_immutable",
+      "tests/test_action_two_lease_review_integration.py::test_create_two_physical_leases_three_fresh_tx_and_lock_release",
+      "tests/test_action_two_lease_review_integration.py::test_submit_retained_final_reads_concurrent_cancel",
+      "tests/test_action_two_lease_review_integration.py::test_original_final_query_lock_timeout_preserves_commit_no_replay",
+      "tests/test_action_two_lease_review_integration.py::test_real_commit_ack_delivery_fault_blocks_final_and_replay",
+      "/work/r12/test_minimal_observer_builder_integration.py::test_real_r0_admission_and_submit_keep_queries_leases_and_durable_outputs"
+    ],
+    "new_sql": [
+      "tests/test_action_two_lease_review_integration.py::test_old_connection_same_physical_final_inert_same_and_child",
+      "tests/test_action_two_lease_review_integration.py::test_old_sessions_started_unstarted_tx_same_physical_final_inert",
+      "tests/test_action_two_lease_review_integration.py::test_source_revision_after_commit_denies_fresh_final_disclosure",
+      "tests/test_action_two_lease_review_integration.py::test_final_source_fence_role_expiry_denies_after_actual_wait",
+      "tests/test_action_two_lease_review_integration.py::test_postcommit_evidence_lifecycle_change_denies_final",
+      "tests/test_action_two_lease_review_integration.py::test_repeated_cancel_transition_joins_cleanup_no_final",
+      "tests/test_action_contracts_integration.py::test_real_http_read_domain_and_no_public_effect_accounting",
+      "tests/test_action_contracts_integration.py::test_parent_budget_reservation_is_atomic_and_idempotent",
+      "tests/test_action_contracts_integration.py::test_private_reads_and_redacted_receipts_do_not_leak_payload",
+      "tests/test_action_contracts_integration.py::test_denied_purpose_unknown_scope_and_unpriced_work_fail_admission",
+      "tests/test_action_contracts_integration.py::test_small_pool_concurrent_duplicate_plan_does_not_nest_checkout",
+      "tests/test_action_contracts_integration.py::test_maintenance_and_admin_drift_block_mutations"
+    ],
+    "offline": [
+      "/work/r18/test_r18_offline.py::AdmissionControls::test_exact_old_plus_added_selection_and_collection",
+      "/work/r18/test_r18_offline.py::AdmissionControls::test_exact_xml_identity_and_zero_skip_conservation",
+      "/work/r18/test_r18_offline.py::AdmissionControls::test_manifest_schema_caps_and_malformed_rejection",
+      "/work/r18/test_r18_offline.py::AdmissionControls::test_owned_stage_epoch_and_process_group_contract",
+      "/work/r18/test_r18_offline.py::AdmissionControls::test_pending_ledger_and_immutable_http_contract",
+      "/work/r18/test_r18_offline.py::AdmissionControls::test_source_paths_hashes_scope_and_drift_rejection"
+    ]
+  },
+  "caps": {
+    "manifest_bytes": 65536,
+    "source_packet_bytes": 1048576,
+    "pre_evidence_bytes": 10485760,
+    "sql_evidence_bytes": 20971520,
+    "child_seconds": 120,
+    "kill_grace_seconds": 10,
+    "host_free_kib": 20971520,
+    "pg_free_kib": 524288
+  },
+  "ledger": {
+    "EXE-001": "partial_config_only_native_DBOS_admission_pending",
+    "EXE-002": "partial_submit_domain_native_dispatch_restart_pending",
+    "EXE-003": "partial_current_authority_domain_durable_restart_pending",
+    "EXE-004": "pending_real_worker_process_death_and_recovery",
+    "EXE-005": "partial_handle_fencing_native_competing_owner_effects_pending",
+    "EXE-006": "partial_domain_cancel_cleanup_native_remaining_work_pending",
+    "EXE-007": "partial_domain_budget_immutability_native_retry_recovery_pending",
+    "EXE-008": "partial_contract_privacy_real_R0_R1_source_effects_pending",
+    "EXE-009": "pending_current_source_mandatory_observer_OFF_HTTP",
+    "EXE-010": "pending_populated_migration_and_joint_restore_native_resume",
+    "EXE-011": "partial_finite_regressions_broad_backend_type_build_package_pending"
+  },
+  "http": {
+    "status": "pending_separate_admission",
+    "allowance_consumed": 0,
+    "observer": "OFF_not_R17_M",
+    "profiles": [
+      1,
+      10,
+      25,
+      50
+    ],
+    "cases_per_profile": 100,
+    "operations": [
+      "admission",
+      "submit",
+      "status",
+      "cancel"
+    ],
+    "cells": 16,
+    "requested_observations": 1600,
+    "samples_per_cell": 100,
+    "errors_per_cell": 0,
+    "quantile": "nearest_rank_ceiling_n_times_q",
+    "p95_admission_ms": 500,
+    "p95_other_ms": 1000,
+    "pool_size": 5,
+    "max_overflow": 5,
+    "pre_ping": true,
+    "route_timeout_seconds": 0.9,
+    "synthetic_rate_quotas": 5000,
+    "seconds": 190,
+    "kill_grace_seconds": 10,
+    "raw_bytes": 10485760,
+    "synthetic_executor_flag": true,
+    "serving_executor_flag": false,
+    "worker_native_provider": false,
+    "missing_downstream": "explicit_missing_not_invented_latency",
+    "historical_r12_off": "FAIL_preserved_not_current_source_proof"
+  },
+  "scope": {
+    "stages": [
+      "pre",
+      "sql"
+    ],
+    "serving_executor": "OFF",
+    "tip054_5": "BLOCKED",
+    "candidate": "NOT_READY"
+  },
+  "fixture": {
+    "name": "tip054-4b-full-20261007-r5qa1",
+    "databases": [
+      "rtr_tip054_r15_local_e1",
+      "rtr_tip054_r18_local_e1"
+    ],
+    "migration": "0019_action_executor"
+  }
+}

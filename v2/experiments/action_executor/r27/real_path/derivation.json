@@ -1,0 +1,52 @@
+{
+  "schema": "r27-real-path-exact-derivation-v1",
+  "capacity": "Operative32 files/PRE32; proposed96/PRE64 NOT_ADOPTED",
+  "files": {
+    "adapter.py": {
+      "reference": "v2/experiments/action_executor/r27/broker/adapter.py",
+      "substitutions": [
+        [
+          "R27 broker derived",
+          "R27 real-path derived"
+        ],
+        [
+          "outside broker",
+          "outside real_path"
+        ],
+        [
+          "R27OWNB1",
+          "R27OWNP1"
+        ],
+        [
+          "R27SEAB1",
+          "R27SEAP1"
+        ]
+      ]
+    },
+    "adapter.pyi": {
+      "reference": "v2/experiments/action_executor/r27/broker/adapter.pyi",
+      "substitutions": []
+    },
+    "writer.py": {
+      "reference": "v2/experiments/action_executor/r27/broker/broker.py",
+      "substitutions": [
+        [
+          "ROOT = HERE.parents[4]",
+          "ROOT = HERE.parents[4]\nREFERENCE = HERE.parent / \"broker\""
+        ],
+        [
+          "HERE / \"boundary.json\"",
+          "REFERENCE / \"boundary.json\""
+        ],
+        [
+          "7dc21bff55537e5e1101ead159bb86f1aa3b4eef3e687939a7d1af774f97c0a9",
+          "5c64dca6f4ae93bc7445cda7c9190d3401406c9460bfd76376e263532bbc6d64"
+        ],
+        [
+          "R27BROKERLOCAL01",
+          "R27REALPATHLOC01"
+        ]
+      ]
+    }
+  }
+}

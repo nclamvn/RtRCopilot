@@ -1,0 +1,151 @@
+# TIP-054.4b-R27 consolidated verification
+
+2026-10-10 · Contractor/Main · **Consolidated local D1–D5 accepted5/5; full R27 PARTIAL / NOT_READY.**
+
+The Homeowner requested one cohesive package, not microtasks. Actual remaining
+local XML/logging/native endpoints, shared acceptance, regression, preservation and
+independent review were completed together in the same R27. The approved host-owned
+broker/separately disclosed platform-audit boundary remains. No new model or micro-TIP.
+Vibecode's Builder/Contractor/Reviewer separation and evidence-first QA were used.
+
+R21 SLA FAILED/P1, EXE-009 OPEN/P1, candidate NOT_READY, serving executor OFF and
+TIP-054.5 BLOCKED remain unchanged. This is genuine local integration, not a latency
+repair, full runtime qualification or release authorization.
+
+## Requirement coverage
+
+| ID | Current result | Remaining outcome |
+|---|---|---|
+| R27-001 | PARTIAL | Admitted local seams run; complete original PRE scratch/native/controller output still unqualified. |
+| R27-002 | PARTIAL | Real IPC/parser/plugin/host native/recovery and cancellation controls pass; physical SQL/Linux group/descendant lifecycle unqualified. |
+| R27-003 | PENDING | No authorized campaign, causal attribution, measured performance delta or attributable repair. |
+| R27-004 | PENDING | Local health passes; no full serving-candidate correctness/security/performance qualification. |
+| R27-005 | PASS for this checkpoint | One current Verify, frozen Completion/candidate/binding, actual evidence, independent review and preserved failures/history. |
+
+Original reporting criterion1/5; fully achieved original technical criteria0/4.
+Declared local D1–D5 accepted5/5 (100% of that bounded continuation only), not
+100% product completion. Broader requirements are not closed by local success.
+
+## Delivered as one actual path
+
+Implementation: `v2/experiments/action_executor/r27/runtime_closure`, reusing frozen
+real_path code without copying large modules or changing serving product/dependencies.
+
+- D1: Genuine installed pytest LogXML collection/report/session pipeline executes.
+  Its two original declaration/serialization writes are staged in bounded memory,
+  then one whole XML payload commits only on successful original writer-context close.
+  Exact module-local open/os aliases restore; global OS/builtins are not patched.
+  Unknown/stale/empty/oversized/serialization paths fail sticky before report/header I/O.
+  XML remains2048B; larger suites DENY. Two source writes→one physical final payload
+  is explicit, not a claim of identical original write-attempt accounting.
+- D2: Genuine stdlib fileConfig consumes unchanged original Alembic ini and configures
+  the real StreamHandler/formatter/terminator. Whole rendered records≤512B route to
+  the owner. Old live handler registries are protected from stdlib shutdown; detached
+  working lists prevent in-place mutations destroying old handler/filter aliases.
+  Success/fault controls check exact aliases and contents, caches, levels/disabled/
+  propagate, streams, cold identities and shared logging lock. Sink errors propagate,
+  not swallowed/native traceback fallback. Actual Alembic/migration env is pinned
+  and prepared only, not run or replaced by a fake module.
+- D3: Actual original source/executable-bound `/bin/df -k /` runs read-only through
+  whole concurrent EOF endpoints, alongside fixed-child fault controls. Disk4096B/
+  control2048B limits remain. Source mismatch, overflow, nonzero, repeated cancellation,
+  active seal and cleanup faults preserve raw/primary/ownership semantics. Reap and
+  named task absence are observed before loop shutdown under one first absolute10s
+  cleanup. This does not prove Linux groups, descendants or arbitrary commands.
+  Both local df streams, including empty stderr, count; original whole-stage eight
+  disk records are not thereby proven sufficient.
+- D4: One shared broker/port executes original signed fixture/genuine parser →
+  genuine pytest XML → genuine fileConfig LogRecord → actual host df → close/recovery.
+  Whole effect entry remains self-DENY; no SQL publication/HTTP observations substituted.
+- D5: One frozen addition and actual source/dependency identities, combined controls,
+  project health, retained failures and independent Main/Reviewer verification.
+
+Reused packet seals witness the frozen real_path source set. The external addition
+candidate/binding separately binds new code before/after; packet alone is not full
+addition/runtime certification. Cooperative owned-source ports are not a universal
+OS/native-FD/hostile same-UID sandbox.
+
+## Actual independent checks
+
+| Check | Main observed result | Scope |
+|---|---|---|
+| Combined controls | 23/23 PASS; wrapper0;5.31688975s;0failure/error/skip | 14 unchanged regression +9 new outer groups. |
+| Builder repeat | Same23 PASS;5.35026375s | Overlap, not46; nested pytest target items not extra coverage. |
+| Syntax | 11 new modules compiled | Old fourteen-file epoch remains preserved. |
+| Strict mypy / Ruff / format | Zero errors;11 surfaces/bodies already formatted | Explicit backend config; devnull/no-incremental/no-cache. |
+| Independent source/hash/AST review | Declared local D1–D5 accepted5/5 | Reviewer source-only; no workloads/helper imports. |
+| Main pure graph audit | 2217repo pins /17,135,704B;4external interfaces | 2118prior incl old binding /16,454,216B;115direct;candidate30 incl all11 new Python files. |
+| Read-only preflight | Actual exit2/source_matches/DENY | Expected gate behavior; full effects NOT_RUN. |
+
+Two actual pytest unknown asyncio-config warnings remain because automatic plugins
+are disabled; local async paths use asyncio.run and skip none. Not whole-backend health.
+Unchanged codec body remains interface/derivation checked, not newly strict-body audited.
+Python3.12.11. HEAD remains `0e88f48588dc3228f1ae9eca7a7597d96589af8b`;
+freeze is dirty source bytes, not a new commit/deployed runtime.
+Product204/test192/dependencies and all prior sealed evidence remain unchanged.
+Main source before/after and scratch[]→[] agree.
+
+Frozen identities:
+binding `798b0ee3f6e0abad42d10d4c5ef140a4123c5215fbae9e49b55366964ad6bffc`;
+candidate `8d3a32d767ee50677a57a0690e70ef6e510725ab327d71f3daff1f9a450a040a`;
+Completion `0a44bc8d8ee0f5acb833239e6ff2158975bdd410352a9ddffde8ffcfafae553c`;
+review `aae0e13f0237a55c4eed86101b0eabd1df4a2d22a5bf3419424530eb33013e90`.
+
+## Important full-runtime gaps found, not hidden
+
+Operative files/PRE records stay **32/32**. Earlier96/PRE64 is NOT_ADOPTED and
+insufficient. Full source scan corrects the earlier incomplete53-record premise:
+
+| Conditional topology | Lifetime filenames | Source-cap records incl closure | Hypothetical serializer bytes |
+|---|---:|---:|---:|
+| HTTP historical63 +seed5 +marker1 | 69 | Not a full-stage proof | 10,832 |
+| PRE launcher nominal | 125 | 76 (75producer+1closure) | 15,510 |
+| PRE one active stop | 128 | Path-dependent | 15,806 maximum |
+| PRE all-stop union | 155 | Not one simultaneous execution | 18,341 |
+
+The all-stop union exceeds16KiB; mutually exclusive branches need not coexist.
+These forecasts use actual serialization with hypothetical enlarged source inventory,
+not an actual sealed manifest/universal upper bound. Overwrites/interleaving/error
+ranges and original PRE test/temp/native/basetemp writers are excluded/unqualified.
+Repeated sample/journal/mutation copies cannot be assumed to fit final_samples1 or
+ephemeral16×65KiB. No output dropping, reclassification, splitting, empty receipt,
+scratch exclusion or count-only increase supplies full fit.
+
+Twenty families/aggregate10MiB/metadata16KiB/no-refund physical-copy semantics,
+old load/deadline/thresholds are unchanged. Missing host Alembic/httpx/fastapi/redis
+and listed transitive/runtime dependencies are not installed or faked; presence probes
+are filesystem-only, not importability/version qualification. XML/fileConfig local
+seams are verified despite inherited generic blocker labels; full PRE/migration still
+pending. Linux groups, physical SQL, live fixture/owned databases, PG/container df,
+SQL/admin/migrations/HTTP/load/power-loss and full serving build remain NOT_RUN.
+Preflight marker field only declares batch nonconsumption, not live marker absence.
+
+## Failures, cleanup and next cohesive closure
+
+Initial24 lint/six type findings and two peer3PASS/1FAIL operator-expectation epochs
+are retained with exact sources. Current strengthened alias/fault assertions pass
+in the frozen23; no failed campaign erased or retry implied.
+Owned packet/plugin/test directories auto-cleaned. No project copy/install/venv/
+task distDir/Docker resource/cache created; unrelated existing cache/dirty work preserved.
+No external processing, Git write/push/rebuild, campaign marker consumption, serving
+executor activation or TIP-054.5 transition.
+
+Keep one R27 package open. Next material closure is the **complete PRE scratch/
+producer contract and whole-output admission map**, then one consolidated evidence-backed
+capacity/environment/effect decision. The earlier96/PRE64 question is not a full-fit
+solution and no new count is auto-adopted. Do not open more toy-model microtasks.
+Only after real prerequisites/authority should exact source-bound measurement and
+attributable narrow tail repair run.
+
+Preserve original16cells/1600 requested observations,c1/10/25/50,100cases/operation,
+admission/submit/status/cancel,p95500ms admission/1000ms others,zero errors,pool5+5/
+pre_ping,timeout0.9s,quotas5000,load190s/sharedcleanup10s/10MiB. No inherited
+consumed allowance, retry/cherry-pick or threshold relaxation.
+
+## Evidence
+
+- [Scope](../v2/experiments/action_executor/r27/runtime_closure/SCOPE.md) · [Completion](../v2/experiments/action_executor/r27/runtime_closure/COMPLETION.md) · [independent review](R27_RUNTIME_CLOSURE_REVIEW_REPORT.md)
+- [Binding](../v2/experiments/action_executor/r27/runtime_closure/input-binding.json) · [candidate](../v2/experiments/action_executor/r27/runtime_closure/candidate.json) · [routing](../v2/experiments/action_executor/r27/runtime_closure/routing.json) · [capacity](../v2/experiments/action_executor/r27/runtime_closure/capacity.json)
+- [Main actual controls](../v2/experiments/action_executor/r27/runtime_closure/main-feedback.json) · [health](../v2/experiments/action_executor/r27/runtime_closure/main-health.json) · [preflight](../v2/experiments/action_executor/r27/runtime_closure/main-preflight.json) · [pure structural audit](../v2/experiments/action_executor/r27/runtime_closure/main-structural-check.json)
+- [Builder controls](../v2/experiments/action_executor/r27/runtime_closure/author-feedback.json) · [final health](../v2/experiments/action_executor/r27/runtime_closure/author-final-health.json)
+- [Previous current Verify](../v2/experiments/action_executor/r27/runtime_closure/history/previous-publication/real-path-verify.md.original) · [previous real-path review](R27_REAL_PATH_REVIEW_REPORT.md)

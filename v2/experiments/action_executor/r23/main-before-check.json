@@ -1,0 +1,21 @@
+{
+  "tool_chunk": "a82361",
+  "exit_code": 0,
+  "stage": "main_before",
+  "r22_input_binding_sha256": "1ae53ce15d2bab4f76df11dd9297640cda2e6af9477b116fd7664d78104e93ab",
+  "linked_pins": 1722,
+  "linked_bytes": 13274883,
+  "r22_seal_entries": 20,
+  "r22_seal_sha256": "5f692eacbed727fdd44b653647152b2da47117d2b9e2572540a7ca38ce450871",
+  "source_sets": {
+    "product": 204,
+    "tests": 192
+  },
+  "digests": {
+    "product": "b28e70d1905930fd517576b7df73edc6710cf4bae273f137da5e75ffd155c641",
+    "tests": "5039c2a6a47fa1566f84b1acf766c5d212f731e6c9127aeec08576c7663fadc1"
+  },
+  "r22_final_closure_sha256": "340a1446e0466768b2ca6311697b4faea2617deea9c2f0eb480780cd32c66181",
+  "r22_publication_check_sha256": "26397f408ad05549e75f01e2d17dac00d889f7e26aeaee9226a94e984bbd13a5",
+  "preserved": true
+}

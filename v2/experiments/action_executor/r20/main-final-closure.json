@@ -1,0 +1,46 @@
+{
+  "actor": "Main",
+  "date": "2026-10-09",
+  "status": "CLOSED_BOOTSTRAP_VERIFIED",
+  "criteria": {
+    "required": 6,
+    "verified": 6
+  },
+  "unique_tests": 8,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "groups_completed_drained": 12,
+  "raw_bytes": 24513,
+  "source_binding_sha256": "9ee11e8257402c9038abcc8d07d5b4e3d9a09efa146a1e62b2f52702a65333ae",
+  "source_check": {
+    "chunk_id": "1517c4",
+    "wall_time_seconds": 0.116918,
+    "exit_code": 0,
+    "original_token_count": 4,
+    "output": "R20_PASS source\n"
+  },
+  "evidence_and_publication": {
+    "evidence_entries": 202,
+    "evidence_seal_sha256": "f8c3f11790ec4c624845e8151c0ee9beebb709b26d00acdef2f732ca011fb1af",
+    "published": {
+      "vibecode_v2/TIP-054.4b-R20_VERIFY_REPORT.md": "543dce973b406c6c1246a109568f08cb4a46eb879239552be13598e5a0b2599b",
+      "vibecode_v2/TIP-054.4b-R20_FINAL_RESULT_REVIEW.md": "76d4e883d7aac3770c9fdcac19c646e90a20582fe709c8823081196a0c220408",
+      "v2/experiments/action_executor/r20/main-bootstrap-closure.json": "30f8c870730af17aa6b17262453950e4f2cb236868343ddc3b1c83a47f8c7467",
+      "docs/enterprise-os/IMPLEMENTATION_STATUS.md": "b0f03816203125624917f41ee4c8864bc40465a61266faf4f9a2d1c31c4eeaa8",
+      "vibecode_v2/03_TASK_GRAPH.md": "f250cee8539028c2816de2effdc2754e77c1d9b98125ca637dcfdf4176328b23"
+    }
+  },
+  "boundaries": {
+    "whole_candidate": "NOT_READY",
+    "serving_executor": "OFF",
+    "exe009": "OPEN",
+    "tip054_5": "BLOCKED",
+    "r19": "FAILED_BOOTSTRAP_CONSUMED_PRESERVED",
+    "http_or_latency_proof": false,
+    "external": false,
+    "git_writes": false,
+    "rebuild": false
+  },
+  "next": "R21 mandatory observer-OFF qualification separately designed/admitted; no campaign run by R20."
+}

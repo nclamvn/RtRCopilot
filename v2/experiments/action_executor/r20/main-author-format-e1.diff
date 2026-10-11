@@ -1,0 +1,457 @@
+--- /work/r20/env_contract.py
++++ /work/r20/env_contract.py
+@@ -9,7 +9,10 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ _path = HERE.parent / "r19/qualification.py"
+-if hashlib.sha256(_path.read_bytes()).hexdigest() != "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11":
++if (
++    hashlib.sha256(_path.read_bytes()).hexdigest()
++    != "77df7d23f11daccd49ee755ddea9f49ca0e2fec48907a46f95465761abc48b11"
++):
+     raise ValueError("immutable R19 qualification drift")
+ _spec = importlib.util.spec_from_file_location("r20_prior_qualification", _path)
+ prior = importlib.util.module_from_spec(_spec)
+@@ -25,39 +28,66 @@
+ BINDING_SHA = "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4"
+ SEAL = "v2/experiments/action_executor/r19/main-evidence-binding.sha256"
+ SEAL_SHA = "f99638aa32e497220eb6240f9e9147184bf93d350014ab40801c49e4d7e771cd"
+-NAMES = tuple(sorted((
+-    "test_exact_domain_environment_and_import_order",
+-    "test_missing_mismatch_and_unsafe_rejected_before_effects",
+-    "test_protected_source_raw_marker_and_drift_rejection",
+-    "test_exact_selection_records_and_zero_skip_conservation",
+-    "test_owned_fixture_budget_cap_and_cleanup_contract",
+-    "test_seed_only_scope_and_truthful_readiness_ledger",
+-)))
++NAMES = tuple(
++    sorted(
++        (
++            "test_exact_domain_environment_and_import_order",
++            "test_missing_mismatch_and_unsafe_rejected_before_effects",
++            "test_protected_source_raw_marker_and_drift_rejection",
++            "test_exact_selection_records_and_zero_skip_conservation",
++            "test_owned_fixture_budget_cap_and_cleanup_contract",
++            "test_seed_only_scope_and_truthful_readiness_ledger",
++        )
++    )
++)
+ GROUPS = {
+     "offline": ["/work/r20/test_r20_offline.py::EnvironmentControls::" + name for name in NAMES],
+-    "negative": ["/work/r20/test_r20_bootstrap.py::test_missing_integration_import_capture_rejected_without_sql"],
+-    "positive": ["/work/r20/test_r20_bootstrap.py::test_same_unchanged_dependency_chain_owned_seed_bootstrap"],
++    "negative": [
++        "/work/r20/test_r20_bootstrap.py::test_missing_integration_import_capture_rejected_without_sql"
++    ],
++    "positive": [
++        "/work/r20/test_r20_bootstrap.py::test_same_unchanged_dependency_chain_owned_seed_bootstrap"
++    ],
+ }
+-FILES = ("env_contract.py", "test_r20_offline.py", "test_r20_bootstrap.py", "run-bootstrap-closure.sh", "manifest.json")
+-DOCS = ("vibecode_v2/R20_SCAN_REPORT.md", "vibecode_v2/TIP-054.4b-R20_DESIGN_PROPOSAL.md",
+-        "vibecode_v2/TIP-054.4b-R20_SYNTHETIC_FIXTURE_BOOTSTRAP_CLOSURE.md",
+-        "vibecode_v2/TIP-054.4b-R19_VERIFY_REPORT.md", "vibecode_v2/TIP-054.4b-R19_FINAL_RESULT_REVIEW.md")
++FILES = (
++    "env_contract.py",
++    "test_r20_offline.py",
++    "test_r20_bootstrap.py",
++    "run-bootstrap-closure.sh",
++    "manifest.json",
++)
++DOCS = (
++    "vibecode_v2/R20_SCAN_REPORT.md",
++    "vibecode_v2/TIP-054.4b-R20_DESIGN_PROPOSAL.md",
++    "vibecode_v2/TIP-054.4b-R20_SYNTHETIC_FIXTURE_BOOTSTRAP_CLOSURE.md",
++    "vibecode_v2/TIP-054.4b-R19_VERIFY_REPORT.md",
++    "vibecode_v2/TIP-054.4b-R19_FINAL_RESULT_REVIEW.md",
++)
+ 
+ 
+ def domain_environment(mapping, expected_dsn=DSN):
+     require(expected_dsn == DSN, "only the admitted R20 domain")
+     for key in ("POSTGRES_DSN", "INTEGRATION_DATABASE_DSN"):
+-        require(type(mapping.get(key)) is str and mapping[key] == expected_dsn,
+-                "missing/mismatched/unsafe " + key)
++        require(
++            type(mapping.get(key)) is str and mapping[key] == expected_dsn,
++            "missing/mismatched/unsafe " + key,
++        )
+     return expected_dsn
+ 
+ 
+ def environment(mapping):
+     domain_environment(mapping)
+-    fixed = {"ACTION_EXECUTOR_ENABLED": "false", "RAG_EMBEDDING_PROVIDER": "offline",
+-             "RAG_PROVIDER_MODE": "local", "OPENAI_API_KEY": "", "ANTHROPIC_API_KEY": "",
+-             "LIMITS_RATE_RENDER_MAX": "30", "LIMITS_RATE_DEFAULT_READ_MAX": "120",
+-             "LIMITS_RATE_WINDOW_SECONDS": "60", "ACTION_EXECUTOR_OPERATION_TIMEOUT_SECONDS": "0.9"}
++    fixed = {
++        "ACTION_EXECUTOR_ENABLED": "false",
++        "RAG_EMBEDDING_PROVIDER": "offline",
++        "RAG_PROVIDER_MODE": "local",
++        "OPENAI_API_KEY": "",
++        "ANTHROPIC_API_KEY": "",
++        "LIMITS_RATE_RENDER_MAX": "30",
++        "LIMITS_RATE_DEFAULT_READ_MAX": "120",
++        "LIMITS_RATE_WINDOW_SECONDS": "60",
++        "ACTION_EXECUTOR_OPERATION_TIMEOUT_SECONDS": "0.9",
++    }
+     require(all(mapping.get(key) == value for key, value in fixed.items()), "seed-only envelope")
+     require("ACTION_WORKFLOW_DSN" not in mapping, "no engine identity/database")
+     return DATABASE
+@@ -71,11 +101,23 @@
+ def manifest(path=HERE / "manifest.json"):
+     require(Path(path).stat().st_size <= 65536, "manifest cap")
+     packet = prior.load_json(path)
+-    require(packet == {"schema": "R20-seed-only-v1", "groups": GROUPS, "database": DATABASE,
+-                       "evidence": "/evidence/r19/r20_bootstrap_e1", "supervisor_stage": "pre",
+-                       "child_seconds": 120, "cleanup_seconds": 10, "raw_bytes": 10485760,
+-                       "executor": "OFF", "candidate": "NOT_READY", "tip054_5": "BLOCKED"},
+-            "exact finite manifest")
++    require(
++        packet
++        == {
++            "schema": "R20-seed-only-v1",
++            "groups": GROUPS,
++            "database": DATABASE,
++            "evidence": "/evidence/r19/r20_bootstrap_e1",
++            "supervisor_stage": "pre",
++            "child_seconds": 120,
++            "cleanup_seconds": 10,
++            "raw_bytes": 10485760,
++            "executor": "OFF",
++            "candidate": "NOT_READY",
++            "tip054_5": "BLOCKED",
++        },
++        "exact finite manifest",
++    )
+     return packet
+ 
+ 
+@@ -92,21 +134,28 @@
+ def snapshot():
+     preservation()
+     paths = (*DOCS, BINDING, SEAL, *(AREA + "/" + name for name in FILES))
+-    return {"schema": "R20-linked-source-v1", "prior_source_sha256": BINDING_SHA,
+-            "prior_evidence_sha256": SEAL_SHA,
+-            "digests": {"product": prior.PRODUCT, "tests": prior.TESTS},
+-            "files": {path: digest(prior.r18.content(ROOT, path)) for path in sorted(paths)}}
++    return {
++        "schema": "R20-linked-source-v1",
++        "prior_source_sha256": BINDING_SHA,
++        "prior_evidence_sha256": SEAL_SHA,
++        "digests": {"product": prior.PRODUCT, "tests": prior.TESTS},
++        "files": {path: digest(prior.r18.content(ROOT, path)) for path in sorted(paths)},
++    }
+ 
+ 
+ def source(path):
+     require(prior.load_json(path) == snapshot(), "source/preservation drift")
+-    require(Path(path).stat().st_size + sum((HERE / name).stat().st_size for name in FILES) <= 1048576,
+-            "source packet cap")
++    require(
++        Path(path).stat().st_size + sum((HERE / name).stat().st_size for name in FILES) <= 1048576,
++        "source packet cap",
++    )
+ 
+ 
+ def collection(path):
+-    require(prior.r18.collected(path) == [prior.r18.normalized_nodeid(node) for node in selectors()],
+-            "exact eight identities")
++    require(
++        prior.r18.collected(path) == [prior.r18.normalized_nodeid(node) for node in selectors()],
++        "exact eight identities",
++    )
+ 
+ 
+ if __name__ == "__main__":
+@@ -135,8 +184,11 @@
+     elif command == "drained":
+         prior.r18.child_record(args[0], prior.load_json(args[0])["exit_code"])
+     elif command == "review":
+-        require(digest(Path(args[0]).read_bytes()) == args[1] and "SOURCE ACCEPTED" in Path(args[0]).read_text(),
+-                "accepted pinned review")
++        require(
++            digest(Path(args[0]).read_bytes()) == args[1]
++            and "SOURCE ACCEPTED" in Path(args[0]).read_text(),
++            "accepted pinned review",
++        )
+     else:
+         raise ValueError("unknown seed-only gate")
+     print("R20_PASS", command)
+
+--- /work/r20/test_r20_bootstrap.py
++++ /work/r20/test_r20_bootstrap.py
+@@ -14,8 +14,12 @@
+     assert settings.rag_embedding_provider == "offline" and settings.rag_provider_mode == "local"
+     assert not settings.openai_api_key.get_secret_value()
+     assert not settings.anthropic_api_key.get_secret_value()
+-    assert (settings.limits_rate_render_max, settings.limits_rate_default_read_max,
+-            settings.limits_rate_window_seconds, settings.action_executor_operation_timeout_seconds) == (30, 120, 60, .9)
++    assert (
++        settings.limits_rate_render_max,
++        settings.limits_rate_default_read_max,
++        settings.limits_rate_window_seconds,
++        settings.action_executor_operation_timeout_seconds,
++    ) == (30, 120, 60, 0.9)
+ 
+ 
+ def test_missing_integration_import_capture_rejected_without_sql(monkeypatch, tmp_path):
+@@ -56,28 +60,46 @@
+         factory = session_factory()
+         assert factory.kw["bind"] is engine and factory.kw["expire_on_commit"] is False
+         assert engine.sync_engine.pool.size() == 5
+-        assert engine.sync_engine.pool._max_overflow == 5 and engine.sync_engine.pool._pre_ping is True
++        assert (
++            engine.sync_engine.pool._max_overflow == 5 and engine.sync_engine.pool._pre_ping is True
++        )
+         admin, owner = await principal(factory, Role.ADMIN), await principal(factory)
+-        assert admin.user_id != owner.user_id and Role.ADMIN in admin.roles and Role.STAFF in owner.roles
++        assert (
++            admin.user_id != owner.user_id
++            and Role.ADMIN in admin.roles
++            and Role.STAFF in owner.roles
++        )
+         source, core = "tip054.latency." + uuid4().hex, "TIP054.LATENCY." + uuid4().hex
+         refs = await publish(tmp_path, factory, owner, source, core)
+         assert len(refs) == 1 and (refs[0].source_key, refs[0].record_key) == (source, core)
+         actions = ActionService(UnitOfWork(factory))
+-        admitted = await actions.admit_capability(admin, "sot.read", "2", request_id="latency-capability-admit")
++        admitted = await actions.admit_capability(
++            admin, "sot.read", "2", request_id="latency-capability-admit"
++        )
+         assert admitted.admission == "admitted"
+         async with factory() as session:
+             identity = (await session.execute(text("SELECT current_database(),current_user"))).one()
+             assert tuple(identity) == (DATABASE, "rtr_app")
+-            roles = (await session.execute(text("""
++            roles = (
++                await session.execute(
++                    text("""
+                 SELECT s.user_id,s.issuer,s.status,r.key FROM subjects s
+                 JOIN subject_roles sr ON sr.subject_id=s.user_id JOIN roles r ON r.role_id=sr.role_id
+                 WHERE s.user_id IN (:admin,:owner) AND sr.valid_from<=now()
+                   AND (sr.expires_at IS NULL OR sr.expires_at>now())
+-            """), {"admin": UUID(admin.user_id), "owner": UUID(owner.user_id)})).all()
++            """),
++                    {"admin": UUID(admin.user_id), "owner": UUID(owner.user_id)},
++                )
++            ).all()
+             assert len(roles) == 2
+-            assert {(str(row[0]), row[3]) for row in roles} == {(admin.user_id, "admin"), (owner.user_id, "staff")}
++            assert {(str(row[0]), row[3]) for row in roles} == {
++                (admin.user_id, "admin"),
++                (owner.user_id, "staff"),
++            }
+             assert all(row[1] == "tip054-synthetic" and row[2] == "active" for row in roles)
+-            reference = (await session.execute(text("""
++            reference = (
++                await session.execute(
++                    text("""
+                 SELECT r.current_version_id,v.content_sha256,r.owner_subject_id,r.lifecycle,
+                   v.lifecycle,rs.lifecycle_state,p.lifecycle,ar.package_id,
+                   EXISTS(SELECT 1 FROM acl_entries a WHERE a.resource_id=r.record_id
+@@ -92,31 +114,64 @@
+                 WHERE r.source_key=:source AND r.record_key=:core AND ar.package_id=p.package_id
+                   AND p.source_key=r.source_key AND p.revision=ar.revision
+                   AND rs.owner_subject_id=:owner
+-            """), {"owner": UUID(owner.user_id), "source": source, "core": core})).one()
+-            assert reference[0] == refs[0].record_version_id and reference[1] == refs[0].content_sha256
++            """),
++                    {"owner": UUID(owner.user_id), "source": source, "core": core},
++                )
++            ).one()
++            assert (
++                reference[0] == refs[0].record_version_id and reference[1] == refs[0].content_sha256
++            )
+             assert reference[2] == UUID(owner.user_id) and tuple(reference[3:7]) == ("active",) * 4
+             assert reference[8] is True
+-            capability = (await session.execute(text("""
++            capability = (
++                await session.execute(
++                    text("""
+                 SELECT admission,admitted_by,contract_digest,schema_digest FROM capability_versions
+                 WHERE capability_id='sot.read' AND version='2'
+-            """))).one()
+-            assert tuple(capability) == ("admitted", UUID(admin.user_id),
+-                                         admitted.contract_digest, admitted.schema_digest)
+-            audit = (await session.execute(text("""
++            """)
++                )
++            ).one()
++            assert tuple(capability) == (
++                "admitted",
++                UUID(admin.user_id),
++                admitted.contract_digest,
++                admitted.schema_digest,
++            )
++            audit = (
++                await session.execute(
++                    text("""
+                 SELECT actor_user_id,action,result,reason_code,request_id FROM audit_events
+                 WHERE action='action.capability.admit'
+-            """))).one()
+-            assert tuple(audit) == (UUID(admin.user_id), "action.capability.admit", "success",
+-                                   "contract_recorded", correlation("latency-capability-admit"))
+-            outbox = (await session.execute(text("""
++            """)
++                )
++            ).one()
++            assert tuple(audit) == (
++                UUID(admin.user_id),
++                "action.capability.admit",
++                "success",
++                "contract_recorded",
++                correlation("latency-capability-admit"),
++            )
++            outbox = (
++                await session.execute(
++                    text("""
+                 SELECT status,dispatched_at FROM sot_reindex_outbox WHERE source_key=:source
+-            """), {"source": source})).one()
++            """),
++                    {"source": source},
++                )
++            ).one()
+             assert tuple(outbox) == ("pending", None)
+-            counts = (await session.execute(text("""
++            counts = (
++                await session.execute(
++                    text("""
+                 SELECT (SELECT count(*) FROM action_plans),(SELECT count(*) FROM action_runs),
+                   (SELECT count(*) FROM action_executions)
+-            """))).one()
++            """)
++                )
++            ).one()
+             assert tuple(counts) == (0, 0, 0)
+-        print("R20_POSITIVE_SEED_PASS subjects=2 refs=1 capability=1 audit=1 pending_outbox=1 actions=0")
++        print(
++            "R20_POSITIVE_SEED_PASS subjects=2 refs=1 capability=1 audit=1 pending_outbox=1 actions=0"
++        )
+     finally:
+         await engine.dispose()
+
+--- /work/r20/test_r20_offline.py
++++ /work/r20/test_r20_offline.py
+@@ -16,26 +16,44 @@
+         temporary = tempfile.TemporaryDirectory(prefix="codex-tmp-r20-controls-20261009-")
+         self.addCleanup(temporary.cleanup)
+         self.root = Path(temporary.name)
+-        self.env = dict(POSTGRES_DSN=gate.DSN, INTEGRATION_DATABASE_DSN=gate.DSN,
+-                        ACTION_EXECUTOR_ENABLED="false", RAG_EMBEDDING_PROVIDER="offline",
+-                        RAG_PROVIDER_MODE="local", OPENAI_API_KEY="", ANTHROPIC_API_KEY="",
+-                        LIMITS_RATE_RENDER_MAX="30", LIMITS_RATE_DEFAULT_READ_MAX="120",
+-                        LIMITS_RATE_WINDOW_SECONDS="60", ACTION_EXECUTOR_OPERATION_TIMEOUT_SECONDS="0.9")
++        self.env = dict(
++            POSTGRES_DSN=gate.DSN,
++            INTEGRATION_DATABASE_DSN=gate.DSN,
++            ACTION_EXECUTOR_ENABLED="false",
++            RAG_EMBEDDING_PROVIDER="offline",
++            RAG_PROVIDER_MODE="local",
++            OPENAI_API_KEY="",
++            ANTHROPIC_API_KEY="",
++            LIMITS_RATE_RENDER_MAX="30",
++            LIMITS_RATE_DEFAULT_READ_MAX="120",
++            LIMITS_RATE_WINDOW_SECONDS="60",
++            ACTION_EXECUTOR_OPERATION_TIMEOUT_SECONDS="0.9",
++        )
+ 
+     def test_exact_domain_environment_and_import_order(self):
+         self.assertEqual(gate.environment(self.env), gate.DATABASE)
+         source = (gate.HERE / "test_r20_bootstrap.py").read_text()
+-        self.assertLess(source.index("environment(os.environ)"), source.index("from pydantic import"))
++        self.assertLess(
++            source.index("environment(os.environ)"), source.index("from pydantic import")
++        )
+         positive = source.split("async def test_same_", 1)[1]
+-        self.assertLess(positive.index("environment(os.environ)"), positive.index("from sqlalchemy"))
++        self.assertLess(
++            positive.index("environment(os.environ)"), positive.index("from sqlalchemy")
++        )
+         self.assertIn("context_dsn == DATABASE_DSN == DSN", positive)
+ 
+     def test_missing_mismatch_and_unsafe_rejected_before_effects(self):
+         effects = []
+         for key in ("POSTGRES_DSN", "INTEGRATION_DATABASE_DSN"):
+-            for bad in (None, "", " " + gate.DSN, gate.DSN + "?sslmode=require",
+-                        gate.DSN.replace("tip054-pg", "example.com"),
+-                        gate.DSN.replace(gate.DATABASE, "postgres"), gate.DSN.replace("rtr_app", "postgres")):
++            for bad in (
++                None,
++                "",
++                " " + gate.DSN,
++                gate.DSN + "?sslmode=require",
++                gate.DSN.replace("tip054-pg", "example.com"),
++                gate.DSN.replace(gate.DATABASE, "postgres"),
++                gate.DSN.replace("rtr_app", "postgres"),
++            ):
+                 env = dict(self.env, **{key: bad})
+                 with self.assertRaises(ValueError):
+                     gate.environment(env)
+@@ -56,10 +74,14 @@
+         path.write_text(json.dumps({"files": {"new": "drift"}}))
+         with patch.object(gate, "snapshot", return_value=expected), self.assertRaises(ValueError):
+             gate.source(path)
+-        self.assertEqual(gate.BINDING_SHA, "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4")
++        self.assertEqual(
++            gate.BINDING_SHA, "ebab6389b79674cd6a90110227ed02f9dce019c45b2ee299091ca337bebb21f4"
++        )
+         marker = gate.prior.r18.content(gate.ROOT, gate.prior.RAW + "/campaign-launch.json")
+         self.assertTrue(json.loads(marker)["consumed"])
+-        self.assertEqual(gate.digest(marker), "bd5d22631a2613859f0611a98778e69c4fbbe207f4b44254a46ac19c7f3f5c9b")
++        self.assertEqual(
++            gate.digest(marker), "bd5d22631a2613859f0611a98778e69c4fbbe207f4b44254a46ac19c7f3f5c9b"
++        )
+ 
+     def test_exact_selection_records_and_zero_skip_conservation(self):
+         expected = [gate.prior.r18.normalized_nodeid(node) for node in gate.selectors()]
+@@ -86,8 +108,10 @@
+ 
+     def test_owned_fixture_budget_cap_and_cleanup_contract(self):
+         packet = gate.manifest()
+-        self.assertEqual((packet["child_seconds"], packet["cleanup_seconds"], packet["raw_bytes"]),
+-                         (120, 10, 10485760))
++        self.assertEqual(
++            (packet["child_seconds"], packet["cleanup_seconds"], packet["raw_bytes"]),
++            (120, 10, 10485760),
++        )
+         self.assertEqual(packet["supervisor_stage"], "pre")
+         self.assertEqual(packet["evidence"], "/evidence/r19/r20_bootstrap_e1")
+         source = (gate.HERE / "run-bootstrap-closure.sh").read_text()
+@@ -95,18 +119,27 @@
+         self.assertNotIn("bounded.py load", source)
+         self.assertIn("uncertain_create", source)
+         self.assertIn('[[ -z "$active_pid" ]]', source)
+-        self.assertLess(source.index('environment >'), source.index('create_domain'))
++        self.assertLess(source.index("environment >"), source.index("create_domain"))
+         self.assertIn('drained "$evidence/', source)
+         with self.assertRaises(ValueError):
+             gate.prior.r18.safe_path(self.root, "../foreign")
+ 
+     def test_seed_only_scope_and_truthful_readiness_ledger(self):
+         packet = gate.manifest()
+-        self.assertEqual((packet["candidate"], packet["executor"], packet["tip054_5"]),
+-                         ("NOT_READY", "OFF", "BLOCKED"))
++        self.assertEqual(
++            (packet["candidate"], packet["executor"], packet["tip054_5"]),
++            ("NOT_READY", "OFF", "BLOCKED"),
++        )
+         source = (gate.HERE / "run-bootstrap-closure.sh").read_text()
+-        for forbidden in ("runpy", "latency_probe.py", "ALTER ROLE", "FLUSH", "campaign-launch",
+-                          "ACTION_EXECUTOR_ENABLED=true", "CREATE DATABASE.*engine"):
++        for forbidden in (
++            "runpy",
++            "latency_probe.py",
++            "ALTER ROLE",
++            "FLUSH",
++            "campaign-launch",
++            "ACTION_EXECUTOR_ENABLED=true",
++            "CREATE DATABASE.*engine",
++        ):
+             self.assertNotIn(forbidden, source)
+         mutant = copy.deepcopy(packet)
+         mutant["groups"]["positive"].append(mutant["groups"]["negative"][0])
+
+3 files would be reformatted
+

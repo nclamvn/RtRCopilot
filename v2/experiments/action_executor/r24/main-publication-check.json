@@ -1,0 +1,24 @@
+{
+  "schema": "r24-main-publication-check-v1",
+  "tool": {
+    "chunk_id": "8ec6d9",
+    "exit_code": 0
+  },
+  "result": {
+    "status": "PASS",
+    "sealed_entries": 22,
+    "sealed_bytes": 130880,
+    "current_publications": 3,
+    "frozen_r24_and_prior_anchors": "unchanged",
+    "declared_source_inventory": {
+      "product": 204,
+      "tests": 192
+    },
+    "analysis_acceptance": "4/4",
+    "capture_admission": "HOLD",
+    "candidate": "NOT_READY",
+    "closure_sha256": "c844e013dfa641ccc946a6156deafb6b2310b0eaef0cda48240d28cbfdaa6737",
+    "evidence_seal_sha256": "6406b3cfeafd057920594945d5807eaf68f712ba2f8b7b5e513fc8b784fc01cb",
+    "scope": "read-only publication/source recheck; no helpers imported"
+  }
+}

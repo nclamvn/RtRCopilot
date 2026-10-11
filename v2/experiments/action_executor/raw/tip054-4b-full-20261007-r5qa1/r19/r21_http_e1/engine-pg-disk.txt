@@ -1,0 +1,2 @@
+Filesystem     1K-blocks    Used Available Use% Mounted on
+tmpfs            3145728 1671100   1474628  54% /var/lib/postgresql/data

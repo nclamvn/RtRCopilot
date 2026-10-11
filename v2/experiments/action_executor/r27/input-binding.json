@@ -1,0 +1,25 @@
+{
+  "schema": "r27-source-binding-v1",
+  "anchors": {
+    "v2/experiments/action_executor/r26/input-binding.json": "999167124e38280545959522e25dcc00e4b596779b5e01a74fb9e2601a82abd0",
+    "v2/experiments/action_executor/r26/main-evidence-binding.sha256": "e851fe0db0b442a01b77a145f5fab7fee00408f43bf2cafe753a560c12cbed46",
+    "v2/experiments/action_executor/r26/main-final-closure.json": "5711153cebade4f6cffd6123e3e6e70c63fb02a5eb57e0531b51af5c57472157",
+    "v2/experiments/action_executor/r26/main-publication-check.json": "f4c7df95f08dd79453eb563ed40c8ad8f9c666d81e5316f7fc8f7dc75ac86e68"
+  },
+  "direct": {
+    "v2/experiments/action_executor/r27/adapter.py": "237222bf6e510def30cad2696e1e2c315e38bdf7eb30f9e7c0610ae1b8e7ca42",
+    "v2/experiments/action_executor/r27/source_subset.py": "661265dc78e7e0e032c05c24a578095d42e66b68af775ed4b1d01fa2843cdc58",
+    "v2/experiments/action_executor/r27/pipe_source.py": "559bf1fa824a8ed95f834fe445b5942efdb2aa7666766efbe6dc025ca509c044",
+    "v2/experiments/action_executor/r27/integration.py": "d43d3679afd6fa189e377dc3db50860439bf7a6a001e6a0eafe9ea7992931b93",
+    "v2/experiments/action_executor/r27/test_integration.py": "a96b38ec860f224085ca264e60001205fd7b5b811d8313e91b4548e110c1cc3d",
+    "v2/experiments/action_executor/r27/checks.py": "68bccfd9af40b7021167132288650a22057fed0ec8b2023c68097d8c33eacfeb",
+    "v2/experiments/action_executor/r27/derivation.json": "310608fcc9fcab8be19f18d9735c5542277ab66a743da106075ec2d40da4b25b",
+    "v2/experiments/action_executor/r27/routing.json": "8aabc3697bc88e567341fbe50af8dab02bbb7a78bb274196663d704c4e66320e",
+    "v2/experiments/action_executor/r27/main-before-check.json": "e4de0ab7f2fe45f86dd0077eb588cfe7c782de19eed33a3938b7584548e40937",
+    "vibecode_v2/TIP-054.4b-R27_CONSOLIDATED_EXECUTOR_CLOSURE.md": "105166867e1ab21056f2ba21ffa8c9b7638454dabae2444b9ce9f5d05ad0e74c",
+    "vibecode_v2/TIP-054.4b-R26_VERIFY_REPORT.md": "96f7927b0c25f5dbbb904446c54498c5fd77fcac0e56b6e96cbd686b5243a090",
+    "vibecode_v2/R26_REVIEW_REPORT.md": "3ca1c81093c651e23391e0f51960472429f26bda775441363caba6513fca5452"
+  },
+  "scope": "Hash-only prior graph; complete current204 product/192 tests. Historical publication hashes are metadata, not current mutable status constraints.",
+  "actual_capture_admission": "HOLD"
+}

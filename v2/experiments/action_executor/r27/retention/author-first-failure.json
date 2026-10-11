@@ -1,0 +1,11 @@
+{
+  "schema": "r27-retention-author-initial-failure",
+  "tool": {
+    "chunk_id": "6dafa3",
+    "wall_time_seconds": 0.919016375,
+    "exit_code": 1,
+    "original_token_count": 114,
+    "output": "Traceback (most recent call last):\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/retention/checks.py\", line 125, in <module>\n    adapter.need(expected == (HERE / \"adapter.py\").read_bytes(), \"derived source mismatch\")\n  File \"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/retention/adapter.py\", line 35, in need\n    raise PacketError(message)\nadapter.PacketError: derived source mismatch\n"
+  },
+  "stage": "pre-test exact derivation check; no control/child was run"
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "r25-main-independent-arithmetic-v1",
+  "tool": {
+    "chunk_id": "1bbfb1",
+    "exit_code": 0
+  },
+  "result": {
+    "scope": "independent AST/arithmetic/hash; no model/helper import",
+    "import_surface": {
+      "model.py": [
+        "struct"
+      ],
+      "test_model.py": [
+        "copy",
+        "model",
+        "unittest"
+      ],
+      "checks.py": [
+        "hashlib",
+        "io",
+        "json",
+        "model",
+        "pathlib",
+        "test_model",
+        "time",
+        "unittest"
+      ]
+    },
+    "syntax_files": 3,
+    "syntax_failures": 0,
+    "families": 20,
+    "data_record_ceiling": 48182,
+    "framing": {
+      "HEADER": 10,
+      "CLOSE": 16,
+      "FINAL": 20
+    },
+    "normal_upper_bytes": 9778276,
+    "terminal_reserve_bytes": 340,
+    "total_model_upper_bytes": 9778616,
+    "spare_bytes": 707144,
+    "current_source_maxima_preserved": true,
+    "source_witnesses": "PASS",
+    "budget_matches_author_and_main": true,
+    "actual_source_upper_bytes": null,
+    "actual_capture_admission": "HOLD",
+    "new_direct_pins": 7,
+    "new_direct_bytes": 58012,
+    "binding_sha256": "87c5aa1ad6cd8009aa7eacf607a060d258dde11c929653f265c4d7af53bf0923"
+  }
+}

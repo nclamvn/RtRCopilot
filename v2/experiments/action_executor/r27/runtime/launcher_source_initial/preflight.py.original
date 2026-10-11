@@ -1,0 +1,144 @@
+"""Read-only, default-DENY candidate/grant/one-shot marker preflight. No dispatch API."""
+
+from __future__ import annotations
+
+import json
+import subprocess
+from dataclasses import dataclass
+from pathlib import Path
+
+from launcher import CONTRACT, EPOCH, HERE, ROOT, digest, mapping, prepared_manifest, producer_pins, sequence, text
+
+HEAD = "0e88f48588dc3228f1ae9eca7a7597d96589af8b"
+SCHEMA = "r27-runtime-candidate-v1"
+REQUIRED = ("adapter.py", "adapter.pyi", "schemas.py", "envelope.py", "producers.py", "pipes.py", "raw_child.py",
+            "launcher.py", "supervisor.py", "preflight.py", "routing_manifest.py",
+            "test_launcher.py", "test_retention.py", "checks.py", "SCOPE.md")
+BLOCKERS = (
+    "unbrokered native/cached-fd temporary writes can occur before Capture accounting",
+    "Codex/platform-owned outer transcript is outside interpreter prewrite ownership",
+    "original effectful launcher/Docker/SQL/admin/migration/HTTP routes prepared, not executed",
+    "Linux original owned-group supervisor not runtime qualified by fixed local child",
+)
+
+
+def live_head() -> str:
+    # Contractor-authorized fixed read-only Git check, no shell/network/Git mutation.
+    result = subprocess.run(("/usr/bin/git", "rev-parse", "HEAD"), cwd=ROOT,
+                            env={"PATH": "/usr/bin:/bin", "GIT_OPTIONAL_LOCKS": "0"},
+                            capture_output=True, timeout=2, check=True)
+    if len(result.stdout) > 64 or result.stderr or result.stdout.decode("ascii").strip() != HEAD:
+        raise ValueError("live HEAD differs from Main baseline")
+    return HEAD
+
+
+def canonical(value: object) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+
+
+def candidate() -> dict[str, object]:
+    """Caller freezes returned bytes using normal file tools; this function never writes."""
+    pins = {}
+    for name in REQUIRED:
+        path = HERE / name
+        if path.is_symlink() or not path.is_file():
+            raise ValueError("missing/unsafe candidate file: " + name)
+        pins[path.relative_to(ROOT).as_posix()] = digest(path.read_bytes())
+    # Freeze complete authored/imported runtime source footprint, including tests/stubs.
+    for path in sorted((*HERE.glob("*.py"), *HERE.glob("*.pyi"))):
+        if path.is_symlink():
+            raise ValueError("runtime source symlink")
+        pins[path.relative_to(ROOT).as_posix()] = digest(path.read_bytes())
+    for pin in producer_pins():
+        path = ROOT / pin.path
+        if path.is_symlink() or digest(path.read_bytes()) != pin.sha256:
+            raise ValueError("actual producer source drift")
+        pins[pin.path] = pin.sha256
+    pins[CONTRACT.relative_to(ROOT).as_posix()] = digest(CONTRACT.read_bytes())
+    return {"schema": SCHEMA, "HEAD": live_head(),
+            "HEAD_witness": "Main baseline + fixed read-only git rev-parse live match; no Git write",
+            "sources": pins, "plan": prepared_manifest(), "blockers": list(BLOCKERS),
+            "measurement_admission": "HOLD", "dispatch_surface": "NONE",
+            "effectful_prerequisites": "NOT_EXECUTED, not PASS"}
+
+
+@dataclass(frozen=True)
+class PreflightResult:
+    source_matches: bool
+    candidate_sha256: str
+    grant_status: str
+    marker_status: str
+    ready_to_request_measurement: bool
+    effect_dispatch_allowed: bool
+    runtime_prerequisites: str
+    blockers: tuple[str, ...]
+    human_authority_status: str = "NOT_ESTABLISHED_BY_UNTRUSTED_LOCAL_JSON"
+
+
+def bounded_json(path: Path, ceiling: int = 262144) -> dict[str, object]:
+    if not path.is_absolute() or path.is_symlink() or not path.is_file():
+        raise ValueError("absolute regular control file")
+    if path.stat().st_size > ceiling:
+        raise ValueError("finite control file")
+    raw = path.read_bytes()
+    if len(raw) > ceiling:
+        raise ValueError("control file changed/oversize")
+    return mapping(json.loads(raw))
+
+
+def validate_sources(payload: dict[str, object]) -> None:
+    expected = candidate()
+    if canonical(payload) != canonical(expected):
+        raise ValueError("immutable candidate/source/commands/limits drift")
+    pins = mapping(payload["sources"])
+    for relative, sha in pins.items():
+        target = ROOT / relative
+        if not target.is_relative_to(ROOT) or ".." in Path(relative).parts:
+            raise ValueError("source scope escape")
+        if any(item.is_symlink() for item in (target, *target.parents)):
+            raise ValueError("source path symlink")
+        if digest(target.read_bytes()) != text(sha):
+            raise ValueError("source mismatch")
+
+
+def validate_grant(grant: dict[str, object], candidate_sha: str, plan: dict[str, object]) -> None:
+    expected = {"schema": "r27-single-measurement-grant-v1", "candidate_sha256": candidate_sha,
+                "plan_sha256": digest(canonical(plan)), "epoch": EPOCH,
+                "one_shot": True, "load_seconds": 190, "shared_cleanup_seconds": 10,
+                "retained_cap_bytes": 10485760, "authority": "Homeowner separately authorizes measurement"}
+    if canonical(grant) != canonical(expected):
+        raise ValueError("separate exact source/plan/workload/resource grant required")
+
+
+def preflight(frozen: Path, marker: Path, grant: Path | None = None) -> PreflightResult:
+    payload = bounded_json(frozen)
+    validate_sources(payload)
+    candidate_sha = digest(frozen.read_bytes())
+    if (not marker.is_absolute() or ".." in marker.parts
+            or any(parent.is_symlink() for parent in (marker, *marker.parents))):
+        raise ValueError("absolute nonsymlink one-shot marker")
+    allowed_marker = (ROOT / "v2/experiments/action_executor/raw/tip054-4b-full-20261007-r5qa1"
+                      / "r19/r27-runtime-campaign-launch.json")
+    if marker != allowed_marker:
+        raise ValueError("exact fresh R27 one-shot launch marker required")
+    marker_status = "CONSUMED_OR_UNKNOWN" if marker.exists() else "ABSENT_NOT_CONSUMED"
+    # Never writes marker or spawns, even with a valid synthetic grant.
+    status = "MISSING_SEPARATE_GRANT"
+    if grant is not None:
+        validate_grant(bounded_json(grant), candidate_sha, mapping(payload["plan"]))
+        status = "UNTRUSTED_SCHEMA_VALIDATED_NOT_AUTHORITY_OR_LAUNCH"
+    blockers = tuple(text(value) for value in sequence(payload["blockers"]))
+    if marker.exists():
+        blockers += ("existing launch marker: consumed/unknown; never delete or renew",)
+    return PreflightResult(True, candidate_sha, status, marker_status, False, False,
+                           "NOT_EXECUTED: fixture current identity/capacity/idle/database absence", blockers)
+
+
+if __name__ == "__main__":
+    import sys
+    from dataclasses import asdict
+    if len(sys.argv) not in (3, 4):
+        raise SystemExit("Usage: preflight.py ABSOLUTE_FROZEN_CANDIDATE ABSOLUTE_ORIGINAL_MARKER [GRANT]")
+    result = preflight(Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3]) if len(sys.argv) == 4 else None)
+    print(json.dumps(asdict(result), sort_keys=True, indent=2))
+    raise SystemExit(2)  # HOLD is explicit, not a runtime prerequisite PASS.

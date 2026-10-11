@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://docs.dbos.dev/python/tutorials/step-tutorial",
+      "retrieved_at": "2026-10-06T02:15:31.935936+00:00",
+      "source_family": "DBOS",
+      "status": "failed"
+    },
+    {
+      "bytes": 64408,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 5897,
+      "read_view_sha256": "d4bf55400c217b72908d2220fb3aa172034e3b60f395dd0f18fdec86dc07bc82",
+      "requested_url": "https://docs.dbos.dev/python/tutorials/step-tutorial",
+      "resolved_url": "https://docs.dbos.dev/python/tutorials/step-tutorial",
+      "retrieved_at": "2026-10-06T02:15:54.843478+00:00",
+      "sha256": "8d94243624759b2ecfc4df3a702be7eb7b5aa44518c790c81b9b7d5700510e79",
+      "snapshot": "dbos-steps.html",
+      "source_family": "DBOS",
+      "status": "usable"
+    }
+  ],
+  "entity": "DBOS steps",
+  "id": "dbos-steps",
+  "selected": {
+    "bytes": 64408,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 5897,
+    "read_view_sha256": "d4bf55400c217b72908d2220fb3aa172034e3b60f395dd0f18fdec86dc07bc82",
+    "requested_url": "https://docs.dbos.dev/python/tutorials/step-tutorial",
+    "resolved_url": "https://docs.dbos.dev/python/tutorials/step-tutorial",
+    "retrieved_at": "2026-10-06T02:15:54.843478+00:00",
+    "sha256": "8d94243624759b2ecfc4df3a702be7eb7b5aa44518c790c81b9b7d5700510e79",
+    "snapshot": "dbos-steps.html",
+    "source_family": "DBOS",
+    "status": "usable"
+  }
+}

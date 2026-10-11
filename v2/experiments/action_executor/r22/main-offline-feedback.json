@@ -1,0 +1,24 @@
+{
+  "actor": "Main",
+  "analyzer": {
+    "chunk_id": "08c4a5",
+    "exit_code": 0,
+    "wall_time_seconds": 0.562559,
+    "output": "Retained exactly as main-analysis.json; independently compared to frozen Builder output next"
+  },
+  "controls": {
+    "chunk_id": "7b95dd",
+    "wall_time_seconds": 0.008328458,
+    "exit_code": 0,
+    "original_token_count": 201,
+    "output": "test_binding_drift_and_path_escape_fail_loud (test_analyzer.DiagnosisControls.test_binding_drift_and_path_escape_fail_loud) ... ok\ntest_exact_quantiles_and_population_conservation (test_analyzer.DiagnosisControls.test_exact_quantiles_and_population_conservation) ... ok\ntest_full_log_identity_ambiguity_and_timer_rejection (test_analyzer.DiagnosisControls.test_full_log_identity_ambiguity_and_timer_rejection) ... ok\ntest_rows_types_duplicates_order_and_unknown_descendants (test_analyzer.DiagnosisControls.test_rows_types_duplicates_order_and_unknown_descendants) ... ok\ntest_strict_json_aliases_and_duplicate_fields (test_analyzer.DiagnosisControls.test_strict_json_aliases_and_duplicate_fields) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.048s\n\nOK\n"
+  },
+  "syntax": {
+    "chunk_id": "9fadd7",
+    "wall_time_seconds": 0.000009667,
+    "exit_code": 0,
+    "original_token_count": 11,
+    "output": "SYNTAX2_AND_STDLIB_ONLY_IMPORT_SURFACE_PASS\n"
+  },
+  "notes": "Same five controls overlap Builder's tests; no extra unique tests or new runtime/campaign. Host Ruff unavailable; no installation/Docker used."
+}

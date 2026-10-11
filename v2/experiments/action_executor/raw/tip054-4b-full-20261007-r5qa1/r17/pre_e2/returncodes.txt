@@ -1,0 +1,11 @@
+syntax 0
+pins 0
+ruff 0
+format 0
+collection 0
+campaign-collection 0
+inventory 0
+old-unit 0
+offline 0
+xml 0
+stage pre exit 0

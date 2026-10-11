@@ -1,0 +1,11 @@
+{
+  "command": "docker exec -w /workspace/v2/apps/backend tip054-4b-full-20261007-r5qa1-runner env -i PATH=/app/.venv/bin:/usr/local/bin:/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/qa/packages:/workspace/v2/apps/backend/src:/workspace/v2/apps/backend/tests:/work/r12:/work/r9:/work/r15:/work/r17 APP_ENV=test ACTION_EXECUTOR_ENABLED=false POSTGRES_DSN=postgresql://rtr_app:rtr_tip054_synthetic_only@tip054-pg:5432/rtr_tip054_r17_local_e1 REDIS_URL=redis://tip054-redis:6379/0 S3_ENDPOINT=http://tip054-minio:9000 S3_ACCESS_KEY=rtr_tip054_local S3_SECRET_KEY=rtr_tip054_synthetic_only S3_BUCKET=rtr-tip054-synthetic RAG_EMBEDDING_PROVIDER=offline RAG_PROVIDER_MODE=local /app/.venv/bin/python -m pytest -c /workspace/v2/apps/backend/pyproject.toml --collect-only -q -p no:cacheprovider -o asyncio_default_test_loop_scope=session /work/r17/test_r17_offline.py",
+  "scope": "collection-only; no test/fixture/SQL/campaign execution; explicit existing backend config",
+  "actual": {
+    "chunk_id": "639134",
+    "wall_time_seconds": 0.53121975,
+    "exit_code": 0,
+    "original_token_count": 139,
+    "output": "::OfflineControls::test_child_cleanup_held_record_ownership\n::OfflineControls::test_collector_caps_stop_and_original_failure_retention\n::OfflineControls::test_complete_summary_error_missing_populations\n::OfflineControls::test_connection_generation_and_ledger_semantics\n::OfflineControls::test_deterministic_analysis_and_validation_corruption\n::OfflineControls::test_ids_time_order_and_finite_values\n::OfflineControls::test_lag_bounds_and_no_catchup\n::OfflineControls::test_minimal_detailed_fields_and_transparent_restoration\n\n8 tests collected in 0.04s\n"
+  }
+}

@@ -1490,9 +1490,17 @@ class AnswerService:
             for item in hits
             if item.citation.record_version_id is not None
         })
-        if not version_ids:
+        file_versions = {item.citation.document_version_id for item in hits
+                         if item.citation.document_version_id is not None}
+        if not version_ids and not file_versions:
             return hits, []
         async with self.uow.factory() as session:
+            from rtr_copilot.actions.execution import action_output_purpose_allowed
+
+            file_allowed = {
+                version: await action_output_purpose_allowed(session, self.uow, version, use_class)
+                for version in file_versions
+            }
             rows = (
                 (
                     await session.execute(
@@ -1517,6 +1525,10 @@ class AnswerService:
         kept: list[RetrievalHit] = []
         denied: list[str] = []
         for item in hits:
+            file_version = item.citation.document_version_id
+            if file_version is not None and not file_allowed.get(file_version, True):
+                denied.append(item.citation.record_key)
+                continue
             entry = policy.get(item.citation.record_version_id)
             if entry is not None and use_class_blocks(
                 entry[0],
@@ -1555,6 +1567,7 @@ class AnswerService:
         coverage_state: AnswerCoverageState,
         provider_usage: ProviderUsage,
         started: float,
+        use_class: str = DEFAULT_USE_CLASS,
     ) -> bool:
         message_id = uuid.uuid4()
         async with self.uow.transaction() as session:
@@ -1570,6 +1583,14 @@ class AnswerService:
                 request_id,
             ):
                 return False
+            from rtr_copilot.actions.execution import action_output_purpose_allowed
+
+            for hit in selected:
+                version = hit.citation.document_version_id
+                if version is not None and not await action_output_purpose_allowed(
+                    session, self.uow, version, use_class,
+                ):
+                    return False
             await session.execute(
                 text("""
                 INSERT INTO messages(
@@ -2649,6 +2670,7 @@ class AnswerService:
             coverage_state=coverage_state,
             provider_usage=rewrite_usage + provider_usage,
             started=started,
+            use_class=use_class,
         )
         if not persisted:
             return await self._honest_null(

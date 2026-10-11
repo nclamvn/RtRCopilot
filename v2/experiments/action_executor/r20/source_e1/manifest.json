@@ -1,0 +1,28 @@
+{
+  "schema": "R20-seed-only-v1",
+  "groups": {
+    "offline": [
+      "/work/r20/test_r20_offline.py::EnvironmentControls::test_exact_domain_environment_and_import_order",
+      "/work/r20/test_r20_offline.py::EnvironmentControls::test_exact_selection_records_and_zero_skip_conservation",
+      "/work/r20/test_r20_offline.py::EnvironmentControls::test_missing_mismatch_and_unsafe_rejected_before_effects",
+      "/work/r20/test_r20_offline.py::EnvironmentControls::test_owned_fixture_budget_cap_and_cleanup_contract",
+      "/work/r20/test_r20_offline.py::EnvironmentControls::test_protected_source_raw_marker_and_drift_rejection",
+      "/work/r20/test_r20_offline.py::EnvironmentControls::test_seed_only_scope_and_truthful_readiness_ledger"
+    ],
+    "negative": [
+      "/work/r20/test_r20_bootstrap.py::test_missing_integration_import_capture_rejected_without_sql"
+    ],
+    "positive": [
+      "/work/r20/test_r20_bootstrap.py::test_same_unchanged_dependency_chain_owned_seed_bootstrap"
+    ]
+  },
+  "database": "rtr_tip054_r20_local_e1",
+  "evidence": "/evidence/r19/r20_bootstrap_e1",
+  "supervisor_stage": "pre",
+  "child_seconds": 120,
+  "cleanup_seconds": 10,
+  "raw_bytes": 10485760,
+  "executor": "OFF",
+  "candidate": "NOT_READY",
+  "tip054_5": "BLOCKED"
+}

@@ -1,0 +1,204 @@
+"""Genuine fileConfig and genuine console emit, with one whole admitted LogRecord."""
+
+from __future__ import annotations
+
+import io
+import logging
+import sys
+import threading
+import weakref
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
+from typing import TextIO, cast
+
+import composition
+from composition import LoggerState, NativeDenied
+from ports import PathPort
+from pytest_seam import ROOT, pinned
+
+INI = ROOT / "v2/apps/backend/alembic.ini"
+INI_SHA = "07dd6b70ea594d486fc83e13dc31c5312763c5a47de9e8a5555cf2859c30f4e8"
+ENV = ROOT / "v2/apps/backend/migrations/env.py"
+ENV_SHA = "b7504bb60a02b8172d89bd62075b6fad5a77388b76d27f7c3e56126e474d1eb4"
+CONFIG = Path("/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12/logging/config.py")
+CONFIG_SHA = "6b4bdac4318ee794f667a5d5df30040abf70b9786ec5ed8bf597bd8ad0b71d27"
+LOGGING = CONFIG.parent / "__init__.py"
+LOGGING_SHA = "43f86bbc08fdd5c7b6e697abffe1381f534a92bb32e1f1aee8360d6a142592a1"
+_LOCK = composition._LOCK  # Same exclusive global-logging boundary; frozen code untouched.
+
+
+class MigrationStream:
+    encoding = "utf-8"
+    errors = "strict"
+
+    def __init__(self, port: PathPort, handler: logging.StreamHandler[TextIO]) -> None:
+        self._port, self._handler = port, handler
+        self._owner, self.active = threading.get_ident(), True
+
+    def write(self, text: str) -> int:
+        try:
+            frame = sys._getframe(1)
+            self._port.check()
+            if (not self.active or threading.get_ident() != self._owner or type(text) is not str
+                    or frame.f_code is not logging.StreamHandler.emit.__code__
+                    or frame.f_locals.get("self") is not self._handler):
+                raise ValueError("exact configured whole migration emit only")
+            raw = text.encode()
+            if len(raw) > 512:
+                raise ValueError("whole original rendered record exceeds unchanged 512 bytes")
+            self._port.write("streams/migration.stderr", "migration_streams", raw, "a")
+            return len(text)
+        except BaseException as error:
+            self._port.capture_fault(error)
+            raise
+
+    def flush(self) -> None:
+        try:
+            self._port.check()
+            if not self.active or threading.get_ident() != self._owner:
+                raise ValueError("stale/foreign migration stream")
+            self._port.flush()
+        except BaseException as error:
+            self._port.capture_fault(error)
+            raise
+
+    def fileno(self) -> int:
+        error = ValueError("no migration descriptor export")
+        self._port.capture_fault(error)
+        raise error
+
+
+@contextmanager
+def migration_logging_scope(port: PathPort) -> Iterator[logging.StreamHandler[TextIO]]:
+    if not _LOCK.acquire(blocking=False):
+        error = ValueError("exclusive migration logger scope")
+        port.capture_fault(error)
+        raise error
+    manager = logging.root.manager
+    old_get = vars(manager).get("getLogger")
+    original_get = manager.getLogger
+    old_stderr = sys.stderr
+    old_stdout = sys.stdout
+    old_disable = manager.disable
+    old_registry: object = vars(logging)["_handlers"]
+    old_list: object = vars(logging)["_handlerList"]
+    saved: list[LoggerState] = []
+    fresh: list[logging.Handler] = []
+    stream: MigrationStream | None = None
+    registries_swapped = False
+    protected: set[logging.Handler] = set()
+    owner = threading.get_ident()
+    try:
+        ini = pinned(INI, INI_SHA)
+        pinned(ENV, ENV_SHA)  # Prepared full environment; NEVER import absent Alembic.
+        pinned(CONFIG, CONFIG_SHA)
+        pinned(LOGGING, LOGGING_SHA)
+        from logging.config import fileConfig
+        if fileConfig.__code__.co_filename != str(CONFIG):
+            raise ValueError("actual stdlib fileConfig identity")
+        saved = [LoggerState.take(logger) for logger in (logging.root, *(item for item in manager.loggerDict.values() if isinstance(item, logging.Logger)))]
+
+        def detach(state: LoggerState) -> None:
+            if not isinstance(state.filters, list):
+                raise ValueError("original logger filter list")
+            state.logger.handlers = list(state.handlers)
+            vars(state.logger)["filters"] = list(state.filters)
+
+        for state in saved:
+            detach(state)
+        for reference in cast(list[weakref.ReferenceType[logging.Handler]], old_list):
+            prior = reference()
+            if prior is not None:
+                protected.add(prior)
+
+        def get_logger(name: str) -> logging.Logger:
+            try:
+                if threading.get_ident() != owner:
+                    raise ValueError("foreign logger during exclusive fileConfig")
+                logger = original_get(name)
+                if all(state.logger is not logger for state in saved):
+                    state = LoggerState.take(logger)
+                    saved.append(state)
+                    detach(state)
+                return logger
+            except BaseException as error:
+                port.capture_fault(error)
+                raise
+
+        vars(manager)["getLogger"] = get_logger
+        # Actual fileConfig shuts down only fresh owned registries, never old handler aliases.
+        vars(logging)["_handlers"] = weakref.WeakValueDictionary[str, logging.Handler]()
+        vars(logging)["_handlerList"] = []
+        registries_swapped = True
+        sys.stderr = cast(TextIO, NativeDenied(port))
+        port.mkdir("streams", exist_ok=True)
+        fileConfig(io.StringIO(ini.decode()))
+        registry = cast(weakref.WeakValueDictionary[str, logging.Handler], vars(logging)["_handlers"])
+        fresh = list(registry.values())
+        if len(fresh) != 1 or type(fresh[0]) is not logging.StreamHandler or logging.root.handlers != fresh:
+            raise ValueError("exact genuine ini console handler")
+        handler = cast(logging.StreamHandler[TextIO], fresh[0])
+        if handler.name != "console" or handler.terminator != "\n" or handler.formatter is None:
+            raise ValueError("genuine console fields")
+        stream = MigrationStream(port, handler)
+        handler.stream = cast(TextIO, stream)
+
+        def handle_error(record: logging.LogRecord) -> None:
+            error = sys.exception()
+            if error is None:
+                error = ValueError("unknown console failure")
+            port.capture_fault(error)
+            raise error  # No swallowed stream fault or native traceback fallback.
+
+        vars(handler)["handleError"] = handle_error
+        yield handler
+        if port.first_fault is not None:
+            raise port.first_fault
+        if (set(registry) != {"console"} or registry["console"] is not handler
+                or logging.root.handlers != [handler]
+                or handler.stream is not stream):
+            raise ValueError("missing/extra/unknown configured handler at migration exit")
+    except BaseException as error:
+        port.capture_fault(error)
+        raise
+    finally:
+        primary = sys.exception()
+        cleanup: BaseException | None = None
+        try:
+            if registries_swapped:
+                registry = cast(weakref.WeakValueDictionary[str, logging.Handler], vars(logging)["_handlers"])
+                fresh = list(registry.values())
+                for reference in cast(list[weakref.ReferenceType[logging.Handler]], vars(logging)["_handlerList"]):
+                    candidate = reference()
+                    if candidate is not None and candidate not in fresh:
+                        fresh.append(candidate)
+                for handler in fresh:
+                    if handler in protected:
+                        cleanup = cleanup or ValueError("prior handler aliased into fresh registry")
+                        continue
+                    try:
+                        handler.close()  # Fresh owned only; Handler.close does not flush the stream.
+                    except BaseException as error:
+                        cleanup = cleanup or error
+            if stream is not None:
+                stream.active = False
+            for state in saved:
+                try:
+                    state.restore()
+                except BaseException as error:
+                    cleanup = cleanup or error
+            vars(logging)["_handlers"], vars(logging)["_handlerList"] = old_registry, old_list
+            if old_get is None:
+                vars(manager).pop("getLogger", None)
+            else:
+                vars(manager)["getLogger"] = old_get
+            sys.stderr, sys.stdout = old_stderr, old_stdout
+            manager.disable = old_disable
+        finally:
+            _LOCK.release()
+        if cleanup is not None:
+            port.capture_fault(cleanup)
+            if primary is not None and primary is not cleanup:
+                raise primary from cleanup
+            raise cleanup

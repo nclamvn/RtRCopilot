@@ -1,0 +1,70 @@
+{
+  "schema": "r27-lifecycle-author-health-v1",
+  "epoch": "CORRECTION_STRICT_SILENT_DIAGNOSTIC_ROUTE_CLOSURE",
+  "checked_new_python_files": 7,
+  "old_python_files_rewritten": 0,
+  "old_preservation": "frozen chained guard and unchanged inventory; imports followed silently for API-aware new source checking; no old source rewrite",
+  "correction_epoch_runtime_runs": 1,
+  "outer_scenarios": 38,
+  "strict_scope": "all seven new modules with backend configuration and --follow-imports=silent, no-incremental, cache-dir=/dev/null",
+  "source_hash_before": "bdf20e314da275782acd1544c29bc24a3e17e2314ab2e357e10602b03c0bca05  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/checks.py\n2fa5606923fc5a1ebe7f5a2a116e58bf20c382bd77ea918b2766abcc9951c6a8  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/flows.py\n33d6f685f7b2b532932c90b4eec5e155a32fe180dae7e529873453004eb29cce  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/genuine.py\nf9378cbaaed26d9ed1a0994db9eb01753021a2771c3ca27784f91bc91da03464  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/native.py\n42075c42f88621f6b499969c242a057f9417c99feed5f2215c781c6a05f73905  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/policy.py\n1745217d1fb6fcb614708fbf2d252ffc4f5f46e6f19bf96384a213f0f398465b  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/target.py\n8759d0a8ae0f51108ad8ab19c4c0b50ee788565aca76fc97e4f60b6da7ac3ee1  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/test_lifecycle.py\n905f0ab1108f2dd682af5b52a39f115c8917a9651662db0077d27a044cd75a6a  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/input-binding.json\nd87ab42c31dbc23e0715897faae82b37b1fda7182c4be568b8a97352a4f23086  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/manifest.json\ncddef058bb4f8e40276bed64fbecf71c4cae325d37106d95051b03ddcce21749  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/candidate.json\n",
+  "source_hash_after": "bdf20e314da275782acd1544c29bc24a3e17e2314ab2e357e10602b03c0bca05  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/checks.py\n2fa5606923fc5a1ebe7f5a2a116e58bf20c382bd77ea918b2766abcc9951c6a8  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/flows.py\n33d6f685f7b2b532932c90b4eec5e155a32fe180dae7e529873453004eb29cce  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/genuine.py\nf9378cbaaed26d9ed1a0994db9eb01753021a2771c3ca27784f91bc91da03464  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/native.py\n42075c42f88621f6b499969c242a057f9417c99feed5f2215c781c6a05f73905  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/policy.py\n1745217d1fb6fcb614708fbf2d252ffc4f5f46e6f19bf96384a213f0f398465b  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/target.py\n8759d0a8ae0f51108ad8ab19c4c0b50ee788565aca76fc97e4f60b6da7ac3ee1  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/test_lifecycle.py\n905f0ab1108f2dd682af5b52a39f115c8917a9651662db0077d27a044cd75a6a  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/input-binding.json\nd87ab42c31dbc23e0715897faae82b37b1fda7182c4be568b8a97352a4f23086  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/manifest.json\ncddef058bb4f8e40276bed64fbecf71c4cae325d37106d95051b03ddcce21749  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/candidate.json\n",
+  "results": [
+    {
+      "command": "shasum -a 256 /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/*.py /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/input-binding.json /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/manifest.json /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/candidate.json",
+      "chunk_id": "c4e675",
+      "wall_time_seconds": 0.000020959,
+      "exit_code": 0,
+      "original_token_count": 434,
+      "output": "bdf20e314da275782acd1544c29bc24a3e17e2314ab2e357e10602b03c0bca05  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/checks.py\n2fa5606923fc5a1ebe7f5a2a116e58bf20c382bd77ea918b2766abcc9951c6a8  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/flows.py\n33d6f685f7b2b532932c90b4eec5e155a32fe180dae7e529873453004eb29cce  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/genuine.py\nf9378cbaaed26d9ed1a0994db9eb01753021a2771c3ca27784f91bc91da03464  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/native.py\n42075c42f88621f6b499969c242a057f9417c99feed5f2215c781c6a05f73905  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/policy.py\n1745217d1fb6fcb614708fbf2d252ffc4f5f46e6f19bf96384a213f0f398465b  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/target.py\n8759d0a8ae0f51108ad8ab19c4c0b50ee788565aca76fc97e4f60b6da7ac3ee1  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/test_lifecycle.py\n905f0ab1108f2dd682af5b52a39f115c8917a9651662db0077d27a044cd75a6a  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/input-binding.json\nd87ab42c31dbc23e0715897faae82b37b1fda7182c4be568b8a97352a4f23086  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/manifest.json\ncddef058bb4f8e40276bed64fbecf71c4cae325d37106d95051b03ddcce21749  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/candidate.json\n"
+    },
+    {
+      "command": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/bin/ruff check --no-cache /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/*.py",
+      "chunk_id": "1481e5",
+      "wall_time_seconds": 0.032398333,
+      "exit_code": 0,
+      "original_token_count": 5,
+      "output": "All checks passed!\n"
+    },
+    {
+      "command": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/bin/ruff format --check --no-cache /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/*.py",
+      "chunk_id": "588550",
+      "wall_time_seconds": 0.000017667,
+      "exit_code": 0,
+      "original_token_count": 7,
+      "output": "7 files already formatted\n"
+    },
+    {
+      "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 MYPYPATH=/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/src:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/pre_stage:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/pre_contract:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/runtime_closure:/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/real_path /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/bin/mypy --config-file /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/pyproject.toml --strict --follow-imports=silent --no-incremental --cache-dir=/dev/null /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/*.py",
+      "chunk_id": "dc2e66",
+      "wall_time_seconds": 4.953105208,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "Success: no issues found in 7 source files\n"
+    },
+    {
+      "command": "env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/backend/.venv/bin/python -B -c 'from pathlib import Path; home = Path(\"/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle\"); paths = sorted(home.glob(\"*.py\")); [compile(p.read_bytes(), str(p), \"exec\") for p in paths]; print(\"syntax compiled\", len(paths), \"new source files in memory\")'",
+      "chunk_id": "523ddb",
+      "wall_time_seconds": 0.0000095,
+      "exit_code": 0,
+      "original_token_count": 12,
+      "output": "syntax compiled 7 new source files in memory\n"
+    },
+    {
+      "command": "shasum -a 256 /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/*.py /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/input-binding.json /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/manifest.json /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/candidate.json",
+      "chunk_id": "396322",
+      "wall_time_seconds": 0.000009709,
+      "exit_code": 0,
+      "original_token_count": 434,
+      "output": "bdf20e314da275782acd1544c29bc24a3e17e2314ab2e357e10602b03c0bca05  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/checks.py\n2fa5606923fc5a1ebe7f5a2a116e58bf20c382bd77ea918b2766abcc9951c6a8  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/flows.py\n33d6f685f7b2b532932c90b4eec5e155a32fe180dae7e529873453004eb29cce  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/genuine.py\nf9378cbaaed26d9ed1a0994db9eb01753021a2771c3ca27784f91bc91da03464  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/native.py\n42075c42f88621f6b499969c242a057f9417c99feed5f2215c781c6a05f73905  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/policy.py\n1745217d1fb6fcb614708fbf2d252ffc4f5f46e6f19bf96384a213f0f398465b  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/target.py\n8759d0a8ae0f51108ad8ab19c4c0b50ee788565aca76fc97e4f60b6da7ac3ee1  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/test_lifecycle.py\n905f0ab1108f2dd682af5b52a39f115c8917a9651662db0077d27a044cd75a6a  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/input-binding.json\nd87ab42c31dbc23e0715897faae82b37b1fda7182c4be568b8a97352a4f23086  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/manifest.json\ncddef058bb4f8e40276bed64fbecf71c4cae325d37106d95051b03ddcce21749  /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/experiments/action_executor/r27/temporary_lifecycle/candidate.json\n"
+    },
+    {
+      "command": "git rev-parse HEAD",
+      "chunk_id": "b7ab6c",
+      "wall_time_seconds": 0.000008916,
+      "exit_code": 0,
+      "original_token_count": 11,
+      "output": "0e88f48588dc3228f1ae9eca7a7597d96589af8b\n"
+    }
+  ]
+}

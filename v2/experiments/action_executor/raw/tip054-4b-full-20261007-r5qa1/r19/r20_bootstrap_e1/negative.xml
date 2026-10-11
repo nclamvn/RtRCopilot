@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.777" timestamp="2026-10-09T15:09:07.264780+00:00" hostname="cb30f7e2244c"><testcase classname="" name="test_missing_integration_import_capture_rejected_without_sql" time="0.736" /></testsuite></testsuites>

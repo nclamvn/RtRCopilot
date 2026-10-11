@@ -1,0 +1,41 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://docs.temporal.io/activities",
+      "retrieved_at": "2026-10-06T02:15:31.943891+00:00",
+      "source_family": "Temporal",
+      "status": "failed"
+    },
+    {
+      "bytes": 52184,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 2792,
+      "read_view_sha256": "d99d0b85b1c941a618ae4235a1e31bb148f18ddf7a525f675c8c7bb10c3413d2",
+      "requested_url": "https://docs.temporal.io/activities",
+      "resolved_url": "https://docs.temporal.io/activities",
+      "retrieved_at": "2026-10-06T02:15:57.224985+00:00",
+      "sha256": "357f89dcebcf87b86734561d6c97759c985b35c5ef81d63c835d1d33037caf37",
+      "snapshot": "temporal-activities.html",
+      "source_family": "Temporal",
+      "status": "usable"
+    }
+  ],
+  "entity": "Temporal activities",
+  "id": "temporal-activities",
+  "selected": {
+    "bytes": 52184,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 2792,
+    "read_view_sha256": "d99d0b85b1c941a618ae4235a1e31bb148f18ddf7a525f675c8c7bb10c3413d2",
+    "requested_url": "https://docs.temporal.io/activities",
+    "resolved_url": "https://docs.temporal.io/activities",
+    "retrieved_at": "2026-10-06T02:15:57.224985+00:00",
+    "sha256": "357f89dcebcf87b86734561d6c97759c985b35c5ef81d63c835d1d33037caf37",
+    "snapshot": "temporal-activities.html",
+    "source_family": "Temporal",
+    "status": "usable"
+  }
+}

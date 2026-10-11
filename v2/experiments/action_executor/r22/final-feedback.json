@@ -1,0 +1,23 @@
+{
+  "controls": {
+    "chunk_id": "7862f7",
+    "wall_time_seconds": 0.000008208,
+    "exit_code": 0,
+    "original_token_count": 201,
+    "output": "test_binding_drift_and_path_escape_fail_loud (test_analyzer.DiagnosisControls.test_binding_drift_and_path_escape_fail_loud) ... ok\ntest_exact_quantiles_and_population_conservation (test_analyzer.DiagnosisControls.test_exact_quantiles_and_population_conservation) ... ok\ntest_full_log_identity_ambiguity_and_timer_rejection (test_analyzer.DiagnosisControls.test_full_log_identity_ambiguity_and_timer_rejection) ... ok\ntest_rows_types_duplicates_order_and_unknown_descendants (test_analyzer.DiagnosisControls.test_rows_types_duplicates_order_and_unknown_descendants) ... ok\ntest_strict_json_aliases_and_duplicate_fields (test_analyzer.DiagnosisControls.test_strict_json_aliases_and_duplicate_fields) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.047s\n\nOK\n"
+  },
+  "syntax": {
+    "chunk_id": "c4b34f",
+    "wall_time_seconds": 0.000008,
+    "exit_code": 0,
+    "original_token_count": 4,
+    "output": "SYNTAX_2_PASS\n"
+  },
+  "analyzer": {
+    "chunk_id": "d09ae6",
+    "wall_time_seconds": 0.525551709,
+    "exit_code": 0,
+    "original_token_count": 7725,
+    "output": "Exact stdout retained as analysis.json"
+  }
+}

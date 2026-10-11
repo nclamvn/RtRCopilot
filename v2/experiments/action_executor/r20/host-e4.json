@@ -1,0 +1,49 @@
+{
+  "actor": "Builder",
+  "scope": "Final frozen e4 authorized stdlib host six/static only; no product/runtime probes, Docker, SQL or signals",
+  "binding_sha256": "9ee11e8257402c9038abcc8d07d5b4e3d9a09efa146a1e62b2f52702a65333ae",
+  "commands": {
+    "source_before": "python3 -B v2/experiments/action_executor/r20/env_contract.py source v2/experiments/action_executor/r20/source-binding-e4.json",
+    "syntax": "python3 -B -c 'import sys; from pathlib import Path; [compile(Path(p).read_text(),p,\"exec\") for p in sys.argv[1:]]; print(\"SYNTAX_3_PASS\")' v2/experiments/action_executor/r20/env_contract.py v2/experiments/action_executor/r20/test_r20_offline.py v2/experiments/action_executor/r20/test_r20_bootstrap.py",
+    "bash": "/bin/bash -n v2/experiments/action_executor/r20/run-bootstrap-closure.sh",
+    "offline": "python3 -B v2/experiments/action_executor/r20/test_r20_offline.py",
+    "source_after": "python3 -B v2/experiments/action_executor/r20/env_contract.py source v2/experiments/action_executor/r20/source-binding-e4.json"
+  },
+  "actual": {
+    "source_before": {
+      "chunk_id": "bee279",
+      "wall_time_seconds": 0.090328667,
+      "exit_code": 0,
+      "original_token_count": 4,
+      "output": "R20_PASS source\n"
+    },
+    "syntax": {
+      "chunk_id": "ef88c1",
+      "wall_time_seconds": 0.000008209,
+      "exit_code": 0,
+      "original_token_count": 4,
+      "output": "SYNTAX_3_PASS\n"
+    },
+    "bash": {
+      "chunk_id": "694fe8",
+      "wall_time_seconds": 0.0000075,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    },
+    "offline": {
+      "chunk_id": "c69d3a",
+      "wall_time_seconds": 0.307109625,
+      "exit_code": 0,
+      "original_token_count": 239,
+      "output": "test_exact_domain_environment_and_import_order (__main__.EnvironmentControls.test_exact_domain_environment_and_import_order) ... ok\ntest_exact_selection_records_and_zero_skip_conservation (__main__.EnvironmentControls.test_exact_selection_records_and_zero_skip_conservation) ... ok\ntest_missing_mismatch_and_unsafe_rejected_before_effects (__main__.EnvironmentControls.test_missing_mismatch_and_unsafe_rejected_before_effects) ... ok\ntest_owned_fixture_budget_cap_and_cleanup_contract (__main__.EnvironmentControls.test_owned_fixture_budget_cap_and_cleanup_contract) ... ok\ntest_protected_source_raw_marker_and_drift_rejection (__main__.EnvironmentControls.test_protected_source_raw_marker_and_drift_rejection) ... ok\ntest_seed_only_scope_and_truthful_readiness_ledger (__main__.EnvironmentControls.test_seed_only_scope_and_truthful_readiness_ledger) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.311s\n\nOK\n"
+    },
+    "source_after": {
+      "chunk_id": "f465ae",
+      "wall_time_seconds": 0.103352875,
+      "exit_code": 0,
+      "original_token_count": 4,
+      "output": "R20_PASS source\n"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+.                                                                        [100%]
+=============================== warnings summary ===============================
+::test_captured_load_envelope_without_sql
+::test_captured_load_envelope_without_sql
+  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute
+
+::test_captured_load_envelope_without_sql
+::test_captured_load_envelope_without_sql
+  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute
+
+::test_captured_load_envelope_without_sql
+  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type swigvarlink has no __module__ attribute
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---------- generated xml file: /evidence/r19/r21_pre_e1/envelope.xml -----------
+1 passed, 5 warnings in 2.84s

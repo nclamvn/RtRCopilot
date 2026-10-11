@@ -1,0 +1,48 @@
+{
+  "attempts": [
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/",
+      "retrieved_at": "2026-10-06T02:15:31.928150+00:00",
+      "source_family": "Pydantic",
+      "status": "failed"
+    },
+    {
+      "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
+      "requested_url": "https://ai.pydantic.dev/deferred-tools/",
+      "retrieved_at": "2026-10-06T02:15:31.928513+00:00",
+      "source_family": "Pydantic",
+      "status": "failed"
+    },
+    {
+      "bytes": 175468,
+      "content_type": "text/html; charset=utf-8",
+      "http_status": 200,
+      "read_view_characters": 25836,
+      "read_view_sha256": "4e7197e70cf6e0f6091e34420ff33dbabaa5df26da2c8d1959a6be498e4cd75f",
+      "requested_url": "https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/",
+      "resolved_url": "https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/",
+      "retrieved_at": "2026-10-06T02:15:53.475587+00:00",
+      "sha256": "55d6902f9ef69bbd250962b42f55b69aa2225888c95540c5c1873161ba0e220f",
+      "snapshot": "pydantic-deferred.html",
+      "source_family": "Pydantic",
+      "status": "usable"
+    }
+  ],
+  "entity": "PydanticAI deferred tools",
+  "id": "pydantic-deferred",
+  "selected": {
+    "bytes": 175468,
+    "content_type": "text/html; charset=utf-8",
+    "http_status": 200,
+    "read_view_characters": 25836,
+    "read_view_sha256": "4e7197e70cf6e0f6091e34420ff33dbabaa5df26da2c8d1959a6be498e4cd75f",
+    "requested_url": "https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/",
+    "resolved_url": "https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/",
+    "retrieved_at": "2026-10-06T02:15:53.475587+00:00",
+    "sha256": "55d6902f9ef69bbd250962b42f55b69aa2225888c95540c5c1873161ba0e220f",
+    "snapshot": "pydantic-deferred.html",
+    "source_family": "Pydantic",
+    "status": "usable"
+  }
+}

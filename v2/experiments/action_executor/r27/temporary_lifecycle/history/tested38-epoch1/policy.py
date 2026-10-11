@@ -1,0 +1,146 @@
+"""Finite local lifecycle policy. Original PRE and HTTP authorities are unchanged."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+from typing import NoReturn, TypedDict
+
+import adapter
+import bridge
+
+HERE = Path(__file__).absolute().parent
+ROOT = bridge.ROOT
+REFERENCE = HERE.parent / "real_path"
+PYTHON = Path(
+    "/Users/os/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/lib/python3.12"
+)
+PYTEST = ROOT / "v2/apps/backend/.venv/lib/python3.12/site-packages/_pytest"
+EPOCH = b"R27LIFECYCLE0001"
+META = 65536
+SCOPE_SHA = "475c6a62c17e190ef894a7e7abeccd68f25647f57669967721b1fc4742ab7542"
+PINS = {
+    str(
+        PYTHON / "tempfile.py"
+    ): "2eea4401f4f29d0d3647ed6fc8bcf6aa1daf879c8aa407a8ea310edac9dfc317",
+    str(
+        PYTHON / "shutil.py"
+    ): "f9f0102a9ed087271f914d74b07866464d3e716afe9ee10760a5eb90f7db0f33",
+    str(
+        PYTHON / "weakref.py"
+    ): "56f8d313fb74019e53eb9287400702fbce788b7fe30e097b0b6e06296f3f080c",
+    str(
+        PYTHON / "unittest/case.py"
+    ): "45bac6d80a4fc3a0dea8340a80681e30b263f017b4a5002cb8f489a632e0f987",
+    str(
+        PYTHON / "unittest/result.py"
+    ): "5db286bdd3821d64150377e554d7edbdd58db7bb8b950772f977e9ec1d535617",
+    str(
+        PYTEST / "tmpdir.py"
+    ): "236918c090160c1f6b935e162ff44ab273a700221d5f40ac15892be75e4503ee",
+    str(
+        PYTEST / "pathlib.py"
+    ): "8127808359baaa711775862b32bfbe0a7e5c16a2e8c9923d60ddd45f031b66fa",
+    str(
+        PYTEST / "junitxml.py"
+    ): "51ea93fb20122b8aa5f2c412b9cf946b6daf719cde470f6ca2c50430bed4135d",
+    str(
+        REFERENCE / "adapter.py"
+    ): "0f2a92fe0574fafc70acedc966b113928676cd78cc4ff7e6a83cb349074f63a2",
+    str(
+        REFERENCE / "writer.py"
+    ): "e2b7738807dced6bd7ed20d9f1662de648e09a1317db45ed193bb2db4c6ddeba",
+}
+SYNTHETIC = {
+    "r21_http_e1/binding.json": (2, 18),
+    "r21_http_e1/contract.json": (2, 2108),
+    "r21-campaign-launch.json": (4, 287),
+    "r21_http_e1/run/samples.json": (2, 235440),
+    "r21_http_e1/run/samples.jsonl": (3, 233840),
+    "r21_http_e1/run/latency-summary.json": (6, 3473),
+    "r21_http_e1/run/r-controls.json": (6, 263),
+    "r21_http_e1/load.owner.json": (4, 60),
+    "r21_http_e1/load.process.json": (6, 164),
+}
+DOMAINS = {
+    "synthetic_input": ("ephemeral", 1, 35, 235440),
+    "native_small": ("ephemeral", 2, 24, 4096),
+    "owned_link": ("ephemeral", 3, 4, 256),
+    "stream": ("outer_transcript", 1, 2, 8192),
+    "warning": ("future_observer", 1, 4, 1024),
+    "pytest_xml": ("source_cap_child", 2, 1, 8192),
+    "closure": ("source_cap_child", 1, 1, 80),
+}
+
+
+class Contract(TypedDict):
+    schema: str
+    stage: str
+    cap_bytes: int
+    metadata_bytes: int
+    epoch: str
+    domains: dict[str, list[str | int]]
+    synthetic: dict[str, list[int]]
+    bounds: dict[str, int]
+
+
+def canonical(value: object) -> bytes:
+    return json.dumps(
+        value, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode()
+
+
+def wanted() -> Contract:
+    return {
+        "schema": "r27-owned-native-lifecycle-v1",
+        "stage": "LOCAL_NATIVE_LIFECYCLE",
+        "cap_bytes": adapter.CAP,
+        "metadata_bytes": META,
+        "epoch": EPOCH.decode(),
+        "domains": {k: list(v) for k, v in DOMAINS.items()},
+        "synthetic": {k: list(v) for k, v in SYNTHETIC.items()},
+        "bounds": {
+            "artifacts": 32,
+            "directories": 48,
+            "depth": 8,
+            "path_bytes": 256,
+            "descriptors": 16,
+            "links": 4,
+            "attempts": 512,
+            "events": 192,
+            "discovery": 32,
+            "collision": 32,
+        },
+    }
+
+
+def contract() -> tuple[Contract, bytes]:
+    value = wanted()
+    raw = bridge.bounded(HERE / "contract.json")
+    if raw != canonical(value) + b"\n":
+        raise adapter.PacketError("exact lifecycle canonical contract")
+    return value, raw
+
+
+def guard() -> dict[str, str]:
+    bridge.guard()
+    result = {}
+    for name, expected in PINS.items():
+        value = hashlib.sha256(bridge.bounded(Path(name))).hexdigest()
+        if value != expected:
+            raise adapter.PacketError("genuine source drift before effects: " + name)
+        result[name] = value
+    if hashlib.sha256(bridge.bounded(HERE / "SCOPE.md")).hexdigest() != SCOPE_SHA:
+        raise adapter.PacketError("approved local scope drift")
+    contract()
+    for path in [*HERE.glob("*.py"), HERE / "contract.json", HERE / "SCOPE.md"]:
+        result[str(path)] = hashlib.sha256(bridge.bounded(path)).hexdigest()
+    return result
+
+
+def deny_original_pre(_: object = None) -> NoReturn:
+    guard()
+    raise PermissionError(
+        "Original PRE DENY: closed local lifecycle is not six-suite/native-launch authority"
+    )

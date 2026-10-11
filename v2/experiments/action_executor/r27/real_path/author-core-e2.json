@@ -1,0 +1,11 @@
+{
+  "actual_tool_chunk": "8c39d8",
+  "exit_code": 1,
+  "passed": 1,
+  "failed": 7,
+  "warnings": 2,
+  "seconds_pytest": 0.38,
+  "observed_failure": "PermissionError: [Errno 1] Operation not permitted at AF_UNIX bind before child spawn",
+  "scope": "Unchanged assertions; repository-relative owned socket; no inference of general root cause",
+  "tested_changes_since_e1": "transport address relative +cwd/104 guard; finite child cwd and shared server cleanup deadline"
+}

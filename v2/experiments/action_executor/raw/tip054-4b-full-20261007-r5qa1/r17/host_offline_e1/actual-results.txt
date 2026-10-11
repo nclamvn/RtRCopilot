@@ -1,0 +1,28 @@
+2026-10-09 Builder initial host static/offline phase. No container/SQL/load.
+Command: python3 -c 'compile six R17 *.py sources via compile(...,"exec")'
+Actual stdout: SYNTAX_6_PASS
+Actual exit code: 0
+Command: bash -n v2/experiments/action_executor/r17/run-local-diagnostic.sh
+Actual stdout: empty
+Actual exit code: 0
+Command: PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=v2/experiments/action_executor/r17 python3 -m unittest -v test_r17_offline
+Actual output:
+test_child_cleanup_held_record_ownership (test_r17_offline.OfflineControls.test_child_cleanup_held_record_ownership) ... ok
+test_collector_caps_stop_and_original_failure_retention (test_r17_offline.OfflineControls.test_collector_caps_stop_and_original_failure_retention) ... ok
+test_complete_summary_error_missing_populations (test_r17_offline.OfflineControls.test_complete_summary_error_missing_populations) ... ok
+test_connection_generation_and_ledger_semantics (test_r17_offline.OfflineControls.test_connection_generation_and_ledger_semantics) ... ok
+test_deterministic_analysis_and_validation_corruption (test_r17_offline.OfflineControls.test_deterministic_analysis_and_validation_corruption) ... ok
+test_ids_time_order_and_finite_values (test_r17_offline.OfflineControls.test_ids_time_order_and_finite_values) ... ok
+test_lag_bounds_and_no_catchup (test_r17_offline.OfflineControls.test_lag_bounds_and_no_catchup) ... ok
+test_minimal_detailed_fields_and_transparent_restoration (test_r17_offline.OfflineControls.test_minimal_detailed_fields_and_transparent_restoration) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.045s
+
+OK
+Actual exit code: 0; 8 unique selections, 0 failures/errors/skips.
+No source changed between this initial execution and source-binding-e1 publication.
+Binding published AFTER initial host execution, not a claimed before/after seal.
+Main formal retained-container pre and personal eight-test overlap still required.
+Host ruff executable lookup returned none at checked paths. Ruff/format/type checks deferred.
+Offline cap test used a small stdlib TemporaryDirectory and auto-removed it on exit.

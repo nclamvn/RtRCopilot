@@ -1,0 +1,8 @@
+Actual first strict mypy attempt, backend config explicit, five authored/interface surfaces.
+Tool chunk d702a0, exit 1. No tests or runtime effects.
+host.py:147: Call to untyped function (unknown) in typed context [no-untyped-call]
+host.py:151: Call to untyped function (unknown) in typed context [no-untyped-call]
+transport.py:253: Assignment to variable "error" outside except block [misc]
+transport.py:254: Trying to read deleted variable "error" [misc]
+transport.py:255: Trying to read deleted variable "error" [misc]
+Found 5 errors in 2 files (checked 5 source files).

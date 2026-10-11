@@ -1,0 +1,10 @@
+::EnvironmentControls::test_exact_domain_environment_and_import_order
+::EnvironmentControls::test_exact_selection_records_and_zero_skip_conservation
+::EnvironmentControls::test_missing_mismatch_and_unsafe_rejected_before_effects
+::EnvironmentControls::test_owned_fixture_budget_cap_and_cleanup_contract
+::EnvironmentControls::test_protected_source_raw_marker_and_drift_rejection
+::EnvironmentControls::test_seed_only_scope_and_truthful_readiness_ledger
+::test_missing_integration_import_capture_rejected_without_sql
+::test_same_unchanged_dependency_chain_owned_seed_bootstrap
+
+8 tests collected in 0.18s

@@ -1,0 +1,210 @@
+"""One serial local closure+old-regression entry; all effectful dispatch stays DENY."""
+
+from __future__ import annotations
+
+import ast
+import hashlib
+import importlib.util
+import io
+import json
+import sys
+import tempfile
+import time
+from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path
+from types import ModuleType
+
+import pytest
+import readiness
+from writer import mapping
+
+HERE = Path(__file__).absolute().parent
+ROOT = HERE.parents[4]
+REFERENCE = HERE.parent / "real_path"
+REFERENCE_BINDING = "7c61db96c95f2b12a2de56c9e24ed6e325774b2eca3344e9a4c538fc6286fdf2"
+REFERENCE_CHECKS = "558ab4c3c28a72040ad45197f48d1aa9a6354339b4528b17055718b5264463dc"
+TESTS = (
+    REFERENCE / "test_core.py",
+    REFERENCE / "test_runtime_path.py",
+    HERE / "test_native.py",
+    HERE / "test_plugin_seams.py",
+    HERE / "test_acceptance.py",
+)
+
+
+def digest(path: Path) -> str:
+    return hashlib.sha256(readiness.bounded(path, 33554432)).hexdigest()
+
+
+def reference() -> ModuleType:
+    if (
+        digest(REFERENCE / "input-binding.json") != REFERENCE_BINDING
+        or digest(REFERENCE / "checks.py") != REFERENCE_CHECKS
+    ):
+        raise ValueError("frozen reference drift before import")
+    spec = importlib.util.spec_from_file_location(
+        "r27_frozen_reference_checks", REFERENCE / "checks.py"
+    )
+    if spec is None or spec.loader is None:
+        raise ValueError("exact source loader")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def preservation() -> dict[str, object]:
+    # Actual unchanged reference graph/inventory validator, not a reconstructed promise.
+    previous: object = reference().preserve()
+    result = mapping(previous)
+    binding = mapping(json.loads(readiness.bounded(HERE / "input-binding.json")))
+    for field in ("direct", "dependencies"):
+        for name, expected in mapping(binding[field]).items():
+            if type(expected) is not str:
+                raise ValueError("SHA256 pin")
+            path = Path(name) if field == "dependencies" else ROOT / name
+            if field == "direct" and (Path(name).is_absolute() or ".." in Path(name).parts):
+                raise ValueError("canonical repository pin")
+            if digest(path) != expected:
+                raise ValueError("new/frozen interface drift: " + name)
+    return {
+        "prior": result,
+        "direct_pins": len(mapping(binding["direct"])),
+        "dependency_interface_pins": len(mapping(binding["dependencies"])),
+    }
+
+
+def sources() -> dict[str, str]:
+    paths = [
+        *HERE.glob("*.py"),
+        HERE / "SCOPE.md",
+        HERE / "candidate.json",
+        HERE / "routing.json",
+        HERE / "input-binding.json",
+    ]
+    return {p.name: digest(p) for p in paths}
+
+
+def scratch() -> list[str]:
+    return sorted(
+        str(p.relative_to(ROOT))
+        for home in (HERE, REFERENCE)
+        for p in home.iterdir()
+        if p.is_dir() and p.name.startswith((".closure-", ".real-path-", "peer-control-"))
+    )
+
+
+class Collector:
+    def __init__(self) -> None:
+        self.collected: list[str] = []
+        self.calls: set[str] = set()
+        self.failed = self.errors = self.skipped = 0
+
+    def pytest_collection_modifyitems(self, items: list[pytest.Item]) -> None:
+        expected: set[tuple[str, str]] = set()
+        for path in TESTS:
+            tree = ast.parse(readiness.bounded(path))
+            expected.update(
+                (path.name, node.name)
+                for node in tree.body
+                if isinstance(node, ast.FunctionDef) and node.name.startswith("test_")
+            )
+        actual = {(Path(item.path).name, item.name) for item in items}
+        if len(items) != 23 or len(expected) != 23 or actual != expected:
+            raise ValueError("exact 14old+9new outer scenario identities")
+        self.collected = [str(item.path) + "::" + item.name for item in items]
+
+    def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
+        if report.when == "call":
+            self.calls.add(report.nodeid)
+            self.failed += int(report.failed)
+        elif report.failed:
+            self.errors += 1
+        self.skipped += int(report.skipped)
+
+
+def main() -> None:
+    before, source_before, scratch_before = preservation(), sources(), scratch()
+    reference().codec_interface()
+    for path in HERE.glob("*.py"):
+        compile(readiness.bounded(path).decode(), str(path), "exec")
+    collector, stdout = Collector(), io.StringIO()
+    started = time.monotonic()
+    with (
+        tempfile.TemporaryDirectory(prefix=".closure-pytest-", dir=HERE) as temporary,
+        redirect_stdout(stdout),
+        redirect_stderr(stdout),
+    ):
+        result = pytest.main(
+            [
+                "-c",
+                str(ROOT / "v2/apps/backend/pyproject.toml"),
+                "--confcutdir=" + str(HERE.parent),
+                "-p",
+                "no:cacheprovider",
+                "-q",
+                "--basetemp=" + str(Path(temporary) / "pytest"),
+                *(str(path) for path in TESTS),
+            ],
+            plugins=[collector],
+        )
+    after, source_after, scratch_after = preservation(), sources(), scratch()
+    output = {
+        "before": before,
+        "after": after,
+        "source_before": source_before,
+        "source_after": source_after,
+        "scratch_before": scratch_before,
+        "scratch_after": scratch_after,
+        "seconds": time.monotonic() - started,
+        "collected": collector.collected,
+        "unique_outer_scenarios": len(collector.calls),
+        "failed": collector.failed,
+        "errors": collector.errors,
+        "skipped": collector.skipped,
+        "pytest_exit": int(result),
+        "stdout": stdout.getvalue(),
+        "compiled_new_modules": len(list(HERE.glob("*.py"))),
+        "effects": "NOT_RUN",
+    }
+    print(json.dumps(output, sort_keys=True, indent=2))
+    if (
+        int(result)
+        or len(collector.calls) != 23
+        or before != after
+        or source_before != source_after
+        or scratch_before != scratch_after
+    ):
+        raise SystemExit(1)
+
+
+def preflight() -> None:
+    preserved = preservation()
+    candidate = mapping(json.loads(readiness.bounded(HERE / "candidate.json")))
+    for name, expected in mapping(candidate["sources"]).items():
+        if digest(ROOT / name) != expected:
+            raise ValueError("candidate source drift")
+    print(
+        json.dumps(
+            {
+                "source_matches": True,
+                "preservation": preserved,
+                "execution_admission": "DENY",
+                "effects": "NOT_RUN",
+                "dependencies_filesystem_presence_only": readiness.dependencies(),
+                "capacity": "32/PRE32; proposed96/PRE64 NOT_ADOPTED/insufficient",
+                "full_PRE_native_temp_writers": "UNQUALIFIED",
+                "marker": "batch did not consume; NOT a live absence proof",
+            },
+            sort_keys=True,
+        )
+    )
+    raise SystemExit(2)
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] == ["--preflight"]:
+        preflight()
+    elif not sys.argv[1:]:
+        main()
+    else:
+        raise SystemExit("expected --preflight or no args")
