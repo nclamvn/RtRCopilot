@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {applyEvent, safeLink, terminal, uploadError, type WorkspaceEvent} from "./contracts";
+import {applyEvent, parseCsv, safeLink, terminal, uploadError, type WorkspaceEvent} from "./contracts";
 
 describe("Workspace live protocol", () => {
   const initial = {cursor: 0, content: "", state: "queued", activities: []};
@@ -22,11 +22,16 @@ describe("Workspace live protocol", () => {
     expect(terminal("cancelled")).toBe(true);
     expect(terminal("interrupted")).toBe(true);
   });
-  test("only accepts bounded text source formats", () => {
+  test("only accepts bounded supported source formats", () => {
     expect(uploadError("notes.md", 1024)).toBeNull();
-    expect(uploadError("notes.csv", 262144)).toBeNull();
-    expect(uploadError("report.pdf", 10)).toContain("TXT");
-    expect(uploadError("notes.txt", 262145)).toContain("too large");
+    expect(uploadError("notes.csv", 256000)).toBeNull();
+    for (const filename of ["report.pdf", "notes.docx", "table.xlsx"]) expect(uploadError(filename, 10)).toBeNull();
+    expect(uploadError("report.docm", 10)).toContain("DOCX");
+    expect(uploadError("notes.txt", 256001)).toContain("too large");
+  });
+  test("CSV preview preserves quoted commas, quotes, line breaks and Unicode", () => {
+    expect(parseCsv('Name,Note,Value\r\n"Đà Nẵng","a,b and ""quotes""",24750\r\nB,"two\nlines",0\r\n')).toEqual([["Name", "Note", "Value"], ["Đà Nẵng", 'a,b and "quotes"', "24750"], ["B", "two\nlines", "0"]]);
+    expect(parseCsv("a,b\n1,2")).toEqual([["a", "b"], ["1", "2"]]);
   });
   test("does not turn unsafe Markdown links into executable navigation", () => {
     expect(safeLink("https://example.com/readme")).toBe("https://example.com/readme");

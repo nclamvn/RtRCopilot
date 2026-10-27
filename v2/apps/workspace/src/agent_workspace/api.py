@@ -1,8 +1,10 @@
 """Loopback-only standalone HTTP boundary. No legacy app/config import."""
 import asyncio
+import base64
+import binascii
 from contextlib import asynccontextmanager
 import json
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -36,13 +38,43 @@ class NewRun(StrictInput):
     client_request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_-]+$")
 
 
+class BatchUpload(StrictInput):
+    files: list[dict] = Field(min_length=1, max_length=10)
+
+
+class Revision(StrictInput):
+    expected_version: int = Field(ge=1)
+    content: str = Field(min_length=1, max_length=256000)
+    request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_-]+$")
+
+
+class Search(StrictInput):
+    query: str = Field(min_length=1, max_length=500)
+
+
+class ResearchSource(StrictInput):
+    source_id: str = Field(min_length=1, max_length=160)
+
+
+class CreateArtifact(StrictInput):
+    title: str = Field(min_length=1, max_length=160)
+    kind: Literal["document", "table"]
+    content: str = Field(min_length=1, max_length=256000)
+    request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_-]+$")
+
+
 def create_app(settings: Settings | None = None, *, runtime_factory=None) -> FastAPI:
     settings = settings or Settings.from_env()
-    store = Store(settings.data_dir / "catalogue.sqlite")
+    # Import/app construction must not mutate a live catalogue. Startup owns
+    # migrations after the operator has stopped any incompatible old worker.
+    store = None
 
     @asynccontextmanager
     async def lifespan(app):
+        nonlocal store
         from .runtime import Runtime
+        store = Store(settings.data_dir / "catalogue.sqlite")
+        app.state.store = store
         runtime = (runtime_factory or Runtime)(settings, store)
         app.state.runtime = runtime
         await runtime.start()
@@ -121,21 +153,95 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
     def upload(workspace_id: str, body: Upload, actor: Owner):
         return store.upload(actor, workspace_id, body.filename, body.content, body.media_type)
 
+    @app.post(PREFIX + "/workspaces/{workspace_id}/files/batch")
+    def upload_batch(workspace_id: str, body: BatchUpload, actor: Owner):
+        store.items(actor, workspace_id, "files")
+        accepted, errors = [], []
+        for index, value in enumerate(body.files):
+            filename = value.get("filename", "")
+            try:
+                if set(value) - {"filename", "content", "content_base64", "media_type"} or not isinstance(filename, str):
+                    raise WorkspaceError("invalid_upload")
+                if ("content" in value) == ("content_base64" in value):
+                    raise WorkspaceError("invalid_upload_encoding")
+                if "content" in value:
+                    if not isinstance(value["content"], str):
+                        raise WorkspaceError("invalid_upload_encoding")
+                    raw = value["content"].encode()
+                else:
+                    if not isinstance(value["content_base64"], str) or len(value["content_base64"]) > 350000:
+                        raise WorkspaceError("file_too_large_or_binary", 413)
+                    try:
+                        raw = base64.b64decode(value["content_base64"], validate=True)
+                    except (ValueError, binascii.Error):
+                        raise WorkspaceError("invalid_upload_encoding") from None
+                accepted.append(store.upload_bytes(actor, workspace_id, filename, raw))
+            except WorkspaceError as exc:
+                errors.append(dict(index=index, filename=filename if isinstance(filename, str) else "", error=exc.code))
+        return dict(accepted=accepted, errors=errors)
+
+    @app.get(PREFIX + "/files/{file_id}")
+    def source(file_id: str, actor: Owner, offset: int = 0, limit: int = 16000):
+        return store.source(actor, file_id, offset, limit)
+
+    @app.get(PREFIX + "/files/{file_id}/download")
+    def source_download(file_id: str, actor: Owner):
+        from urllib.parse import quote
+        item = store.source(actor, file_id, raw=True)
+        return Response(item["raw_content"], media_type=item["media_type"], headers={"Content-Disposition": "attachment; filename*=UTF-8''" + quote(item["filename"])})
+
+    @app.post(PREFIX + "/workspaces/{workspace_id}/research/search")
+    def research_search(workspace_id: str, body: Search, request: Request, actor: Owner):
+        store.items(actor, workspace_id, "files")
+        return request.app.state.runtime.research.search(body.query)
+
+    @app.post(PREFIX + "/workspaces/{workspace_id}/research/read")
+    def research_read(workspace_id: str, body: ResearchSource, request: Request, actor: Owner):
+        store.items(actor, workspace_id, "files")
+        return request.app.state.runtime.research.read(body.source_id)
+
+    @app.post(PREFIX + "/workspaces/{workspace_id}/research/import")
+    def research_import(workspace_id: str, body: ResearchSource, request: Request, actor: Owner):
+        return request.app.state.runtime.research.import_source(store, actor, workspace_id, body.source_id)
+
     @app.get(PREFIX + "/workspaces/{workspace_id}/artifacts")
     def artifacts(workspace_id: str, actor: Owner):
         return {"items": store.items(actor, workspace_id, "artifacts")}
+
+    @app.post(PREFIX + "/workspaces/{workspace_id}/artifacts")
+    def create_artifact(workspace_id: str, body: CreateArtifact, actor: Owner):
+        return store.create_artifact(actor, workspace_id, body.title, body.kind, body.content, body.request_id)
 
     @app.get(PREFIX + "/artifacts/{artifact_id}")
     def artifact(artifact_id: str, actor: Owner, version: int | None = None):
         return store.artifact(actor, artifact_id, version)
 
     @app.get(PREFIX + "/artifacts/{artifact_id}/download")
-    def download(artifact_id: str, actor: Owner, version: int | None = None):
+    def download(artifact_id: str, actor: Owner, version: int | None = None, format: str | None = None):
         from urllib.parse import quote
         item = store.artifact(actor, artifact_id, version)
-        return Response(item["content"], media_type=item["media_type"], headers={
-            "Content-Disposition": "attachment; filename*=UTF-8''" + quote(item["filename"]),
+        from .formats import render_artifact
+        try:
+            output = render_artifact(item["kind"], item["content"], format or ("csv" if item["kind"] == "table" else "md"), title=item["title"])
+        except Exception:
+            raise WorkspaceError("artifact_export_failed", 422) from None
+        filename = item["filename"].rsplit(".", 1)[0] + "." + output.extension.lstrip(".")
+        return Response(output.data, media_type=output.media_type, headers={
+            "Content-Disposition": "attachment; filename*=UTF-8''" + quote(filename),
+            "X-Workspace-Export-Warnings": json.dumps(output.warnings, ensure_ascii=True),
         })
+
+    @app.get(PREFIX + "/artifacts/{artifact_id}/versions")
+    def versions(artifact_id: str, actor: Owner):
+        return {"items": store.versions(actor, artifact_id)}
+
+    @app.get(PREFIX + "/artifacts/{artifact_id}/diff")
+    def artifact_diff(artifact_id: str, actor: Owner, from_version: int, to_version: int):
+        return store.diff(actor, artifact_id, from_version, to_version)
+
+    @app.post(PREFIX + "/artifacts/{artifact_id}/revisions")
+    def revise(artifact_id: str, body: Revision, actor: Owner):
+        return store.revise(actor, artifact_id, body.expected_version, body.content, body.request_id)
 
     @app.post(PREFIX + "/runs")
     async def start_run(body: NewRun, request: Request, actor: Owner):

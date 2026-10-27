@@ -1,0 +1,18 @@
+[
+  {
+    "id": "fixture-harbor-2026",
+    "title": "OFFLINE FIXTURE: Harbor public planning note",
+    "url": "https://harbor-public.test/planning-2026",
+    "as_of": "2026-10-01",
+    "provenance": "offline_fixture",
+    "content": "# OFFLINE FIXTURE: Harbor planning note\n\nSynthetic public-source snapshot, not real internet research.\n\nHarbor budget: 120000 USD. Planned launch: 2026-11-15. Expected units: 240.\n\nThis fixture records the original planning estimate, not an approved final budget.\n"
+  },
+  {
+    "id": "fixture-harbor-review",
+    "title": "OFFLINE FIXTURE: Harbor review and correction",
+    "url": "https://regional-review.test/harbor-review",
+    "as_of": "2026-10-20",
+    "provenance": "offline_fixture",
+    "content": "# OFFLINE FIXTURE: Harbor review\n\nSynthetic public-source snapshot, not real internet research.\n\nThe revised Harbor budget is 135000 USD, differing from the earlier 120000 USD planning estimate. Launch review: 2026-11-22. Unicode location: Việt Nam.\n\nThe two figures refer to different dates; do not silently merge them.\n"
+  }
+]

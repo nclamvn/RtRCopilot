@@ -127,8 +127,8 @@ test("UI-only unavailable status fixture is immediate and disables dispatch", as
 
 test("mobile keyboard, plain-text upload rejection, viewport geometry and accessibility", async ({page}) => {
   await createWorkspace(page, "Accessible notes");
-  await page.getByLabel("Source file", {exact: true}).setInputFiles({name: "binary.pdf", mimeType: "application/pdf", buffer: Buffer.from("not a supported source")});
-  await expect(page.locator(".aw-error")).toContainText("TXT, Markdown, or CSV");
+  await page.getByLabel("Source file", {exact: true}).setInputFiles({name: "binary.exe", mimeType: "application/octet-stream", buffer: Buffer.from("not a supported source")});
+  await expect(page.locator(".aw-error")).toContainText("TXT, Markdown, CSV");
   await page.getByRole("button", {name: "Dismiss error"}).click();
   await page.setViewportSize({width: 390, height: 844});
   await expect(page.getByRole("textbox", {name: "Message", exact: true})).toBeVisible();

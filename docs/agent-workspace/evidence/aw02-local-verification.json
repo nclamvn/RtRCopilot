@@ -1,0 +1,163 @@
+{
+  "schema": "agent-workspace.local-verification.v2",
+  "milestone": "AW-02",
+  "verified_date_local": "2026-10-28",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "baseline_commit": "347c8b2e0fca7d0e3b1e2dce6911ebcdec1605df",
+  "code_state": "uncommitted_working_tree",
+  "source_manifest_sha256": "4d2ab7ba2afd82238a409e78c7632e42eed84817d53a56b7f9728c249c8695d2",
+  "source_manifest_file": "aw02-source-manifest.sha256",
+  "source_manifest_entries": 45,
+  "source_manifest_method": "rg --files over explicit workspace src/tests/proof/manifests and web workspace feature/page/BFF/manifests/browser config/tests; LC_ALL=C sort; shasum -a 256 each; SHA256 of manifest bytes including final newline",
+  "authorization": {
+    "implementation": "AW-02 approved; local/mock only",
+    "external_model_calls_performed": 0,
+    "live_web_fetches_performed": 0,
+    "deployments": 0,
+    "commit_push_performed": false,
+    "legacy_executor_enabled": false
+  },
+  "disposition": {
+    "local_mock_technical_acceptance": "READY_WITH_DECLARED_LIMITS",
+    "full_aw02_acceptance": "PARTIAL",
+    "real_model_quality": "UNTESTED_BY_USER_DIRECTION",
+    "live_research": "NOT_ENABLED_FIXTURE_PORT_ONLY",
+    "advantage_over_direct_agent": "UNMEASURED",
+    "human_semantic_acceptance": false,
+    "production_release": "NOT_READY"
+  },
+  "provenance": {
+    "compiled_by": "Contractor from actual local command outputs and separate Builder/reviewer reports; not a self-executing certification",
+    "model": "assistant-authored scripted PydanticAI FunctionModel",
+    "data": "synthetic non-RtR inputs",
+    "persistence": "real SQLite and native DBOS, including subprocess death/restart",
+    "browser": "real local Next BFF and API with Chromium; integrated Codex browser manual authoring/revision/PDF download",
+    "exceptions": [
+      "one UI-only unavailable-status fixture",
+      "lost-ACK and export-error transport fault injection explicitly labelled in tests",
+      "research fixtures are not real web retrieval"
+    ],
+    "baseline_comparison": "No direct-LLM or tool-agent outcome comparison possible under mock-only restriction. Do not infer semantic or economic superiority."
+  },
+  "checks": {
+    "workspace_python": {
+      "command": "PYTHONPATH=src PYDANTIC_AI_NO_BANNER=1 .venv/bin/python -m pytest tests -q --tb=short --basetemp=.aw02-final-pytest",
+      "passed": 52,
+      "failed": 0,
+      "seconds": 67.48,
+      "observed_by": "Contractor final rerun; includes 26 formats tests and native harness/recovery regression"
+    },
+    "web_units": {
+      "command": "pnpm test",
+      "passed": 243,
+      "failed": 0,
+      "files": 25,
+      "seconds": 11.71,
+      "observed_by": "Contractor final rerun"
+    },
+    "browser_e2e": {
+      "command": "pnpm exec playwright test --config playwright.workspace.config.ts",
+      "passed": 11,
+      "failed": 0,
+      "seconds": 39.5,
+      "aw01_scenarios": 7,
+      "aw02_scenarios": 4,
+      "observed_by": "Contractor final rerun after API restart and production freeze"
+    },
+    "typescript": "PASS: pnpm typecheck",
+    "scoped_eslint": "PASS: src/workspace src/app/api/workspace tests/workspace playwright.workspace.config.ts",
+    "python_fatal_lint": "PASS: E9,F63,F7,F82; not full style/mypy",
+    "diff_whitespace": "PASS",
+    "independent_review": {
+      "open_observed_p0": 0,
+      "open_observed_p1": 0,
+      "final_format_boundary_probes": 7,
+      "editor_verification_cases": 6,
+      "not_additive_to_suite_counts": true,
+      "scope": "cross-owner paths, concurrent same-key saves, immutable versions, late source inventory, format readback, delayed-ACK draft race"
+    },
+    "independent_http": {
+      "script": "verify_aw02_http.py",
+      "status": "PASS",
+      "model_dispatches": 0,
+      "scope": [
+        "mixed source batch",
+        "raw original equality",
+        "manual create and idempotency",
+        "localized version2 and immutable version1",
+        "MD exact bytes",
+        "DOCX dash-row readback",
+        "PDF Unicode/numbers/readback",
+        "XLSX literal formula-like strings",
+        "CSV warning and unchanged canonical",
+        "fixture research only",
+        "private URL rejected",
+        "cross-owner denial",
+        "empty chat history"
+      ]
+    },
+    "format_visual": {
+      "representative_fixture": "tests/format_qa.py",
+      "product_pdf_pages_inspected": 7,
+      "bundled_libreoffice_docx_pages_inspected": 7,
+      "reader": "Builder and Contractor AI visual review, not human acceptance",
+      "content_checks": "22 paragraphs, 60 table rows A000..A059 and final marker987654 retained in DOCX, product PDF and QA-rendered DOCX PDF",
+      "retained_samples": [
+        "aw02-format-sample.docx",
+        "aw02-format-sample.pdf",
+        "aw02-format-sample.xlsx",
+        "aw02-docx-render-page-4.png"
+      ],
+      "integrated_browser_pdf": "1 page, Vietnamese,24,750,20 November,Invent. Build. Prove.,-42,0.015 verified"
+    },
+    "accessibility": "AW01 mobile axe plus AW02 desktop/source-dialog geometry and accessibility assertions included in browser suite"
+  },
+  "timings_single_local_sample": {
+    "scope": "one warm local HTTP manual-authoring sample on this Mac, not SLA, agent latency, load test or percentile",
+    "manual_create_ms": 10.08,
+    "md_export_ms": 4.69,
+    "docx_export_ms": 134.31,
+    "pdf_export_ms": 147.72
+  },
+  "repairs_verified": [
+    "save-in-flight input loss and stale acknowledgement deleting newer draft",
+    "dash-only table data rows mistaken for Markdown separator",
+    "blank DOCX acceptance and first/even-header omissions",
+    "API import mutating live catalogue before startup",
+    "long output panel overlay blocking export controls"
+  ],
+  "limits": [
+    "No real model or live internet acceptance",
+    "Local per-browser ownership, not enterprise identity or public hosting",
+    "Only declared DOCX/XLSX/text-PDF subsets; no scans/OCR, formula evaluation or full Office fidelity",
+    "DOCX/PDF export deliberately limited Markdown subset; unsupported content returns explicit failure and keeps draft",
+    "API source parser failures currently generic source_parse_failed; narrower format recovery guidance remains UX debt",
+    "Original/canonical content retained; CSV export-only escaping disclosed",
+    "Bounded workers are resource guards, not a kernel sandbox",
+    "No shell, MCP, skills, memory, scheduler, approval-paused external effects",
+    "No production build, long-term data delete/export UX or multi-tenant certification"
+  ],
+  "runtime": {
+    "ui": "http://127.0.0.1:3110/workspace",
+    "api": "http://127.0.0.1:8110/api/workspace",
+    "bind": "127.0.0.1 only, verified lsof",
+    "mode": "WORKSPACE_TEST_MODE=1",
+    "workflow_version": "workspace-aw02-v1",
+    "existing_local_data_preserved": true
+  },
+  "cleanup": {
+    "project_copies_created": false,
+    "extra_next_distdirs_created": false,
+    "docker_used": false,
+    "review_scratch_removed_mb_approx": 8.6,
+    "contractor_scratch_removal": "final pytest and temporary format render intermediates removed after promoting small QA evidence",
+    "retained": [
+      "required app .venv and portable fonts",
+      "standard .next",
+      "local workspace state",
+      "small evidence files",
+      "integrated-browser synthetic PDF download"
+    ],
+    "free_disk_gib_approx": 40
+  }
+}

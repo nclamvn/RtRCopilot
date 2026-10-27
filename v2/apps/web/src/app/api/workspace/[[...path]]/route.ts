@@ -1,7 +1,10 @@
 import {NextRequest} from "next/server";
 
 type Context = {params: Promise<{path?: string[]}>};
-const families = new Set(["session", "status", "workspaces", "artifacts", "runs"]);
+const routes: Record<string, RegExp[]> = {
+  GET: [/^status$/, /^workspaces$/, /^workspaces\/[\w-]+\/(messages|files|artifacts)$/, /^files\/[\w-]+(\/download)?$/, /^artifacts\/[\w-]+(\/(download|versions|diff))?$/, /^runs\/[\w-]+(\/events)?$/],
+  POST: [/^session$/, /^workspaces$/, /^workspaces\/[\w-]+\/artifacts$/, /^workspaces\/[\w-]+\/files(\/batch)?$/, /^workspaces\/[\w-]+\/research\/(search|read|import)$/, /^artifacts\/[\w-]+\/revisions$/, /^runs$/, /^runs\/[\w-]+\/cancel$/],
+};
 export function workspaceUpstream(value: string | undefined): URL {
   const url = new URL(value ?? "http://127.0.0.1:8110");
   if (url.protocol !== "http:" || !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
@@ -17,7 +20,7 @@ async function proxy(request: NextRequest, context: Context) {
     if (!["localhost", "127.0.0.1", "[::1]"].includes(host.hostname) || host.username || host.password || host.pathname !== "/") throw new Error("Host denied");
   } catch {return Response.json({detail: "workspace_host_denied"}, {status: 403});}
   const path = (await context.params).path ?? [];
-  if (!families.has(path[0]) || path.some(part => !/^[a-zA-Z0-9_-]+$/.test(part))) {
+  if (path.some(part => !/^[a-zA-Z0-9_-]+$/.test(part)) || !routes[request.method]?.some(pattern => pattern.test(path.join("/")))) {
     return Response.json({detail: "invalid_workspace_path"}, {status: 400});
   }
   const headers = new Headers({accept: request.headers.get("accept")?.includes("text/event-stream") ? "text/event-stream" : "application/json"});
@@ -32,7 +35,7 @@ async function proxy(request: NextRequest, context: Context) {
       // Aborting this subscription does not issue a cancellation command.
       signal: request.signal, ...(request.method === "GET" ? {} : {duplex: "half"})} as RequestInit & {duplex?: "half"});
     const responseHeaders = new Headers({"cache-control": "no-store, no-transform", "x-accel-buffering": "no"});
-    for (const key of ["content-type", "content-disposition"]) {const value = result.headers.get(key); if (value) responseHeaders.set(key, value);}
+    for (const key of ["content-type", "content-disposition", "x-workspace-export-warnings"]) {const value = result.headers.get(key); if (value) responseHeaders.set(key, value);}
     for (const cookie of result.headers.getSetCookie()) responseHeaders.append("set-cookie", cookie);
     return new Response(result.body, {status: result.status, headers: responseHeaders});
   } catch {

@@ -20,10 +20,20 @@ describe("Workspace BFF boundary", () => {
   test.each(["https://127.0.0.1", "http://example.com", "http://127.0.0.1/path", "http://user:pass@localhost", "http://localhost?url=evil"])("rejects non-local or ambiguous upstream %s", value => {expect(() => workspaceUpstream(value)).toThrow();});
   test("does not accept arbitrary URL/path families", async () => {
     const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
-    for (const path of [["auth"], ["runs", ".."], ["runs", "a/b"], ["runs", "%2e%2e"]]) {
+    for (const path of [["auth"], ["runs", ".."], ["runs", "a/b"], ["runs", "%2e%2e"], ["files", "id", "arbitrary"], ["workspaces", "id", "research", "fetch"]]) {
       expect((await GET(new NextRequest("http://localhost/api/workspace/x"), {params: Promise.resolve({path})})).status).toBe(400);
     }
     expect(fetcher).not.toHaveBeenCalled();
+  });
+  test("allows only explicit AW02 endpoints and forwards binary response metadata", async () => {
+    const fetcher = vi.fn(async () => new Response(new Uint8Array([80, 75, 3, 4]), {headers: {"content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "content-disposition": 'attachment; filename="brief.docx"'}})); vi.stubGlobal("fetch", fetcher);
+    for (const path of [["files", "f1"], ["files", "f1", "download"], ["artifacts", "a1", "versions"], ["artifacts", "a1", "diff"], ["artifacts", "a1", "download"]]) {
+      const response = await GET(new NextRequest(`http://localhost/api/workspace/${path.join("/")}?version=2&format=docx`), {params: Promise.resolve({path})});
+      expect(response.status).toBe(200); expect(response.headers.get("content-disposition")).toContain("brief.docx"); expect(new Uint8Array(await response.arrayBuffer())).toEqual(new Uint8Array([80, 75, 3, 4]));
+    }
+    for (const path of [["workspaces", "w1", "files", "batch"], ["workspaces", "w1", "research", "search"], ["workspaces", "w1", "research", "read"], ["workspaces", "w1", "research", "import"], ["artifacts", "a1", "revisions"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method: "POST", body: "{}"}), {params: Promise.resolve({path})})).status).toBe(200);
+    const before = fetcher.mock.calls.length;
+    expect((await GET(new NextRequest("http://localhost/api/workspace/artifacts/a1/revisions"), {params: Promise.resolve({path: ["artifacts", "a1", "revisions"]})})).status).toBe(400); expect(fetcher).toHaveBeenCalledTimes(before);
   });
   test("preserves session Set-Cookie but strips legacy cookies and identity headers", async () => {
     vi.stubGlobal("fetch", vi.fn(async (_url: unknown, init: RequestInit) => {

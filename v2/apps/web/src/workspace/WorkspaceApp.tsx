@@ -3,20 +3,17 @@
 import {useCallback, useEffect, useRef, useState, type FormEvent} from "react";
 import {applyEvent, terminal, uploadError, type Artifact, type Availability, type LiveState, type Message, type Run, type SourceFile, type Workspace, type WorkspaceEvent} from "./contracts";
 import {Markdown} from "./Markdown";
+import {api, apiRoot} from "./api";
+import {ArtifactCreator, ArtifactEditor} from "./ArtifactEditor";
+import {LocalResearch, SourcePreview} from "./Sources";
 import "./workspace.css";
 
-const apiRoot = "/api/workspace";
-async function api<T>(path: string, body?: unknown): Promise<T> {
-  const response = await fetch(`${apiRoot}${path}`, {method: body === undefined ? "GET" : "POST", cache: "no-store", headers: body === undefined ? {} : {"content-type": "application/json"}, body: body === undefined ? undefined : JSON.stringify(body)});
-  if (!response.ok) {
-    const payload = await response.json().catch(() => ({}));
-    const code = payload.detail ?? payload.error?.code ?? `http_${response.status}`;
-    const hints: Record<string, string> = {model_unavailable: "No model is available. Configure a permitted model or restart in explicit simulation mode.", workspace_service_unavailable: "The workspace service is not reachable. Start the local service, then reconnect.", workspace_busy: "This workspace already has a run in progress. Reconnect to it before sending another message."};
-    throw new Error(hints[code] ?? `The request could not finish (${code}). Your saved work is unchanged.`);
-  }
-  return response.json();
-}
 const freshLive = (): LiveState => ({cursor: 0, content: "", state: "queued", activities: []});
+function safeNavigate() {return !document.querySelector('[data-unsafe-draft="true"]') || window.confirm("This draft could not be stored in your browser. Copy it before leaving. Leave and discard these unsaved edits?");}
+type UploadItem = {filename: string; status: "queued" | "saved" | "error"; detail?: string};
+function fileBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(",")[1]); reader.onerror = () => reject(new Error("This file could not be read.")); reader.readAsDataURL(file);});
+}
 
 export function WorkspaceApp() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -37,15 +34,21 @@ export function WorkspaceApp() {
   const [run, setRun] = useState<Run | null>(null);
   const [live, setLive] = useState<LiveState>(freshLive);
   const [panel, setPanel] = useState(false);
+  const [panelView, setPanelView] = useState<"outputs" | "source" | "research">("outputs");
+  const [source, setSource] = useState<SourceFile | null>(null);
+  const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
+  const [newKind, setNewKind] = useState<"document" | "table" | null>(null);
   const [navigation, setNavigation] = useState(false);
   const liveRef = useRef(live);
   const sendLock = useRef(false);
+  const uploadLock = useRef(false);
   const pendingCommand = useRef<{workspaceId: string; text: string; requestId: string} | null>(null);
   const uploadInput = useRef<HTMLInputElement>(null);
   const transcript = useRef<HTMLDivElement>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
   const nearBottom = useRef(true);
   const selection = useRef("");
+  const artifactRequest = useRef(0);
   const active = !!run && !terminal(run.state);
 
   const refresh = useCallback(async (workspaceId: string) => {
@@ -58,8 +61,10 @@ export function WorkspaceApp() {
   }, []);
 
   const choose = useCallback(async (workspace: Workspace) => {
+    if (!safeNavigate()) return;
+    artifactRequest.current++;
     selection.current = workspace.id;
-    setSelected(workspace); setMessages([]); setFiles([]); setArtifacts([]); setArtifact(null); setRun(null); setLive(freshLive()); liveRef.current = freshLive(); setError(""); setNavigation(false);
+    setSelected(workspace); setMessages([]); setFiles([]); setArtifacts([]); setArtifact(null); setNewKind(null); setSource(null); setUploadQueue([]); setPanelView("outputs"); setRun(null); setLive(freshLive()); liveRef.current = freshLive(); setError(""); setNavigation(false);
     localStorage.setItem("agent-workspace:selected", workspace.id);
     try {
       const history = await refresh(workspace.id);
@@ -88,7 +93,7 @@ export function WorkspaceApp() {
   useEffect(() => {let mounted = true; queueMicrotask(() => {if (mounted) void connect();}); return () => {mounted = false;};}, [connect]);
   useEffect(() => {liveRef.current = live;}, [live]);
   useEffect(() => {
-    const escape = (event: KeyboardEvent) => {if (event.key === "Escape") {setPanel(false); setNavigation(false); composer.current?.focus();}};
+    const escape = (event: KeyboardEvent) => {if (event.key === "Escape" && safeNavigate()) {setPanel(false); setNavigation(false); composer.current?.focus();}};
     window.addEventListener("keydown", escape);
     return () => window.removeEventListener("keydown", escape);
   }, []);
@@ -124,7 +129,7 @@ export function WorkspaceApp() {
           if (event.type === "artifact.published") {
             void refresh(workspaceId);
             const artifactId = String(event.data.artifact_id);
-            void api<Artifact>(`/artifacts/${artifactId}`).then(result => {if (selection.current === workspaceId) {setArtifact(result); setPanel(true);}}).catch(() => {});
+            void api<Artifact>(`/artifacts/${artifactId}`).then(result => {if (selection.current === workspaceId && !document.querySelector('[data-unsafe-draft="true"]')) {setArtifact(result); setPanelView("outputs"); setPanel(true);}}).catch(() => {});
           }
           if (terminal(next.state)) {stream?.close(); void reconcile().catch(cause => setError(cause.message));}
         } catch {setError("A live update was unreadable. Reconnect to recover the saved run."); stream?.close();}
@@ -185,15 +190,25 @@ export function WorkspaceApp() {
     }
     finally {sendLock.current = false; setSending(false); composer.current?.focus();}
   }
-  async function upload(file: File) {
-    if (!selected) return;
-    const invalid = uploadError(file.name, file.size); if (invalid) {setError(invalid); return;}
-    setUploading(true); setError("");
+  async function upload(incoming: File[]) {
+    if (!selected || uploadLock.current) return;
+    const workspaceId = selected.id; const valid: {file: File; index: number}[] = []; let total = 0;
+    const queue = incoming.map((file, index): UploadItem => {
+      const invalid = uploadError(file.name, file.size) ?? (index >= 10 ? "Choose no more than 10 files per batch." : total + file.size > 1000000 ? "A batch can contain at most 1,000,000 bytes." : null);
+      if (invalid) return {filename: file.name, status: "error", detail: invalid};
+      total += file.size; valid.push({file, index}); return {filename: file.name, status: "queued"};
+    });
+    setUploadQueue(queue); if (!valid.length) {setError(queue[0]?.detail ?? "No supported files selected."); return;}
+    uploadLock.current = true; setUploading(true); setError("");
     try {
-      const content = await file.text(); if (content.includes("\u0000")) throw new Error("Choose a plain UTF-8 text file, not a binary document.");
-      await api(`/workspaces/${selected.id}/files`, {filename: file.name, content, media_type: file.name.endsWith(".csv") ? "text/csv" : file.name.endsWith(".md") ? "text/markdown" : "text/plain"});
-      await refresh(selected.id);
-    } catch (cause) {setError((cause as Error).message);} finally {setUploading(false); if (uploadInput.current) uploadInput.current.value = "";}
+      const payload = await Promise.all(valid.map(async ({file}) => ({filename: file.name, content_base64: await fileBase64(file), media_type: file.type || "application/octet-stream"})));
+      const result = await api<{accepted: SourceFile[]; errors: {index: number; filename: string; error: string}[]}>(`/workspaces/${workspaceId}/files/batch`, {files: payload});
+      if (selection.current === workspaceId) {
+        const next = [...queue]; valid.forEach(({index}, localIndex) => {const failure = result.errors.find(item => item.index === localIndex); next[index] = {...next[index], status: failure ? "error" : "saved", detail: failure?.error.replaceAll("_", " ")};}); setUploadQueue(next);
+        await refresh(workspaceId);
+      }
+    } catch (cause) {if (selection.current === workspaceId) {setUploadQueue(queue.map(item => item.status === "queued" ? {...item, status: "error", detail: (cause as Error).message} : item)); setError((cause as Error).message);}}
+    finally {uploadLock.current = false; setUploading(false); if (uploadInput.current) uploadInput.current.value = "";}
   }
   async function stop() {
     if (!run) return;
@@ -202,11 +217,13 @@ export function WorkspaceApp() {
     catch (cause) {setError(`Stop has not been confirmed. ${(cause as Error).message}`);}
   }
   async function openArtifact(item: Artifact, version = item.version) {
+    if (!safeNavigate()) return;
+    const request = ++artifactRequest.current;
     const workspaceId = selection.current;
-    try {const result = await api<Artifact>(`/artifacts/${item.id}?version=${version}`); if (workspaceId === selection.current) {setArtifact(result); setPanel(true);}}
+    try {const [result] = await Promise.all([api<Artifact>(`/artifacts/${item.id}?version=${version}`), refresh(workspaceId)]); if (workspaceId === selection.current && request === artifactRequest.current) {setArtifact(result); setNewKind(null); setPanelView("outputs"); setPanel(true);}}
     catch (cause) {setError((cause as Error).message);}
   }
-  const status = loading ? "Connecting…" : availability?.test_mode ? "Simulation · no model calls · Try fixture:create, then fixture:edit" : availability?.available ? availability.model ?? "Model ready" : "Model unavailable";
+  const status = loading ? "Connecting…" : availability?.test_mode ? "Simulation · no model calls · fixture:brief / table / patch / research" : availability?.available ? availability.model ?? "Model ready" : "Model unavailable";
   return <div className="agent-workspace" data-navigation={navigation} data-panel={panel}>
     <a className="aw-skip" href="#aw-composer">Skip to message</a>
     <aside className="aw-sidebar" aria-label="Workspace navigation">
@@ -215,15 +232,17 @@ export function WorkspaceApp() {
       {creating && <form className="aw-create" onSubmit={create}><label htmlFor="aw-name">Workspace name</label><input id="aw-name" autoFocus maxLength={80} value={name} onChange={event => setName(event.target.value)} placeholder="e.g. Field notes"/><div><button type="submit" disabled={!name.trim()}>Create workspace</button><button type="button" onClick={() => setCreating(false)}>Cancel</button></div></form>}
       <nav aria-label="Your workspaces"><h2>Your workspaces</h2>{workspaces.map(item => <button key={item.id} aria-current={selected?.id === item.id ? "page" : undefined} onClick={() => void choose(item)}><span aria-hidden="true">▤</span> {item.name}</button>)}{!workspaces.length && <p className="aw-muted">A workspace keeps your conversation, files, and drafts together.</p>}</nav>
       <section className="aw-sources"><div className="aw-section-title"><h2>Source files</h2><button onClick={() => uploadInput.current?.click()} disabled={!selected || uploading} aria-label="Upload source file">＋</button></div>
-        <input ref={uploadInput} className="aw-file-input" type="file" accept=".txt,.md,.csv" aria-label="Source file" onChange={event => {const file = event.target.files?.[0]; if (file) void upload(file);}}/>
-        {files.length ? <ul>{files.map(file => <li key={file.id}><span aria-hidden="true">▱</span><span>{file.filename}<small>{Math.max(1, Math.round(file.bytes / 1024))} KB</small></span></li>)}</ul> : <p className="aw-muted">Add TXT, Markdown, or CSV. Up to 256 KB per file.</p>}
-        {uploading && <p role="status">Saving source file…</p>}
+        <input ref={uploadInput} className="aw-file-input" type="file" multiple accept=".txt,.md,.csv,.docx,.xlsx,.pdf" aria-label="Source file" onChange={event => {const incoming = Array.from(event.target.files ?? []); if (incoming.length) void upload(incoming);}}/>
+        {files.length ? <ul>{files.map(file => <li key={file.id}><button className="aw-source-link" onClick={() => {if (!safeNavigate()) return; setSource(file); setPanelView("source"); setPanel(true); setNavigation(false);}}><span aria-hidden="true">▱</span><span>{file.filename}<small>{Math.max(1, Math.round(file.bytes / 1000))} KB{file.provenance?.provenance === "offline_fixture" ? " · Offline fixture" : ""}</small></span></button></li>)}</ul> : <p className="aw-muted">Add TXT, Markdown, CSV, DOCX, XLSX, or text PDF. Up to 256,000 bytes per file, 10 files per batch. Images, scans, macros, and formulas are not evaluated.</p>}
+        {!!uploadQueue.length && <ul className="aw-upload-queue" aria-label="Upload results" aria-live="polite">{uploadQueue.map((item, index) => <li key={index}><span>{item.filename}</span><small>{item.status === "saved" ? "Saved" : item.status === "queued" ? "Uploading…" : `Not saved: ${item.detail}`}</small></li>)}</ul>}
+        {uploading && <p role="status">Saving source files…</p>}
+        <button className="aw-research-open" disabled={!selected} onClick={() => {if (!safeNavigate()) return; setPanelView("research"); setPanel(true); setNavigation(false);}}>Search local fixtures</button>
       </section>
       <div className="aw-sidebar-foot">Local workspace<br/><small>Shell, external tools, and memory are not enabled.</small></div>
     </aside>
     {navigation && <button className="aw-scrim" aria-label="Close navigation" onClick={() => setNavigation(false)}/>}
     <main className="aw-main">
-      <header className="aw-header"><button className="aw-mobile" aria-label="Open navigation" onClick={() => setNavigation(true)}>☰</button><h1>{selected?.name ?? "Agent Workspace"}</h1><button className="aw-panel-toggle" aria-expanded={panel} onClick={() => setPanel(value => !value)}>Outputs <span aria-hidden="true">{panel ? "›" : "‹"}</span></button></header>
+      <header className="aw-header"><button className="aw-mobile" aria-label="Open navigation" onClick={() => setNavigation(true)}>☰</button><h1>{selected?.name ?? "Agent Workspace"}</h1><button className="aw-panel-toggle" aria-expanded={panel && panelView === "outputs"} onClick={() => {if (!safeNavigate()) return; setPanelView("outputs"); setPanel(value => panelView !== "outputs" || !value);}}>Outputs <span aria-hidden="true">{panel ? "›" : "‹"}</span></button></header>
       <div className={`aw-availability${availability?.test_mode ? " aw-simulation" : ""}`} role="status"><span className="aw-dot" aria-hidden="true"/>{status}{!loading && !availability?.available && <span> · {availability?.reason ?? "Start the workspace service to connect."}</span>}</div>
       {error && <div className="aw-error" role="alert"><p>{error}</p><button onClick={() => void connect()}>Reconnect</button><button onClick={() => setError("")} aria-label="Dismiss error">×</button></div>}
       <div className="aw-transcript" ref={transcript} onScroll={event => {const element = event.currentTarget; nearBottom.current = element.scrollHeight - element.scrollTop - element.clientHeight < 100;}}>
@@ -236,10 +255,12 @@ export function WorkspaceApp() {
       </div>
       <div className="aw-compose-wrap"><form className="aw-composer" onSubmit={submit}><label className="aw-visually-hidden" htmlFor="aw-composer">Message</label><textarea id="aw-composer" ref={composer} rows={3} value={draft} onChange={event => setDraft(event.target.value)} placeholder={selected ? "Ask anything, or describe what you want to make…" : "Create a workspace to start…"} disabled={!selected} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); event.currentTarget.form?.requestSubmit();}}}/><div className="aw-composer-bottom"><button type="button" className="aw-attach" onClick={() => uploadInput.current?.click()} disabled={!selected || uploading} aria-label="Attach source file">＋ <span>Add file</span></button><span className="aw-input-hint">Enter to send · Shift + Enter for a new line</span>{active ? <button type="button" className="aw-send" onClick={() => void stop()} disabled={run?.cancel_requested}>{run?.cancel_requested ? "Stop requested" : "Stop"}</button> : <button className="aw-send" type="submit" disabled={!selected || !draft.trim() || !availability?.available || sending}>Send <span aria-hidden="true">↑</span></button>}</div></form><p className="aw-compose-note" role="status">{connection || (availability?.test_mode ? "Simulation uses a deterministic test model. Outputs are not AI quality evidence." : "Review important details in generated drafts.")}</p></div>
     </main>
-    {panel && <aside className="aw-panel" aria-label="Outputs and activity"><div className="aw-panel-head"><h2>Outputs</h2><button onClick={() => setPanel(false)} aria-label="Close outputs">×</button></div>
-      <div className="aw-output-list">{artifacts.length ? artifacts.map(item => <button key={item.id} aria-current={artifact?.id === item.id ? "true" : undefined} onClick={() => void openArtifact(item)}><strong>{item.title || item.filename}</strong><small>Markdown · Version {item.version}</small></button>) : <p className="aw-muted">Drafts you create appear here. Open, revise, and download them without leaving the conversation.</p>}</div>
-      {artifact && <section className="aw-artifact" aria-label="Artifact preview"><div className="aw-artifact-head"><h3>{artifact.title || artifact.filename}</h3><label>Version <select aria-label="Artifact version" value={artifact.version} onChange={event => void openArtifact(artifact, Number(event.target.value))}>{Array.from({length: artifacts.find(item => item.id === artifact.id)?.version ?? artifact.version}, (_, index) => index + 1).map(version => <option key={version} value={version}>{version}</option>)}</select></label></div><div className="aw-artifact-content"><Markdown content={artifact.content ?? ""}/></div><div className="aw-artifact-actions"><a href={`${apiRoot}/artifacts/${artifact.id}/download?version=${artifact.version}`} download>Download</a><button onClick={() => {setDraft(availability?.test_mode ? "fixture:edit" : `Revise "${artifact.title || artifact.filename}" (version ${artifact.version}): `); composer.current?.focus();}}>{availability?.test_mode ? "Test revision" : "Revise in chat"}</button></div></section>}
-      <section className="aw-activity" aria-label="Run activity"><h2>Activity</h2>{live.activities.length ? <ol>{live.activities.map((activity, index) => <li key={index}>{activity}</li>)}</ol> : <p className="aw-muted">Tool progress appears here while a request is running.</p>}{run?.usage && <p className="aw-muted">{run.usage.requests} model request(s), {run.usage.input_tokens + run.usage.output_tokens} tokens. Cost: {run.usage.cost_usd === null ? "unknown" : `$${run.usage.cost_usd}`}.</p>}</section>
+    {panel && <aside className="aw-panel" aria-label="Outputs and activity"><div className="aw-panel-head"><h2>{panelView === "source" ? "Source file" : panelView === "research" ? "Local research" : "Outputs"}</h2><button onClick={() => {if (safeNavigate()) setPanel(false);}} aria-label="Close outputs">×</button></div>
+      {panelView === "source" && source && <SourcePreview key={source.id} file={source}/>}
+      {panelView === "research" && selected && <LocalResearch key={selected.id} workspaceId={selected.id} onImported={async file => {const workspaceId = selected.id; await refresh(workspaceId); if (selection.current === workspaceId) {setSource(file); setPanelView("source");}}}/>}
+      {panelView === "outputs" && <><div className="aw-output-create">{(["document", "table"] as const).map(kind => <button key={kind} disabled={!selected} onClick={() => {if (safeNavigate()) setNewKind(kind);}}>＋ New {kind}</button>)}</div><div className="aw-output-list">{artifacts.length ? artifacts.map(item => <button key={item.id} aria-current={!newKind && artifact?.id === item.id ? "true" : undefined} onClick={() => void openArtifact(item)}><strong>{item.title || item.filename}</strong><small>{item.kind === "table" ? "Table · CSV" : "Markdown"} · Version {item.version}</small></button>) : <p className="aw-muted">Drafts you create appear here. Open, revise, and download them without leaving the conversation.</p>}</div>
+      {newKind && selected ? <ArtifactCreator key={`${selected.id}:${newKind}`} workspaceId={selected.id} kind={newKind} onCreated={async result => {const workspaceId = selected.id; await refresh(workspaceId); if (selection.current === workspaceId) {setArtifact(result); setNewKind(null);}}} onCancel={() => {if (safeNavigate()) setNewKind(null);}}/> : artifact && <ArtifactEditor key={`${artifact.id}:${artifact.version}`} artifact={artifact} latestVersion={artifacts.find(item => item.id === artifact.id)?.version ?? artifact.version} allowChatRevision={!availability?.test_mode} onOpen={version => void openArtifact(artifact, version)} onConflict={async () => {if (selected) await refresh(selected.id);}} onSaved={async result => {const workspaceId = selected?.id; if (!workspaceId) return; await refresh(workspaceId); if (selection.current === workspaceId) setArtifact(result);}} onRevise={() => {setDraft(`Revise "${artifact.title || artifact.filename}" (version ${artifact.version}): `); composer.current?.focus();}}/>}
+      <section className="aw-activity" aria-label="Run activity"><h2>Activity</h2>{live.activities.length ? <ol>{live.activities.map((activity, index) => <li key={index}>{activity}</li>)}</ol> : <p className="aw-muted">Tool progress appears here while a request is running.</p>}{run?.usage && <p className="aw-muted">{run.usage.requests} model request(s), {run.usage.input_tokens + run.usage.output_tokens} tokens. Cost: {run.usage.cost_usd === null ? "unknown" : `$${run.usage.cost_usd}`}.</p>}</section></>}
     </aside>}
   </div>;
 }

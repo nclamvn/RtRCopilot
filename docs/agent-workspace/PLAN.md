@@ -3,6 +3,13 @@
 Ngày lập: 2026-10-27. Phương pháp: Vibecode Kit v6.3, bản personal hiện hành.
 Code baseline đã khảo sát: `26742a39ccdc63b904ac5b6fd4ff3afb00af6851`.
 
+**Checkpoint 2026-10-28:** AW-01 đã lưu ở commit `347c8b2`; AW-02 đã đạt
+nghiệm thu kỹ thuật **local/mock có giới hạn** trên working tree sau commit đó.
+Xem [AW-02 implementation/verification](AW-02.md) và JSON evidence đi kèm.
+AI thật và tìm web thật chưa nghiệm thu; không deploy, chưa mở AW-03. Các mô tả
+“chưa triển khai” và quyền hạn ở phiên lập kế hoạch bên dưới là lịch sử tại ngày
+lập, không phải hiện trạng mới nhất. Không sửa lại bằng chứng lịch sử.
+
 **Quyết định thiết kế đề xuất: PydanticAI làm agent loop, bổ sung capability chọn lọc từ Pydantic AI Harness; thử DBOS làm chủ sở hữu duy nhất của recovery trong workflow mới.** Không đưa harness vào pipeline RAG cũ, không ghép hai executor cho cùng một run. Deep Agents/LangGraph là phương án thay thế nếu phép thử tích hợp đầu tiên bác bỏ lựa chọn này.
 
 Đây là kế hoạch phát triển, chưa phải chứng thực harness hay bản triển khai. Người dùng đã đồng ý hướng sản phẩm độc lập và yêu cầu so sánh, lựa chọn, lập kế hoạch. Phiên này không cài dependency, chạy model trả phí, SQL/Docker, campaign, executor hoặc deploy. Quyền chạy các campaign RtR trước đây không mở rộng sang sản phẩm mới.
