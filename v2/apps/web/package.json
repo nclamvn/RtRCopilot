@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
+    "dev:workspace": "WORKSPACE_UI_ENABLED=1 next dev --hostname 127.0.0.1 --port 3110",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
+    "start:workspace": "WORKSPACE_UI_ENABLED=1 next start --hostname 127.0.0.1 --port 3110",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run src",

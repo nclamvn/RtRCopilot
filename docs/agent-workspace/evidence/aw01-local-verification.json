@@ -1,0 +1,117 @@
+{
+  "schema": "agent-workspace.local-verification.v1",
+  "verified_date_local": "2026-10-28",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "baseline_commit": "26742a39ccdc63b904ac5b6fd4ff3afb00af6851",
+  "code_state": "uncommitted_working_tree",
+  "capture_stage": "Verification captured before commit/push. Publication of this checkpoint does not accept the real-model lane or authorize deployment.",
+  "source_manifest_sha256": "753ff2f72f7d24e8666df6334cdcf73a03e829d88eec141a26fbbd14e1fa6498",
+  "source_manifest_method": "rg --files over explicit new app source, new web feature/proxy/route, dependency manifests, browser config/tests; LC_ALL=C sort; per-file shasum -a 256; SHA256 of resulting manifest lines",
+  "source_manifest_roots": [
+    "v2/apps/workspace/src",
+    "v2/apps/workspace/pyproject.toml",
+    "v2/apps/workspace/uv.lock",
+    "v2/apps/web/src/workspace",
+    "v2/apps/web/src/app/workspace",
+    "v2/apps/web/src/app/api/workspace",
+    "v2/apps/web/package.json",
+    "v2/apps/web/playwright.workspace.config.ts",
+    "v2/apps/web/tests/workspace"
+  ],
+  "authorization": {
+    "implementation": "AW-01 approved",
+    "evaluation": "local_mock_only",
+    "external_model_calls_allowed": false,
+    "external_model_calls_performed": 0,
+    "legacy_executor_enabled": false,
+    "commit_push_deploy_performed": false
+  },
+  "disposition": {
+    "local_mock_technical_acceptance": "READY_WITH_DECLARED_LIMITS",
+    "full_aw01_acceptance": "PARTIAL",
+    "real_model_quality": "UNTESTED_BY_USER_DIRECTION",
+    "advantage_over_direct_agent": "UNMEASURED",
+    "production_release": "NOT_READY"
+  },
+  "provenance": {
+    "summary": "Assistant-compiled from actual command outputs and separate Builder/reviewer reports; not a self-executing certification",
+    "model": "assistant-authored scripted PydanticAI FunctionModel",
+    "persistence_execution": "real SQLite, DBOS, HTTP, process death/restart",
+    "browser": "real Chromium against local Next BFF and API",
+    "exceptions": [
+      "one explicitly labelled browser UI unavailable-status fixture",
+      "one injected browser transport fault after actual API dispatch"
+    ],
+    "human_semantic_acceptance": false
+  },
+  "versions": {
+    "python": "3.12.11",
+    "pydantic_ai_slim": "2.62.0",
+    "dbos": "3.2.0",
+    "pydantic": "2.14.1",
+    "fastapi": "0.162.0",
+    "uvicorn": "0.54.0",
+    "next": "16.2.11",
+    "additional_harness_package_installed": false
+  },
+  "final_checks": {
+    "workspace_python_suite": {"passed": 16, "failed": 0, "seconds": 42.43, "includes_harness_cases": 7, "includes_product_cases": 9, "observed_by": "Contractor rerun"},
+    "browser_e2e": {"passed": 7, "failed": 0, "seconds": 24.1, "observed_by": "Contractor final rerun"},
+    "web_unit_suite": {"passed": 236, "failed": 0, "files": 24, "includes_feature_proxy_cases": 16, "observed_by": "web Builder; selected feature cases also independently reviewed"},
+    "typescript": "PASS",
+    "scoped_eslint": "PASS",
+    "python_fatal_error_lint": {"status": "PASS", "rules": "E9,F63,F7,F82", "full_style_or_strict_typing": false},
+    "legacy_policy_unit": {"passed": 51, "configuration_warnings": 2},
+    "legacy_use_class_unit": {"passed": 16, "configuration_warnings": 2},
+    "mobile_axe": {"violations": 0, "viewport": {"width": 390, "height": 844}},
+    "independent_http": {
+      "passed": 13,
+      "checks": [
+        "anonymous_status_401",
+        "hostile_origin_403",
+        "cross_owner_messages_404",
+        "traversal_filename_400",
+        "duplicate_submit_same_run",
+        "cross_owner_events_404",
+        "version_2_persisted",
+        "version_1_immutable",
+        "download_matches_version",
+        "cross_owner_download_404",
+        "unicode_and_numbers_preserved",
+        "persisted_sse_has_final",
+        "physical_dispatch_counted"
+      ]
+    }
+  },
+  "readiness_probe": {
+    "scope": "100 warm loopback GET status requests only, not model latency, full harness overhead or product SLA",
+    "n": 100,
+    "median_ms": 2.46,
+    "p95_ms": 2.84
+  },
+  "live_local_endpoints": {
+    "ui": "http://127.0.0.1:3110/workspace",
+    "api": "http://127.0.0.1:8110/api/workspace",
+    "bind_verified": "127.0.0.1 only for both servers",
+    "mode": "explicit simulation"
+  },
+  "limits": [
+    "local session ownership, not enterprise authentication or public deployment",
+    "TXT/MD/CSV upload up to 256000 UTF8 bytes; individual model source read up to 64000 bytes",
+    "versioned Markdown artifacts only",
+    "no Office, shell, MCP, memory, external effects or approval-pause workflow",
+    "source ACL revocation interface and long-term list pagination are not implemented",
+    "native stop can await an in-flight non-preemptible step; publication remains fenced",
+    "integrated-browser upload automation did not complete; full upload E2E verified by Playwright",
+    "no real provider or human semantic acceptance"
+  ],
+  "cleanup": {
+    "project_copy_or_extra_next_dist_created": false,
+    "generated_harness_and_cache_removed_mb_approx": 83,
+    "review_databases_removed_mb_approx": 1.2,
+    "docker_prune_reclaimed_bytes": 0,
+    "containers_or_volumes_pruned": false,
+    "retained": ["required in-repository .venv", "standard .next", "local workspace state", "small evidence screenshots"],
+    "free_disk_gib_approx": 41
+  }
+}
