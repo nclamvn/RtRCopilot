@@ -55,13 +55,18 @@ class DataLifecycle:
         ]:
             if table in tables:
                 suffix = " AND deleted=0" if table == "workspace_memory" else ""
-                value[key] = [dict(r) for r in db.execute(f"SELECT {columns} FROM {table} WHERE workspace_id=?{suffix} ORDER BY created_at,id", (wid,))]
+                order = "created_at,rowid" if table == "messages" else "created_at,id"
+                value[key] = [dict(r) for r in db.execute(f"SELECT {columns} FROM {table} WHERE workspace_id=?{suffix} ORDER BY {order}", (wid,))]
             else:
                 value[key] = []
         columns = "v.*" if content else "v.artifact_id,v.version,v.run_id,v.created_at,v.metadata"
         value["versions"] = [dict(r) for r in db.execute(f"SELECT {columns} FROM versions v JOIN artifacts a ON a.id=v.artifact_id WHERE a.workspace_id=? ORDER BY v.artifact_id,v.version", (wid,))]
         value["runs"] = [dict(r) for r in db.execute("SELECT id,state,cancel_requested,error,usage,output_bytes,stream_bytes FROM runs WHERE workspace_id=? ORDER BY id", (wid,))]
         value["effect_states"] = [dict(r) for r in db.execute("SELECT id,status FROM effects WHERE workspace_id=? ORDER BY id", (wid,))] if "effects" in tables else []
+        if content and "workspace_import_lineage" in tables:
+            row = db.execute("SELECT archive_sha256,source_workspace_id,id_map,imported_at FROM workspace_import_lineage WHERE workspace_id=?", (wid,)).fetchone()
+            if row:
+                value["import_lineage"] = dict(row) | {"id_map": json.loads(row["id_map"])}
         return value
 
     def _digest(self, value):
@@ -109,6 +114,8 @@ class DataLifecycle:
             members[path] = body
         manifest = dict(format="agent-workspace-export-v1", workspace=value["workspace"],
             exported_at=time.time(), retained=RETAINED, entries=[])
+        if "import_lineage" in value:
+            manifest["import_lineage"] = value["import_lineage"]
         file_metadata = []
         for item in value["files"]:
             item = item.copy()
@@ -179,6 +186,12 @@ class DataLifecycle:
             for table in ("files", "artifacts", "messages", "workspace_memory", "workspace_memory_meta", "workspace_schedules", "workspace_clocks", "workspace_state_requests", "effects", "approvals", "connection_grants", "runs", "workspace_delete_previews"):
                 if table in tables:
                     db.execute(f"DELETE FROM {table} WHERE workspace_id=?", (wid,))
+            for table in ("workspace_import_lineage", "workspace_metadata_requests"):
+                if table in tables:
+                    db.execute(f"DELETE FROM {table} WHERE workspace_id=?", (wid,))
+            if "workspace_import_receipts" in tables:
+                # Preserve the consumed idempotency key, not the deleted title.
+                db.execute("UPDATE workspace_import_receipts SET result='{}' WHERE workspace_id=?", (wid,))
             # Keep only opaque identity/owner timestamp, not even the old title.
             db.execute("DELETE FROM workspaces WHERE id=? AND owner=?", (wid, owner))
             result = dict(deleted=True, workspace_id=wid, retained=RETAINED)

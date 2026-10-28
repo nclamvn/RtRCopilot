@@ -25,6 +25,16 @@ probe độc lập 23 đều đạt trên working tree. Chưa có quyền và cr
 riêng để gọi model thật. Không lấy kết quả local/mock làm nghiệm thu AI thật,
 không deploy và không tự dùng credential hay corpus legacy.
 
+**Cập nhật AW-05, cùng ngày:** AW-04 và baseline AW-03 đã push lên `main` tại
+`12d924c`. Người dùng chọn chỉ local/mock, chưa nghiệm thu AI thật, và duyệt
+triển khai [AW-05](AW-05.md): frontend độc lập, nhập/khôi phục snapshot thành
+workspace mới, điều hướng nhiều dự án và draft đúng phạm vi. Đã đạt kỹ thuật
+local/mock: Python 148, web unit 270, browser E2E 32 và probe độc lập 22 đều đạt.
+AI thật chưa nghiệm thu; người dùng đã phê duyệt checkpoint commit/push AW-05.
+Không external hay deploy; evidence giữ provenance của lượt kiểm thử trước commit.
+Các checkpoint phía trên là lịch sử
+tại thời điểm capture, không phải khẳng định AW-03/AW-04 vẫn chưa push.
+
 **Quyết định thiết kế đề xuất: PydanticAI làm agent loop, bổ sung capability chọn lọc từ Pydantic AI Harness; thử DBOS làm chủ sở hữu duy nhất của recovery trong workflow mới.** Không đưa harness vào pipeline RAG cũ, không ghép hai executor cho cùng một run. Deep Agents/LangGraph là phương án thay thế nếu phép thử tích hợp đầu tiên bác bỏ lựa chọn này.
 
 Đây là kế hoạch phát triển, chưa phải chứng thực harness hay bản triển khai. Người dùng đã đồng ý hướng sản phẩm độc lập và yêu cầu so sánh, lựa chọn, lập kế hoạch. Phiên này không cài dependency, chạy model trả phí, SQL/Docker, campaign, executor hoặc deploy. Quyền chạy các campaign RtR trước đây không mở rộng sang sản phẩm mới.

@@ -1,6 +1,6 @@
 # Agent Workspace local prototype
 
-AW-01 through AW-04 add a neutral workspace next to the existing application. It does not
+AW-01 through AW-05 provide a neutral workspace with its own frontend entry/build. It does not
 activate the legacy executor, import the RtR answer pipeline or discover its
 credentials. Current acceptance is **local/mock integration only**, as requested
 by the user. It is not an accepted production AI assistant.
@@ -12,12 +12,13 @@ directory; do not upgrade the legacy backend environment.
 
 ```sh
 cd /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/workspace
-uv sync --frozen --no-cache
+uv sync --frozen --offline
 .venv/bin/workspace launch --simulation
 ```
 
-This starts the API on 8110 and the enabled UI on 3110, both bound to loopback.
-It uses the existing Next `.next` output, no copied project or per-task build.
+This starts the API on 8110 and the independent `@agent-workspace/web` UI on
+3110, both bound to loopback. The frontend uses its ordinary `.next` dev output,
+not the legacy app build, a copied project or per-task output directory.
 Stop with Ctrl+C; the launcher cleans up only its own child process groups.
 Do not launch a second copy on occupied ports. For an already running UI/API,
 stop the existing operator-owned processes before using this launcher.
@@ -28,11 +29,12 @@ For separate terminal control, run:
 WORKSPACE_TEST_MODE=1 PYDANTIC_AI_NO_BANNER=1 \
   .venv/bin/python -m uvicorn agent_workspace.api:app --host 127.0.0.1 --port 8110
 # Another terminal:
-pnpm --dir /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/web dev:workspace
+pnpm --dir /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/workspace-web dev
 ```
 
 Open <http://127.0.0.1:3110/workspace>. The dedicated frontend launcher explicitly
-enables the feature and binds loopback. Both page and BFF are disabled by default.
+enables the scoped BFF and binds loopback. The separate legacy entry remains
+unchanged; the independent entry imports no legacy shell/styles/auth or proxy.
 Do not expose this local session mode through a LAN/public bind or reverse proxy.
 Incoming Host/Origin checks do not prove a spoofed non-browser peer is local;
 loopback binding of **both** servers is part of the supported contract.
@@ -42,6 +44,50 @@ and the product catalogue use separate local SQLite databases under
 `.workspace-data/`. This directory contains session hashes, files, conversation
 history and artifacts. Keep it private and retain it to preserve local work.
 SQLite here is development/test storage, not a production scale claim.
+
+## AW-05: independent frontend and isolated local testing
+
+The new package is `v2/apps/workspace-web`, with the same pinned Next/React
+versions as the existing web package. It imports only the shared neutral
+Workspace components and scoped BFF source. This is a separate app/build graph,
+not a copied UI or a standalone commercial distribution: shared source still
+lives in the monorepo and license/redistribution clearance is not implied.
+
+In this local-only milestone dependency installation must be offline. From `v2`:
+
+```sh
+pnpm install --offline --frozen-lockfile --ignore-scripts --filter @agent-workspace/web
+pnpm workspace:typecheck
+pnpm workspace:audit
+pnpm workspace:build
+```
+
+Use the pnpm store already recorded in `node_modules/.modules.yaml` if pnpm
+reports a store mismatch (`--store-dir <existing-store>`). Do not approve a
+module purge/reinstallation or fetch missing packages for this milestone. If an
+offline cache item is absent, stop and report it. Check at least10GiB free before
+building. Production builds reuse exactly `.next-build`; dev uses `.next`.
+The graph audit checks transitive local imports, remote CSS imports and the built
+route manifest; it is not a complete transitive dependency/security audit.
+
+After the local build, the launcher can serve that build without deployment:
+
+```sh
+# From v2/apps/workspace; synthetic test store, separate from normal user data:
+.venv/bin/workspace launch --simulation --production \
+  --api-port 8120 --web-port 3120 --data-dir .workspace-data/aw05-e2e
+```
+
+This binds only `127.0.0.1:8120`/`:3120` and sets an explicit local Origin
+allowlist for those ports. Port values must be distinct integers1024..65535;
+arbitrary remote origins are rejected. An invalid origin configuration fails
+closed. Use fresh browser contexts for E2E; cookies are host-scoped rather than
+port-scoped, so do not navigate the existing user's browser context to a test
+catalogue on the same host. Do not remove or overwrite `.workspace-data`.
+
+`--production` means a local optimized Next build, not production identity,
+deployment, model approval or background scheduler activation. Model mock is
+still explicitly visible; AI quality/value remain unaccepted.
 
 ## Try the scripted integration flow
 

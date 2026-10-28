@@ -1,0 +1,48 @@
+{
+  "milestone": "AW-05",
+  "reviewer": "/root/aw05_review",
+  "review_type": "Separate-author local boundary review, not production author self-certification",
+  "date": "2026-10-28",
+  "status": "PASS_WITH_SCOPE_LIMITS",
+  "test_file": "docs/agent-workspace/evidence/test_aw05_independent.py",
+  "command": ".venv/bin/python -m pytest ../../../docs/agent-workspace/evidence/test_aw05_independent.py -q --tb=short --basetemp=/private/tmp/codex-tmp-aw05-review-20261028",
+  "command_cwd": "v2/apps/workspace",
+  "latest_result": {"passed": 22, "failed": 0, "skipped": 0, "seconds": 2.35},
+  "earlier_results_not_additive": [{"passed": 21, "seconds": 2.11}, {"passed": 22, "seconds": 2.15}],
+  "external_model_calls": 0,
+  "evidence_kinds": ["Actual disposable SQLite catalogues", "Native FastAPI/ASGI request boundary without a model runtime", "Committed AW-04 exporter loaded into memory against synthetic source data", "Byte-exact supported DOCX fixture original", "Actual ComposerDrafts TypeScript helper transpiled and exercised in a Node VM with controlled browser-storage faults", "Static neutral import graph and existing compiled route manifest"],
+  "coverage": [
+    "New ownership and resource IDs; original bytes and both artifact versions preserved",
+    "Imported displayed messages have no resumable run IDs or model history",
+    "Memory restores only with explicit choice; schedules, grants, runs and approvals do not revive",
+    "An actual exporter from committed AW-04 can feed the current importer with a synthetic DOCX original preserved byte-exact",
+    "A recomputed-valid checksum cannot authorize source workspace/owner changes, system-role messages, version gaps, permission members or traversal",
+    "Duplicate JSON keys, NaN, excessive nesting and unpaired surrogates in otherwise complete memory/provenance records reject without partial workspaces",
+    "Corrupt DEFLATE produces typed400 at the actual ASGI boundary and no catalogue writes",
+    "Preview binds owner/name/memory choices; concurrent different request keys consume one preview only once",
+    "Late SQL-trigger failure rolls back the whole imported workspace and leaves the original preview retryable",
+    "Idempotent import replay reports current renamed metadata, remains stable after catalogue reopen, and returns404 after confirmed deletion",
+    "Deletion removes import lineage and metadata requests, scrubs private import receipt result, and cannot resurrect the deleted identity",
+    "Archive is visibility organization: active task blocks archive, archived workspace blocks a new run, saved artifacts remain readable, stale revision conflicts",
+    "Explicit origins reject HTTPS/remote/path/credential URLs",
+    "Independent entry graph excludes legacy layout/styles/auth/proxy; compiled routes contain only neutral app endpoints",
+    "Composer scope is per workspace; failed removal falls back to a blank tombstone, both-writer failure stays in-memory and is repaired when storage recovers, and other workspace drafts remain unchanged"
+  ],
+  "findings_closed": [
+    {"id": "IR-01", "severity": "P1", "found_by": "independent reviewer source inspection", "finding": "After sending/clearing, failed localStorage removal left old text persisted while empty composer suppressed the storage warning and unsafe-navigation guard", "resolution": "Builder added blank-tombstone fallback, empty-clear failure warning/guard and retry; independent actual helper probe verifies the fallback and recovery. Root owns browser proof of the notice."},
+    {"id": "IR-02", "severity": "P2", "found_by": "independent reviewer executable corrupt-byte reproduction", "finding": "Corrupt compressed payload raised uncaught zlib.error instead of a typed invalid-snapshot error", "resolution": "Builder catches zlib.error narrowly at ZIP read; independent ASGI request now returns400 with zero workspaces created"},
+    {"id": "IR-03", "severity": "P2", "found_by": "backend author self-inspection, confirmed by independent review and Contractor", "finding": "Import receipt replay could return stale name/revision after the imported workspace was renamed or archived", "resolution": "Builder overlays current owned workspace metadata onto the immutable import result; independent replay/reopen probe passes"}
+  ],
+  "open_p0_p1_observed_in_reviewed_scope": 0,
+  "limits": [
+    "No external calls, real AI quality, model latency/cost, semantic comparison or human acceptance evidence",
+    "These are defined-case tests, not a complete adversarial or production security audit",
+    "Root owns actual browser E2E, final independent build/start/restart and final source binding; this reviewer did not start or kill live user processes",
+    "The neutral graph check covers static source imports and compiled route names, not a complete transitive dependency/license or binary audit",
+    "The historical AW-04 compatibility probe uses the committed exporter loaded in memory with synthetic current-format sources, not an imported real user archive",
+    "With both browser-storage writers unavailable, no implementation can guarantee a persistent clear after forced process termination; the visible warning, in-tab navigation guard and explicit retry are required and do not claim forensic erasure",
+    "Application deletion does not erase retained audits, backups, prior downloads or other devices",
+    "Only owned disposable test data was changed; existing workspace catalogue and cookies were not accessed"
+  ],
+  "cleanup": {"owned_scratch": "/private/tmp/codex-tmp-aw05-review-20261028", "observed_size": "4.0MiB", "removed": true, "docker_used": false, "extra_next_distdir_created": false}
+}

@@ -1,0 +1,21 @@
+.agent-workspace .aw-import-open {text-align:left;padding:0 10px;font-size:12px;margin-top:-14px;color:#707070}
+.aw-workspace-search {width:100%;min-width:0;font-size:12px!important;border:1px solid #dcdcdc;border-radius:5px;background:#fff;padding:8px 9px}
+.aw-project-filter {display:flex;gap:8px;margin:9px 0}
+.aw-project-filter button {font-size:11px;padding:4px 7px;color:#707070}
+.aw-project-filter button[aria-pressed=true] {color:#171717;background:#e9e9e9}
+.aw-header .aw-project-menu {font-size:14px;letter-spacing:1px;padding:7px;color:#707070}
+.agent-workspace .aw-project-import .aw-control-form input {max-width:none}
+.agent-workspace .aw-project-import .aw-control-form input[type=file] {padding:8px;font-size:11px}
+.aw-check-label {display:flex!important;align-items:flex-start;gap:9px;line-height:1.6}
+.agent-workspace .aw-check-label input[type=checkbox] {width:16px;min-width:16px;max-width:16px;margin:3px 0 0;padding:0}
+.aw-import-preview {border-top:1px solid #e8e8e8;padding-top:22px;font-size:12px;line-height:1.8}
+.aw-import-choices:not([data-ready]) > summary {display:none}
+.aw-import-choices[data-ready] {font-size:12px;margin:16px 0 22px}
+.aw-import-choices summary,.aw-import-omissions summary {cursor:pointer;text-underline-offset:3px}
+.aw-import-omissions {margin-top:18px;font-size:12px;line-height:1.7}
+.aw-import-omissions ul {margin:12px 0;padding-left:18px}
+.aw-import-omissions li {margin:7px 0}
+.aw-archive-note {font-size:12px;padding:10px 30px;border-bottom:1px solid #e8e8e8;color:#707070}
+.aw-archive-note button {text-decoration:underline;padding:0;font-size:inherit}
+.aw-draft-warning {font-size:11px;color:#555;margin:8px 0!important;line-height:1.6}
+@media(max-width:650px) {.aw-archive-note{padding:9px 16px}.agent-workspace .aw-workspace-search{font-size:16px!important}}

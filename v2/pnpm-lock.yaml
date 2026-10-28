@@ -16,6 +16,31 @@ importers:
 
   .: {}
 
+  apps/workspace-web:
+    dependencies:
+      next:
+        specifier: 16.2.11
+        version: 16.2.11(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.62.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+    devDependencies:
+      '@types/node':
+        specifier: 22.17.2
+        version: 22.17.2
+      '@types/react':
+        specifier: 19.2.17
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: 19.2.3
+        version: 19.2.3(@types/react@19.2.17)
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+
   apps/web:
     dependencies:
       next:

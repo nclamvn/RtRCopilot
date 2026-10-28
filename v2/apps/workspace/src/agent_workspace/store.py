@@ -72,7 +72,13 @@ class Store:
             CREATE TABLE IF NOT EXISTS workspace_deletions(owner TEXT NOT NULL,request_id TEXT NOT NULL,
               workspace_id TEXT NOT NULL,args_digest TEXT NOT NULL,result TEXT NOT NULL,
               PRIMARY KEY(owner,request_id));
+            CREATE TABLE IF NOT EXISTS workspace_metadata_requests(owner TEXT NOT NULL,request_id TEXT NOT NULL,
+              workspace_id TEXT NOT NULL,args_digest TEXT NOT NULL,PRIMARY KEY(owner,request_id));
             """)
+            workspace_columns = {r[1] for r in db.execute("PRAGMA table_info(workspaces)")}
+            for column, definition in {"archived": "INTEGER NOT NULL DEFAULT 0", "revision": "INTEGER NOT NULL DEFAULT 1"}.items():
+                if column not in workspace_columns:
+                    db.execute(f"ALTER TABLE workspaces ADD COLUMN {column} {definition}")
             columns = {r[1] for r in db.execute("PRAGMA table_info(runs)")}
             if "output_bytes" not in columns:
                 db.execute("ALTER TABLE runs ADD COLUMN output_bytes INTEGER NOT NULL DEFAULT 0")
@@ -140,13 +146,49 @@ class Store:
         self._workspace(db, owner, row["workspace_id"])
         return row
 
-    def workspaces(self, owner, name=None):
+    @staticmethod
+    def _workspace_view(row):
+        return {key: row[key] for key in ("id", "name", "created_at", "revision")} | {"archived": bool(row["archived"])}
+
+    def workspaces(self, owner, name=None, *, query="", include_archived=False):
         with self.tx() as db:
             if name is not None:
-                item = {"id": identity(), "name": name, "created_at": time.time()}
-                db.execute("INSERT INTO workspaces VALUES(?,?,?,?)", (item["id"], owner, name, item["created_at"]))
+                item = {"id": identity(), "name": name, "created_at": time.time(), "archived": False, "revision": 1}
+                db.execute("INSERT INTO workspaces(id,owner,name,created_at) VALUES(?,?,?,?)", (item["id"], owner, name, item["created_at"]))
                 return item
-            return [dict(r) for r in db.execute("SELECT id,name,created_at FROM workspaces WHERE owner=? AND NOT EXISTS (SELECT 1 FROM workspace_tombstones t WHERE t.workspace_id=workspaces.id) ORDER BY created_at", (owner,))]
+            if not isinstance(query, str) or len(query) > 120:
+                raise WorkspaceError("invalid_workspace_query")
+            rows = db.execute("SELECT * FROM workspaces WHERE owner=? AND (? OR archived=0) AND NOT EXISTS (SELECT 1 FROM workspace_tombstones t WHERE t.workspace_id=workspaces.id) ORDER BY created_at,id", (owner, bool(include_archived)))
+            return [self._workspace_view(r) for r in rows if query.casefold() in r["name"].casefold()]
+
+    def update_workspace(self, owner, wid, key, expected_revision, *, name=None, archived=None):
+        from .workspace_state import bounded_text, request_key
+        request_key(key)
+        if name is not None:
+            name = bounded_text(name, 120, "invalid_workspace_name").strip()
+        if (name is None and archived is None) or (archived is not None and type(archived) is not bool):
+            raise WorkspaceError("invalid_workspace_metadata")
+        args = dict(workspace_id=wid, expected_revision=expected_revision, name=name, archived=archived)
+        digest = hashlib.sha256(json.dumps(args, sort_keys=True).encode()).hexdigest()
+        with self.tx() as db:
+            current = self._workspace(db, owner, wid)
+            prior = db.execute("SELECT * FROM workspace_metadata_requests WHERE owner=? AND request_id=?", (owner, key)).fetchone()
+            if prior:
+                if prior["workspace_id"] != wid or prior["args_digest"] != digest:
+                    raise WorkspaceError("idempotency_conflict", 409)
+                return self._workspace_view(current)
+            if type(expected_revision) is not int or expected_revision != current["revision"]:
+                raise WorkspaceError("stale_workspace_revision", 409)
+            if db.execute("SELECT COUNT(*) FROM workspace_metadata_requests WHERE workspace_id=?", (wid,)).fetchone()[0] >= 2000:
+                raise WorkspaceError("workspace_metadata_request_limit", 409)
+            if archived:
+                if db.execute("SELECT 1 FROM runs WHERE workspace_id=? AND state NOT IN ('completed','failed','cancelled')", (wid,)).fetchone():
+                    raise WorkspaceError("workspace_busy", 409)
+                if db.execute("SELECT 1 FROM sqlite_master WHERE name='effects'").fetchone() and db.execute("SELECT 1 FROM effects WHERE workspace_id=? AND status!='completed'", (wid,)).fetchone():
+                    raise WorkspaceError("workspace_unsettled_effects", 409)
+            db.execute("UPDATE workspaces SET name=?,archived=?,revision=revision+1 WHERE id=?", (name if name is not None else current["name"], int(archived) if archived is not None else current["archived"], wid))
+            db.execute("INSERT INTO workspace_metadata_requests VALUES(?,?,?,?)", (owner, key, wid, digest))
+            return self._workspace_view(self._workspace(db, owner, wid))
 
     def items(self, owner, workspace_id, table):
         columns = {"messages": "id,role,content,run_id,created_at",
@@ -154,7 +196,7 @@ class Store:
                    "artifacts": "id,title,filename,version,media_type,created_at,kind"}[table]
         with self.tx() as db:
             self._workspace(db, owner, workspace_id)
-            return [self._file_view(r) if table == "files" else dict(r) for r in db.execute(f"SELECT {columns} FROM {table} WHERE workspace_id=? ORDER BY created_at", (workspace_id,))]
+            return [self._file_view(r) if table == "files" else dict(r) for r in db.execute(f"SELECT {columns} FROM {table} WHERE workspace_id=? ORDER BY created_at,rowid", (workspace_id,))]
 
     def upload(self, owner, workspace_id, filename, content, media_type):
         return self.upload_bytes(owner, workspace_id, filename, content.encode(), media_type)
@@ -218,12 +260,14 @@ class Store:
 
     def _create_run(self, db, owner, workspace_id, message, request_key, limits):
         """Caller-owned transaction permits atomic schedule claim + run creation."""
-        self._workspace(db, owner, workspace_id)
+        workspace = self._workspace(db, owner, workspace_id)
         old = db.execute("SELECT * FROM runs WHERE owner=? AND request_key=?", (owner, request_key)).fetchone()
         if old:
             if old["workspace_id"] != workspace_id or old["message"] != message:
                 raise WorkspaceError("idempotency_conflict", 409)
             return self._view(old)
+        if workspace["archived"]:
+            raise WorkspaceError("workspace_archived", 409)
         if db.execute("SELECT 1 FROM runs WHERE workspace_id=? AND state NOT IN ('completed','failed','cancelled')", (workspace_id,)).fetchone():
             raise WorkspaceError("workspace_busy", 409)
         if db.execute("SELECT COUNT(*) FROM runs WHERE state NOT IN ('completed','failed','cancelled')").fetchone()[0] >= 8:

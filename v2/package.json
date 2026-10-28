@@ -9,6 +9,9 @@
     "test": "pnpm --filter @rtr/web test",
     "test:browser": "pnpm --filter @rtr/web test:browser",
     "test:browser:ai-surrogate": "pnpm --filter @rtr/web test:browser:ai-surrogate",
-    "verify:web": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "verify:web": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "workspace:build": "pnpm --filter @agent-workspace/web build",
+    "workspace:typecheck": "pnpm --filter @agent-workspace/web typecheck",
+    "workspace:audit": "pnpm --filter @agent-workspace/web audit:graph"
   }
 }

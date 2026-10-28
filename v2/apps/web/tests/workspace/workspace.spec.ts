@@ -66,10 +66,10 @@ test("REAL API scope + duplicate idempotency + replay cursor are enforced", asyn
   const cursor = ids[Math.floor(ids.length / 2)];
   const resumed = await (await page.request.get(`/api/workspace/runs/${first.run_id}/events?after=${cursor}`)).text();
   expect([...resumed.matchAll(/^id:\s*(\d+)/gm)].every(match => Number(match[1]) > cursor)).toBe(true);
-  const outsider = await browser.newContext();
-  await outsider.request.post("http://127.0.0.1:3110/api/workspace/session", {data: {}, headers: {origin: "http://127.0.0.1:3110"}});
-  expect((await outsider.request.get(`http://127.0.0.1:3110/api/workspace/runs/${first.run_id}`)).status()).toBe(404);
-  expect((await outsider.request.get(`http://127.0.0.1:3110/api/workspace/workspaces/${workspaceId}/files`)).status()).toBe(404);
+  const origin = new URL(page.url()).origin; const outsider = await browser.newContext({baseURL: origin, extraHTTPHeaders: {origin}});
+  expect((await outsider.request.post("/api/workspace/session", {data: {}})).ok()).toBe(true);
+  expect((await outsider.request.get(`/api/workspace/runs/${first.run_id}`)).status()).toBe(404);
+  expect((await outsider.request.get(`/api/workspace/workspaces/${workspaceId}/files`)).status()).toBe(404);
   await outsider.close();
 });
 

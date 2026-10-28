@@ -12,6 +12,7 @@ export type DeletedWorkspace = {deleted: true; workspace_id: string; retained: s
 // so the owner-checked server preview supplies their artifact IDs.
 export function clearWorkspaceBrowserData(workspaceId: string, artifactIds: string[]) {
   localStorage.removeItem(`agent-workspace:run:${workspaceId}`);
+  localStorage.removeItem(`agent-workspace:composer:${workspaceId}`);
   if (localStorage.getItem("agent-workspace:selected") === workspaceId) localStorage.removeItem("agent-workspace:selected");
   for (const kind of ["document", "table"]) localStorage.removeItem(`agent-workspace:new-draft:${workspaceId}:${kind}`);
   for (const id of artifactIds) localStorage.removeItem(`agent-workspace:artifact-draft:${id}`);

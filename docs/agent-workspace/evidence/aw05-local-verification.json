@@ -1,0 +1,113 @@
+{
+  "milestone": "AW-05",
+  "date": "2026-10-28",
+  "method": "Personal Vibecode Kit v6.3",
+  "overall_status": "READY_WITH_DEFERRED_IN_LOCAL_MOCK_SCOPE",
+  "checkpoint_authority": {
+    "commit_push_authorized": true,
+    "scope": "AW-05 code, tests and evidence only; no secrets, temporary files or legacy data",
+    "external_model_authorized": false,
+    "deploy_authorized": false,
+    "real_ai_accepted": false,
+    "note": "Subsequent user checkpoint request. user_authority/source_binding below describe the earlier implementation verification capture; they are not post-commit rebuild or push receipts."
+  },
+  "user_authority": {
+    "scope": "Complete AW-05, local/mock and synthetic data only",
+    "external_model_authorized": false,
+    "external_model_dispatches": 0,
+    "dependency_downloads": 0,
+    "deploy_authorized": false,
+    "commit_push_authorized": false,
+    "commit_push_performed": false
+  },
+  "source_binding": {
+    "base_commit": "12d924c0e05035e149b9455c164fa8da0f721031",
+    "state": "Uncommitted AW-05 working tree, no post-commit/release certification",
+    "manifest": "aw05-source-manifest.sha256",
+    "manifest_sha256": "67f8476615826303254293b7648268c0501d00e501ba652b142fb48b44b28d04",
+    "source_files": 97,
+    "all_entries_verified_after_tests": true,
+    "scope": "Python Workspace source/lock/assets/tests, independent frontend, shared neutral UI/BFF/browser tests, selected web config, pnpm manifests/lock, Contractor and independent verification scripts. No user catalogue/generated builds in this manifest.",
+    "local_build_id": "x9Y82Z8isSVRe7OaxiHRg",
+    "compiled_route_manifest_sha256": "ddd1e09f05f9b265a422872b4a816c6c27166f7e0b4ad9bdc86d73e84ee65d5e",
+    "neutral_graph_evidence": "aw05-neutral-graph.json",
+    "runtime_workflow_version": "workspace-aw04-v1",
+    "workflow_version_note": "Agent loop/tool topology unchanged. This durable workflow compatibility label is not a Git/release build identity."
+  },
+  "outcome_coverage": {
+    "implemented_local_groups": 4,
+    "approved_local_groups": 4,
+    "groups": ["Independent neutral entry/layout/build/launcher", "Validated snapshot import into a new identity with explicit memory choice", "Owned workspace search/rename/archive and scoped source/version navigation", "Per-workspace composer continuity, stale-response fencing and explicit storage recovery"],
+    "real_ai_and_human_acceptance": "Not part of approved local acceptance; remain unmeasured/unreviewed"
+  },
+  "latest_checks": [
+    {"cwd": "v2/apps/workspace", "command": ".venv/bin/python -m pytest -q --basetemp=.aw05-root-final", "passed": 148, "failed": 0, "skipped": 0, "seconds": 80.83, "kind": "Actual disposable SQLite/DBOS/MCP processes and model/mock HTTP"},
+    {"cwd": "v2/apps/web", "command": "pnpm test", "passed": 270, "files": 29, "failed": 0, "seconds": 9.97, "kind": "Full web unit regression after final compact import UI"},
+    {"cwd": "v2/apps/web", "command": "PLAYWRIGHT_BASE_URL=http://127.0.0.1:3120 pnpm exec playwright test --config playwright.workspace.config.ts", "passed": 32, "failed": 0, "duration_reported": "1.0m", "kind": "Actual independent optimized local build/API; 10 AW-05 and 22 retained cases, with explicitly labelled UI-only readiness/storage/network fault fixtures"},
+    {"cwd": "v2/apps/workspace", "command": ".venv/bin/python -m pytest ../../../docs/agent-workspace/evidence/test_aw05_independent.py -q --basetemp=.aw05-root-review", "passed": 22, "failed": 0, "seconds": 3.55, "kind": "Contractor rerun of separately authored boundary probes"},
+    {"cwd": "v2/apps/workspace", "command": ".venv/bin/python -m pytest tests/test_aw05_packaging.py ../../../docs/agent-workspace/evidence/test_aw05_independent.py -q --basetemp=.aw05-root-recheck", "passed": 48, "failed": 0, "seconds": 2.93, "kind": "26 packaging plus22 independent probes; overlaps preceding checks, not additional48 scenarios"},
+    {"cwd": "v2/apps/web", "command": "pnpm typecheck && pnpm exec eslint src/workspace src/app/api/workspace tests/workspace", "status": "PASS"},
+    {"cwd": "v2", "command": "pnpm workspace:build", "status": "PASS", "kind": "Local optimized webpack build, no deployment", "reported_components": "compile2.2s, TypeScript1.488s, static pages0.316s; not an asserted sum of complete build time"},
+    {"cwd": "v2", "command": "pnpm workspace:typecheck", "status": "PASS"},
+    {"cwd": "v2/apps/workspace-web", "command": "node scripts/audit-graph.mjs", "status": "PASS", "neutral_source_files": 18, "compiled_routes": ["/", "/workspace", "/api/workspace/[[...path]]", "Next system routes"], "limit": "Static import graph and route manifest, not full binary/transitive dependency audit"},
+    {"command": "Changed Python fatal Ruff; git diff --check", "status": "PASS", "provenance": "Builder fatal Ruff; Contractor whitespace and integrated behavior checks"}
+  ],
+  "independent_review": {
+    "evidence": "aw05-independent-review.json",
+    "reviewer_result": "22 passed in2.35s",
+    "open_p0_p1_observed_in_reviewed_scope": 0,
+    "closed_findings": ["P1 silent draft-clear storage failure", "P2 unhandled corrupt DEFLATE exception", "P2 stale name/revision on import receipt replay (author-identified and independently confirmed)"]
+  },
+  "prior_observations_not_additive": [
+    {"lane": "Initial full Python before final two backend regressions", "result": "146 passed,81.84s; superseded by148 final"},
+    {"lane": "First AW-05 browser capture", "result": "7 passed/3 failed", "causes": ["Too-short forged confirmation token fixture returned422 before the expected409", "Partial Send locator also matched archive guidance", "Global alert lookup included the Next route announcer"], "repair": "Correct request format/exact app-scoped selectors, without relaxed output assertions", "retest": "10 targeted passed, then full32"},
+    {"lane": "Contractor full browser before final mobile presentation polish", "result": "32 passed,59.7s", "final": "Superseded by final rebuilt32-case pass above"},
+    {"lane": "Mobile visual inspection", "finding": "Dense repeated omissions text hid the primary CTA below the initial viewport", "repair": "Visible short consent facts, native Change import choices and What is not restored disclosures", "verified": "Final keyboard/axe and complete CTA bounding box at390x844"},
+    {"lane": "Dependency setup", "result": "Initial store mismatch/cache metadata resolution aborted; reused exact installed lock/store with offline frozen linking. No fetch or old module purge."}
+  ],
+  "http_roundtrip": {
+    "evidence": "aw05-http-verification.json",
+    "status": "PASS",
+    "archive_bytes": 4229,
+    "preview_ms_single_sample": 5.511,
+    "commit_ms_single_sample": 6.93,
+    "detail": "4 owned disposable workspaces created/deleted; raw bytes, two original versions and three second-generation versions, displayed messages with no run IDs, fresh IDs, memory opt-in, no grants/schedules, archive/CAS and deleted-import replay404",
+    "limit": "One tiny local archive during QA, not capacity or model/user productivity"
+  },
+  "runtime_and_browser": {
+    "retained_demo_url": "http://localhost:3120/workspace",
+    "api": "http://127.0.0.1:8120",
+    "catalogue": "v2/apps/workspace/.workspace-data/aw05-e2e (synthetic only, Git-ignored)",
+    "launch": ".venv/bin/workspace launch --simulation --production --api-port 8120 --web-port 3120 --data-dir .workspace-data/aw05-e2e",
+    "dev_smoke": "8121/3121 neutral title, /ask404 and mock readiness PASS, then stopped/removed",
+    "actual_process_cleanup": "Controlled stop left no listeners on8120/3120/8121/3121; subsequently restarted only retained demo pair",
+    "native_browser_proof": "Create synthetic notebook, persist unsent composer and artifactv1, stop/start launcher, reload with same isolated session, verify draft/v1, savev2 and reopenv1, returnv2",
+    "existing_user_catalogue_or_cookies_used": false,
+    "original_runtime_3110_8110_restarted": false,
+    "screenshots": ["aw05-local-continuity.png", "aw05-local-import-preview.png", "aw05-local-mobile.png"]
+  },
+  "value_and_limits": {
+    "measured": "Local operational/data continuity, build separation and scoped UX behavior",
+    "baseline": "Scanned AW-04: shared legacy entry, export-only snapshot lifecycle and global composer draft. AW-05 supplies the corresponding independent entry, restore and per-workspace continuity.",
+    "real_ai_quality": "NOT_MEASURED",
+    "direct_model_agent_advantage": "NOT_MEASURED",
+    "human_acceptance": "NOT_REVIEWED",
+    "active_human_minutes": null,
+    "invoice_usd": null,
+    "import_contract": "AW-04 v1 only,20MiB compressed/uncompressed and2500 members plus existing content quotas; fresh identity and explicit memory opt-in; content restoration not executor/model checkpoint restoration",
+    "packaging": "Independent app graph with shared neutral monorepo sources and existing cache, not a self-contained binary or fresh-machine offline-install proof",
+    "not_certified": ["Commercial source/license redistribution rights", "Complete transitive security/dependency audit", "Production multi-user identity/scale", "General code/browser/shell sandbox", "Live connectors/web", "Real scheduler", "Forensic erasure"],
+    "storage_fault_limit": "If all browser storage writers remain unavailable and the user forces termination, durable clear cannot be guaranteed; explicit notice/navigation guard/retry, not a false persistence promise."
+  },
+  "cleanup": {
+    "root_removed_mib": 134.09,
+    "root_removed": ["v2/apps/workspace/.aw05-root-python", "v2/apps/workspace/.aw05-root-final", "v2/apps/workspace/.aw05-root-review", "v2/apps/workspace/.aw05-root-recheck", "v2/apps/workspace/.workspace-data/aw05-dev-smoke", "v2/apps/workspace-web/.next (unused dev-smoke cache)"],
+    "builder_removed": "Backend5 named pytest directories approximately25MiB; packaging2.7MiB directory plus256KiB recheck",
+    "reviewer_removed": "/private/tmp/codex-tmp-aw05-review-20261028,4MiB",
+    "retained": "One fixed reusable .next-build and ignored synthetic demo catalogue; existing node_modules/.venv, original app cache and user data remain intact",
+    "docker_used": false,
+    "project_copy_or_task_specific_next_distdir_created": false,
+    "disk_free_end": "17GiB",
+    "legacy_untracked_data": "Untouched and outside AW-05 scope"
+  }
+}

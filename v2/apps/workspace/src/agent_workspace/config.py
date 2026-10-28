@@ -2,6 +2,32 @@
 from dataclasses import dataclass, field
 import os
 from pathlib import Path
+import json
+from urllib.parse import urlsplit
+
+
+def local_origins(value: str) -> tuple[str, ...]:
+    """Explicit launcher configuration, never an arbitrary remote CORS grant."""
+    if len(value) > 2048:
+        raise ValueError("invalid_loopback_origins")
+    values = json.loads(value)
+    if not isinstance(values, list) or not 1 <= len(values) <= 12:
+        raise ValueError("invalid_loopback_origins")
+    result = []
+    for item in values:
+        if not isinstance(item, str):
+            raise ValueError("invalid_loopback_origins")
+        url = urlsplit(item)
+        if (url.scheme != "http" or url.hostname not in {"localhost", "127.0.0.1", "::1"}
+                or url.username is not None or url.password is not None
+                or url.path not in {"", "/"} or url.query or url.fragment
+                or url.port is None or not 1024 <= url.port <= 65535):
+            raise ValueError("invalid_loopback_origins")
+        host = "[::1]" if url.hostname == "::1" else url.hostname
+        normalized = f"http://{host}:{url.port}"
+        if normalized not in result:
+            result.append(normalized)
+    return tuple(result)
 
 
 @dataclass(frozen=True)
@@ -33,6 +59,14 @@ class Settings:
                 profile = load_profile(Path(os.environ["WORKSPACE_CONFIG"]))
             except (ValueError, OSError):
                 error = "private_configuration_invalid"
+        origins = cls.__dataclass_fields__["origins"].default
+        if "WORKSPACE_ORIGINS" in os.environ:
+            try:
+                origins = local_origins(os.environ["WORKSPACE_ORIGINS"])
+            except (TypeError, ValueError):
+                # Invalid local configuration must not silently widen/restore a
+                # default origin. Mutation requests fail closed until repaired.
+                origins, error = (), error or "invalid_loopback_origins"
         return cls(
             data_dir=Path(os.environ.get("WORKSPACE_DATA_DIR", ".workspace-data")).resolve(),
             model=os.environ.get("WORKSPACE_MODEL") or profile.get("model"),
@@ -42,4 +76,5 @@ class Settings:
             external_processing=(os.environ["WORKSPACE_EXTERNAL_PROCESSING"] == "1") if "WORKSPACE_EXTERNAL_PROCESSING" in os.environ else profile.get("external_processing", False),
             fixture_tools_enabled=(os.environ["WORKSPACE_FIXTURE_TOOLS"] == "1") if "WORKSPACE_FIXTURE_TOOLS" in os.environ else profile.get("fixture_tools_enabled", False),
             configuration_error=error,
+            origins=origins,
         )

@@ -106,6 +106,23 @@ class DeleteWorkspace(CommandKey):
     confirm_name: str = Field(min_length=1, max_length=120)
 
 
+class WorkspaceMetadata(CommandKey):
+    expected_revision: int = Field(ge=1, strict=True)
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    archived: bool | None = Field(default=None, strict=True)
+
+
+class ImportPreview(StrictInput):
+    archive_base64: str = Field(min_length=1, max_length=27962028)
+    name: str = Field(min_length=1, max_length=120)
+    include_memory: bool = Field(default=False, strict=True)
+
+
+class ImportCommit(ImportPreview):
+    confirmation_token: str = Field(min_length=20, max_length=160)
+    request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_-]+$")
+
+
 def create_app(settings: Settings | None = None, *, runtime_factory=None) -> FastAPI:
     settings = settings or Settings.from_env()
     # Import/app construction must not mutate a live catalogue. Startup owns
@@ -122,6 +139,8 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
         app.state.runtime = runtime
         from .data_lifecycle import DataLifecycle
         app.state.lifecycle = DataLifecycle(store, active_runs=getattr(runtime, "active_runs", None))
+        from .portability import SnapshotImporter
+        app.state.importer = SnapshotImporter(store)
         await runtime.start()
         try:
             yield
@@ -130,6 +149,7 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
 
     app = FastAPI(title="Agent Workspace", lifespan=lifespan)
     app.state.store = store
+    import_slots = asyncio.Semaphore(2)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]"])
 
     @app.middleware("http")
@@ -138,23 +158,45 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
         peer = request.client.host if request.client else ""
         if peer not in {"127.0.0.1", "::1", "localhost", "testclient"}:
             return JSONResponse({"detail": "loopback_only"}, status_code=403)
-        if request.method not in {"GET", "HEAD", "OPTIONS"}:
-            if request.headers.get("origin") not in settings.origins:
-                return JSONResponse({"detail": "origin_denied"}, status_code=403)
-            length = request.headers.get("content-length")
-            if length and (not length.isdigit() or int(length) > 1600000):
-                return JSONResponse({"detail": "request_too_large"}, status_code=413)
-            # Also bound chunked/no-Content-Length requests before JSON decoding.
-            body = bytearray()
-            async for chunk in request.stream():
-                body.extend(chunk)
-                if len(body) > 1600000:
+        importing = request.method == "POST" and request.url.path in {PREFIX + "/imports/preview", PREFIX + "/imports/commit"}
+        claimed = False
+        try:
+            if request.method not in {"GET", "HEAD", "OPTIONS"}:
+                if request.headers.get("origin") not in settings.origins:
+                    return JSONResponse({"detail": "origin_denied"}, status_code=403)
+                if importing:
+                    try:
+                        store.authenticate(request.cookies.get(COOKIE))
+                    except WorkspaceError as exc:
+                        return JSONResponse({"detail": exc.code}, status_code=exc.status)
+                    try:
+                        await asyncio.wait_for(import_slots.acquire(), timeout=.05)
+                        claimed = True
+                    except TimeoutError:
+                        return JSONResponse({"detail": "snapshot_import_busy"}, status_code=409)
+                maximum = 28 * 1024 * 1024 if importing else 1600000
+                length = request.headers.get("content-length")
+                if length and (not length.isdigit() or int(length) > maximum):
                     return JSONResponse({"detail": "request_too_large"}, status_code=413)
-            request._body = bytes(body)
-        response = await call_next(request)
-        response.headers["Cache-Control"] = "no-store"
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        return response
+                # Bound chunked bodies before decoding. Two large import bodies
+                # max, with a finite local upload wait; ordinary routes stay small.
+                body = bytearray()
+                try:
+                    async with asyncio.timeout(30):
+                        async for chunk in request.stream():
+                            body.extend(chunk)
+                            if len(body) > maximum:
+                                return JSONResponse({"detail": "request_too_large"}, status_code=413)
+                except TimeoutError:
+                    return JSONResponse({"detail": "request_body_timeout"}, status_code=408)
+                request._body = bytes(body)
+            response = await call_next(request)
+            response.headers["Cache-Control"] = "no-store"
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            return response
+        finally:
+            if claimed:
+                import_slots.release()
 
     @app.exception_handler(WorkspaceError)
     async def workspace_error(request, exc):
@@ -187,14 +229,32 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
                 "setup_directory": "v2/apps/workspace"}
 
     @app.get(PREFIX + "/workspaces")
-    def workspaces(actor: Owner):
-        return {"items": store.workspaces(actor)}
+    def workspaces(actor: Owner, q: str = "", include_archived: bool = False):
+        return {"items": store.workspaces(actor, query=q, include_archived=include_archived)}
 
     @app.post(PREFIX + "/workspaces")
     def new_workspace(body: NewWorkspace, actor: Owner):
         if not body.name.strip():
             raise WorkspaceError("empty_name")
         return store.workspaces(actor, body.name.strip())
+
+    @app.post(PREFIX + "/workspaces/{workspace_id}/metadata")
+    def workspace_metadata(workspace_id: str, body: WorkspaceMetadata, actor: Owner):
+        return store.update_workspace(actor, workspace_id, body.request_id, body.expected_revision,
+                                      name=body.name, archived=body.archived)
+
+    @app.post(PREFIX + "/imports/preview")
+    def import_preview(body: ImportPreview, request: Request, actor: Owner):
+        return request.app.state.importer.preview(actor, body.archive_base64, body.name, body.include_memory)
+
+    @app.post(PREFIX + "/imports/commit")
+    def import_commit(body: ImportCommit, request: Request, actor: Owner):
+        return request.app.state.importer.commit(actor, body.archive_base64, body.name, body.include_memory,
+                                                body.confirmation_token, body.request_id)
+
+    @app.get(PREFIX + "/workspaces/{workspace_id}/import-lineage")
+    def import_lineage(workspace_id: str, request: Request, actor: Owner):
+        return request.app.state.importer.lineage(actor, workspace_id)
 
     @app.get(PREFIX + "/workspaces/{workspace_id}/export")
     def export_workspace(workspace_id: str, request: Request, actor: Owner):

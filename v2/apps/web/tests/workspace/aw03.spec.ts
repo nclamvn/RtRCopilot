@@ -71,8 +71,8 @@ test("REAL AW03 manual clock pause/resume/cancel and repeated ticks dispatch eac
 });
 
 test("REAL AW03 new control APIs deny foreign owner IDs and do not expose a generic MCP executor", async ({page, browser}) => {
-  const id = await create(page, "Control boundary workbench"); const outsider = await browser.newContext(); await outsider.request.post("http://127.0.0.1:3110/api/workspace/session", {data: {}, headers: {origin: "http://127.0.0.1:3110"}});
-  for (const family of ["memory", "schedules", "connection", "approvals", "effects"]) expect((await outsider.request.get(`http://127.0.0.1:3110/api/workspace/workspaces/${id}/${family}`)).status()).toBe(404);
+  const id = await create(page, "Control boundary workbench"); const origin = new URL(page.url()).origin; const outsider = await browser.newContext({baseURL: origin, extraHTTPHeaders: {origin}}); expect((await outsider.request.post("/api/workspace/session", {data: {}})).ok()).toBe(true);
+  for (const family of ["memory", "schedules", "connection", "approvals", "effects"]) expect((await outsider.request.get(`/api/workspace/workspaces/${id}/${family}`)).status()).toBe(404);
   expect((await page.request.post(`/api/workspace/workspaces/${id}/connection`, {data: {enabled: true, expected_revision: 0, request_id: crypto.randomUUID(), command: "cat ~/.env"}})).status()).toBe(422);
   expect((await page.request.post("/api/workspace/mcp/execute", {data: {command: "anything"}})).status()).toBe(400); await outsider.close();
 });

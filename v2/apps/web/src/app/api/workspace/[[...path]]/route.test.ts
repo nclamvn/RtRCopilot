@@ -77,4 +77,12 @@ describe("Workspace BFF boundary", () => {
     for (const path of [["readiness"], ["configure"], ["admin", "delete"], ["workspaces", "w-one", "export"], ["workspaces", "w-one", "delete-preview"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method: "POST", body: "{}"}), {params: Promise.resolve({path})})).status).toBe(400);
     expect(fetcher).toHaveBeenCalledTimes(count);
   });
+  test("AW05 import and project metadata paths are explicit, not a generic restore or filesystem proxy", async () => {
+    const fetcher = vi.fn(async () => new Response("{}")); vi.stubGlobal("fetch", fetcher);
+    for (const path of [["imports", "preview"], ["imports", "commit"], ["workspaces", "w-one", "metadata"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method:"POST", body:"{}"}), {params:Promise.resolve({path})})).status).toBe(200);
+    expect((await GET(new NextRequest("http://localhost/api/workspace/workspaces/w-one/import-lineage"), {params:Promise.resolve({path:["workspaces","w-one","import-lineage"]})})).status).toBe(200);
+    const before = fetcher.mock.calls.length;
+    for (const path of [["imports", "execute"], ["workspaces", "w-one", "restore"], ["imports", "commit", "w-one"], ["filesystem", "import"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method:"POST", body:"{}"}), {params:Promise.resolve({path})})).status).toBe(400);
+    expect(fetcher).toHaveBeenCalledTimes(before);
+  });
 });

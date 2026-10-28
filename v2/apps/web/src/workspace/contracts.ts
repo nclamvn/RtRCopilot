@@ -1,4 +1,4 @@
-export type Workspace = {id: string; name: string};
+export type Workspace = {id: string; name: string; archived?: boolean; revision?: number; created_at?: number};
 export type Message = {id: string; role: string; content: string; run_id?: string};
 export type SourceFile = {id: string; filename: string; bytes: number; media_type?: string; sha256?: string; warnings?: string[]; provenance?: Record<string, unknown>};
 export type SourcePage = SourceFile & {content: string; offset: number; next_offset: number | null; has_more: boolean; total_characters: number};
