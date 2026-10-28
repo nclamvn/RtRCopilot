@@ -15,6 +15,8 @@ async def main():
     parser.add_argument("owner")
     parser.add_argument("run_id")
     parser.add_argument("--crash-after-effect", action="store_true")
+    parser.add_argument("--crash-waiting-approval", action="store_true")
+    parser.add_argument("--crash-after-mcp-receipt", action="store_true")
     args = parser.parse_args()
     store = Store(Path(args.data_dir) / "catalogue.sqlite")
     if args.crash_after_effect:
@@ -27,9 +29,17 @@ async def main():
 
         store.publish = crash_after_receipt
     runtime = Runtime(Settings(Path(args.data_dir), test_mode=True), store)
+    if args.crash_after_mcp_receipt:
+        complete = runtime.connections.complete
+        def crash_mcp_receipt(*a, **kw):
+            complete(*a, **kw)
+            os._exit(43)
+        runtime.connections.complete = crash_mcp_receipt
     try:
         await runtime.start()
         for _ in range(300):
+            if args.crash_waiting_approval and store.run(args.owner, args.run_id)["state"] == "waiting_approval":
+                os._exit(42)
             if store.run(args.owner, args.run_id)["state"] in TERMINAL:
                 return
             await asyncio.sleep(.05)

@@ -206,21 +206,27 @@ class Store:
 
     def create_run(self, owner, workspace_id, message, request_key, limits):
         with self.tx() as db:
-            self._workspace(db, owner, workspace_id)
-            old = db.execute("SELECT * FROM runs WHERE owner=? AND request_key=?", (owner, request_key)).fetchone()
-            if old:
-                if old["workspace_id"] != workspace_id or old["message"] != message:
-                    raise WorkspaceError("idempotency_conflict", 409)
-                return self._view(old)
-            if db.execute("SELECT 1 FROM runs WHERE workspace_id=? AND state NOT IN ('completed','failed','cancelled')", (workspace_id,)).fetchone():
-                raise WorkspaceError("workspace_busy", 409)
-            run_id, now = identity(), time.time()
-            usage = {"requests": 0, "tool_calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": None, "complete": False}
-            db.execute("INSERT INTO runs(id,workspace_id,owner,request_key,message,state,created_at,deadline_at,limits,usage,workflow_version) VALUES(?,?,?,?,?,'queued',?,?,?,?, 'workspace-aw02-v1')",
-                       (run_id, workspace_id, owner, request_key, message, now, now + limits["deadline_seconds"], json.dumps(limits), json.dumps(usage)))
-            db.execute("INSERT INTO messages VALUES(?,?,?,?,?,?)", (identity(), workspace_id, run_id, "user", message, now))
-            self._event(db, run_id, "run.state", {"state": "queued"})
-            return self._view(self._run(db, owner, run_id))
+            return self._create_run(db, owner, workspace_id, message, request_key, limits)
+
+    def _create_run(self, db, owner, workspace_id, message, request_key, limits):
+        """Caller-owned transaction permits atomic schedule claim + run creation."""
+        self._workspace(db, owner, workspace_id)
+        old = db.execute("SELECT * FROM runs WHERE owner=? AND request_key=?", (owner, request_key)).fetchone()
+        if old:
+            if old["workspace_id"] != workspace_id or old["message"] != message:
+                raise WorkspaceError("idempotency_conflict", 409)
+            return self._view(old)
+        if db.execute("SELECT 1 FROM runs WHERE workspace_id=? AND state NOT IN ('completed','failed','cancelled')", (workspace_id,)).fetchone():
+            raise WorkspaceError("workspace_busy", 409)
+        if db.execute("SELECT COUNT(*) FROM runs WHERE state NOT IN ('completed','failed','cancelled')").fetchone()[0] >= 8:
+            raise WorkspaceError("runtime_run_capacity", 409)
+        run_id, now = identity(), time.time()
+        usage = {"requests": 0, "tool_calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": None, "complete": False}
+        db.execute("INSERT INTO runs(id,workspace_id,owner,request_key,message,state,created_at,deadline_at,limits,usage,workflow_version) VALUES(?,?,?,?,?,'queued',?,?,?,?, 'workspace-aw03-v1')",
+                   (run_id, workspace_id, owner, request_key, message, now, now + limits["deadline_seconds"], json.dumps(limits), json.dumps(usage)))
+        db.execute("INSERT INTO messages VALUES(?,?,?,?,?,?)", (identity(), workspace_id, run_id, "user", message, now))
+        self._event(db, run_id, "run.state", {"state": "queued"})
+        return self._view(self._run(db, owner, run_id))
 
     def _view(self, row):
         result = {k: row[k] for k in ("id", "workspace_id", "state", "error", "created_at", "deadline_at")}
@@ -288,6 +294,12 @@ class Store:
             raise WorkspaceError("run_terminal", 409)
         if row["deadline_at"] <= time.time():
             raise WorkspaceError("deadline_exceeded", 409)
+        guard = getattr(self, "memory_guard", None)
+        if guard:
+            guard(db, owner, run_id)
+        connection_guard = getattr(self, "connection_guard", None)
+        if connection_guard:
+            connection_guard(db, owner, run_id)
         return row
 
     def check(self, owner, run_id):
@@ -324,7 +336,19 @@ class Store:
             if row["state"] in TERMINAL:
                 return
             if row["cancel_requested"]:
-                state, content, error = "cancelled", None, None
+                state, content, error, history = "cancelled", None, row["error"], None
+            guard = getattr(self, "memory_guard", None)
+            if guard:
+                try:
+                    guard(db, owner, run_id)
+                except WorkspaceError:
+                    state, content, error, history = "cancelled", None, "memory_scope_changed", None
+            connection_guard = getattr(self, "connection_guard", None)
+            if connection_guard:
+                try:
+                    connection_guard(db, owner, run_id)
+                except WorkspaceError:
+                    state, content, error, history = "cancelled", None, "connection_scope_changed", None
             if state == "completed" and row["deadline_at"] <= time.time():
                 state, content, error = "failed", None, "deadline_exceeded"
             if content is not None and len(content.encode()) + row["output_bytes"] > json.loads(row["limits"])["output_bytes_limit"]:

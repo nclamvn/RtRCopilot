@@ -1,0 +1,234 @@
+{
+  "schema": "agent-workspace.local-verification.v3",
+  "milestone": "AW-03",
+  "verified_date_local": "2026-10-28",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "baseline_commit": "e4cc75eb62b44452d240d04e9aacfc9d4ae72951",
+  "code_state": "uncommitted_working_tree",
+  "source_manifest_file": "aw03-source-manifest.sha256",
+  "source_manifest_entries": 56,
+  "source_manifest_sha256": "690b88333ac7e70dd6bbb14fd408afd359fdb04bbf79b3c1da6d2d869e67dfb6",
+  "source_manifest_method": "rg --files over workspace src/tests/proof/manifests, web workspace src/page/BFF/manifests/browser config/tests, plus three evidence probe scripts; LC_ALL=C sort; shasum-a256 per-file; SHA256 of manifest with final newline",
+  "authorization": {
+    "user_scope": "AW-03 entire milestone, synthetic local/mock only",
+    "external_model_calls": 0,
+    "live_connector_calls": 0,
+    "live_web_fetches": 0,
+    "real_account_credentials_used": false,
+    "legacy_executor_enabled": false,
+    "host_shell_code_browser_executor_enabled": false,
+    "background_schedule_enabled": false,
+    "commit_push_deploy_performed": false
+  },
+  "disposition": {
+    "local_mock_technical_acceptance": "READY_WITH_DECLARED_LIMITS",
+    "full_aw03_ai_acceptance": "PARTIAL",
+    "real_model_quality": "UNTESTED_BY_USER_DIRECTION",
+    "live_connector_acceptance": "NOT_ENABLED",
+    "human_semantic_acceptance": false,
+    "advantage_over_direct_agent": "UNMEASURED",
+    "production_release": "NOT_READY"
+  },
+  "provenance": {
+    "data": "assistant-authored synthetic non-RtR scenarios, including independently authored boundary variants",
+    "model": "scripted PydanticAI FunctionModel; no real provider",
+    "mcp": "actual pinned mcp1.26.0 client/server protocol over fixed local stdio, synthetic outbox in separate SQLite",
+    "persistence": "real SQLite, DBOS, HTTP and actual process deaths/restarts",
+    "browser": "actual Chromium local BFF/API plus manual integrated Codex-browser interactions",
+    "independent_review": "Separate reviewer not production author; AI review, not human acceptance",
+    "exceptions": [
+      "one UI-only unavailable-status browser fixture retained fromAW01",
+      "lost-ACK and export-failure browser transport injections retained fromAW01/AW02",
+      "seven control component tests stub HTTP and are explicitly UI-only",
+      "no genuine external effect or provider reliability measurement"
+    ],
+    "baseline": "Direct LLM/tool-agent useful-outcome benchmark unavailable under mock-only authorization; no superiority inference"
+  },
+  "outcome_coverage": {
+    "durability": {
+      "implemented": true,
+      "scope": "native same-logical-run pause/restart/resume, persisted deadlines/budgets, cancellation wake, unknown-effect receipt lookup, valid intermediates retained"
+    },
+    "mcp": {
+      "implemented": true,
+      "scope": "fixed local read_status/send_note plus internal lookup_receipt; once-per-workspace grant, revocation, actor/run/args/artifact/policy-bound finite-lived approval; no generic launcher"
+    },
+    "memory": {
+      "implemented": true,
+      "scope": "explicit user CRUD with revisions, generation binding including inherited history, cancellation fence, reusable context invalidation; no automatic model write"
+    },
+    "schedules": {
+      "implemented": true,
+      "scope": "bounded once-only prompts with persisted monotonic manual clock, pause/resume/cancel, atomic run claim; no background cron"
+    }
+  },
+  "final_checks": {
+    "python_suite": {
+      "passed": 74,
+      "failed": 0,
+      "seconds": 100.23,
+      "observed_by": "Contractor final frozen-runtime rerun",
+      "command": "PYTHONPATH=src PYDANTIC_AI_NO_BANNER=1 .venv/bin/python -m pytest tests -q --tb=short --basetemp=.aw03-final-pytest",
+      "includes_aw03_state": 10,
+      "includes_aw03_mcp": 12,
+      "rest": "AW01/AW02 and native harness/recovery/format regression"
+    },
+    "web_units": {
+      "passed": 251,
+      "failed": 0,
+      "files": 26,
+      "seconds": 10.35,
+      "observed_by": "Contractor final rerun after fractional-clock repair"
+    },
+    "browser_e2e": {
+      "passed": 16,
+      "failed": 0,
+      "seconds": 57.7,
+      "aw01": 7,
+      "aw02": 4,
+      "aw03": 5,
+      "observed_by": "Contractor final rerun on restarted frozen API+UI",
+      "command": "pnpm exec playwright test --config playwright.workspace.config.ts"
+    },
+    "independent_probes": {
+      "passed": 9,
+      "failed": 0,
+      "seconds": 4.51,
+      "observed_by": "Contractor rerun of separate reviewer5 and Contractor4 source-controlled probes",
+      "not_additive_to_author_suites": true,
+      "files": [
+        "test_aw03_independent.py",
+        "test_aw03_boundaries.py"
+      ]
+    },
+    "typescript": "PASS; also after generated next-env restoration",
+    "scoped_eslint": "PASS",
+    "python_fatal_lint": "PASS E9,F63,F7,F82; not full style/mypy",
+    "diff_whitespace": "PASS",
+    "no_observed_open_p0_or_p1": true,
+    "http": {
+      "status": "PASS",
+      "script": "verify_aw03_http.py",
+      "effects": 1,
+      "same_logical_run": true,
+      "schedule_dispatched_once": true,
+      "external_calls": 0,
+      "secondary_workspace_chat_ms_single_sample": 213.83
+    },
+    "native_three_process_proof": {
+      "status": "PASS",
+      "sequence": [
+        "crash during pending approval",
+        "approve persisted request",
+        "crash after actual MCP outbox receipt before DBOS step checkpoint",
+        "recover same run"
+      ],
+      "outbox_effects": 1,
+      "receipt_events": 1,
+      "deadline_and_limits_preserved": true
+    },
+    "integrated_codex_browser": {
+      "status": "PASS scoped manual checks",
+      "scope": [
+        "created independent workspace",
+        "explicit memory save and fixture read",
+        "fixture grant and immutable approval preview",
+        "approved synthetic effect with receipt",
+        "manual schedule at17.25seconds dispatch"
+      ],
+      "not_claimed": "human acceptance or natural-language intelligence"
+    },
+    "accessibility": "mobile390x844, axe no violations in final browser assertions; desktop/panel navigation and keyboard checks included"
+  },
+  "repairs": [
+    {
+      "severity": "P1",
+      "failure": "whole-agent concurrency slot held during approval, blocking other workspaces",
+      "repair": "remove whole-agent limiter; eight admitted active runs, two short model I/O slots and two short MCP transport slots",
+      "evidence": "baseline root HTTP B physical_requests0 while A waits; final root HTTP B completed213.83ms while A stillwaiting; independent native regression PASS"
+    },
+    {
+      "severity": "P1",
+      "failure": "full command quota could block revocation",
+      "repair": "bounded safety escape permits revocation/rejection plus memory forget and schedule cancellation after workquota",
+      "evidence": "independent fullquota revocation probe PASS"
+    },
+    {
+      "severity": "integrity",
+      "failure": "inherited memory/tool history could reuse outdated authority or deleted body",
+      "repair": "live generation binding for everyrun, guard before calls/publication/replay, history invalidation and latefinish fence",
+      "evidence": "state/API deletion and inheritedhistory regression PASS"
+    },
+    {
+      "severity": "integration",
+      "failure": "native cancel did not alone wake durable approval receive",
+      "repair": "idempotent durable cancel wake and current-state check; worker-confirmed terminal state",
+      "evidence": "pendingapproval cancel/delete regression PASS"
+    },
+    {
+      "severity": "UX",
+      "failure": "mobile initial connection closed newly opened navigation",
+      "repair": "disable navigation/controls during initial loading",
+      "evidence": "mobile reload browser PASS"
+    },
+    {
+      "severity": "UX",
+      "failure": "UI silently rejected fractional manual clock accepted by API",
+      "repair": "stepany plus finite bounded inputs",
+      "evidence": "integrated17.25s and browser120.25s PASS"
+    }
+  ],
+  "resource_contract": {
+    "active_runs_global": 8,
+    "active_runs_per_workspace": 1,
+    "short_model_io": 2,
+    "short_mcp_io": 2,
+    "mcp_wall_seconds": 8,
+    "approval_max_seconds": 90,
+    "memory_active_entries": 100,
+    "memory_entry_characters": 4000,
+    "memory_total_bytes": 64000,
+    "once_schedules_total": 100,
+    "manual_clock_max_seconds": 31536000,
+    "normal_state_requests_per_workspace": 2000,
+    "normal_connection_requests_per_owner": 2000,
+    "cleanup_escapes": "bounded or no ledger growth as specified in implementation"
+  },
+  "limits": [
+    "No real model, real MCP service/account, live search or human semantic acceptance",
+    "Fixed protocol fixture, not arbitrary untrusted code sandbox or generic MCP launcher",
+    "Memory deletion prevents future automatic reuse, not forensic erasure of visible messages/artifacts, DBOS audit, backups or provider unlearning",
+    "MCP sends note only; artifact ID/version is a binding reference, not an attached file",
+    "Receipt lookup with no result stays uncertain; no exactly-once guarantee generalized to arbitrary external services",
+    "Local per-browser authority/SQLite, not organizational SSO or multi-tenant production capacity",
+    "Schedules once-only with explicit manual tick, not automatic recurring schedules",
+    "Some rare errors still have generic code-based guidance; long mobile panel header scrolls with content",
+    "No production build/load/security certification; parser/export limits remain perAW02",
+    "No shell, code/browser executor, real secrets broker or unrestricted filesystem tools"
+  ],
+  "runtime": {
+    "ui": "http://127.0.0.1:3110/workspace",
+    "api": "http://127.0.0.1:8110/api/workspace",
+    "mode": "WORKSPACE_TEST_MODE=1",
+    "workflow_version": "workspace-aw03-v1",
+    "bind_verified": "127.0.0.1 only for API and web",
+    "data_preserved": true,
+    "private_backup": ".workspace-data/aw02-before-aw03.sqlite"
+  },
+  "cleanup": {
+    "project_copies_created": false,
+    "extra_next_distdirs_created": false,
+    "docker_used": false,
+    "builder_scratch_removed_mb_approx": 10.6,
+    "reviewer_scratch_removed_mb_approx": 6,
+    "root_scratch_removed_mb_approx": 11.4,
+    "retained": [
+      "in-repository .venv and pinned MCP dependency",
+      "standard .next",
+      "real local workspace state and pre-migration catalogue backup",
+      "small screenshots and reproducible probe source"
+    ],
+    "legacy_untracked_data_untouched": true,
+    "free_disk_gib_approx": 21
+  }
+}

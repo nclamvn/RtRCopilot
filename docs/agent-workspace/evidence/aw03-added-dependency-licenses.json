@@ -1,0 +1,136 @@
+{
+  "provenance": "Installed distribution metadata, not legal review",
+  "new_lock_entries": [
+    {
+      "name": "attrs",
+      "version": "26.1.0",
+      "installed_here": true,
+      "license_expression": "MIT",
+      "license": null,
+      "classifiers": []
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1",
+      "installed_here": true,
+      "license_expression": "MIT-0",
+      "license": null,
+      "classifiers": []
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.2",
+      "installed_here": true,
+      "license_expression": "Apache-2.0 OR BSD-3-Clause",
+      "license": null,
+      "classifiers": []
+    },
+    {
+      "name": "httpx-sse",
+      "version": "0.4.3",
+      "installed_here": true,
+      "license_expression": null,
+      "license": "MIT",
+      "classifiers": []
+    },
+    {
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "installed_here": true,
+      "license_expression": "MIT",
+      "license": null,
+      "classifiers": []
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "installed_here": true,
+      "license_expression": "MIT",
+      "license": null,
+      "classifiers": []
+    },
+    {
+      "name": "mcp",
+      "version": "1.26.0",
+      "installed_here": true,
+      "license_expression": null,
+      "license": "MIT",
+      "classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ]
+    },
+    {
+      "name": "pycparser",
+      "version": "3.12",
+      "installed_here": true,
+      "license_expression": "BSD-3-Clause",
+      "license": null,
+      "classifiers": []
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.16.1",
+      "installed_here": true,
+      "license_expression": "MIT",
+      "license": null,
+      "classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ]
+    },
+    {
+      "name": "pyjwt",
+      "version": "2.15.1",
+      "installed_here": true,
+      "license_expression": "MIT",
+      "license": null,
+      "classifiers": []
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.4",
+      "installed_here": true,
+      "license_expression": null,
+      "license": "BSD-3-Clause",
+      "classifiers": []
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.32",
+      "installed_here": true,
+      "license_expression": "Apache-2.0",
+      "license": null,
+      "classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ]
+    },
+    {
+      "name": "pywin32",
+      "installed_here": false,
+      "note": "Locked platform-specific dependency, not installed on this Mac; license not assessed here."
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0",
+      "installed_here": true,
+      "license_expression": "MIT",
+      "license": null,
+      "classifiers": []
+    },
+    {
+      "name": "rpds-py",
+      "version": "2026.9.1",
+      "installed_here": true,
+      "license_expression": "MIT",
+      "license": null,
+      "classifiers": []
+    },
+    {
+      "name": "sse-starlette",
+      "version": "3.6.0",
+      "installed_here": true,
+      "license_expression": "BSD-3-Clause",
+      "license": null,
+      "classifiers": []
+    }
+  ]
+}

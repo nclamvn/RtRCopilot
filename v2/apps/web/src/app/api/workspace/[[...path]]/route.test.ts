@@ -61,4 +61,13 @@ describe("Workspace BFF boundary", () => {
     const response = await GET(new NextRequest("http://localhost/api/workspace/status"), {params: Promise.resolve({path: ["status"]})});
     expect(response.status).toBe(503); expect(await response.json()).toEqual({detail: "workspace_service_unavailable"});
   });
+  test("AW03 forwards only explicit scoped control routes; arbitrary MCP commands stay blocked", async () => {
+    const fetcher = vi.fn(async () => new Response("{}")); vi.stubGlobal("fetch", fetcher);
+    for (const family of ["memory", "schedules", "connection", "approvals", "effects"]) expect((await GET(new NextRequest(`http://localhost/api/workspace/workspaces/w-one/${family}`), {params: Promise.resolve({path: ["workspaces", "w-one", family]})})).status).toBe(200);
+    const mutations = [["workspaces", "w-one", "memory"], ["workspaces", "w-one", "memory", "m-one", "edit"], ["workspaces", "w-one", "memory", "m-one", "delete"], ["workspaces", "w-one", "schedules"], ["workspaces", "w-one", "schedules", "s-one", "action"], ["workspaces", "w-one", "clock", "tick"], ["workspaces", "w-one", "connection"], ["approvals", "a-one", "resolve"], ["effects", "e-one", "reconcile"]];
+    for (const path of mutations) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method: "POST", body: "{}"}), {params: Promise.resolve({path})})).status).toBe(200);
+    const count = fetcher.mock.calls.length;
+    for (const path of [["mcp", "execute"], ["workspaces", "w-one", "connection", "command"], ["workspaces", "w-one", "clock", "start"], ["approvals", "a-one", "approve"], ["effects", "e-one", "retry"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method: "POST", body: "{}"}), {params: Promise.resolve({path})})).status).toBe(400);
+    expect(fetcher).toHaveBeenCalledTimes(count);
+  });
 });

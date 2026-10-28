@@ -6,10 +6,11 @@ import {Markdown} from "./Markdown";
 import {api, apiRoot} from "./api";
 import {ArtifactCreator, ArtifactEditor} from "./ArtifactEditor";
 import {LocalResearch, SourcePreview} from "./Sources";
+import {ApprovalPrompt, ConnectionPanel, MemoryPanel, SchedulePanel, type ControlView} from "./WorkspaceControls";
 import "./workspace.css";
 
 const freshLive = (): LiveState => ({cursor: 0, content: "", state: "queued", activities: []});
-function safeNavigate() {return !document.querySelector('[data-unsafe-draft="true"]') || window.confirm("This draft could not be stored in your browser. Copy it before leaving. Leave and discard these unsaved edits?");}
+function safeNavigate() {return !document.querySelector('[data-unsafe-draft="true"]') || window.confirm("This unsaved draft is not stored. Copy it before leaving. Leave and discard these unsaved edits?");}
 type UploadItem = {filename: string; status: "queued" | "saved" | "error"; detail?: string};
 function fileBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(",")[1]); reader.onerror = () => reject(new Error("This file could not be read.")); reader.readAsDataURL(file);});
@@ -34,7 +35,7 @@ export function WorkspaceApp() {
   const [run, setRun] = useState<Run | null>(null);
   const [live, setLive] = useState<LiveState>(freshLive);
   const [panel, setPanel] = useState(false);
-  const [panelView, setPanelView] = useState<"outputs" | "source" | "research">("outputs");
+  const [panelView, setPanelView] = useState<"outputs" | "source" | "research" | ControlView>("outputs");
   const [source, setSource] = useState<SourceFile | null>(null);
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
   const [newKind, setNewKind] = useState<"document" | "table" | null>(null);
@@ -223,7 +224,24 @@ export function WorkspaceApp() {
     try {const [result] = await Promise.all([api<Artifact>(`/artifacts/${item.id}?version=${version}`), refresh(workspaceId)]); if (workspaceId === selection.current && request === artifactRequest.current) {setArtifact(result); setNewKind(null); setPanelView("outputs"); setPanel(true);}}
     catch (cause) {setError((cause as Error).message);}
   }
-  const status = loading ? "Connecting…" : availability?.test_mode ? "Simulation · no model calls · fixture:brief / table / patch / research" : availability?.available ? availability.model ?? "Model ready" : "Model unavailable";
+  async function reconcileWorkspaceRun(workspaceId: string) {
+    const history = await refresh(workspaceId);
+    const lastId = history?.at(-1)?.run_id;
+    if (lastId) {
+      const snapshot = await api<Run>(`/runs/${lastId}`);
+      if (selection.current === workspaceId) {
+        localStorage.setItem(`agent-workspace:run:${workspaceId}`, lastId);
+        if (run?.id !== lastId) {setLive(freshLive()); liveRef.current = freshLive();}
+        setRun(snapshot);
+      }
+    }
+  }
+  function openControl(view: ControlView) {
+    if (!safeNavigate()) return;
+    setPanelView(view); setPanel(true); setNavigation(false);
+  }
+  const panelTitle = panelView === "source" ? "Source file" : panelView === "research" ? "Local research" : panelView === "memory" ? "Memory" : panelView === "connections" ? "Connections" : panelView === "schedules" ? "Schedules" : "Outputs";
+  const status = loading ? "Connecting…" : availability?.test_mode ? "Simulation · no model calls · fixture:brief / table / patch / research / mcp-read / mcp-effect" : availability?.available ? availability.model ?? "Model ready" : "Model unavailable";
   return <div className="agent-workspace" data-navigation={navigation} data-panel={panel}>
     <a className="aw-skip" href="#aw-composer">Skip to message</a>
     <aside className="aw-sidebar" aria-label="Workspace navigation">
@@ -238,24 +256,28 @@ export function WorkspaceApp() {
         {uploading && <p role="status">Saving source files…</p>}
         <button className="aw-research-open" disabled={!selected} onClick={() => {if (!safeNavigate()) return; setPanelView("research"); setPanel(true); setNavigation(false);}}>Search local fixtures</button>
       </section>
-      <div className="aw-sidebar-foot">Local workspace<br/><small>Shell, external tools, and memory are not enabled.</small></div>
+      {availability?.test_mode && <section className="aw-workspace-controls" aria-label="Workspace controls">{(["memory", "connections", "schedules"] as const).map(view => <button key={view} disabled={!selected || loading} aria-pressed={panel && panelView === view} onClick={() => openControl(view)}>{view === "memory" ? "Memory" : view === "connections" ? "Connections" : "Schedules"}</button>)}</section>}
+      <div className="aw-sidebar-foot">Local workspace<br/><small>Shell and live external tools are off. Fixture actions and schedules are simulations.</small></div>
     </aside>
     {navigation && <button className="aw-scrim" aria-label="Close navigation" onClick={() => setNavigation(false)}/>}
     <main className="aw-main">
-      <header className="aw-header"><button className="aw-mobile" aria-label="Open navigation" onClick={() => setNavigation(true)}>☰</button><h1>{selected?.name ?? "Agent Workspace"}</h1><button className="aw-panel-toggle" aria-expanded={panel && panelView === "outputs"} onClick={() => {if (!safeNavigate()) return; setPanelView("outputs"); setPanel(value => panelView !== "outputs" || !value);}}>Outputs <span aria-hidden="true">{panel ? "›" : "‹"}</span></button></header>
+      <header className="aw-header"><button className="aw-mobile" aria-label="Open navigation" disabled={loading} onClick={() => setNavigation(true)}>☰</button><h1>{selected?.name ?? "Agent Workspace"}</h1><button className="aw-panel-toggle" aria-expanded={panel && panelView === "outputs"} onClick={() => {if (!safeNavigate()) return; setPanelView("outputs"); setPanel(value => panelView !== "outputs" || !value);}}>Outputs <span aria-hidden="true">{panel ? "›" : "‹"}</span></button></header>
       <div className={`aw-availability${availability?.test_mode ? " aw-simulation" : ""}`} role="status"><span className="aw-dot" aria-hidden="true"/>{status}{!loading && !availability?.available && <span> · {availability?.reason ?? "Start the workspace service to connect."}</span>}</div>
       {error && <div className="aw-error" role="alert"><p>{error}</p><button onClick={() => void connect()}>Reconnect</button><button onClick={() => setError("")} aria-label="Dismiss error">×</button></div>}
       <div className="aw-transcript" ref={transcript} onScroll={event => {const element = event.currentTarget; nearBottom.current = element.scrollHeight - element.scrollTop - element.clientHeight < 100;}}>
         <div className="aw-measure">
           {!messages.length && !sending && <div className="aw-empty"><div className="aw-empty-mark" aria-hidden="true">◈</div><h2>A place to think and make.</h2><p>{availability?.test_mode ? "This is a scripted local integration test, not an AI assistant. Add a source file and use the fixture commands to test saved drafts and revisions." : "Bring a source file, ask a question, or turn your notes into a working draft. Your conversation and outputs stay together."}</p>{!selected ? <button onClick={() => {setCreating(true); setNavigation(true);}}>Create your first workspace</button> : <div className="aw-suggestions"><button onClick={() => uploadInput.current?.click()}>Add a source file</button><button onClick={() => {setDraft(availability?.test_mode ? "fixture:create" : "Create a concise Markdown brief from my source files."); composer.current?.focus();}}>{availability?.test_mode ? "Test draft creation" : "Create a brief from my files"}</button></div>}</div>}
           {messages.map(message => <article key={message.id} className={`aw-message aw-${message.role}`} aria-label={message.role === "user" ? "Your message" : "Assistant message"}><div className="aw-message-label">{message.role === "user" ? "You" : "Assistant"}</div><Markdown content={message.content}/></article>)}
-          {(active || sending) && <article className="aw-message aw-assistant" aria-label="Assistant response in progress"><div className="aw-message-label">Assistant <span>{run?.cancel_requested ? "Stop requested" : live.content ? "Writing…" : "Working…"}</span></div>{live.content ? <Markdown content={live.content}/> : <p className="aw-muted">{live.activities.at(-1) ?? "Starting your request…"}</p>}</article>}
+          {(active || sending) && <article className="aw-message aw-assistant" aria-label="Assistant response in progress"><div className="aw-message-label">Assistant <span>{run?.cancel_requested ? "Stop requested" : live.state === "waiting_approval" || run?.state === "waiting_approval" ? "Waiting for your review" : live.content ? "Writing…" : "Working…"}</span></div>{live.content ? <Markdown content={live.content}/> : <p className="aw-muted">{live.state === "waiting_approval" || run?.state === "waiting_approval" ? "Review the exact simulated action below. No action is approved by the conversation alone." : live.activities.at(-1) ?? "Starting your request…"}</p>}</article>}
           {run && terminal(run.state) && run.state !== "completed" && <p className="aw-run-note" role="status">{run.state === "cancelled" ? "Stopped. Saved drafts remain available." : `Run ${run.state}. ${run.error ?? "Check the activity panel before trying again."}`}</p>}
         </div>
       </div>
-      <div className="aw-compose-wrap"><form className="aw-composer" onSubmit={submit}><label className="aw-visually-hidden" htmlFor="aw-composer">Message</label><textarea id="aw-composer" ref={composer} rows={3} value={draft} onChange={event => setDraft(event.target.value)} placeholder={selected ? "Ask anything, or describe what you want to make…" : "Create a workspace to start…"} disabled={!selected} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); event.currentTarget.form?.requestSubmit();}}}/><div className="aw-composer-bottom"><button type="button" className="aw-attach" onClick={() => uploadInput.current?.click()} disabled={!selected || uploading} aria-label="Attach source file">＋ <span>Add file</span></button><span className="aw-input-hint">Enter to send · Shift + Enter for a new line</span>{active ? <button type="button" className="aw-send" onClick={() => void stop()} disabled={run?.cancel_requested}>{run?.cancel_requested ? "Stop requested" : "Stop"}</button> : <button className="aw-send" type="submit" disabled={!selected || !draft.trim() || !availability?.available || sending}>Send <span aria-hidden="true">↑</span></button>}</div></form><p className="aw-compose-note" role="status">{connection || (availability?.test_mode ? "Simulation uses a deterministic test model. Outputs are not AI quality evidence." : "Review important details in generated drafts.")}</p></div>
+      <div className="aw-compose-wrap">{selected && run && active && availability?.test_mode && <ApprovalPrompt key={`${selected.id}:${run.id}`} workspaceId={selected.id} runId={run.id} onResolved={() => void reconcileWorkspaceRun(selected.id).catch(cause => setError(cause.message))}/>}<form className="aw-composer" onSubmit={submit}><label className="aw-visually-hidden" htmlFor="aw-composer">Message</label><textarea id="aw-composer" ref={composer} rows={3} value={draft} onChange={event => setDraft(event.target.value)} placeholder={selected ? "Ask anything, or describe what you want to make…" : "Create a workspace to start…"} disabled={!selected} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); event.currentTarget.form?.requestSubmit();}}}/><div className="aw-composer-bottom"><button type="button" className="aw-attach" onClick={() => uploadInput.current?.click()} disabled={!selected || uploading} aria-label="Attach source file">＋ <span>Add file</span></button><span className="aw-input-hint">Enter to send · Shift + Enter for a new line</span>{active ? <button type="button" className="aw-send" onClick={() => void stop()} disabled={run?.cancel_requested}>{run?.cancel_requested ? "Stop requested" : "Stop"}</button> : <button className="aw-send" type="submit" disabled={!selected || !draft.trim() || !availability?.available || sending}>Send <span aria-hidden="true">↑</span></button>}</div></form><p className="aw-compose-note" role="status">{connection || (availability?.test_mode ? "Simulation uses a deterministic test model. Outputs are not AI quality evidence." : "Review important details in generated drafts.")}</p></div>
     </main>
-    {panel && <aside className="aw-panel" aria-label="Outputs and activity"><div className="aw-panel-head"><h2>{panelView === "source" ? "Source file" : panelView === "research" ? "Local research" : "Outputs"}</h2><button onClick={() => {if (safeNavigate()) setPanel(false);}} aria-label="Close outputs">×</button></div>
+    {panel && <aside className="aw-panel" aria-label="Outputs and activity"><div className="aw-panel-head"><h2>{panelTitle}</h2><button onClick={() => {if (safeNavigate()) setPanel(false);}} aria-label="Close outputs">×</button></div>
+      {panelView === "memory" && selected && <MemoryPanel key={selected.id} workspaceId={selected.id}/>}
+      {panelView === "connections" && selected && <ConnectionPanel key={selected.id} workspaceId={selected.id} onPrepare={command => {setDraft(command); setPanel(false); composer.current?.focus();}}/>}
+      {panelView === "schedules" && selected && <SchedulePanel key={selected.id} workspaceId={selected.id} onDispatched={() => void reconcileWorkspaceRun(selected.id).catch(cause => setError(cause.message))}/>}
       {panelView === "source" && source && <SourcePreview key={source.id} file={source}/>}
       {panelView === "research" && selected && <LocalResearch key={selected.id} workspaceId={selected.id} onImported={async file => {const workspaceId = selected.id; await refresh(workspaceId); if (selection.current === workspaceId) {setSource(file); setPanelView("source");}}}/>}
       {panelView === "outputs" && <><div className="aw-output-create">{(["document", "table"] as const).map(kind => <button key={kind} disabled={!selected} onClick={() => {if (safeNavigate()) setNewKind(kind);}}>＋ New {kind}</button>)}</div><div className="aw-output-list">{artifacts.length ? artifacts.map(item => <button key={item.id} aria-current={!newKind && artifact?.id === item.id ? "true" : undefined} onClick={() => void openArtifact(item)}><strong>{item.title || item.filename}</strong><small>{item.kind === "table" ? "Table · CSV" : "Markdown"} · Version {item.version}</small></button>) : <p className="aw-muted">Drafts you create appear here. Open, revise, and download them without leaving the conversation.</p>}</div>

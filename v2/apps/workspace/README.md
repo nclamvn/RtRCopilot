@@ -1,6 +1,6 @@
 # Agent Workspace local prototype
 
-AW-01/AW-02 add a neutral workspace next to the existing application. It does not
+AW-01/AW-02/AW-03 add a neutral workspace next to the existing application. It does not
 activate the legacy executor, import the RtR answer pipeline or discover its
 credentials. Current acceptance is **local/mock integration only**, as requested
 by the user. It is not an accepted production AI assistant.
@@ -82,11 +82,57 @@ provider evaluation or legacy credential reuse is included in this acceptance.
   terminal snapshots recover the view without submitting the prompt again.
 - Fixture research is offline and marked synthetic, with URL/time/hash lineage.
   It is not a live research capability or evidence of real-model synthesis.
-- No shell, host filesystem, external MCP/effects, skills, memory, approval-pause
-  workflow, workspace sharing or production SSO is exposed in this milestone.
+- AW-03 adds explicit workspace memory, a fixed local MCP fixture and manual
+  schedule simulation; see the following section. This is not a real connector
+  or provider acceptance.
+- No shell, host filesystem tools, external MCP/effects, skills, live scheduler,
+  workspace sharing or production SSO is exposed in this milestone.
 - Long-term list pagination, data export/delete UX, ACL revocation and production
   deployment are not complete. Session mode is per-browser local ownership, not
   organizational identity or a multi-tenant SaaS authentication system.
+
+## AW-03: memory, local MCP and manual schedules
+
+Use the Memory, Connections and Schedules controls in the workspace sidebar.
+These panels share the existing related-information rail, not a new dashboard.
+
+- **Memory:** explicitly save up to 100 user-authored notes (4,000 characters
+  each, 64 KB total). Edit/delete use expected revisions. A memory mutation
+  invalidates reusable conversation history and stops active consumers so old
+  checkpoints cannot feed the old memory into a later model call. Existing
+  visible chat, generated artifacts, DBOS audit history and backups are separate
+  retained records. This is not forensic erasure or provider unlearning.
+  `fixture:memory` exercises the current live read; no model auto-writes memory.
+- **Connections:** grant the fixed local fixture permission once. `fixture:mcp-read`
+  reads through an actual MCP stdio transport without repeated approval.
+  `fixture:mcp-effect` proposes a synthetic outbox note, then waits for the
+  server-created preview's Approve/Reject decision on the same logical run.
+  No actual recipient, account or external service is connected. The executable,
+  tool schema and minimal environment are fixed, not supplied by a user/document.
+- **Receipts:** an effect intent is saved before dispatch. A lost response or
+  crash without a confirmed receipt is shown as uncertain. Reconcile performs
+  receipt lookup only; it never resends the effect. An absent receipt does not
+  certify failure. Completed effects remain visible even after run cancellation.
+- **Permission changes:** revocation/changed tool arguments or artifact versions
+  invalidate approval. Approval lasts at most 90 seconds and never extends a
+  run's persisted deadline. Approval flags in chat/history or client payloads
+  are not authority. Revocation/rejection/forget/cancel remain possible after
+  normal command quota exhaustion, within bounded cleanup allowances.
+- **Schedules:** at most 100 once-only prompts per workspace. The manual clock
+  starts at 0 simulation seconds, moves only forward and is bounded to one
+  simulation year. Create, pause, resume, cancel and explicitly advance it.
+  A repeated/concurrent tick cannot create duplicate logical runs. Busy jobs
+  stay pending for another explicit tick. There is no background timer or cron.
+  Scheduled effects still require the same current per-action approval.
+- **Resource limits:** one active run per workspace, eight globally. Two short
+  model-I/O slots and two short MCP-I/O slots bound resource use; time waiting
+  for approval holds neither. Full capacity returns an explicit error instead
+  of an invisible unbounded queue. DBOS is still the sole recovery owner.
+
+The MCP SDK is pinned in this app's lockfile, not the legacy backend. Only the
+fixed Python fixture runs as a subprocess; no shell/code/browser executor is
+enabled and Python socket guards are not an OS sandbox claim. A pre-migration
+backup of the local AW-02 catalogue is retained privately under `.workspace-data/`.
 
 ## Verify
 
@@ -109,7 +155,7 @@ The lost-ACK case injects a browser transport fault after the real API dispatch.
 Do not add overlapping test runs together or equate passing these cases with
 real-model usefulness.
 
-See `/Users/os/RtR/KnowledgeBase/RtR_Copilot/docs/agent-workspace/AW-02.md` for
-the latest local/mock record and AW-01.md for the preserved baseline. Real-model
+See `/Users/os/RtR/KnowledgeBase/RtR_Copilot/docs/agent-workspace/AW-03.md` for
+the latest local/mock record, AW-02.md and AW-01.md for preserved baselines. Real-model
 quality and live-web acceptance remain open. See `proof/README.md`
 for the native integration proof and raw dependency-license inventory.

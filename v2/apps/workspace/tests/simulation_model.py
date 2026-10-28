@@ -30,6 +30,33 @@ def build_model():
                     return value
             return value
 
+        if command in {"fixture:memory", "fixture:memory-wait"}:
+            if not any(p.tool_name == "read_memory" for p in returned):
+                yield {0: DeltaToolCall(name="read_memory", json_args="{}", tool_call_id="fixture-memory-read")}
+                return
+            if command == "fixture:memory-wait" and not any(p.tool_name == "mcp_send_note" for p in returned):
+                yield {0: DeltaToolCall(name="mcp_send_note", json_args=json.dumps({"note": "Synthetic local approval wait after memory read."}), tool_call_id="fixture-memory-effect")}
+                return
+            memories = next(payload(p) for p in returned if p.tool_name == "read_memory")
+            yield "SIMULATION: current explicitly saved memory: " + json.dumps(memories, ensure_ascii=False)
+            return
+        if command == "fixture:mcp-read":
+            if not returned:
+                yield {0: DeltaToolCall(name="mcp_read_status", json_args="{}", tool_call_id="fixture-mcp-read")}
+                return
+            yield "SIMULATION: local MCP read result: " + json.dumps(payload(returned[-1]), ensure_ascii=False)
+            return
+        if command == "fixture:mcp-effect":
+            if not returned:
+                args = {"note": "Synthetic Harbor review note. No real message is sent."}
+                if inventory["artifacts"]:
+                    item = inventory["artifacts"][0]
+                    args.update(artifact_id=item["id"], expected_version=item["version"])
+                yield {0: DeltaToolCall(name="mcp_send_note", json_args=json.dumps(args), tool_call_id="fixture-mcp-effect")}
+                return
+            yield "SIMULATION: synthetic outbox receipt: " + json.dumps(payload(returned[-1]), ensure_ascii=False)
+            return
+
         if command in {"fixture:brief", "fixture:table"}:
             reads = [payload(part) for part in returned if part.tool_name == "read_file"]
             if any(part.tool_name == "write_artifact" for part in returned):
