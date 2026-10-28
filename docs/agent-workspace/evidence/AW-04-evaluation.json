@@ -1,0 +1,323 @@
+{
+  "status": "DRY_RUN_NO_PROVIDER_CALLS",
+  "manifest": {
+    "schema_version": 1,
+    "campaign": "aw04-synthetic-v1",
+    "corpus_digest": "03522eebcc8ad0b9c5493130d9cf171d0bfd6ed6a8af19cf99e586cdf806f462",
+    "source_digests": {
+      "harbor-costs.csv": "34771c2255dfa0b235c90259037a42faf8921e5ffc83a6c86a1f21f58d27031a",
+      "harbor-handbook.txt": "ee0892215e1c5b1b535dda1d55350e848bd1b3c35db3b4b6b8e1f5d5be28c6f8",
+      "harbor-plan.txt": "0be30f2448807671826e9e2e43a4a66968fcc250091b8c132ab10253e2449572",
+      "harbor-update.txt": "7b6dd94ec8841f19c063b082efb6bf18e25544b26d4d49c095d9786a85b6fc0c",
+      "maker-costs.csv": "69c9538cb76997b3a7678de7588f2f4b1ee20d81e610ad090922ee09ca8dee4d",
+      "maker-plan.txt": "a865ae6d782e49b0a607cd46e95ff3df11c4fe60642ebb3d7195eea98e3df222",
+      "maker-update.txt": "6c654b5dfdeea9e7f422b14a12c7642f56647fa7bb42c39bab5acd6c28e8b612"
+    },
+    "case_digests": {
+      "AW04-01": "c411b753c0fb7f42582bb5d5157fb4e89ab0658de14c8c96e4138bb3fc9c55ba",
+      "AW04-02": "ef13dc45afa86355877912f5ddd807afee9aa32e54d9bd1a3ae4f7b70b8c8648",
+      "AW04-03": "e5fa372e48e71f2ea9e8840bfcf8464239e063a068b03d620f2395af7575cd32",
+      "AW04-04": "83fb43ea20a47bb47fd34a0b9f4778d8c3cdc457d108c4d20b62d997d3a91832",
+      "AW04-05": "0554edff2bd609f3fb8e11faf9a4641c469bb8a8727d0dd3281d75f6907f698c",
+      "AW04-06": "717e5c5a1461a10ee6a6d2bc904593a4f939c247dbbc9077efff8d9cc9f0c724",
+      "AW04-07": "cfb76cbccbda778e673b6aa2cf86073f941f5bb9d32483525fd54804073b5c4c",
+      "AW04-08": "865fbd80a825c56776fc9bfdb2154b54eb93f6b3b9a9df9f2a035a763d351c55",
+      "AW04-09": "fd378c0256955c3fab8156ab54e2b569774b84d2a298d7bf40e50a97ee99f0b4",
+      "AW04-10": "c1214ae5d721ec048b2eef123ca8a4c9c1e18373269fefadb1d1828934261c8e",
+      "AW04-11": "eabd766dc65910012f437ab98ec8e653e534f3b76475e3448360de53f693fa6e",
+      "AW04-12": "89160694323a770474f6e478e8125be19e9c0cc1bbe3cac4aa69dc52459f4d92"
+    },
+    "split_counts": {
+      "dev": 6,
+      "holdout": 6
+    },
+    "provenance": "Wholly synthetic non-RtR data. Holdout assignments freeze before model results, not a hidden independent benchmark; builders can inspect this file."
+  },
+  "real_model_status": "NOT_RUN",
+  "semantic_quality": "NOT_MEASURED",
+  "human_acceptance": "NOT_REVIEWED",
+  "arms": [
+    "workspace",
+    "direct-tool-agent"
+  ],
+  "baseline": "Plain PydanticAI agent with same scoped deterministic tool ports; no DBOS, Workspace UI or durable agent-history recovery",
+  "comparability_limits": [
+    "Both arms retain identical deterministic Store artifact/version safety; this is not a tool-less LLM.",
+    "Direct baseline exposes pending approval instead of a native durable wait; effect/recovery advantages require separate operational probes, not fabricated semantic scores.",
+    "Offline fixture assertions do not measure real provider quality, latency, invoice cost or human productivity.",
+    "Twelve assistant-authored journeys and public holdout assignments are not a hidden independent benchmark."
+  ],
+  "split_limitation": "Dev is mostly creation/happy-path and holdout mostly operational faults. Their averages are not a generalization comparison; report journey-specific results.",
+  "metrics": {
+    "first_text_seconds": null,
+    "first_useful_output_seconds": null,
+    "usable_artifact_seconds": null,
+    "active_human_minutes": null,
+    "measured_user_actions": null,
+    "invoice_usd": null
+  },
+  "journeys": [
+    {
+      "id": "AW04-01",
+      "split": "dev",
+      "domain": "community-garden",
+      "journey": "chat-followup",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [],
+      "operational_status": "NOT_APPLICABLE"
+    },
+    {
+      "id": "AW04-02",
+      "split": "dev",
+      "domain": "makerspace",
+      "journey": "multifile-brief",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [],
+      "operational_status": "NOT_APPLICABLE"
+    },
+    {
+      "id": "AW04-03",
+      "split": "dev",
+      "domain": "community-garden",
+      "journey": "long-brief",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [],
+      "operational_status": "NOT_APPLICABLE"
+    },
+    {
+      "id": "AW04-04",
+      "split": "dev",
+      "domain": "makerspace",
+      "journey": "exact-table-values",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [],
+      "operational_status": "NOT_APPLICABLE"
+    },
+    {
+      "id": "AW04-05",
+      "split": "dev",
+      "domain": "community-garden",
+      "journey": "localized-edit",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [],
+      "operational_status": "NOT_APPLICABLE"
+    },
+    {
+      "id": "AW04-06",
+      "split": "dev",
+      "domain": "makerspace",
+      "journey": "conflicting-sources",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [],
+      "operational_status": "NOT_APPLICABLE"
+    },
+    {
+      "id": "AW04-07",
+      "split": "holdout",
+      "domain": "community-garden",
+      "journey": "missing-file",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [
+        "tests/test_workspace.py::test_tool_scope_same_owner_and_deadline"
+      ],
+      "operational_status": "NOT_RUN"
+    },
+    {
+      "id": "AW04-08",
+      "split": "holdout",
+      "domain": "makerspace",
+      "journey": "tool-timeout-429",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [
+        "tests/test_aw04_backend.py::test_provider_unknown_has_no_hidden_retry",
+        "docs/agent-workspace/evidence/test_aw04_independent.py::test_provider_error_makes_exactly_one_synthetic_dispatch"
+      ],
+      "operational_status": "NOT_RUN"
+    },
+    {
+      "id": "AW04-09",
+      "split": "holdout",
+      "domain": "community-garden",
+      "journey": "restart-reconnect",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [
+        "tests/test_workspace_recovery.py::test_product_recovers_receipt_without_duplicate_publication",
+        "tests/test_aw03_connections.py::test_pending_approval_restart_and_receipt_crash_recover_same_run"
+      ],
+      "operational_status": "NOT_RUN"
+    },
+    {
+      "id": "AW04-10",
+      "split": "holdout",
+      "domain": "makerspace",
+      "journey": "cancel-after-effect",
+      "kind": "deterministic-control-only",
+      "model_needed": false,
+      "control_proof_refs": [
+        "tests/test_aw03_connections.py::test_unknown_effect_reconciles_without_resend_after_cancel",
+        "tests/test_aw03_connections.py::test_grant_read_then_native_approval_same_run_no_duplicate_effect"
+      ],
+      "operational_status": "NOT_RUN"
+    },
+    {
+      "id": "AW04-11",
+      "split": "holdout",
+      "domain": "community-garden",
+      "journey": "forged-approval-revoke",
+      "kind": "deterministic-control-only",
+      "model_needed": false,
+      "control_proof_refs": [
+        "tests/test_aw03_connections.py::test_rejection_revocation_expiry_and_resource_change",
+        "tests/test_workspace_state.py::test_memory_owner_workspace_boundaries_and_bounds"
+      ],
+      "operational_status": "NOT_RUN"
+    },
+    {
+      "id": "AW04-12",
+      "split": "holdout",
+      "domain": "makerspace",
+      "journey": "memory-forget",
+      "kind": "language-task-and-optional-control-probe",
+      "model_needed": true,
+      "control_proof_refs": [
+        "tests/test_workspace_state.py::test_memory_explicit_revision_and_delete_does_not_resurrect",
+        "tests/test_aw03_connections.py::test_memory_delete_during_approval_cancels_consumers_and_future_body"
+      ],
+      "operational_status": "NOT_RUN"
+    }
+  ],
+  "licenses": {
+    "scope": "Standalone Workspace direct Python requirements; installed distribution metadata only",
+    "packages": [
+      {
+        "name": "pydantic-ai-slim",
+        "version": "2.62.0",
+        "license_metadata": "MIT",
+        "license_classifiers": [
+          "License :: OSI Approved :: MIT License"
+        ]
+      },
+      {
+        "name": "dbos",
+        "version": "3.2.0",
+        "license_metadata": "MIT",
+        "license_classifiers": [
+          "License :: OSI Approved :: MIT License"
+        ]
+      },
+      {
+        "name": "fastapi",
+        "version": "0.162.0",
+        "license_metadata": "MIT",
+        "license_classifiers": []
+      },
+      {
+        "name": "uvicorn",
+        "version": "0.54.0",
+        "license_metadata": "BSD-3-Clause",
+        "license_classifiers": []
+      },
+      {
+        "name": "httpx",
+        "version": "0.28.1",
+        "license_metadata": "BSD-3-Clause",
+        "license_classifiers": [
+          "License :: OSI Approved :: BSD License"
+        ]
+      },
+      {
+        "name": "python-docx",
+        "version": "1.2.0",
+        "license_metadata": "MIT",
+        "license_classifiers": [
+          "License :: OSI Approved :: MIT License"
+        ]
+      },
+      {
+        "name": "openpyxl",
+        "version": "3.1.5",
+        "license_metadata": "MIT",
+        "license_classifiers": [
+          "License :: OSI Approved :: MIT License"
+        ]
+      },
+      {
+        "name": "reportlab",
+        "version": "4.4.3",
+        "license_metadata": "BSD license (see license.txt for details), Copyright (c) 2000-2025, ReportLab Inc.",
+        "license_classifiers": [
+          "License :: OSI Approved :: BSD License"
+        ]
+      },
+      {
+        "name": "pypdf",
+        "version": "6.14.2",
+        "license_metadata": "BSD-3-Clause",
+        "license_classifiers": []
+      },
+      {
+        "name": "defusedxml",
+        "version": "0.7.1",
+        "license_metadata": "PSFL",
+        "license_classifiers": [
+          "License :: OSI Approved :: Python Software Foundation License"
+        ]
+      },
+      {
+        "name": "psutil",
+        "version": "7.0.0",
+        "license_metadata": "BSD-3-Clause",
+        "license_classifiers": [
+          "License :: OSI Approved :: BSD License"
+        ]
+      },
+      {
+        "name": "mcp",
+        "version": "1.26.0",
+        "license_metadata": "MIT",
+        "license_classifiers": [
+          "License :: OSI Approved :: MIT License"
+        ]
+      },
+      {
+        "name": "openai",
+        "version": "3.31.0",
+        "license_metadata": "Apache-2.0",
+        "license_classifiers": [
+          "License :: OSI Approved :: Apache Software License"
+        ]
+      }
+    ],
+    "frontend_manifest": "v2/apps/web/package.json",
+    "caveat": "Web still inherits legacy package/dependency scope; this is not a full transitive SBOM, license audit, attribution bundle or legal clearance. Font license is retained under assets/LICENSE-NOTO.txt."
+  },
+  "manifest_digest": "5ac297f530c2a53720b856dbd350e4ea8894b9c5c24b88b36610efed53398667",
+  "capture": {
+    "date": "2026-10-28",
+    "kind": "offline-plan-and-contract-tests",
+    "provider_calls": 0,
+    "paid_cost_usd": 0,
+    "model_semantic_quality": "NOT_MEASURED",
+    "human_acceptance": "NOT_REVIEWED",
+    "builder_test_command": ".venv/bin/python -m pytest tests/test_aw04_evaluation.py -q",
+    "builder_test_result": {
+      "passed": 12,
+      "failed": 0,
+      "duration_seconds": 0.79
+    },
+    "limitations": [
+      "Provider never contacted, not even model listing or a smoke probe.",
+      "Contract test count is not a semantic or market-quality score.",
+      "Operational proof references are reproducible commands, not execution receipts. Integrated verification records the actual runs."
+    ]
+  }
+}

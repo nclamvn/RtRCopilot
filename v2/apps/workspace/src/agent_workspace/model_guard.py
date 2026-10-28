@@ -12,9 +12,10 @@ run_scope = ContextVar("workspace_run_scope", default=None)
 
 
 class DispatchGuard(WrapperModel):
-    def __init__(self, wrapped, store, *, simulation=False):
+    def __init__(self, wrapped, store, *, simulation=False, budget=None):
         super().__init__(wrapped)
         self.store, self.simulation = store, simulation
+        self.budget = budget
         self.io_slots = asyncio.Semaphore(2)
 
     def reserve(self, run_context=None):
@@ -26,24 +27,40 @@ class DispatchGuard(WrapperModel):
                                           allow_replay=self.simulation)
 
     async def request(self, messages, model_settings, model_request_parameters):
+        ticket = None
         try:
             async with self.io_slots:
                 self.reserve()
-                return await self.wrapped.request(messages, model_settings, model_request_parameters)
-        except WorkspaceError:
-            raise
-        except Exception:
-            # Never checkpoint raw provider exceptions/request objects containing headers.
+                if self.budget:
+                    ticket = await self.budget.reserve(run_scope.get(), messages, model_settings, model_request_parameters)
+                response = await self.wrapped.request(messages, model_settings, model_request_parameters)
+                if ticket:
+                    await self.budget.settle(ticket, response.usage.input_tokens, response.usage.output_tokens)
+                return response
+        except BaseException as exc:
+            if ticket:
+                await self.budget.unknown(ticket)
+            if isinstance(exc, (WorkspaceError, asyncio.CancelledError)):
+                raise
             raise WorkspaceError("provider_request_failed") from None
 
     @asynccontextmanager
     async def request_stream(self, messages, model_settings, model_request_parameters, run_context=None):
+        ticket = None
         try:
             async with self.io_slots:
                 self.reserve(run_context)
+                if self.budget:
+                    scope = run_context.deps if run_context else run_scope.get()
+                    ticket = await self.budget.reserve(scope, messages, model_settings, model_request_parameters)
                 async with self.wrapped.request_stream(messages, model_settings, model_request_parameters, run_context) as stream:
                     yield stream
-        except WorkspaceError:
-            raise
-        except Exception:
+                    if ticket:
+                        usage = stream.usage
+                        await self.budget.settle(ticket, usage.input_tokens, usage.output_tokens)
+        except BaseException as exc:
+            if ticket:
+                await self.budget.unknown(ticket)
+            if isinstance(exc, (WorkspaceError, asyncio.CancelledError)):
+                raise
             raise WorkspaceError("provider_request_failed") from None

@@ -7,6 +7,7 @@ import {api, apiRoot} from "./api";
 import {ArtifactCreator, ArtifactEditor} from "./ArtifactEditor";
 import {LocalResearch, SourcePreview} from "./Sources";
 import {ApprovalPrompt, ConnectionPanel, MemoryPanel, SchedulePanel, type ControlView} from "./WorkspaceControls";
+import {clearWorkspaceBrowserData, ModelSetup, WorkspaceData, type DeletedWorkspace} from "./WorkspaceSettings";
 import "./workspace.css";
 
 const freshLive = (): LiveState => ({cursor: 0, content: "", state: "queued", activities: []});
@@ -31,11 +32,12 @@ export function WorkspaceApp() {
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [connection, setConnection] = useState("");
   const [run, setRun] = useState<Run | null>(null);
   const [live, setLive] = useState<LiveState>(freshLive);
   const [panel, setPanel] = useState(false);
-  const [panelView, setPanelView] = useState<"outputs" | "source" | "research" | ControlView>("outputs");
+  const [panelView, setPanelView] = useState<"outputs" | "source" | "research" | "setup" | "data" | ControlView>("outputs");
   const [source, setSource] = useState<SourceFile | null>(null);
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
   const [newKind, setNewKind] = useState<"document" | "table" | null>(null);
@@ -50,19 +52,20 @@ export function WorkspaceApp() {
   const nearBottom = useRef(true);
   const selection = useRef("");
   const artifactRequest = useRef(0);
+  const deletedWorkspaces = useRef(new Set<string>());
   const active = !!run && !terminal(run.state);
 
   const refresh = useCallback(async (workspaceId: string) => {
     const [history, sources, outputs] = await Promise.all([
       api<{items: Message[]}>(`/workspaces/${workspaceId}/messages`), api<{items: SourceFile[]}>(`/workspaces/${workspaceId}/files`), api<{items: Artifact[]}>(`/workspaces/${workspaceId}/artifacts`),
     ]);
-    if (selection.current !== workspaceId) return;
+    if (selection.current !== workspaceId || deletedWorkspaces.current.has(workspaceId)) return;
     setMessages(history.items); setFiles(sources.items); setArtifacts(outputs.items);
     return history.items;
   }, []);
 
   const choose = useCallback(async (workspace: Workspace) => {
-    if (!safeNavigate()) return;
+    if (deletedWorkspaces.current.has(workspace.id) || !safeNavigate()) return;
     artifactRequest.current++;
     selection.current = workspace.id;
     setSelected(workspace); setMessages([]); setFiles([]); setArtifacts([]); setArtifact(null); setNewKind(null); setSource(null); setUploadQueue([]); setPanelView("outputs"); setRun(null); setLive(freshLive()); liveRef.current = freshLive(); setError(""); setNavigation(false);
@@ -75,7 +78,7 @@ export function WorkspaceApp() {
         const snapshot = await api<Run>(`/runs/${pending}`);
         if (selection.current === workspace.id) setRun(snapshot);
       }
-    } catch (cause) {setError(String((cause as Error).message));}
+    } catch (cause) {if (selection.current === workspace.id) setError(String((cause as Error).message));}
   }, [refresh]);
 
   const connect = useCallback(async () => {
@@ -162,6 +165,7 @@ export function WorkspaceApp() {
     setLive(freshLive()); liveRef.current = freshLive();
     try {
       const result = await api<{run_id: string; state: string}>("/runs", {workspace_id: workspaceId, message: text, client_request_id: requestId});
+      if (deletedWorkspaces.current.has(workspaceId)) return;
       localStorage.setItem(`agent-workspace:run:${workspaceId}`, result.run_id);
       pendingCommand.current = null;
       if (terminal(result.state)) {
@@ -179,7 +183,7 @@ export function WorkspaceApp() {
         if (last?.run_id) {
           const recovered = await api<Run>(`/runs/${last.run_id}`);
           if (selection.current === workspaceId) setRun(recovered);
-          localStorage.setItem(`agent-workspace:run:${workspaceId}`, last.run_id);
+          if (!deletedWorkspaces.current.has(workspaceId)) localStorage.setItem(`agent-workspace:run:${workspaceId}`, last.run_id);
           pendingCommand.current = null;
           return;
         }
@@ -213,9 +217,10 @@ export function WorkspaceApp() {
   }
   async function stop() {
     if (!run) return;
+    const workspaceId = selection.current; const runId = run.id;
     setRun({...run, cancel_requested: true});
-    try {const snapshot = await api<Run>(`/runs/${run.id}/cancel`, {}); setRun(snapshot);}
-    catch (cause) {setError(`Stop has not been confirmed. ${(cause as Error).message}`);}
+    try {const snapshot = await api<Run>(`/runs/${runId}/cancel`, {}); if (selection.current === workspaceId && !deletedWorkspaces.current.has(workspaceId)) setRun(snapshot);}
+    catch (cause) {if (selection.current === workspaceId) setError(`Stop has not been confirmed. ${(cause as Error).message}`);}
   }
   async function openArtifact(item: Artifact, version = item.version) {
     if (!safeNavigate()) return;
@@ -236,11 +241,24 @@ export function WorkspaceApp() {
       }
     }
   }
-  function openControl(view: ControlView) {
+  function openControl(view: ControlView | "setup" | "data") {
     if (!safeNavigate()) return;
     setPanelView(view); setPanel(true); setNavigation(false);
   }
-  const panelTitle = panelView === "source" ? "Source file" : panelView === "research" ? "Local research" : panelView === "memory" ? "Memory" : panelView === "connections" ? "Connections" : panelView === "schedules" ? "Schedules" : "Outputs";
+  async function removeWorkspace(result: DeletedWorkspace, artifactIds: string[]) {
+    const workspaceId = result.workspace_id;
+    deletedWorkspaces.current.add(workspaceId);
+    let browserCleared = true;
+    try {clearWorkspaceBrowserData(workspaceId, artifactIds);} catch {browserCleared = false;}
+    if (pendingCommand.current?.workspaceId === workspaceId) pendingCommand.current = null;
+    setWorkspaces(previous => previous.filter(item => item.id !== workspaceId));
+    // A late deletion ACK must never discard another workspace's current view.
+    if (selection.current !== workspaceId) return;
+    selection.current = ""; artifactRequest.current++;
+    setSelected(null); setMessages([]); setFiles([]); setArtifacts([]); setArtifact(null); setSource(null); setNewKind(null); setRun(null); setLive(freshLive()); liveRef.current = freshLive(); setDraft(""); setUploadQueue([]); setConnection(""); setPanel(false); setPanelView("outputs");
+    setError(""); setNotice(browserCleared ? "Workspace deleted. Its application data and this browser’s scoped drafts were removed. Audit history, private backups and downloaded exports may remain." : "Workspace deleted from the application. Browser storage was unavailable, so cached drafts could not be cleared. Remove this site’s browser data before sharing this device. Audit history, private backups and downloaded exports may remain.");
+  }
+  const panelTitle = panelView === "setup" ? "Model & setup" : panelView === "data" ? "Workspace data" : panelView === "source" ? "Source file" : panelView === "research" ? "Local research" : panelView === "memory" ? "Memory" : panelView === "connections" ? "Connections" : panelView === "schedules" ? "Schedules" : "Outputs";
   const status = loading ? "Connecting…" : availability?.test_mode ? "Simulation · no model calls · fixture:brief / table / patch / research / mcp-read / mcp-effect" : availability?.available ? availability.model ?? "Model ready" : "Model unavailable";
   return <div className="agent-workspace" data-navigation={navigation} data-panel={panel}>
     <a className="aw-skip" href="#aw-composer">Skip to message</a>
@@ -256,7 +274,7 @@ export function WorkspaceApp() {
         {uploading && <p role="status">Saving source files…</p>}
         <button className="aw-research-open" disabled={!selected} onClick={() => {if (!safeNavigate()) return; setPanelView("research"); setPanel(true); setNavigation(false);}}>Search local fixtures</button>
       </section>
-      {availability?.test_mode && <section className="aw-workspace-controls" aria-label="Workspace controls">{(["memory", "connections", "schedules"] as const).map(view => <button key={view} disabled={!selected || loading} aria-pressed={panel && panelView === view} onClick={() => openControl(view)}>{view === "memory" ? "Memory" : view === "connections" ? "Connections" : "Schedules"}</button>)}</section>}
+      <section className="aw-workspace-controls" aria-label="Workspace controls"><button disabled={!selected || loading} aria-pressed={panel && panelView === "memory"} onClick={() => openControl("memory")}>Memory</button>{availability?.test_mode && (["connections", "schedules"] as const).map(view => <button key={view} disabled={!selected || loading} aria-pressed={panel && panelView === view} onClick={() => openControl(view)}>{view === "connections" ? "Connections" : "Schedules"}</button>)}<button aria-pressed={panel && panelView === "setup"} onClick={() => openControl("setup")}>Model & setup</button><button disabled={!selected || loading} aria-pressed={panel && panelView === "data"} onClick={() => openControl("data")}>Workspace data</button></section>
       <div className="aw-sidebar-foot">Local workspace<br/><small>Shell and live external tools are off. Fixture actions and schedules are simulations.</small></div>
     </aside>
     {navigation && <button className="aw-scrim" aria-label="Close navigation" onClick={() => setNavigation(false)}/>}
@@ -264,6 +282,7 @@ export function WorkspaceApp() {
       <header className="aw-header"><button className="aw-mobile" aria-label="Open navigation" disabled={loading} onClick={() => setNavigation(true)}>☰</button><h1>{selected?.name ?? "Agent Workspace"}</h1><button className="aw-panel-toggle" aria-expanded={panel && panelView === "outputs"} onClick={() => {if (!safeNavigate()) return; setPanelView("outputs"); setPanel(value => panelView !== "outputs" || !value);}}>Outputs <span aria-hidden="true">{panel ? "›" : "‹"}</span></button></header>
       <div className={`aw-availability${availability?.test_mode ? " aw-simulation" : ""}`} role="status"><span className="aw-dot" aria-hidden="true"/>{status}{!loading && !availability?.available && <span> · {availability?.reason ?? "Start the workspace service to connect."}</span>}</div>
       {error && <div className="aw-error" role="alert"><p>{error}</p><button onClick={() => void connect()}>Reconnect</button><button onClick={() => setError("")} aria-label="Dismiss error">×</button></div>}
+      {notice && <div className="aw-error" role="status"><p>{notice}</p><button onClick={() => setNotice("")} aria-label="Dismiss notification">×</button></div>}
       <div className="aw-transcript" ref={transcript} onScroll={event => {const element = event.currentTarget; nearBottom.current = element.scrollHeight - element.scrollTop - element.clientHeight < 100;}}>
         <div className="aw-measure">
           {!messages.length && !sending && <div className="aw-empty"><div className="aw-empty-mark" aria-hidden="true">◈</div><h2>A place to think and make.</h2><p>{availability?.test_mode ? "This is a scripted local integration test, not an AI assistant. Add a source file and use the fixture commands to test saved drafts and revisions." : "Bring a source file, ask a question, or turn your notes into a working draft. Your conversation and outputs stay together."}</p>{!selected ? <button onClick={() => {setCreating(true); setNavigation(true);}}>Create your first workspace</button> : <div className="aw-suggestions"><button onClick={() => uploadInput.current?.click()}>Add a source file</button><button onClick={() => {setDraft(availability?.test_mode ? "fixture:create" : "Create a concise Markdown brief from my source files."); composer.current?.focus();}}>{availability?.test_mode ? "Test draft creation" : "Create a brief from my files"}</button></div>}</div>}
@@ -275,6 +294,8 @@ export function WorkspaceApp() {
       <div className="aw-compose-wrap">{selected && run && active && availability?.test_mode && <ApprovalPrompt key={`${selected.id}:${run.id}`} workspaceId={selected.id} runId={run.id} onResolved={() => void reconcileWorkspaceRun(selected.id).catch(cause => setError(cause.message))}/>}<form className="aw-composer" onSubmit={submit}><label className="aw-visually-hidden" htmlFor="aw-composer">Message</label><textarea id="aw-composer" ref={composer} rows={3} value={draft} onChange={event => setDraft(event.target.value)} placeholder={selected ? "Ask anything, or describe what you want to make…" : "Create a workspace to start…"} disabled={!selected} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); event.currentTarget.form?.requestSubmit();}}}/><div className="aw-composer-bottom"><button type="button" className="aw-attach" onClick={() => uploadInput.current?.click()} disabled={!selected || uploading} aria-label="Attach source file">＋ <span>Add file</span></button><span className="aw-input-hint">Enter to send · Shift + Enter for a new line</span>{active ? <button type="button" className="aw-send" onClick={() => void stop()} disabled={run?.cancel_requested}>{run?.cancel_requested ? "Stop requested" : "Stop"}</button> : <button className="aw-send" type="submit" disabled={!selected || !draft.trim() || !availability?.available || sending}>Send <span aria-hidden="true">↑</span></button>}</div></form><p className="aw-compose-note" role="status">{connection || (availability?.test_mode ? "Simulation uses a deterministic test model. Outputs are not AI quality evidence." : "Review important details in generated drafts.")}</p></div>
     </main>
     {panel && <aside className="aw-panel" aria-label="Outputs and activity"><div className="aw-panel-head"><h2>{panelTitle}</h2><button onClick={() => {if (safeNavigate()) setPanel(false);}} aria-label="Close outputs">×</button></div>
+      {panelView === "setup" && <ModelSetup onReadiness={setAvailability}/>}
+      {panelView === "data" && selected && <WorkspaceData key={selected.id} workspace={selected} active={active || sending || uploading} onDeleted={removeWorkspace} onRecover={() => {if (availability?.test_mode) openControl("connections"); else {setPanelView("outputs"); setPanel(true);}}}/>}
       {panelView === "memory" && selected && <MemoryPanel key={selected.id} workspaceId={selected.id}/>}
       {panelView === "connections" && selected && <ConnectionPanel key={selected.id} workspaceId={selected.id} onPrepare={command => {setDraft(command); setPanel(false); composer.current?.focus();}}/>}
       {panelView === "schedules" && selected && <SchedulePanel key={selected.id} workspaceId={selected.id} onDispatched={() => void reconcileWorkspaceRun(selected.id).catch(cause => setError(cause.message))}/>}

@@ -101,6 +101,11 @@ class ClockTick(CommandKey):
     target: float = Field(ge=0, le=31536000)
 
 
+class DeleteWorkspace(CommandKey):
+    confirmation_token: str = Field(min_length=20, max_length=160)
+    confirm_name: str = Field(min_length=1, max_length=120)
+
+
 def create_app(settings: Settings | None = None, *, runtime_factory=None) -> FastAPI:
     settings = settings or Settings.from_env()
     # Import/app construction must not mutate a live catalogue. Startup owns
@@ -115,6 +120,8 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
         app.state.store = store
         runtime = (runtime_factory or Runtime)(settings, store)
         app.state.runtime = runtime
+        from .data_lifecycle import DataLifecycle
+        app.state.lifecycle = DataLifecycle(store, active_runs=getattr(runtime, "active_runs", None))
         await runtime.start()
         try:
             yield
@@ -169,6 +176,16 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
     def status(request: Request, actor: Owner):
         return request.app.state.runtime.status()
 
+    @app.get(PREFIX + "/readiness")
+    def readiness(request: Request, actor: Owner):
+        from .provider_config import readiness as provider_readiness
+        value = request.app.state.runtime.status()
+        provider, reason = provider_readiness(settings)
+        return {**value, "provider": provider,
+                "reason": value["reason"] if value["test_mode"] else (reason or value["reason"]),
+                "setup_command": ".venv/bin/workspace configure --config .workspace-data/provider.json --allow-external-processing",
+                "setup_directory": "v2/apps/workspace"}
+
     @app.get(PREFIX + "/workspaces")
     def workspaces(actor: Owner):
         return {"items": store.workspaces(actor)}
@@ -178,6 +195,21 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
         if not body.name.strip():
             raise WorkspaceError("empty_name")
         return store.workspaces(actor, body.name.strip())
+
+    @app.get(PREFIX + "/workspaces/{workspace_id}/export")
+    def export_workspace(workspace_id: str, request: Request, actor: Owner):
+        output = request.app.state.lifecycle.export(actor, workspace_id)
+        return Response(output, media_type="application/zip", headers={
+            "Content-Disposition": 'attachment; filename="workspace-export.zip"'})
+
+    @app.get(PREFIX + "/workspaces/{workspace_id}/delete-preview")
+    def delete_preview(workspace_id: str, request: Request, actor: Owner):
+        return request.app.state.lifecycle.preview(actor, workspace_id)
+
+    @app.post(PREFIX + "/workspaces/{workspace_id}/delete")
+    def delete_workspace(workspace_id: str, body: DeleteWorkspace, request: Request, actor: Owner):
+        return request.app.state.lifecycle.delete(actor, workspace_id, body.confirmation_token,
+                                                  body.confirm_name, body.request_id)
 
     @app.get(PREFIX + "/workspaces/{workspace_id}/messages")
     def messages(workspace_id: str, actor: Owner):

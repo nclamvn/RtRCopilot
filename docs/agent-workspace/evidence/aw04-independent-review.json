@@ -1,0 +1,51 @@
+{
+  "reviewer": "/root/aw04_review",
+  "review_type": "separate author-independent local boundary review",
+  "date": "2026-10-28",
+  "status": "PASS_WITH_SCOPE_LIMITS",
+  "test_file": "docs/agent-workspace/evidence/test_aw04_independent.py",
+  "command": "PYTHONPATH=src PYDANTIC_AI_NO_BANNER=1 .venv/bin/python -m pytest -q ../../../docs/agent-workspace/evidence/test_aw04_independent.py --basetemp=/private/tmp/codex-tmp-aw04-review-20261028",
+  "command_cwd": "v2/apps/workspace",
+  "latest_result": {"passed": 23, "failed": 0, "skipped": 0, "pytest_seconds": 1.50},
+  "external_model_calls": 0,
+  "evidence_kind": ["actual disposable SQLite", "actual PydanticAI agent/tool stream", "synthetic OpenAI SDK HTTP/SSE via httpx.MockTransport", "offline configuration probes"],
+  "coverage": [
+    "Private profile mode0600, symlink refusal, no hot key rebind, redacted readiness/repr",
+    "CLI refuses getpass warning/echo fallback without writing a profile",
+    "Launcher forwards explicit UI feature flag but not server or legacy credentials",
+    "Synthetic 429 and500 Responses errors dispatch exactly once, SDK hidden retries disabled",
+    "ZIP originals and all artifact versions, per-entry hashes/lengths, private checkpoint exclusion, export byte limit",
+    "Expired/wrong-workspace deletion tokens cannot delete even a same-name workspace",
+    "Idempotent deletion plus tombstone fence against deliberately restored stale catalogue rows and late callbacks",
+    "Ordinary unbound UI run and changed case/arm cannot consume campaign budget",
+    "Shared global concurrency, unknown outcome retained across reopen, immutable ledger binding",
+    "Usage above reservation stops campaign without refund; unpriced/bounded-output overrides rejected",
+    "Actual PydanticAI parameter/tool-schema serialization, pre-I/O reservation and post-stream settlement in both arms",
+    "Both model-default and explicit-agent output limits reach the budget seam",
+    "Synthetic Responses SSE with official installed SDK settles input/reasoning-inclusive output usage in both arms",
+    "Offline research port enablement parity in configured-model fixture mode"
+  ],
+  "findings_closed_in_working_tree": [
+    {"id": "IR-01", "severity": "P1", "finding": "Neutral launcher omitted WORKSPACE_UI_ENABLED, making BFF unavailable", "resolution": "Builder added feature flag and direct Next child/process-group lifecycle; reviewer checked forwarded environment"},
+    {"id": "IR-02", "severity": "P1", "finding": "Secure configuration could fall back to getpass echoed stdin", "resolution": "Builder treats GetPassWarning as failure; independent probe verifies no profile write"},
+    {"id": "IR-03", "severity": "P1", "finding": "Campaign ledger could not serialize actual ModelRequestParameters containing sets", "resolution": "Builder added canonical serialization; reviewer exercised actual agent/tool parameters and SDK SSE"},
+    {"id": "IR-04", "severity": "P1", "finding": "Both stream guards called the pinned SDK usage property as a function, stopping valid captures after dispatch", "resolution": "Builders use stream.usage property; both actual stream seams settle successfully"},
+    {"id": "IR-05", "severity": "P2", "finding": "Direct baseline disabled offline research in a fixture-enabled configured-model profile, unlike product arm", "resolution": "Builder aligned flag; independent parity probe passes"}
+  ],
+  "open_p0_p1_observed_in_reviewed_scope": 0,
+  "limits": [
+    "No real provider, invoice, natural-language semantic quality, hidden holdout or human acceptance evidence",
+    "Synthetic SDK HTTP/SSE does not prove account/model availability or internet behavior",
+    "Root owns integrated browser/restart/launcher verification; this review did not run a second live UI or kill existing processes",
+    "Product stream seam probe isolates PydanticAI/ledger and mocks DBOS dispatch reservation; separate runtime regression proves DBOS ownership",
+    "No production security audit, complete transitive frontend SBOM or legal clearance",
+    "Application deletion is not forensic erasure of DBOS audit, backups, downloaded exports or fixture outbox receipts",
+    "Only synthetic disposable test databases were modified; existing workspace data untouched"
+  ],
+  "cleanup": {
+    "removed": ["/private/tmp/codex-tmp-aw04-review-20261028"],
+    "removed_size_observed": "1.2MiB",
+    "initial_pytest_generated_directory": "/private/var/folders/81/y445_2554tb49zsn_qtb_9v80000gn/T/pytest-of-os/pytest-27",
+    "initial_directory_at_cleanup": "already absent; no claim reviewer removed it"
+  }
+}

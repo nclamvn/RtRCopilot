@@ -1,0 +1,96 @@
+{
+  "milestone": "AW-04",
+  "date": "2026-10-28",
+  "method": "Vibecode Kit personal v6.3",
+  "technical_scope_status": "READY_WITH_DEFERRED",
+  "overall_real_agent_pilot_status": "PARTIAL",
+  "checkpoint_decision": {
+    "user_selected": "local/mock only",
+    "real_external_capture_authorized": false,
+    "proposed_10_usd_budget_approved": false,
+    "provider_credential_or_authority_created": false,
+    "commit_push_authorized": true,
+    "note": "Historical test/source binding below describes the pre-commit verification capture, not a post-commit rebuild."
+  },
+  "source_binding": {
+    "base_commit": "189c585004c272a18ec08fbe8abb5f84620b361b",
+    "aw04_changes": "uncommitted working tree; no push/deploy",
+    "manifest": "aw04-source-manifest.sha256",
+    "manifest_sha256": "89730d589648a84e04fd6c6d9d3a86a3578bded8848ef7125f9844eeb0f646aa",
+    "files": 73,
+    "verified_all_entries_after_tests": true,
+    "scope": "Standalone Python package/lock/assets/tests plus Workspace UI/BFF/browser tests and selected frontend configuration; not every legacy repo file"
+  },
+  "requirements": {
+    "local_technical_outcomes_implemented": 8,
+    "local_technical_outcomes_total": 8,
+    "outcomes": ["neutral loopback launcher and offline doctor", "truthful readiness/setup UI", "private opt-in profile and Responses wiring", "bounded consistent export", "confirmed scoped deletion/tombstones", "durable shared evaluation budget", "frozen journey/comparator/quality methodology", "integrated regression and independent boundary review"],
+    "full_pilot_missing": ["explicit real-processing approval and privately entered Workspace key", "actual real-model comparison capture", "semantic review and actual user acceptance", "measured useful-output/cost/human-effort advantage"],
+    "not_claimed": "Eight engineering outcomes are not eight proven AI user-quality outcomes."
+  },
+  "commands_and_results": [
+    {"cwd": "v2/apps/workspace", "command": ".venv/bin/python -m pytest -q", "passed": 101, "failed": 0, "skipped": 0, "seconds": 96.37, "kind": "local SQLite/DBOS/MCP processes and model/mock HTTP"},
+    {"cwd": "v2/apps/web", "command": "pnpm test", "passed": 258, "files": 27, "failed": 0, "seconds": 10.67, "kind": "web unit regression including selected legacy UI"},
+    {"cwd": "v2/apps/web", "command": "pnpm exec playwright test --config playwright.workspace.config.ts", "passed": 22, "failed": 0, "duration_reported": "1.3m", "kind": "actual loopback API/UI, deterministic model; two explicitly labelled UI-only readiness branches"},
+    {"cwd": "v2/apps/workspace", "command": ".venv/bin/python -m pytest ../../../docs/agent-workspace/evidence/test_aw04_independent.py -q", "passed": 23, "failed": 0, "seconds": 2.41, "kind": "separate reviewer authored, Contractor rerun; synthetic official SDK HTTP/SSE and isolated SQLite"},
+    {"cwd": "v2/apps/web", "command": "pnpm typecheck && pnpm exec eslint src/workspace src/app/api/workspace tests/workspace", "result": "PASS"},
+    {"command": "fatal Python Ruff on changed package; git diff --check", "result": "PASS", "ruff_provenance": "Builder executed; Contractor checked integrated tests/whitespace"},
+    {"cwd": "v2/apps/workspace", "command": ".venv/bin/workspace doctor", "result": "model_not_configured; network_tested=false; real_ai_accepted=false", "external_model_calls": 0},
+    {"command": "verify_aw04_http.py on final runtime", "result": "PASS", "detail": "aw04-http-verification.json", "external_model_calls": 0}
+  ],
+  "launcher_integration": {
+    "command": ".venv/bin/workspace launch --simulation --data-dir .workspace-data",
+    "ui": "http://127.0.0.1:3110/workspace",
+    "api": "http://127.0.0.1:8110",
+    "runtime_version": "workspace-aw04-v1",
+    "stop_restart_verified": true,
+    "both_ports_without_listeners_after_controlled_stop": true,
+    "existing_workspace_preserved_after_restart": true,
+    "fixture_mode_visible_in_app": true,
+    "screenshot": "aw04-local-readiness.png"
+  },
+  "prior_failures_preserved": [
+    {"lane": "first integrated browser run", "passed": 20, "failed": 2, "cause": "New E2E payload used base64 with plaintext single-upload contract and omitted required connection expected_revision", "fix": "Correct test requests, assert permission response, no relaxed output assertions", "retest": "6/6 targeted, then 22/22 full"},
+    {"lane": "independent review", "closed_findings": 5, "detail": "aw04-independent-review.json", "open_p0_p1_observed_in_reviewed_scope": 0},
+    {"lane": "source hardening", "fix": "Fence tombstoned stale pending/background recovery queries and make terminal setup path copyable", "included_in_final_python_run": true}
+  ],
+  "value_evidence": {
+    "status": "PARTIAL_OPERATIONAL_ONLY",
+    "comparison_arms": ["Workspace PydanticAI+DBOS+UI", "direct tool-enabled PydanticAI agent, same provider/settings/tool ports without durable agent/UI recovery"],
+    "real_model_status": "NOT_RUN",
+    "real_quality_and_advantage": "NOT_MEASURED",
+    "human_acceptance": "NOT_REVIEWED",
+    "active_human_minutes": null,
+    "time_to_first_useful_ai_output": null,
+    "invoice_usd": null,
+    "external_model_dispatches": 0,
+    "read_probe": "100 tiny local GETs only; see HTTP evidence. Not model latency/capacity or direct-agent overhead comparison.",
+    "journeys": 12,
+    "domains": 2,
+    "dev": 6,
+    "holdout": 6,
+    "corpus_digest": "03522eebcc8ad0b9c5493130d9cf171d0bfd6ed6a8af19cf99e586cdf806f462",
+    "method_split": "10 language tasks prepared for separately authorized same-model capture; cases10/11 deterministic control proofs require no paid model. Operational reference links alone are not pass receipts.",
+    "limitations": "Public assistant-authored split, not hidden independent benchmark; mostly happy dev versus fault holdout, no average generalization claim. Mock does not certify semantic quality."
+  },
+  "limits_and_disposition": {
+    "current": "Local technical pilot available, real-agent/value acceptance pending",
+    "retained_after_application_delete": ["DBOS audit", "private backups", "previous downloads", "synthetic MCP outbox", "provider retention if configured in future"],
+    "browser_cleanup": "Only this browser can clear its own known workspace/artifact draft keys; cannot erase other devices or backups",
+    "budget_boundary": "Trusted local operator, exact shared ledger path; not an account-wide billing firewall",
+    "packaging": "Neutral backend, UI shares legacy web dependencies; direct Python license inventory is not transitive SBOM or commercial legal clearance",
+    "deferred": ["real web/connectors", "real background scheduler", "general sandbox executor", "production deployment/security/SSO", "forensic erasure"],
+    "production_build": "NOT_RUN, not required for this local dev-runtime scope",
+    "docker": "NOT_USED",
+    "next_step": "Bounded authorized real-model/direct-agent capture and semantic/user review, not another mock feature milestone"
+  },
+  "cleanup": {
+    "root_removed": ["pytest-of-os/pytest-34 (436KiB)", "pytest-of-os/pytest-35 (12MiB)", "pytest-of-os/pytest-36 (1.2MiB)"],
+    "root_temp_parent": "/var/folders/81/y445_2554tb49zsn_qtb_9v80000gn/T",
+    "builder_removed": "Six named .aw04-backend-* pytest directories, approximately23MiB, plus final small targeted test directory",
+    "reviewer_removed": "/private/tmp/codex-tmp-aw04-review-20261028, 1.2MiB",
+    "no_project_copy_or_extra_next_distdir_created": true,
+    "kept": "Existing .next/.venv and private application state/backups for continuity; unrelated legacy untracked data untouched",
+    "disk_free_at_end": "20GiB"
+  }
+}

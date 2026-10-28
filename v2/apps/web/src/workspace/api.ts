@@ -5,6 +5,12 @@ export class WorkspaceApiError extends Error {
       model_unavailable: "No model is available. Configure a permitted model or restart in explicit simulation mode.",
       workspace_service_unavailable: "The workspace service is not reachable. Start the local service, then reconnect.",
       workspace_busy: "This workspace already has a run in progress. Reconnect to it before sending another message.",
+      workspace_unsettled_effects: "An action outcome is not yet confirmed. Reconcile its receipt before deleting this workspace; do not send it again.",
+      delete_confirmation_stale: "Saved data changed after this preview. Keep your workspace and review deletion again before confirming.",
+      delete_confirmation_mismatch: "The workspace name did not match. Nothing was deleted.",
+      workspace_not_found: "This workspace is no longer available. Reconnect to refresh your workspace list.",
+      provider_unauthorized: "The provider rejected its server-side credentials. Check the local model configuration; do not paste keys into chat.",
+      provider_rate_limit: "The provider is temporarily limiting requests. Saved work is unchanged. Check provider quota before starting a new run.",
       artifact_version_conflict: "A newer version exists. Your unsaved draft is kept. Open the current version to compare before saving again.",
       version_conflict: "A newer version exists. Your unsaved draft is kept. Open the current version to compare before saving again.",
       stale_artifact_version: "A newer version exists. Your unsaved draft is kept. Open the current version to compare before saving again.",
@@ -17,7 +23,7 @@ export class WorkspaceApiError extends Error {
       connection_disabled: "Grant this workspace permission to use the local fixture first.",
       clock_cannot_rewind: "The simulation clock cannot move backwards. Enter the current second or a later one.",
     };
-    super(hints[code] ?? `The request could not finish (${code}). Saved work and unsaved edits are unchanged.`);
+    super(hints[code] ?? "The request could not finish. Saved work and unsaved edits are unchanged. Reconnect to check its state before trying again.");
   }
 }
 export async function checkedResponse(response: Response): Promise<Response> {

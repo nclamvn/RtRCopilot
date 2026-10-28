@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "campaign": "aw04-synthetic-v1",
+  "corpus_digest": "03522eebcc8ad0b9c5493130d9cf171d0bfd6ed6a8af19cf99e586cdf806f462",
+  "source_digests": {
+    "harbor-costs.csv": "34771c2255dfa0b235c90259037a42faf8921e5ffc83a6c86a1f21f58d27031a",
+    "harbor-handbook.txt": "ee0892215e1c5b1b535dda1d55350e848bd1b3c35db3b4b6b8e1f5d5be28c6f8",
+    "harbor-plan.txt": "0be30f2448807671826e9e2e43a4a66968fcc250091b8c132ab10253e2449572",
+    "harbor-update.txt": "7b6dd94ec8841f19c063b082efb6bf18e25544b26d4d49c095d9786a85b6fc0c",
+    "maker-costs.csv": "69c9538cb76997b3a7678de7588f2f4b1ee20d81e610ad090922ee09ca8dee4d",
+    "maker-plan.txt": "a865ae6d782e49b0a607cd46e95ff3df11c4fe60642ebb3d7195eea98e3df222",
+    "maker-update.txt": "6c654b5dfdeea9e7f422b14a12c7642f56647fa7bb42c39bab5acd6c28e8b612"
+  },
+  "case_digests": {
+    "AW04-01": "c411b753c0fb7f42582bb5d5157fb4e89ab0658de14c8c96e4138bb3fc9c55ba",
+    "AW04-02": "ef13dc45afa86355877912f5ddd807afee9aa32e54d9bd1a3ae4f7b70b8c8648",
+    "AW04-03": "e5fa372e48e71f2ea9e8840bfcf8464239e063a068b03d620f2395af7575cd32",
+    "AW04-04": "83fb43ea20a47bb47fd34a0b9f4778d8c3cdc457d108c4d20b62d997d3a91832",
+    "AW04-05": "0554edff2bd609f3fb8e11faf9a4641c469bb8a8727d0dd3281d75f6907f698c",
+    "AW04-06": "717e5c5a1461a10ee6a6d2bc904593a4f939c247dbbc9077efff8d9cc9f0c724",
+    "AW04-07": "cfb76cbccbda778e673b6aa2cf86073f941f5bb9d32483525fd54804073b5c4c",
+    "AW04-08": "865fbd80a825c56776fc9bfdb2154b54eb93f6b3b9a9df9f2a035a763d351c55",
+    "AW04-09": "fd378c0256955c3fab8156ab54e2b569774b84d2a298d7bf40e50a97ee99f0b4",
+    "AW04-10": "c1214ae5d721ec048b2eef123ca8a4c9c1e18373269fefadb1d1828934261c8e",
+    "AW04-11": "eabd766dc65910012f437ab98ec8e653e534f3b76475e3448360de53f693fa6e",
+    "AW04-12": "89160694323a770474f6e478e8125be19e9c0cc1bbe3cac4aa69dc52459f4d92"
+  },
+  "split_counts": {"dev": 6, "holdout": 6},
+  "provenance": "Wholly synthetic non-RtR data. Holdout assignments freeze before model results, not a hidden independent benchmark; builders can inspect this file."
+}

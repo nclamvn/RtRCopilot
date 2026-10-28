@@ -70,4 +70,11 @@ describe("Workspace BFF boundary", () => {
     for (const path of [["mcp", "execute"], ["workspaces", "w-one", "connection", "command"], ["workspaces", "w-one", "clock", "start"], ["approvals", "a-one", "approve"], ["effects", "e-one", "retry"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method: "POST", body: "{}"}), {params: Promise.resolve({path})})).status).toBe(400);
     expect(fetcher).toHaveBeenCalledTimes(count);
   });
+  test("AW04 allowlists exact readiness/export/delete routes without exposing generic setup or admin writes", async () => {
+    const fetcher = vi.fn(async () => new Response(new Uint8Array([80, 75, 3, 4]), {headers: {"content-type": "application/zip", "content-disposition": 'attachment; filename="workspace.zip"'}})); vi.stubGlobal("fetch", fetcher);
+    for (const path of [["readiness"], ["workspaces", "w-one", "export"], ["workspaces", "w-one", "delete-preview"]]) {const response = await GET(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`), {params: Promise.resolve({path})}); expect(response.status).toBe(200); expect(response.headers.get("content-type")).toBe("application/zip");}
+    expect((await POST(new NextRequest("http://localhost/api/workspace/workspaces/w-one/delete", {method: "POST", body: "{}"}), {params: Promise.resolve({path: ["workspaces", "w-one", "delete"]})})).status).toBe(200); const count = fetcher.mock.calls.length;
+    for (const path of [["readiness"], ["configure"], ["admin", "delete"], ["workspaces", "w-one", "export"], ["workspaces", "w-one", "delete-preview"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method: "POST", body: "{}"}), {params: Promise.resolve({path})})).status).toBe(400);
+    expect(fetcher).toHaveBeenCalledTimes(count);
+  });
 });

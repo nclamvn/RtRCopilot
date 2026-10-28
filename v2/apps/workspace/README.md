@@ -1,11 +1,11 @@
 # Agent Workspace local prototype
 
-AW-01/AW-02/AW-03 add a neutral workspace next to the existing application. It does not
+AW-01 through AW-04 add a neutral workspace next to the existing application. It does not
 activate the legacy executor, import the RtR answer pipeline or discover its
 credentials. Current acceptance is **local/mock integration only**, as requested
 by the user. It is not an accepted production AI assistant.
 
-## Run locally
+## Run locally (one command, no legacy services)
 
 Use Python 3.12. The isolated environment and dependency lock belong to this
 directory; do not upgrade the legacy backend environment.
@@ -13,13 +13,21 @@ directory; do not upgrade the legacy backend environment.
 ```sh
 cd /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/workspace
 uv sync --frozen --no-cache
-WORKSPACE_TEST_MODE=1 PYDANTIC_AI_NO_BANNER=1 PYTHONPATH=src \
-  .venv/bin/python -m uvicorn agent_workspace.api:app --host 127.0.0.1 --port 8110
+.venv/bin/workspace launch --simulation
 ```
 
-In another terminal:
+This starts the API on 8110 and the enabled UI on 3110, both bound to loopback.
+It uses the existing Next `.next` output, no copied project or per-task build.
+Stop with Ctrl+C; the launcher cleans up only its own child process groups.
+Do not launch a second copy on occupied ports. For an already running UI/API,
+stop the existing operator-owned processes before using this launcher.
+
+For separate terminal control, run:
 
 ```sh
+WORKSPACE_TEST_MODE=1 PYDANTIC_AI_NO_BANNER=1 \
+  .venv/bin/python -m uvicorn agent_workspace.api:app --host 127.0.0.1 --port 8110
+# Another terminal:
 pnpm --dir /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/web dev:workspace
 ```
 
@@ -58,8 +66,59 @@ These commands use an assistant-authored PydanticAI FunctionModel in the test
 fixture package. They are **not natural-language intelligence or model-quality
 evidence**. The UI identifies the simulation. Production mode never falls back
 to this fixture; without model configuration it reports unavailable before
-creating a run. The minimal lock does not install a provider extra. No real
+creating a run. The lock includes the explicit provider SDK; no real
 provider evaluation or legacy credential reuse is included in this acceptance.
+
+## AW-04: private provider setup and offline doctor
+
+The pinned official OpenAI SDK is installed by this app's lock. Model calls use
+the Responses API (Sol tool calling requires Responses), `store=false`, low
+reasoning effort and a maximum of 2,048 total output tokens including reasoning.
+SDK and agent retries are disabled. Only the application's scoped function tools
+are registered: no provider-hosted web, file search, shell or MCP is enabled.
+
+Real external processing needs the user's endpoint/model/data/budget authority
+before testing. An offline doctor or successful configuration is **not** proof
+of model access or accepted AI quality. No connectivity or model-listing call is
+made by configuration, doctor, readiness or startup.
+
+When separately authorized, enter your Workspace-only key in a trusted terminal:
+
+```sh
+.venv/bin/workspace configure --config .workspace-data/provider.json \
+  --allow-external-processing --model gpt-6.1-sol
+WORKSPACE_CONFIG=.workspace-data/provider.json .venv/bin/workspace doctor
+.venv/bin/workspace launch --config .workspace-data/provider.json
+```
+
+`configure` prompts with hidden `getpass` input and refuses echoed-stdin fallback.
+It writes an atomic private `0600` profile. Do not pass a key in a command, chat,
+browser, screenshot, source file or shell history. Loading a profile is explicit
+through `--config`/`WORKSPACE_CONFIG`; there is no legacy/OpenAI environment-key
+discovery. Symlink, unowned or permissive profile files are rejected. Keep the
+profile under ignored `.workspace-data`, not in a tracked or shared directory.
+
+The configured endpoint is restricted to `https://api.openai.com/v1`. The browser
+receives sanitized readiness, never the key or private file path. The launcher
+passes configuration only to the server and constructs a separate minimal UI
+environment. The UI still runs inside the shared existing web checkout; Next may
+load that checkout's existing environment files. The launcher does not scan/read
+their secrets or claim this is an independently distributed, isolated web bundle.
+`/api/workspace/readiness` and `workspace doctor` are read-only and
+offline. Missing key/opt-in/unsupported endpoint is reported without raw errors.
+
+Settings are frozen for a process. To change profile/model/tool topology: stop or
+cancel active tasks, reconcile unknown effects, drain and restart. AW-04 uses
+`workspace-aw04-v1`; prior active workflow versions fail closed as incompatible,
+not replayed into a changed topology. Existing saved outputs remain available.
+Do not run old and new API workers against one catalogue during migration.
+
+`--fixture-tools` during configure separately permits the fixed local synthetic
+research/MCP ports with a real model; each workspace still needs its own grant
+and per-effect approval. This does not grant live web or an external connector.
+Manual schedules remain simulation-only. The evaluation campaign uses a separate
+persistent, explicitly bound shared budget; the normal UI has no entitlement to
+spend that campaign's dollars. See the AW-04 evaluation instructions for scope.
 
 ## Supported limits
 
@@ -87,7 +146,7 @@ provider evaluation or legacy credential reuse is included in this acceptance.
   or provider acceptance.
 - No shell, host filesystem tools, external MCP/effects, skills, live scheduler,
   workspace sharing or production SSO is exposed in this milestone.
-- Long-term list pagination, data export/delete UX, ACL revocation and production
+- Long-term list pagination, ACL revocation and production
   deployment are not complete. Session mode is per-browser local ownership, not
   organizational identity or a multi-tenant SaaS authentication system.
 
@@ -134,6 +193,31 @@ fixed Python fixture runs as a subprocess; no shell/code/browser executor is
 enabled and Python socket guards are not an OS sandbox claim. A pre-migration
 backup of the local AW-02 catalogue is retained privately under `.workspace-data/`.
 
+## Own your workspace data
+
+The workspace data panel exports one transactionally consistent ZIP with original
+source bytes, extracted text/metadata, every saved artifact version, visible chat,
+explicit current memory, schedules and a SHA-256 manifest. Paths use opaque IDs,
+not user filenames. Export is bounded to 20 MiB uncompressed content and 2,500 ZIP
+members; an oversized snapshot fails explicitly rather than silently omitting data.
+No session hashes, provider configuration, reusable model history or DBOS journal
+is included. ZIP export is a portable archive, not a full runtime backup/import.
+
+Deletion first creates a five-minute server preview bound to workspace ID and
+current resource versions. Type the exact workspace name to confirm. Changed
+content invalidates the preview, and duplicate lost-ACK requests return the same
+deletion receipt without repeating work. Busy tasks and unsettled effect intents
+block deletion. Stop/drain tasks and reconcile uncertain effects first; a missing
+fixture receipt is still unknown, not proof that an effect did not happen.
+
+Deletion atomically tombstones identity and purges application files, artifact
+versions, messages, memory, schedules, histories and content-bearing receipts.
+Read routes, tools and recovery callbacks cannot revive or access a deleted ID.
+Other workspaces are unchanged. **This is not forensic erasure:** DBOS audit
+history, private backups, previously downloaded copies, synthetic MCP outbox
+receipts and any provider retention are separate retained records. A previously
+generated/downloaded file cannot be revoked by deleting its workspace.
+
 ## Verify
 
 ```sh
@@ -155,7 +239,7 @@ The lost-ACK case injects a browser transport fault after the real API dispatch.
 Do not add overlapping test runs together or equate passing these cases with
 real-model usefulness.
 
-See `/Users/os/RtR/KnowledgeBase/RtR_Copilot/docs/agent-workspace/AW-03.md` for
-the latest local/mock record, AW-02.md and AW-01.md for preserved baselines. Real-model
+See `/Users/os/RtR/KnowledgeBase/RtR_Copilot/docs/agent-workspace/AW-04.md` for
+the current milestone record, AW-03.md, AW-02.md and AW-01.md for preserved baselines. Real-model
 quality and live-web acceptance remain open. See `proof/README.md`
 for the native integration proof and raw dependency-license inventory.

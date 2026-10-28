@@ -64,6 +64,14 @@ class Store:
               result TEXT,PRIMARY KEY(run_id,call_id));
             CREATE TABLE IF NOT EXISTS revisions(owner TEXT,request_id TEXT,args_digest TEXT,
               result TEXT,PRIMARY KEY(owner,request_id));
+            CREATE TABLE IF NOT EXISTS workspace_tombstones(workspace_id TEXT PRIMARY KEY,
+              owner TEXT NOT NULL,deleted_at REAL NOT NULL);
+            CREATE TABLE IF NOT EXISTS workspace_delete_previews(workspace_id TEXT PRIMARY KEY,
+              owner TEXT NOT NULL,token_hash TEXT NOT NULL,snapshot_digest TEXT NOT NULL,
+              expires_at REAL NOT NULL);
+            CREATE TABLE IF NOT EXISTS workspace_deletions(owner TEXT NOT NULL,request_id TEXT NOT NULL,
+              workspace_id TEXT NOT NULL,args_digest TEXT NOT NULL,result TEXT NOT NULL,
+              PRIMARY KEY(owner,request_id));
             """)
             columns = {r[1] for r in db.execute("PRAGMA table_info(runs)")}
             if "output_bytes" not in columns:
@@ -120,7 +128,7 @@ class Store:
             return row["owner"]
 
     def _workspace(self, db, owner, workspace_id):
-        row = db.execute("SELECT * FROM workspaces WHERE id=? AND owner=?", (workspace_id, owner)).fetchone()
+        row = db.execute("SELECT * FROM workspaces WHERE id=? AND owner=? AND NOT EXISTS (SELECT 1 FROM workspace_tombstones t WHERE t.workspace_id=workspaces.id)", (workspace_id, owner)).fetchone()
         if not row:
             raise WorkspaceError("not_found", 404)
         return row
@@ -138,7 +146,7 @@ class Store:
                 item = {"id": identity(), "name": name, "created_at": time.time()}
                 db.execute("INSERT INTO workspaces VALUES(?,?,?,?)", (item["id"], owner, name, item["created_at"]))
                 return item
-            return [dict(r) for r in db.execute("SELECT id,name,created_at FROM workspaces WHERE owner=? ORDER BY created_at", (owner,))]
+            return [dict(r) for r in db.execute("SELECT id,name,created_at FROM workspaces WHERE owner=? AND NOT EXISTS (SELECT 1 FROM workspace_tombstones t WHERE t.workspace_id=workspaces.id) ORDER BY created_at", (owner,))]
 
     def items(self, owner, workspace_id, table):
         columns = {"messages": "id,role,content,run_id,created_at",
@@ -192,7 +200,7 @@ class Store:
         if offset < 0 or not 1 <= limit <= 32000:
             raise WorkspaceError("invalid_source_range")
         with self.tx() as db:
-            row = db.execute("SELECT f.* FROM files f JOIN workspaces w ON w.id=f.workspace_id WHERE f.id=? AND w.owner=?", (file_id, owner)).fetchone()
+            row = db.execute("SELECT f.* FROM files f JOIN workspaces w ON w.id=f.workspace_id WHERE f.id=? AND w.owner=? AND NOT EXISTS (SELECT 1 FROM workspace_tombstones t WHERE t.workspace_id=w.id)", (file_id, owner)).fetchone()
             if not row:
                 raise WorkspaceError("not_found", 404)
             item = self._file_view(row)
@@ -222,7 +230,7 @@ class Store:
             raise WorkspaceError("runtime_run_capacity", 409)
         run_id, now = identity(), time.time()
         usage = {"requests": 0, "tool_calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": None, "complete": False}
-        db.execute("INSERT INTO runs(id,workspace_id,owner,request_key,message,state,created_at,deadline_at,limits,usage,workflow_version) VALUES(?,?,?,?,?,'queued',?,?,?,?, 'workspace-aw03-v1')",
+        db.execute("INSERT INTO runs(id,workspace_id,owner,request_key,message,state,created_at,deadline_at,limits,usage,workflow_version) VALUES(?,?,?,?,?,'queued',?,?,?,?, 'workspace-aw04-v1')",
                    (run_id, workspace_id, owner, request_key, message, now, now + limits["deadline_seconds"], json.dumps(limits), json.dumps(usage)))
         db.execute("INSERT INTO messages VALUES(?,?,?,?,?,?)", (identity(), workspace_id, run_id, "user", message, now))
         self._event(db, run_id, "run.state", {"state": "queued"})
@@ -308,7 +316,7 @@ class Store:
 
     def pending(self):
         with self.tx() as db:
-            return [dict(r) for r in db.execute("SELECT id,owner FROM runs WHERE dispatch_pending=1 AND state NOT IN ('completed','failed','cancelled')")]
+            return [dict(r) for r in db.execute("SELECT id,owner FROM runs WHERE dispatch_pending=1 AND state NOT IN ('completed','failed','cancelled') AND NOT EXISTS (SELECT 1 FROM workspace_tombstones t WHERE t.workspace_id=runs.workspace_id)")]
 
     def dispatched(self, owner, run_id):
         with self.tx() as db:
@@ -384,7 +392,7 @@ class Store:
         if version is not None and version < 1:
             raise WorkspaceError("invalid_version")
         with self.tx() as db:
-            row = db.execute("SELECT a.* FROM artifacts a JOIN workspaces w ON w.id=a.workspace_id WHERE a.id=? AND w.owner=?", (artifact_id, owner)).fetchone()
+            row = db.execute("SELECT a.* FROM artifacts a JOIN workspaces w ON w.id=a.workspace_id WHERE a.id=? AND w.owner=? AND NOT EXISTS (SELECT 1 FROM workspace_tombstones t WHERE t.workspace_id=w.id)", (artifact_id, owner)).fetchone()
             if not row:
                 raise WorkspaceError("not_found", 404)
             item = dict(row)
@@ -555,6 +563,6 @@ class Store:
 
     def fail_incompatible_runs(self, version):
         with self.tx() as db:
-            rows = [dict(r) for r in db.execute("SELECT id,owner FROM runs WHERE workflow_version<>? AND state NOT IN ('completed','failed','cancelled')", (version,))]
+            rows = [dict(r) for r in db.execute("SELECT id,owner FROM runs WHERE workflow_version<>? AND state NOT IN ('completed','failed','cancelled') AND NOT EXISTS (SELECT 1 FROM workspace_tombstones t WHERE t.workspace_id=runs.workspace_id)", (version,))]
         for row in rows:
             self.finish(row["owner"], row["id"], "failed", error="workflow_version_incompatible")

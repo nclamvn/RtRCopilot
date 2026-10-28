@@ -16,6 +16,15 @@ JSON evidence cho memory, MCP stdio fixture, durable approval/effect receipts v�
 manual-clock schedules. AI thật/live connector chưa nghiệm thu; chưa commit/push
 AW-03, không deploy và chưa tự mở AW-04.
 
+**Cập nhật AW-04, cùng ngày:** người dùng đã giao triển khai trọn mốc AW-04.
+AW-03 được checkpoint local ở `189c585`, chưa push. AW-04 đã đạt gói kỹ thuật
+local/mock có giới hạn theo
+[TIP AW-04](AW-04.md): setup/readiness, export/delete dữ liệu, bộ journey và
+đối chứng agent, cùng kiểm thử tích hợp: Python 101, web unit 258, browser 22 và
+probe độc lập 23 đều đạt trên working tree. Chưa có quyền và credential Workspace
+riêng để gọi model thật. Không lấy kết quả local/mock làm nghiệm thu AI thật,
+không deploy và không tự dùng credential hay corpus legacy.
+
 **Quyết định thiết kế đề xuất: PydanticAI làm agent loop, bổ sung capability chọn lọc từ Pydantic AI Harness; thử DBOS làm chủ sở hữu duy nhất của recovery trong workflow mới.** Không đưa harness vào pipeline RAG cũ, không ghép hai executor cho cùng một run. Deep Agents/LangGraph là phương án thay thế nếu phép thử tích hợp đầu tiên bác bỏ lựa chọn này.
 
 Đây là kế hoạch phát triển, chưa phải chứng thực harness hay bản triển khai. Người dùng đã đồng ý hướng sản phẩm độc lập và yêu cầu so sánh, lựa chọn, lập kế hoạch. Phiên này không cài dependency, chạy model trả phí, SQL/Docker, campaign, executor hoặc deploy. Quyền chạy các campaign RtR trước đây không mở rộng sang sản phẩm mới.

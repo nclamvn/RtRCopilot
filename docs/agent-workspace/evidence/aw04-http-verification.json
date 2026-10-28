@@ -1,0 +1,35 @@
+{
+  "captured_at_local_date": "2026-10-28",
+  "verification_script": "verify_aw04_http.py",
+  "status": "PASS",
+  "lane": "actual loopback HTTP through AW-04 one-command launcher, simulation runtime",
+  "external_model_calls": 0,
+  "semantic_quality": "NOT_MEASURED",
+  "export_members": 12,
+  "export_original_bytes_exact": true,
+  "export_hashes_verified": true,
+  "stale_confirmation_rejected": true,
+  "lost_ack_delete_idempotent": true,
+  "deleted_resources_inaccessible": true,
+  "unrelated_workspace_preserved": true,
+  "created_disposable_workspaces": 2,
+  "deleted_disposable_workspaces": 2,
+  "read_probe": {
+    "n": 100,
+    "concurrency": 4,
+    "p50_ms": 4.114,
+    "p95_ms": 8.057,
+    "p99_ms": 14.205,
+    "max_ms": 15.787,
+    "scope": "50 status + 50 files GETs, tiny synthetic workspace; not model latency/capacity or product-over-direct-agent overhead"
+  },
+  "machine": {"os": "Darwin", "release": "27.0.0", "architecture": "arm64"},
+  "duration_seconds": 0.298,
+  "previous_pre_final_hardening_sample": {
+    "status": "PASS", "n": 100, "concurrency": 4,
+    "p50_ms": 4.275, "p95_ms": 14.281, "p99_ms": 38.634,
+    "max_ms": 53.508, "duration_seconds": 0.474,
+    "note": "Preserved earlier observation, not a separate performance comparator or optimization claim."
+  },
+  "caveat": "Single bounded local measurement in development mode, not a production load certificate. Final source binding is recorded separately."
+}

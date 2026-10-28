@@ -219,7 +219,7 @@ class Connections:
     def wakeups(self):
         with self.store.tx() as db:
             db.execute("UPDATE approvals SET status='expired' WHERE status='pending' AND expires_at<=?", (time.time(),))
-            return [dict(r) for r in db.execute("SELECT a.id,a.run_id,a.status FROM approvals a JOIN runs r ON r.id=a.run_id WHERE r.state='waiting_approval' AND a.status!='pending'")]
+            return [dict(r) for r in db.execute("SELECT a.id,a.run_id,a.status FROM approvals a JOIN runs r ON r.id=a.run_id WHERE r.state='waiting_approval' AND a.status!='pending' AND NOT EXISTS (SELECT 1 FROM workspace_tombstones t WHERE t.workspace_id=r.workspace_id)")]
 
     def waiting_ids(self, owner, run_id):
         with self.store.tx() as db:
