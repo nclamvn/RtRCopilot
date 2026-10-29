@@ -1,0 +1,91 @@
+{
+  "status": "PASS",
+  "provenance": "Contractor neutral allowlisted kit, exact hash verification, actual Next build and Python/Next processes from extracted source",
+  "archive": {
+    "sha256": "d92235939cfa92eaa891ec7097f95166939b34bc1cda592f7165c07d2a1ce3bd",
+    "bytes": 1074208,
+    "members": 63
+  },
+  "frontend_build_id": "4E6lv774NVd7SNOYF1SMz",
+  "preflight": {
+    "application_version": "0.1.0-aw08",
+    "checks": [
+      {
+        "check": "python",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "dependencies",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "node",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "frontend_dependencies",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "frontend_build",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "disk",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "api_port",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "web_port",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "data",
+        "code": null,
+        "hint": null,
+        "passed": true
+      }
+    ],
+    "format": "agent-workspace-preflight-v1",
+    "network_tested": false,
+    "real_ai_accepted": false,
+    "status": "ready"
+  },
+  "checks": [
+    "Archive excludes private data, tests, dependency trees and build output",
+    "Python CLI and actual API import extracted source, proved with a nonsemantic extracted-only sentinel fingerprint",
+    "Neutral frontend compiles using declared existing same-host dependencies",
+    "Packaged scripted model and packaged research fixtures produce an artifact through the actual BFF",
+    "Both bundled Noto font files and license are present; selected Vietnamese PDF handoff parsed back through the extracted kit's actual BFF",
+    "Ctrl-C launcher cleanup releases both owned loopback ports"
+  ],
+  "external_calls": 0,
+  "real_ai_acceptance": "NOT_MEASURED",
+  "limitations": [
+    "Existing trusted Python environment and Node dependency trees explicitly reused",
+    "One synthetic comment added after archive integrity verification only to prove API source provenance",
+    "Not a fresh-machine install, signed distributor, self-contained binary or real AI evaluation"
+  ],
+  "elapsed_seconds": 12.242,
+  "extracted_build_removed": true,
+  "scratch_removed": true
+}

@@ -35,7 +35,7 @@ function record(value: unknown): Record<string, unknown> {
 export function diagnosticDownload(value: unknown): LocalDiagnostics {
   const root = record(value); const application = record(root.application); const runtime = record(root.runtime);
   const dependencies = record(root.dependencies); const counts = record(root.counts); const checks = record(root.checks);
-  if (root.format !== "agent-workspace-diagnostics-v1" || application.version !== "0.1.0-aw07" || application.workflow_version !== "workspace-aw06-v1" || !sourceFingerprint(application.build_id)
+  if (root.format !== "agent-workspace-diagnostics-v1" || application.version !== "0.1.0-aw08" || application.workflow_version !== "workspace-aw06-v1" || !sourceFingerprint(application.build_id)
     || typeof runtime.simulation !== "boolean" || typeof runtime.available !== "boolean" || checks.network_tested !== false || checks.real_ai_accepted !== false) {
     throw new Error("The local diagnostic response is not supported. No file was downloaded.");
   }

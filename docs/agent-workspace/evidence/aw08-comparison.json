@@ -1,0 +1,54 @@
+{
+  "format": "agent-workspace-bounded-interaction-comparison-v1",
+  "milestone": "AW-08",
+  "captured_at_utc": "2026-10-29T02:20:08.971777+00:00",
+  "binding": {
+    "base_commit": "df16e22dae7633fb73370db39a2153b9365f8172",
+    "source_sha256": "5336b137e7c74a5049c1809630379898dabb15ece8c53a83e9a7901e1d1271cd",
+    "frontend_build_id": "tkZGbNKbt2Uk3---TWirk",
+    "browser_report_sha256": "d4e757a1e2154da5117db583fd9542e3622299441d3f7c2230c4440ad898f285"
+  },
+  "baseline": "Existing raw Markdown/CSV editor retained in the same build",
+  "candidate": "Focused exact-paragraph and string-cell grid editing",
+  "cases": [
+    {
+      "task": "one exact paragraph revision",
+      "raw": {
+        "actions": 3,
+        "typed_utf8_bytes": 181,
+        "scripted_ms": 133.78283300000476
+      },
+      "focused": {
+        "actions": 5,
+        "typed_utf8_bytes": 70,
+        "scripted_ms": 180.67495800000324
+      },
+      "invariant": "same exact saved v2 and untouched v1",
+      "provenance": "one warm automated browser sample, both text variants precomputed; raw uses full-document fill, not a human timing or proof that snippets cannot be edited in raw mode"
+    },
+    {
+      "task": "two string cell revisions",
+      "raw": {
+        "actions": 3,
+        "typed_utf8_bytes": 105,
+        "scripted_ms": 143.40087499999936
+      },
+      "grid": {
+        "actions": 3,
+        "typed_utf8_bytes": 23,
+        "scripted_ms": 91.68208400000003
+      },
+      "invariant": "same canonical v2; leading zero IDs, decimal-comma and formula-like text remain unchanged",
+      "provenance": "one warm automated browser sample, complete raw replacement precomputed; field actions are not human productivity or provider quality"
+    }
+  ],
+  "interpretation": "The selected edits produce identical saved content with less replacement payload. Focused paragraph editing uses more scripted actions and is slower in this sample; no universal speed or effort win is claimed. A human could also edit snippets in raw mode.",
+  "not_measured": [
+    "Direct LLM/tool-agent output quality",
+    "Human completion time and total effort",
+    "Unseen natural language editing quality",
+    "Real-provider usage, latency or cost"
+  ],
+  "external_model_calls": 0,
+  "environment": "Darwin arm64 shared development host; one warm scripted sample per path, precomputed inputs and other local tests active"
+}

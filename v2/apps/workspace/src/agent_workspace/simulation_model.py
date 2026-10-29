@@ -5,6 +5,8 @@ No natural-language intent or quality claim is made by this model.
 """
 import asyncio
 import json
+import csv
+import io
 
 from pydantic_ai.messages import UserPromptPart, ToolReturnPart
 from pydantic_ai.models.function import DeltaToolCall, FunctionModel
@@ -128,8 +130,8 @@ def build_model():
             await asyncio.sleep(8)
             yield "Simulation finished."
             return
-        if command in {"fixture:create", "fixture:edit"}:
-            editing = command == "fixture:edit"
+        if command in {"fixture:create", "fixture:edit", "fixture:review", "fixture:review-table"}:
+            editing = command in {"fixture:edit", "fixture:review", "fixture:review-table"}
             if not returned:
                 collection = inventory["artifacts" if editing else "files"]
                 if not collection:
@@ -145,6 +147,18 @@ def build_model():
                     if isinstance(source, str):
                         source = json.loads(source)
                     content = source["content"] + "\n\n## Revision\n\nSynthetic follow-up edit retained the original numbers.\n"
+                    if command == "fixture:review":
+                        content = "## Proposed introduction\n\n" + source["content"] + "\n\nProposed closing sentence.\n"
+                    if command == "fixture:review-table":
+                        rows = list(csv.reader(io.StringIO(source["content"], newline=""), strict=True))
+                        if len(rows) < 4:
+                            yield "SIMULATION: fixture:review-table needs a saved CSV with header and at least three data rows."
+                            return
+                        rows[1][-1] += " (proposed)"
+                        rows[-1][-1] += " (proposed)"
+                        stream = io.StringIO(newline="")
+                        csv.writer(stream, lineterminator="\n").writerows(rows)
+                        content = stream.getvalue()
                     args = dict(title=source["title"], filename=source["filename"], content=content,
                                 artifact_id=source["id"], expected_version=source["version"])
                 else:
@@ -157,7 +171,8 @@ def build_model():
                                 content="# Synthetic source brief\n\n" + str(source) + "\n\nFixture output, not AI analysis.\n")
                 yield {0: DeltaToolCall(name="write_artifact", json_args=json.dumps(args), tool_call_id="fixture-write")}
                 return
-            yield "SIMULATION: the Markdown draft was saved using the scoped artifact tool."
+            result = payload(returned[-1])
+            yield "SIMULATION: changes proposed for explicit review; no saved version changed." if isinstance(result, dict) and result.get("status") == "pending_review" else "SIMULATION: the Markdown draft was saved using the scoped artifact tool."
             return
         for text in ["SIMULATION: ", "This scripted fixture validates live streaming, ", "not model quality or reasoning. ", "Use fixture:create or fixture:edit for artifact probes."]:
             yield text

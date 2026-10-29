@@ -26,5 +26,6 @@ test("UI-only output revision replaces the whole version view with one editor an
   fireEvent.click(screen.getByRole("button", {name: /^Outputs/})); fireEvent.click(await screen.findByRole("button", {name: /Museum brief/})); await screen.findByLabelText("Artifact preview"); fireEvent.click(screen.getByRole("tab", {name: "Edit"}));
   fireEvent.change(screen.getByLabelText("Edit Markdown text"), {target: {value: "# Second\n004173 retained"}}); fireEvent.click(screen.getByRole("button", {name: "Save new version"}));
   await waitFor(() => expect(screen.getAllByLabelText("Artifact version")).toHaveLength(1)); await waitFor(() => expect(screen.getByLabelText("Artifact version")).toHaveValue("2")); expect(screen.getAllByLabelText("Artifact preview")).toHaveLength(1); expect(screen.getAllByLabelText("Output source freshness")).toHaveLength(1);
+  fireEvent.click(screen.getByRole("button", {name: "Model & setup"})); expect(screen.queryByLabelText("Agent edit proposals")).toBeNull(); expect(screen.queryByLabelText("Selected output handoff")).toBeNull();
   const ids = Array.from(document.querySelectorAll("[id]")).map(element => element.id); expect(new Set(ids).size).toBe(ids.length); expect(warnings.filter(item => item.includes("same key"))).toEqual([]);
 });

@@ -1,13 +1,13 @@
 import type {Artifact} from "./contracts";
 
 export type ContextReference = {kind: "file" | "artifact"; id: string; version?: number};
-export type ContextChoices = {references: ContextReference[]; target: ContextReference | null};
+export type ContextChoices = {references: ContextReference[]; target: ContextReference | null; review_edits?: boolean};
 export const emptyContext = (): ContextChoices => ({references: [], target: null});
 const key = (workspaceId: string) => `agent-workspace:context:${workspaceId}`;
 export function referenceKey(reference: ContextReference): string {return `${reference.kind}:${reference.id}:${reference.version ?? ""}`;}
 export function contextIdentity(value: ContextChoices): string {
   // Order affects the input inventory. Match the server's exact request identity.
-  return JSON.stringify({references: value.references, target: value.target});
+  return JSON.stringify({references: value.references, target: value.target, ...(value.review_edits ? {review_edits: true} : {})});
 }
 function valid(value: unknown): value is ContextReference {
   if (!value || typeof value !== "object") return false;
@@ -27,7 +27,7 @@ export class WorkspaceContextChoices {
       const item = JSON.parse(localStorage.getItem(key(workspaceId)) ?? "null");
       if (item && Array.isArray(item.references) && item.references.length <= 20 && item.references.every(valid)
         && (item.target === null || valid(item.target) && item.target.kind === "artifact" && item.target.version !== undefined)) {
-        value = {references: item.references, target: item.target};
+        value = {references: item.references, target: item.target, ...(item.review_edits === true && item.target ? {review_edits: true} : {})};
       }
       this.durability.set(workspaceId, true);
     } catch {this.durability.set(workspaceId, false); /* Browser storage is not authority or context content. */ }

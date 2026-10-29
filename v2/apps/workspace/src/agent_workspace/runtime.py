@@ -31,6 +31,7 @@ AGENT_INSTRUCTIONS = (
     "Web research tools are OFFLINE FIXTURES ONLY; never claim real internet research. Import sources to preserve provenance. "
     "Create Markdown documents or CSV tables with write_artifact; read the current version before editing. Use edit_artifact for one localized exact region. "
     "Never claim an artifact was saved without a successful tool result. "
+    "A pending_review tool result is an unpublished proposal, not a saved new version; ask the user to review it. "
     "A draft is not an official or legally approved document."
 )
 
@@ -235,6 +236,8 @@ class Runtime:
         self.research = OfflineResearch(settings.test_mode or settings.fixture_tools_enabled)
         self.workspace_state = WorkspaceState(store)
         self.continuity = Continuity(store)
+        from .reviews import Reviews
+        self.reviews = Reviews(store)
         self.connections = Connections(store, settings.data_dir, settings.test_mode or settings.fixture_tools_enabled)
         self.agent = None
         self.reason = "model_not_configured"

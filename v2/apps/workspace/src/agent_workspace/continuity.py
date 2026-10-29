@@ -109,6 +109,8 @@ class Continuity:
                 self.store._event(db, row[0], "run.state", {"state": "cancel_requested"})
             db.execute("DELETE FROM run_contexts WHERE workspace_id=?", (wid,))
             db.execute("UPDATE runs SET history=NULL WHERE workspace_id=?", (wid,))
+            from .reviews import forget
+            forget(db, wid)
             return self._brief(db, wid)
 
     def guard(self, db, owner, run_id):
@@ -122,10 +124,12 @@ class Continuity:
     def _refs(self, db, wid, options):
         if options is None:
             options = {}
-        if not isinstance(options, dict) or set(options) - {"references", "target"}:
+        if not isinstance(options, dict) or set(options) - {"references", "target", "review_edits"} or "review_edits" in options and type(options["review_edits"]) is not bool:
             raise WorkspaceError("invalid_context_selection")
         refs = options.get("references", [])
         target = options.get("target")
+        if options.get("review_edits") and target is None:
+            raise WorkspaceError("review_target_required")
         if not isinstance(refs, list) or len(refs) > MAX_REFS:
             raise WorkspaceError("context_selection_limit", 413)
         if target is not None:
@@ -212,7 +216,7 @@ class Continuity:
             if ref["has_more"]:
                 omitted.append(f"{item['label']}: excerpt only ({len(text)}/{len(item['content'])} characters); further chunks must be read.")
         value = dict(workspace_id=wid, mode="explicit" if explicit else "automatic", selections=selections,
-            request_context={"references": (options or {}).get("references", []), "target": (options or {}).get("target")},
+            request_context={"references": (options or {}).get("references", []), "target": (options or {}).get("target"), **({"review_edits": True} if (options or {}).get("review_edits") else {})},
             references=[{k: r[k] for k in ("kind", "id", "version") if k in r} for r in selections], target=target,
             brief=brief, recent_messages=[], omissions=omitted, limit_bytes=MAX_CONTEXT,
             coverage="selected excerpts, not semantic completeness", read_ledger=[])

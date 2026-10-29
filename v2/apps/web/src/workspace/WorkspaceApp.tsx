@@ -5,6 +5,7 @@ import {applyEvent, terminal, uploadError, type Artifact, type Availability, typ
 import {Markdown} from "./Markdown";
 import {api, apiRoot} from "./api";
 import {ArtifactCreator, ArtifactEditor} from "./ArtifactEditor";
+import {ReviewCandidates, SelectedHandoff} from "./Deliverables";
 import {LocalResearch, SourcePreview} from "./Sources";
 import {ApprovalPrompt, ConnectionPanel, MemoryPanel, SchedulePanel, type ControlView} from "./WorkspaceControls";
 import {clearWorkspaceBrowserData, ModelSetup, WorkspaceData, type DeletedWorkspace} from "./WorkspaceSettings";
@@ -15,6 +16,7 @@ import {artifactReference, contextIdentity, emptyContext, WorkspaceContextChoice
 import "./workspace.css";
 import "./project-continuity.css";
 import "./context.css";
+import "./coediting.css";
 
 const freshLive = (): LiveState => ({cursor: 0, content: "", state: "queued", activities: []});
 function storeRun(workspaceId: string, runId?: string) {try {if (runId) localStorage.setItem(`agent-workspace:run:${workspaceId}`, runId); else localStorage.removeItem(`agent-workspace:run:${workspaceId}`);} catch { /* Server history remains the recovery source. */ }}
@@ -175,6 +177,7 @@ export function WorkspaceApp() {
             const artifactId = String(event.data.artifact_id);
             void api<Artifact>(`/artifacts/${artifactId}`).then(result => {if (selection.current === workspaceId && !document.querySelector('[data-unsafe-draft="true"]')) {setArtifact(result); setPanelView("outputs"); setPanel(true);}}).catch(() => {});
           }
+          if (event.type === "artifact.proposed" && !document.querySelector('[data-unsafe-draft="true"]')) {setPanelView("outputs"); setPanel(true);}
           if (terminal(next.state)) {stream?.close(); void reconcile().catch(cause => setError(cause.message));}
         } catch {setError("A live update was unreadable. Reconnect to recover the saved run."); stream?.close();}
       });
@@ -358,7 +361,7 @@ export function WorkspaceApp() {
       <div className="aw-compose-wrap">
         {selected && run && active && availability?.test_mode && <ApprovalPrompt key={`${selected.id}:${run.id}`} workspaceId={selected.id} runId={run.id} onResolved={() => void reconcileWorkspaceRun(selected.id).catch(cause => setError(cause.message))}/>}
         <form className="aw-composer" onSubmit={submit} data-unsafe-draft={!draftStored || undefined} data-draft-clear-failed={!draftStored && !draft || undefined}>
-          {selected && <div className="aw-context-summary"><button type="button" className="aw-context-open" aria-pressed={panel && panelView === "context"} onClick={() => openControl("context")}>Project context</button><span>{contextChoices.references.length ? `${contextChoices.references.length} selected reference(s)` : "Automatic selection"}{contextChoices.target ? ` · Continue from version ${contextChoices.target.version}` : ""}</span></div>}
+          {selected && <div className="aw-context-summary"><button type="button" className="aw-context-open" aria-pressed={panel && panelView === "context"} onClick={() => openControl("context")}>Project context</button><span>{contextChoices.references.length ? `${contextChoices.references.length} selected reference(s)` : "Automatic selection"}{contextChoices.target ? ` · Continue from version ${contextChoices.target.version}` : ""}{contextChoices.review_edits && contextChoices.target ? " · Review edits" : ""}</span></div>}
           <label className="aw-visually-hidden" htmlFor="aw-composer">Message</label>
           <textarea id="aw-composer" ref={composer} rows={3} maxLength={16000} value={draft} onChange={event => writeDraft(event.target.value)} placeholder={selected ? "Ask anything, or describe what you want to make…" : "Create a workspace to start…"} disabled={!selected} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); event.currentTarget.form?.requestSubmit();}}}/>
           <div className="aw-composer-bottom"><button type="button" className="aw-attach" onClick={() => uploadInput.current?.click()} disabled={!selected || uploading} aria-label="Attach source file">＋ <span>Add file</span></button><span className="aw-input-hint">Enter to send · Shift + Enter for a new line</span>{active ? <button type="button" className="aw-send" onClick={() => void stop()} disabled={run?.cancel_requested}>{run?.cancel_requested ? "Stop requested" : "Stop"}</button> : <button className="aw-send" type="submit" disabled={!selected || selected.archived || !draft.trim() || !availability?.available || sending}>Send <span aria-hidden="true">↑</span></button>}</div>
@@ -380,8 +383,10 @@ export function WorkspaceApp() {
       {panelView === "source" && source && <SourcePreview key={source.id} file={source}/>}
       {panelView === "research" && selected && <LocalResearch key={selected.id} workspaceId={selected.id} onImported={async file => {const workspaceId = selected.id; await refresh(workspaceId); if (selection.current === workspaceId) {setSource(file); setPanelView("source");}}}/>}
       {panelView === "outputs" && <><div className="aw-output-create">{(["document", "table"] as const).map(kind => <button key={kind} disabled={!selected} onClick={() => {if (safeNavigate()) setNewKind(kind);}}>＋ New {kind}</button>)}</div><div className="aw-output-list">{artifacts.length ? artifacts.map(item => <button key={item.id} aria-current={!newKind && artifact?.id === item.id ? "true" : undefined} onClick={() => void openArtifact(item)}><strong>{item.title || item.filename}</strong><small>{item.kind === "table" ? "Table · CSV" : "Markdown"} · Version {item.version}</small></button>) : <p className="aw-muted">Drafts you create appear here. Open, revise, and download them without leaving the conversation.</p>}</div>
+      {selected && <ReviewCandidates key={`proposals-${selected.id}`} workspaceId={selected.id} artifacts={artifacts} refreshToken={`${run?.id}:${run?.state}`} onPublished={async (id, version) => {const workspaceId = selected.id; await refresh(workspaceId); if (selection.current === workspaceId && !document.querySelector('[data-unsafe-draft="true"]')) {const value = await api<Artifact>(`/artifacts/${id}?version=${version}`); if (selection.current === workspaceId && !document.querySelector('[data-unsafe-draft="true"]')) {setArtifact(value); setNewKind(null);}}}}/>}
       {newKind && selected ? <ArtifactCreator key={`${selected.id}:${newKind}`} workspaceId={selected.id} kind={newKind} onCreated={async result => {const workspaceId = selected.id; await refresh(workspaceId); if (selection.current === workspaceId) {setArtifact(result); setNewKind(null);}}} onCancel={() => {if (safeNavigate()) setNewKind(null);}}/> : artifact && <div className="aw-output-detail" key={`${artifact.id}:${artifact.version}`}><ArtifactEditor artifact={artifact} latestVersion={artifacts.find(item => item.id === artifact.id)?.version ?? artifact.version} allowChatRevision={!availability?.test_mode && !selected?.archived} onOpen={version => void openArtifact(artifact, version)} onConflict={async () => {if (selected) await refresh(selected.id);}} onSaved={async result => {const workspaceId = selected?.id; if (!workspaceId) return; await refresh(workspaceId); if (selection.current === workspaceId) setArtifact(result);}} onRevise={() => {changeContext({...contextChoices, target: artifactReference(artifact)}); writeDraft(`Revise "${artifact.title || artifact.filename}" (version ${artifact.version}): `); composer.current?.focus();}}/>
         <button className="aw-context-continue" disabled={selected?.archived || active || sendingCurrent} onClick={() => {if (!safeNavigate()) return; changeContext({...contextChoices, target: artifactReference(artifact)}); setPanelView("context"); composer.current?.focus();}}>Continue from this version</button><ArtifactDependencies artifact={artifact} refreshToken={sourceRefreshToken}/></div>}
+      {selected && <SelectedHandoff key={`handoff-${selected.id}`} workspaceId={selected.id} artifacts={artifacts}/>}
       <section className="aw-activity" aria-label="Run activity"><h2>Activity</h2>{live.activities.length ? <ol>{live.activities.map((activity, index) => <li key={index}>{activity}</li>)}</ol> : <p className="aw-muted">Tool progress appears here while a request is running.</p>}{run?.usage && <p className="aw-muted">{run.usage.requests} model request(s), {run.usage.input_tokens + run.usage.output_tokens} tokens. Cost: {run.usage.cost_usd === null ? "unknown" : `$${run.usage.cost_usd}`}.</p>}</section></>}
     </aside>}
   </div>;

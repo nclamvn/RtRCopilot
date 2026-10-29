@@ -1,0 +1,26 @@
+{
+  "format": "agent-workspace-visual-finding-v1",
+  "milestone": "AW-08",
+  "found_by": "Contractor actual Codex in-app browser after an earlier 55/55 green run",
+  "before": {
+    "selected_mode": "Focused edit",
+    "pressed": true,
+    "hover": true,
+    "computed_background": "rgb(237, 237, 237)",
+    "computed_color": "rgb(255, 255, 255)",
+    "image": "aw08-hover-before.png"
+  },
+  "cause": "Generic hover selector overrode the selected background but left white text",
+  "repair": "Narrow scoped selected/hover/focus-visible editor mode style; existing mobile test now checks hovered colors and axe before Apply",
+  "after": {
+    "pressed": true,
+    "hover": true,
+    "computed_background": "rgb(23, 23, 23)",
+    "computed_color": "rgb(255, 255, 255)",
+    "image": "aw08-coediting.png",
+    "full_browser_passed": 55,
+    "flaky": 0
+  },
+  "preservation": "After supported restart/reload, existing synthetic project, both source originals, selected version1/context and old unsent composer draft remained. No source, draft text or saved artifact was edited by this manual proof.",
+  "real_ai_accepted": false
+}

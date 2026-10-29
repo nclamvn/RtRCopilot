@@ -59,6 +59,21 @@ code, test và evidence. Các JSON giữ nguyên provenance trước commit; che
 không biến mock thành nghiệm thu AI thật. Không model external hay deploy;
 backup, secrets, file tạm và dữ liệu legacy không thuộc phạm vi commit.
 
+**AW-08, 2026-10-29:** AW-07 đã commit/push tại
+`df16e22dae7633fb73370db39a2153b9365f8172`. Người dùng duyệt triển khai trọn
+[AW-08](AW-08.md): focused document editing, table grid/paste, reviewable agent
+edits và selective version-bound handoff. Đạt nghiệm thu kỹ thuật local/mock có
+giới hạn: 201 Python product, 141 independent regression (gồm 31 AW08), 324 web unit
+và 55 browser E2E; source kit, binary readback, upgrade và backup/restore cũng đạt.
+Đã sửa lỗi qua kiểm thử và trực quan, giữ lịch sử lỗi cùng evidence. Demo 3120 giữ
+dữ liệu/bản nháp cũ. AI thật, human acceptance và lợi thế so với direct tool-agent
+chưa nghiệm thu; một edge programmatic UTF16 được ghi P2 deferred. Không external/
+deploy. Người dùng đã duyệt checkpoint commit/push AW-08 gồm code, test và evidence;
+các JSON giữ provenance trước commit, không biến mock thành nghiệm thu AI thật
+hoặc đóng P2. Tái sử dụng core AW01–07, không thêm harness hoặc
+pipeline duyệt cho chat/đọc nguồn thông thường. Xem Completion/Verify và JSON ở
+[AW-08](AW-08.md); không tự mở mốc tiếp theo.
+
 **Quyết định thiết kế đề xuất: PydanticAI làm agent loop, bổ sung capability chọn lọc từ Pydantic AI Harness; thử DBOS làm chủ sở hữu duy nhất của recovery trong workflow mới.** Không đưa harness vào pipeline RAG cũ, không ghép hai executor cho cùng một run. Deep Agents/LangGraph là phương án thay thế nếu phép thử tích hợp đầu tiên bác bỏ lựa chọn này.
 
 Đây là kế hoạch phát triển, chưa phải chứng thực harness hay bản triển khai. Người dùng đã đồng ý hướng sản phẩm độc lập và yêu cầu so sánh, lựa chọn, lập kế hoạch. Phiên này không cài dependency, chạy model trả phí, SQL/Docker, campaign, executor hoặc deploy. Quyền chạy các campaign RtR trước đây không mở rộng sang sản phẩm mới.

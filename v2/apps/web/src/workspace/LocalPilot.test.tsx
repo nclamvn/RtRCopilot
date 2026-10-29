@@ -6,7 +6,7 @@ import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {diagnosticDownload, LocalPilot} from "./LocalPilot";
 
 const fingerprint = "python-source-abc123abc123abc123ab";
-const diagnostics = {format: "agent-workspace-diagnostics-v1", application: {version: "0.1.0-aw07", workflow_version: "workspace-aw06-v1", build_id: fingerprint}, runtime: {simulation: true, available: true, reason_code: null}, dependencies: {"pydantic-ai-slim": "2.62.0", dbos: "3.2.0", openai: "3.31.0", mcp: "1.26.0"}, counts: {workspaces: 2, files: 3, artifacts: 1, runs_active: 0}, checks: {network_tested: false, real_ai_accepted: false}, recovery: []};
+const diagnostics = {format: "agent-workspace-diagnostics-v1", application: {version: "0.1.0-aw08", workflow_version: "workspace-aw06-v1", build_id: fingerprint}, runtime: {simulation: true, available: true, reason_code: null}, dependencies: {"pydantic-ai-slim": "2.62.0", dbos: "3.2.0", openai: "3.31.0", mcp: "1.26.0"}, counts: {workspaces: 2, files: 3, artifacts: 1, runs_active: 0}, checks: {network_tested: false, real_ai_accepted: false}, recovery: []};
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), {status, headers: {"content-type": "application/json"}});
 beforeEach(() => {vi.stubGlobal("React", React);});
 afterEach(() => {cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks();});
@@ -24,7 +24,7 @@ test.each([null, {...diagnostics, format: "unsupported"}, {...diagnostics, check
 });
 test("runtime check requests only diagnostics and makes no download or provider call", async () => {
   const fetcher = vi.fn(async () => json(diagnostics)); vi.stubGlobal("fetch", fetcher); const url = vi.fn(); vi.stubGlobal("URL", {createObjectURL: url}); render(<LocalPilot/>);
-  fireEvent.click(screen.getByRole("button", {name: "Check local runtime"})); await screen.findByText("0.1.0-aw07"); expect(screen.getByText(fingerprint)).toBeVisible(); expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/workspace/diagnostics", expect.objectContaining({method: "GET"})); expect(url).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", {name: "Check local runtime"})); await screen.findByText("0.1.0-aw08"); expect(screen.getByText(fingerprint)).toBeVisible(); expect(fetcher).toHaveBeenCalledExactlyOnceWith("/api/workspace/diagnostics", expect.objectContaining({method: "GET"})); expect(url).not.toHaveBeenCalled();
 });
 test("explicit safe diagnostic download reconstructs JSON, performs one request and no post", async () => {
   vi.stubGlobal("fetch", vi.fn(async () => json({...diagnostics, raw_logs: "SYNTHETIC-PRIVATE-CANARY"}))); let downloaded: Blob | undefined; const create = vi.fn((blob: Blob) => {downloaded = blob; return "blob:synthetic-local";}); vi.stubGlobal("URL", {createObjectURL: create, revokeObjectURL: vi.fn()}); const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {}); render(<LocalPilot/>);

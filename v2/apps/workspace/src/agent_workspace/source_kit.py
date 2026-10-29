@@ -16,6 +16,7 @@ REQUIRED = {"v2/apps/workspace/pyproject.toml", "v2/apps/workspace/uv.lock", "v2
     "v2/apps/workspace/src/agent_workspace/simulation_model.py", "v2/apps/workspace/src/agent_workspace/operations.py",
     "v2/apps/workspace/src/agent_workspace/assets/research_fixtures.json", "v2/apps/workspace-web/package.json", "v2/apps/workspace-web/tsconfig.json",
     "v2/apps/workspace-web/next.config.ts", "v2/pnpm-lock.yaml", "v2/pnpm-workspace.yaml", "v2/package.json"}
+REQUIRED |= {"v2/apps/workspace/src/agent_workspace/assets/" + name for name in ("NotoSans-Regular.ttf", "NotoSans-Bold.ttf", "LICENSE-NOTO.txt")}
 
 
 def admitted(name):
@@ -51,6 +52,8 @@ def build_kit(output):
         if path.is_file():
             add(path)
     add(repo / "v2/apps/workspace/src/agent_workspace/assets/research_fixtures.json")
+    for name in ("NotoSans-Regular.ttf", "NotoSans-Bold.ttf", "LICENSE-NOTO.txt"):
+        add(repo / "v2/apps/workspace/src/agent_workspace/assets" / name)
     web = repo / "v2/apps/workspace-web"
     for name in ("package.json", "tsconfig.json", "next-env.d.ts", "next.config.ts"):
         add(web / name)

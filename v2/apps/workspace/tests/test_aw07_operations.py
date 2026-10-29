@@ -141,7 +141,7 @@ def test_actual_source_kit_is_neutral_bounded_and_verified(tmp_path):
         readme = zipped.read("v2/apps/workspace/README.md").decode()
         assert "/Users/" not in readme and "RtR" not in readme
         assert readme == zipped.read("v2/apps/workspace/LOCAL_PILOT.md").decode()
-        assert readme.startswith("# Local pilot operator guide (AW-07)")
+        assert readme.startswith("# Local pilot operator guide (AW-08)")
         assert "docs/agent-workspace" not in readme
         extracted = tmp_path / "pilot"
         zipped.extractall(extracted)

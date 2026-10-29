@@ -1,0 +1,167 @@
+{
+  "format": "agent-workspace-technical-verification-v1",
+  "milestone": "AW-08",
+  "status": "TECHNICAL_LOCAL_MOCK_ACCEPTED",
+  "captured_at_utc": "2026-10-29T02:20:08.971777+00:00",
+  "base_commit": "df16e22dae7633fb73370db39a2153b9365f8172",
+  "method": "Personal Vibecode Kit v6.3; Contractor actual integration/E2E plus separate Builder and reviewer authorship",
+  "source_binding": {
+    "source_manifest": "aw08-source-manifest.json",
+    "source_files": 116,
+    "source_sha256": "5336b137e7c74a5049c1809630379898dabb15ece8c53a83e9a7901e1d1271cd",
+    "python_source": "python-source-ec7e2e768f4aa67e20ce",
+    "frontend_build_id": "tkZGbNKbt2Uk3---TWirk",
+    "frontend_routes_sha256": "ddd1e09f05f9b265a422872b4a816c6c27166f7e0b4ad9bdc86d73e84ee65d5e",
+    "source_hashes_match": true,
+    "independent_review_hashes_match": true,
+    "limitation": "Pre-commit working tree, not signed immutable release"
+  },
+  "acceptance": {
+    "AC1": "PASS: focused/raw/string-grid/paste/undo/redo and scoped drafts",
+    "AC2": "PASS: unpublished proposal, exact-base partial/full accept/reject, stale/foreign/replay/privacy fences",
+    "AC3": "PASS: selected saved-version handoff and binary readback without unselected/private state",
+    "AC4": "PASS: stopped AW07 compatibility upgrade, private backup/restore and actual extracted source kit with bundled fonts",
+    "AC5": "PASS: full local/mock browser regression, unhappy paths, mobile/keyboard/axe and explicit hover checks",
+    "AC6": "PASS for narrow reproducible interaction/candidate-transport measurement only; real AI and human value NOT_MEASURED"
+  },
+  "lanes": {
+    "python_product": {
+      "passed": 201,
+      "failed": 0,
+      "seconds": 96.18,
+      "executed_by": "Backend Builder",
+      "command": ".venv/bin/python -m pytest -q --basetemp=.pytest-aw08-builder",
+      "cwd": "v2/apps/workspace",
+      "binding": "Final Python package unchanged afterward; later changes were UI-only"
+    },
+    "retained_independent_AW03_AW08": {
+      "passed": 141,
+      "failed": 0,
+      "seconds": 28.9,
+      "executed_by": "Contractor",
+      "contains_aw08_separate_author": 31,
+      "warning": "One intentional duplicate-ZIP-member rejection warning"
+    },
+    "separate_aw08": {
+      "passed": 31,
+      "failed": 0,
+      "seconds": 6.98,
+      "subset_of_retained": true,
+      "reference": "aw08-independent-review.json"
+    },
+    "full_web_unit": {
+      "passed": 324,
+      "failed": 0,
+      "files": 35,
+      "seconds": 12.46,
+      "executed_by": "Contractor",
+      "includes": "Inherited legacy UI unit regression, not corpus/runtime operations; predates final CSS-only hover fix"
+    },
+    "browser": {
+      "passed": 55,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "seconds": 82.178,
+      "workers": 1,
+      "retries": 0,
+      "executed_by": "Contractor",
+      "runtime": "Actual compiled neutral Next UI/BFF/API/SQLite/DBOS plus explicit scripted FunctionModel",
+      "new_aw08_cases": 7,
+      "root_comparison_cases": 2,
+      "retained_cases": 46
+    },
+    "static": {
+      "neutral_build": "PASS",
+      "shared_and_neutral_typescript": "PASS",
+      "affected_eslint": "PASS",
+      "production_and_new_probe_ruff": "PASS",
+      "neutral_route_import_graph": "PASS",
+      "diff_whitespace": "PASS"
+    }
+  },
+  "measurements": {
+    "http": "aw08-http.json",
+    "operations": "aw08-operations.json",
+    "source_kit": "aw08-source-kit.json",
+    "interaction_comparison": "aw08-comparison.json",
+    "interpretation": "Warm synthetic transport and scripted interaction samples, not provider latency/capacity or human productivity"
+  },
+  "failure_history": [
+    "First whole browser run53passed/2failed: hidden reject notice and mobile contrast/heading. Minimal production repairs, assertions retained; initial failure capture preserved.",
+    "A later55green suite still missed selected-mode hover contrast. Actual IAB found it, scoped CSS repair and explicit hover/axe assertion added; final whole55suite passes with zero flaky/retries.",
+    "Contractor initially TERM-stopped an owned launcher, leaving owned children; preflight safely refused occupied ports/lease. Confirmed children were stopped without deleting locks/data. Final supported Ctrl-C shutdown released all children. Abrupt supervisor termination is not certified graceful shutdown."
+  ],
+  "limits": {
+    "real_ai": "NOT_ACCEPTED",
+    "natural_language_quality": "NOT_MEASURED",
+    "direct_llm_and_tool_agent_advantage": "NOT_MEASURED",
+    "human_semantic_acceptance": "NOT_REVIEWED",
+    "live_web_connectors": "DEFERRED",
+    "external_model_calls": 0,
+    "deployments": 0,
+    "aw08_commits": 0,
+    "aw08_pushes": 0,
+    "executor": "OFF",
+    "background_scheduler": "OFF",
+    "source_kit": "Existing trusted same-host dependencies, not binary/fresh-machine/cross-platform certification",
+    "office_fidelity": "Tested text/cells readback only, not complete Office/layout fidelity",
+    "proposal_bounds": "8 candidates/run;128 retained/workspace; no automatic retention GC",
+    "handoff_bounds": "10 distinct saved artifacts, supported formats and8MiB archive ceiling"
+  },
+  "open_items": [
+    {
+      "severity": "P2",
+      "item": "Programmatic malformed UTF16 selection/split emoji edge has no native-user reproduction; exact error UX remains uncertified. No new Unicode framework added.",
+      "reference": "aw08-independent-review.json"
+    }
+  ],
+  "cleanup": {
+    "root_removed": [
+      "v2/apps/workspace/.pytest-aw08-retained (42MiB)",
+      "v2/apps/workspace/.workspace-data/aw08-e2e (3.1MiB)",
+      "v2/apps/web/test-results/workspace (generated test output)"
+    ],
+    "builder_removed": [
+      ".pytest-aw08-builder (44MiB)",
+      ".pytest-aw08-targeted (13MiB)"
+    ],
+    "reviewer_removed": [
+      ".aw08-review (14MiB)"
+    ],
+    "probe_extractions_and_recovery_data": "Removed by own bounded TemporaryDirectory finally blocks",
+    "stopped_ports": [
+      3130,
+      8130,
+      3140,
+      8140,
+      8141,
+      8142
+    ],
+    "retained": [
+      "3120/8120 declared local/mock demo",
+      "Ignored private pre-AW08 backup",
+      "One reusable .next-build",
+      "Declared JSON/PNG evidence"
+    ],
+    "aw08_scratch_remaining": [],
+    "docker_used": false,
+    "free_disk_GiB_approx": 22
+  },
+  "git": {
+    "staged_index_empty": true,
+    "unrelated_untracked_legacy": "Preserved; no git add/commit/push"
+  },
+  "artifact_sha256": {
+    "aw08-browser.json": "d4e757a1e2154da5117db583fd9542e3622299441d3f7c2230c4440ad898f285",
+    "aw08-browser-initial.json": "709cb575387f6e3ec5900fd1896919a021d73bdf3d59d97cc0c7c780c2746a5f",
+    "aw08-independent-review.json": "9bb01a914ed92c298bc48d77ea140022e99e6923e3444b734e53cc5e59982eb9",
+    "aw08-source-manifest.json": "056d4e27625e2a24f269bc9be8dd0dbb95f2402fb9ac3b809f471bd2505f3c5a",
+    "aw08-http.json": "f3ca7312d55a2486c354a44e3ffe52ce00d1e67e9e84d9645f8fd91c27383d86",
+    "aw08-operations.json": "eb23c2d9f7242c1435171ef817f826f70b931a4d35f775b30cef9b79993bbc95",
+    "aw08-source-kit.json": "6651bd9e95dc29ad5aa3d75aa30dbf2e2b1f7137b191861fbc5542d97241cc27",
+    "aw08-graph.json": "80201d1dd78b8309b3be2228b7c57ad33ef3692ebe03e69c78496161c939093d",
+    "aw08-coediting.png": "00f1abae35436b3206e59f376eb45d1ccb973efc69824f0da853c04db3a3473f",
+    "aw08-hover-before.png": "2d980fd696e5445a63a1bfe2660fbbeebeb11722a0cd12646b362858e9af2ae3"
+  }
+}

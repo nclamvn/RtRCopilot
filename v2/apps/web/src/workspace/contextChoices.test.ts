@@ -24,3 +24,6 @@ test("storage failure preserves in-tab choices and reports that they are not dur
   const choices = new WorkspaceContextChoices(), value = {references: [{kind: "file" as const, id: "one"}], target: null};
   expect(choices.save("one", value)).toBe(false); expect(choices.load("one")).toEqual(value); expect(choices.load("two")).toEqual(emptyContext()); expect(choices.load("one")).toEqual(value); expect(choices.isStored("one")).toBe(false);
 });
+test("AW08 optional review choice binds request identity and reload only with exact artifact target", () => {
+  const selected = {references: [], target: {kind: "artifact" as const, id: "artifact-one", version: 2}}; expect(contextIdentity(selected)).not.toBe(contextIdentity({...selected, review_edits: true})); expect(contextIdentity(selected)).toBe(contextIdentity({...selected, review_edits: false})); const choices = new WorkspaceContextChoices(); choices.save("review", {...selected, review_edits: true}); expect(new WorkspaceContextChoices().load("review")).toEqual({...selected, review_edits: true}); localStorage.setItem("agent-workspace:context:no-target", JSON.stringify({references: [], target: null, review_edits: true})); expect(new WorkspaceContextChoices().load("no-target")).toEqual(emptyContext());
+});

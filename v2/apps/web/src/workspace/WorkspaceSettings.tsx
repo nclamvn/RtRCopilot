@@ -15,6 +15,7 @@ export function clearWorkspaceBrowserData(workspaceId: string, artifactIds: stri
   localStorage.removeItem(`agent-workspace:run:${workspaceId}`);
   localStorage.removeItem(`agent-workspace:composer:${workspaceId}`);
   localStorage.removeItem(`agent-workspace:context:${workspaceId}`);
+  localStorage.removeItem(`agent-workspace:proposal-decision:${workspaceId}`);
   if (localStorage.getItem("agent-workspace:selected") === workspaceId) localStorage.removeItem("agent-workspace:selected");
   for (const kind of ["document", "table"]) localStorage.removeItem(`agent-workspace:new-draft:${workspaceId}:${kind}`);
   for (const id of artifactIds) localStorage.removeItem(`agent-workspace:artifact-draft:${id}`);

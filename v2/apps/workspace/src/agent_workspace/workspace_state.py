@@ -121,6 +121,8 @@ class WorkspaceState:
         # Model histories are reusable execution inputs, unlike the user's visible
         # messages/artifacts. Remove old reusable histories after ANY memory change.
         db.execute("UPDATE runs SET history=NULL WHERE workspace_id=?", (workspace_id,))
+        from .reviews import forget
+        forget(db, workspace_id)
         tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         if "run_contexts" in tables:
             db.execute("DELETE FROM run_contexts WHERE workspace_id=?", (workspace_id,))

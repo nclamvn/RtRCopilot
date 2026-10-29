@@ -2,8 +2,8 @@ import {NextRequest} from "next/server";
 
 type Context = {params: Promise<{path?: string[]}>};
 const routes: Record<string, RegExp[]> = {
-  GET: [/^(status|readiness|diagnostics)$/, /^workspaces$/, /^workspaces\/[\w-]+\/(messages|files|artifacts|memory|schedules|connection|approvals|effects|export|delete-preview|import-lineage|brief|search)$/, /^files\/[\w-]+(\/download)?$/, /^artifacts\/[\w-]+(\/(download|versions|diff|dependencies))?$/, /^runs\/[\w-]+(\/(events|context))?$/],
-  POST: [/^session$/, /^workspaces$/, /^imports\/(preview|commit)$/, /^workspaces\/[\w-]+\/(artifacts|memory|schedules|connection|delete|metadata|brief|context-preview|source-replacements)$/, /^workspaces\/[\w-]+\/memory\/[\w-]+\/(edit|delete)$/, /^workspaces\/[\w-]+\/schedules\/[\w-]+\/action$/, /^workspaces\/[\w-]+\/clock\/tick$/, /^approvals\/[\w-]+\/resolve$/, /^effects\/[\w-]+\/reconcile$/, /^workspaces\/[\w-]+\/files(\/batch)?$/, /^workspaces\/[\w-]+\/research\/(search|read|import)$/, /^artifacts\/[\w-]+\/revisions$/, /^runs$/, /^runs\/[\w-]+\/cancel$/],
+  GET: [/^(status|readiness|diagnostics)$/, /^workspaces$/, /^workspaces\/[\w-]+\/(messages|files|artifacts|memory|schedules|connection|approvals|effects|export|delete-preview|import-lineage|brief|search|proposals)$/, /^proposals\/[\w-]+$/, /^files\/[\w-]+(\/download)?$/, /^artifacts\/[\w-]+(\/(download|versions|diff|dependencies))?$/, /^runs\/[\w-]+(\/(events|context))?$/],
+  POST: [/^session$/, /^workspaces$/, /^imports\/(preview|commit)$/, /^workspaces\/[\w-]+\/(artifacts|memory|schedules|connection|delete|metadata|brief|context-preview|source-replacements|handoff)$/, /^proposals\/[\w-]+\/decision$/, /^workspaces\/[\w-]+\/memory\/[\w-]+\/(edit|delete)$/, /^workspaces\/[\w-]+\/schedules\/[\w-]+\/action$/, /^workspaces\/[\w-]+\/clock\/tick$/, /^approvals\/[\w-]+\/resolve$/, /^effects\/[\w-]+\/reconcile$/, /^workspaces\/[\w-]+\/files(\/batch)?$/, /^workspaces\/[\w-]+\/research\/(search|read|import)$/, /^artifacts\/[\w-]+\/revisions$/, /^runs$/, /^runs\/[\w-]+\/cancel$/],
 };
 export function workspaceUpstream(value: string | undefined): URL {
   const url = new URL(value ?? "http://127.0.0.1:8110");

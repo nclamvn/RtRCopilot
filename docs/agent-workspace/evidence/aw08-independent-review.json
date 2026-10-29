@@ -1,0 +1,163 @@
+{
+  "format": "agent-workspace-independent-review-v1",
+  "milestone": "AW-08",
+  "reviewed_at_utc": "2026-10-29T02:16:14Z",
+  "reviewer_role": "Separate-author reviewer; no production code authored",
+  "base_commit": "df16e22dae7633fb73370db39a2153b9365f8172",
+  "binding": "Reviewed uncommitted working-tree files identified by SHA256 below; not immutable release certification",
+  "verdict": "No remaining P1 found in reviewed proposal, exact-version handoff, compatibility and focused-editor data-preservation seams",
+  "user_outcome": "Synthetic document and quoted multiline CSV edits can become distinct candidates, publish only exact selected changes into one new saved version, survive decision ACK replay/restart, and export only selected saved outputs. Deleted or revoked scope cannot authorize pending candidate publication. Verified binary outputs parse back with retained tested values.",
+  "checks": {
+    "separate_author_tests": {
+      "cwd": "v2/apps/workspace",
+      "command": "PYTHONPATH=src PYDANTIC_AI_NO_BANNER=1 .venv/bin/python -m pytest ../../../docs/agent-workspace/evidence/test_aw08_independent.py --basetemp=.aw08-review -q",
+      "passed": 31,
+      "failed": 0,
+      "exit_code": 0,
+      "duration_seconds": 6.98,
+      "runtime": "Actual FastAPI ASGI lifespan, SQLite and filesystem operations; NoDispatch synthetic runtime, no model or DBOS worker dispatch",
+      "executed_test_sha256": "8fb48881fbe7c36d429acfe71b32254c32238a24a973b97eb5cbdfd6be3ac590",
+      "post_run_test_only_cleanup": "Removed unused Path/sqlite3 imports only; no test behavior or backend production changed. Final test-source hash below and Ruff check pass"
+    },
+    "targeted_ui_regression_executed_by_reviewer": {
+      "author": "Web Builder, not this reviewer",
+      "cwd": "v2/apps/web",
+      "command": "pnpm exec vitest run src/workspace/ArtifactEditor.test.tsx src/workspace/Deliverables.test.tsx",
+      "passed": 15,
+      "failed": 0,
+      "exit_code": 0,
+      "duration_seconds": 3.91,
+      "evidence_type": "Component tests and read-path verification, not actual browser E2E"
+    },
+    "neutral_web_typecheck": {
+      "command": "pnpm --dir v2/apps/workspace-web typecheck",
+      "exit_code": 0
+    },
+    "owned_test_lint": {
+      "command": "v2/apps/backend/.venv/bin/ruff check docs/agent-workspace/evidence/test_aw08_independent.py",
+      "exit_code": 0
+    },
+    "contractor_reported_final_independent_aggregate": {
+      "source": "Contractor reports actual final141 independent AW03-AW08 regression pass, including this cleaned31-test source",
+      "passed": 141,
+      "duration_seconds": 28.90,
+      "executed_by_this_reviewer": false,
+      "counting": "Overlaps this review's31 cases; do not add the counts"
+    },
+    "final_css_only_read_review": {
+      "scope": "Explicit .agent-workspace selected-mode rule includes hover and focus-visible, keeping ink background and white text together",
+      "browser_test_change_review": "Existing mobile test retains previous checks, adds computed hovered selected colors and axe before Apply",
+      "actual_browser_rerun": "Owned by Contractor, not executed by this reviewer"
+    }
+  },
+  "probe_coverage": [
+    "Existing publish interception yields metadata-only tool receipts and a separate proposal, never a current artifact version",
+    "Exact first independent change accepted while unrelated text and immutable original version remain unchanged",
+    "Lost-ACK identical decision replay, changed arguments and actual ASGI restart preserve one logical publication",
+    "Concurrent SQLite decisions publish only one new version",
+    "Duplicate, foreign and empty selected IDs cannot mutate; client-authored approval/base/owner fields are rejected",
+    "In-flight, failed and cancelled producers cannot publish; unrelated artifact creation in review mode is fenced",
+    "Stale-base conflict retains both current manual work and reviewable proposal without fuzzy rebase",
+    "Foreign actors cannot read or decide proposals",
+    "Memory deletion removes private candidate bodies from live catalogue tables, reusable receipts and decision access",
+    "Connection grant bound to producer then revoked prevents body retrieval and acceptance; rejection is cleanup only and cannot reauthorize body access",
+    "Logical CSV-row diff and partial selection preserve Unicode, embedded quoted newline, leading-zero IDs, decimals and untouched cells",
+    "Selective handoff exports intentionally selected old version and hashes, with no unselected source/output, memory, pending proposal or runtime state",
+    "Foreign or missing selection fails before any renderer; duplicate selection fails atomically",
+    "Memory epoch change or workspace deletion during rendering prevents archive delivery",
+    "Generated DOCX/PDF parse-readback preserves tested document values; XLSX readback retains tested string values and no executable formula cells",
+    "Actual allowlisted source kit includes existing regular/bold Noto TTF and license; child process imports extracted package, not checkout, performs ASGI PDF handoff and reads back Vietnamese diacritics and numerical units",
+    "Content snapshot does not export pending proposal body or authority",
+    "Recognized AW07 private backup restores with old marker and blocked startup until explicit stopped upgrade; exact saved content is retained and original legacy marker unchanged"
+  ],
+  "read_review": [
+    "Optional review_edits remains on existing publish/patch path, with no second agent loop or extra ordinary read/chat approval",
+    "Server-owned candidate base version/hash, scope epochs and completed producer are checked inside atomic decision transaction",
+    "Saved-version handoff snapshots owner-scoped selections before rendering, bounds entries and bytes, then rechecks privacy/deletion",
+    "Proposal UI is workspace-keyed with request sequencing, stable retry identity and saved-state-only publication callback",
+    "Focused replacement uses exact offsets/source equality rather than lossy HTML roundtrip; string grid is paged and parser/paste bounded",
+    "Draft buffers are preserved through raw/grid/undo changes and reload; only explicit apply or confirmed clear/discard removes unapplied work",
+    "Final saved-table preview uses explicit20-row/8-column paging rather than rendering every cell before opening Edit; string data and exports remain unchanged",
+    "Proposal acceptance callback repeats workspace identity and unsafe-draft checks before and after fetching the accepted output, preventing replacement of unpersisted editor state",
+    "Workspace browser deletion clears proposal-decision identity and scoped document/table drafts",
+    "Post-browser fixes keep proposal success/error notices outside auto-closing details, use h3 rather than a skipped h4 for focused preview, and darken selected/hover output metadata to neutral606060. Read-reviewed and targeted15 tests rerun; parent owns actual browser axe acceptance"
+  ],
+  "finding_history": [
+    {
+      "found_by": "Contractor read review",
+      "finding": "Completed proposal producer initially lacked recheck of its bound connection grant revision",
+      "resolution": "Builder added narrow connection guard without reusing obsolete execution deadline. Separate ASGI grant/revoke/get/decision probe passes"
+    },
+    {
+      "found_by": "Contractor extracted-kit review",
+      "finding": "Historical source kit omitted Noto font/license assets required by PDF rendering; historical AW07 evidence did not certify that path",
+      "resolution": "AW08 explicitly packages existing licensed assets without download. Separate extracted-package ASGI PDF Vietnamese readback passes. No historical AW07 report was rewritten"
+    },
+    {
+      "found_by": "This separate reviewer",
+      "finding": "Unapplied focused replacement or typed area paste could be silently dropped by unrelated raw/grid draft edits",
+      "resolution": "Web Builder preserves staged buffers except explicit apply/clear, distinguishes direct clipboard paste from typed-buffer application, and confirms replacement discard. Read-path check and targeted component regression pass"
+    },
+    {
+      "found_by": "Contractor contract review",
+      "finding": "Blocked terminal proposals still need owner-scoped rejection for cleanup without weakening publication or body access",
+      "resolution": "Builder separates can_reject from can_decide. Separate revoked-scope reject/replay/body-denial probe passes"
+    },
+    {
+      "found_by": "Contractor compiled-browser tests",
+      "finding": "Last pending rejection hid its notice when details closed; mobile axe found selected-output metadata contrast and focused preview heading hierarchy defects",
+      "resolution": "Minimal Web Builder notice placement/heading/neutral color fixes read-reviewed and targeted15 tests pass on refreshed hashes. Full compiled-browser rerun remains Contractor evidence"
+    },
+    {
+      "found_by": "Contractor final in-app-browser manual review",
+      "finding": "Generic button hover overrode selected Focused edit ink background while white foreground remained, despite the previous55 browser cases passing",
+      "resolution": "Web Builder narrowly scoped selected-mode CSS and explicitly included hover/focus-visible. Read-reviewed selector and strengthened existing mobile computed-color/axe-before-Apply case; Contractor owns final55-case rerun and extracted-kit rebinding"
+    }
+  ],
+  "deferred": [
+    {
+      "severity": "P2",
+      "item": "Programmatic selection splitting an emoji can create unpaired UTF16, while TextEncoder replaces it rather than explicitly rejecting it",
+      "disposition": "Not reproduced as a native user failure and no extra Unicode scope opened. Server UTF8/validation boundary is before artifact mutation by read path; this edge and its precise error UX are not independently runtime-certified here"
+    }
+  ],
+  "limits": [
+    "Only synthetic local/mock behavior tested. No external model, web, live connector, deployment, human semantic review or competitive superiority is accepted by this evidence",
+    "Fixture commands and direct service publication probes validate transport, state and authority, not natural-language editing quality",
+    "Test counts are structural evidence and are not summed into a general quality score",
+    "Parent owns compiled-browser E2E, accessibility/mobile acceptance, full regression and raw-versus-focused interaction measurements",
+    "Binary readback checks tested text/cells and literal formula handling, not full Office fidelity, exhaustive typography or every possible document",
+    "Extracted source kit explicitly reuses this host's trusted installed Python dependencies. It is not clean-machine, cross-platform or self-contained binary acceptance",
+    "Private backup retains trusted private candidate/audit/session state by design; content handoff does not carry execution or approval authority",
+    "Database checks and hashes are not authentication or a sandbox for arbitrary malicious SQL archives. Restore only trusted operator-owned private backups",
+    "Old noncooperating AW07 workers must be stopped before upgrade; advisory ownership does not discover or control them"
+  ],
+  "file_sha256": {
+    "docs/agent-workspace/evidence/test_aw08_independent.py": "39e19e29c6c1280dba2c75d414eb3e993dbb2174a220dce1f0ce0520657457e5",
+    "v2/apps/workspace/src/agent_workspace/reviews.py": "d5f011ad58d6a2867540b7a53dab03c58ef8ef9c3ef09507b7b247f59e3c1884",
+    "v2/apps/workspace/src/agent_workspace/api.py": "3a23dfbeda2ce444e4abe0052df3db629f7bf54f48b06dff5c21ded9d791ac9a",
+    "v2/apps/workspace/src/agent_workspace/store.py": "711ebb6709f653d73095e2b98b3fb9221e98275d66b527ae82c977ded44df0c4",
+    "v2/apps/workspace/src/agent_workspace/runtime.py": "ab896438d1cc91b2603b8eed63fcf8f5587b2d1ee92c08fbeea23c5437443c57",
+    "v2/apps/workspace/src/agent_workspace/continuity.py": "2bd767125645bc26de76f439330908c61b23921c63b11ffd816f4aef3aa47194",
+    "v2/apps/workspace/src/agent_workspace/workspace_state.py": "ca68105436e0386c282dfe46902edc05a97625e66c2613de49b0adbf9dd31381",
+    "v2/apps/workspace/src/agent_workspace/data_lifecycle.py": "7bafcf9e9f134c5a241530570c6bca14baa185e8f6ab07f872f80eefc4a5a2fc",
+    "v2/apps/workspace/src/agent_workspace/operations.py": "37b79870b720b2124ffd97dfbe68f6db4e54e02ae5532fecbb7dbd575bfa2ba4",
+    "v2/apps/workspace/src/agent_workspace/source_kit.py": "f2725880df3c94ede05c8f8600487a5b3000ee119c840ce3a8389f7606382996",
+    "v2/apps/web/src/workspace/ArtifactEditor.tsx": "4df524ec34e524478aa0e2a48c80f4a45cd1e8e39212a684d1ec9bdb02cdedb8",
+    "v2/apps/web/src/workspace/WorkspaceApp.tsx": "8b4aab1a8b1a7c8cf94cdf23f59f33e73904854f0f1f1f5fe465ef5c4a56c4c5",
+    "v2/apps/web/src/workspace/FocusedEditor.tsx": "561aeb1d2ee940d65da76bf5df1473cc4eb1025dcaeb3acad4b4e233610fdd54",
+    "v2/apps/web/src/workspace/Deliverables.tsx": "e7d5cdfc1f75563750b60c7cfaeafdcac28de10b79c1d52819410d5534254109",
+    "v2/apps/web/src/workspace/coediting.css": "9616e3f5018bc94427c8b3839104f90de61885e5a7097859d24cb9d2934b5a4f",
+    "v2/apps/web/tests/workspace/aw08.spec.ts": "05c42996caa729ae79b27e96e0f33c29ec5b7cb90dee341fed4f6c27495b6a9a",
+    "v2/apps/web/src/workspace/editing.ts": "647161a92f088d3ccc19345dda57df5c02f7bbfced4e888455d42832d1f4fe11"
+  },
+  "cleanup": {
+    "owned_scratch": "v2/apps/workspace/.aw08-review",
+    "size_before_removal": "14MiB",
+    "removed": true,
+    "external_calls": 0,
+    "docker_operations": 0,
+    "deployments": 0,
+    "commits": 0
+  }
+}

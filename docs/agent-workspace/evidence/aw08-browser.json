@@ -1,0 +1,2038 @@
+{
+  "config": {
+    "argv": [
+      "/usr/local/bin/node",
+      "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/web/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "playwright.workspace.config.ts",
+      "--reporter=line,json"
+    ],
+    "configFile": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/web/playwright.workspace.config.ts",
+    "rootDir": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/web/tests/workspace",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/web/test-results/workspace",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/web/tests/workspace",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "aw02.spec.ts",
+      "file": "aw02.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "REAL AW02 mixed-source batch → brief/table → exact exports and preserved manual versions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4258,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:26.441Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b05cf36662d82e14bb3f-56e5e0001beaf6462a2b",
+          "file": "aw02.spec.ts",
+          "line": 43,
+          "column": 5
+        },
+        {
+          "title": "REAL AW02 source paging, local research snapshots, scoped IDs and blocked URL inputs",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1901,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:30.977Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b05cf36662d82e14bb3f-fcbd01dafd94b1317bab",
+          "file": "aw02.spec.ts",
+          "line": 81,
+          "column": 5
+        },
+        {
+          "title": "REAL AW02 unsaved draft survives switch/reload, stale save conflict and renderer failure",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1383,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:32.885Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b05cf36662d82e14bb3f-cdb1c345816a3b884864",
+          "file": "aw02.spec.ts",
+          "line": 96,
+          "column": 5
+        },
+        {
+          "title": "REAL AW02 manual authoring needs no model: create document/table → revise → parsed exports",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1720,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:34.276Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b05cf36662d82e14bb3f-45fa2f343a8f9adafb8c",
+          "file": "aw02.spec.ts",
+          "line": 111,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "aw03.spec.ts",
+      "file": "aw03.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "REAL AW03 explicit memory create/edit/delete, model tool read and workspace isolation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1545,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:36.008Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "342dc3b9ed7f01633ea8-2973f6a22cd66314111d",
+          "file": "aw03.spec.ts",
+          "line": 22,
+          "column": 5
+        },
+        {
+          "title": "REAL AW03 fixture MCP read needs one grant; pending approval survives reload and produces one receipt",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6387,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:37.559Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "342dc3b9ed7f01633ea8-b7affd2a245caa2a3436",
+          "file": "aw03.spec.ts",
+          "line": 33,
+          "column": 5
+        },
+        {
+          "title": "REAL AW03 revocation invalidates pending action; rejection and memory deletion never send",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9074,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:43.951Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "342dc3b9ed7f01633ea8-94b76fd84fd147c6ab26",
+          "file": "aw03.spec.ts",
+          "line": 51,
+          "column": 5
+        },
+        {
+          "title": "REAL AW03 manual clock pause/resume/cancel and repeated ticks dispatch each schedule once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2300,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:53.032Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "342dc3b9ed7f01633ea8-2c32836f3761c1b73e99",
+          "file": "aw03.spec.ts",
+          "line": 61,
+          "column": 5
+        },
+        {
+          "title": "REAL AW03 new control APIs deny foreign owner IDs and do not expose a generic MCP executor",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 415,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:55.337Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "342dc3b9ed7f01633ea8-18e9415b92143c861bab",
+          "file": "aw03.spec.ts",
+          "line": 73,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "aw04.spec.ts",
+      "file": "aw04.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "REAL local API AW04 readiness is nonsecret, explicitly simulated and network-free",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 436,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:55.763Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9484660a9ab7a1619b5d-93cdfb23a5af375d43bd",
+          "file": "aw04.spec.ts",
+          "line": 21,
+          "column": 5
+        },
+        {
+          "title": "UI-only synthetic unavailable/ready statuses guide terminal setup and natural prompts, not AI quality",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 476,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:56.205Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9484660a9ab7a1619b5d-c0e64a3a1667eaff777e",
+          "file": "aw04.spec.ts",
+          "line": 27,
+          "column": 5
+        },
+        {
+          "title": "REAL local API AW04 ZIP readback includes source originals and consistent artifact versions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 450,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:56.686Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9484660a9ab7a1619b5d-5bea1bf2fa431f17407d",
+          "file": "aw04.spec.ts",
+          "line": 34,
+          "column": 5
+        },
+        {
+          "title": "REAL local API AW04 confirmed idle deletion fences cached data, foreign scope and reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 746,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:57.140Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9484660a9ab7a1619b5d-c0d6f91f0e8bcecefe2e",
+          "file": "aw04.spec.ts",
+          "line": 45,
+          "column": 5
+        },
+        {
+          "title": "REAL local API AW04 busy deletion stays blocked with recovery; mobile setup remains accessible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1175,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:57.892Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9484660a9ab7a1619b5d-3d60aa6a7f85f7089b16",
+          "file": "aw04.spec.ts",
+          "line": 56,
+          "column": 5
+        },
+        {
+          "title": "REAL local API AW04 late deletion ACK cannot replace another selected workspace or resurrect drafts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 753,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:59.076Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9484660a9ab7a1619b5d-6b133ecacb8e87b73e3c",
+          "file": "aw04.spec.ts",
+          "line": 63,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "aw05.spec.ts",
+      "file": "aw05.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "REAL AW05 snapshot round-trip preserves original bytes and every version with new scoped identities",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1081,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:16:59.843Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-9fe9c0aa9555985cc9dd",
+          "file": "aw05.spec.ts",
+          "line": 27,
+          "column": 5
+        },
+        {
+          "title": "REAL AW05 explicit memory restore never imports permissions or schedules",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 647,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:00.930Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-58799c47c634f13475c8",
+          "file": "aw05.spec.ts",
+          "line": 39,
+          "column": 5
+        },
+        {
+          "title": "REAL AW05 corrupt snapshot and foreign confirmation cannot create partial or foreign workspaces",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 583,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:01.587Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-006da99567a2f9830aa3",
+          "file": "aw05.spec.ts",
+          "line": 44,
+          "column": 5
+        },
+        {
+          "title": "REAL AW05 project search rename archive and scoped composer drafts survive reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 835,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:02.178Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-eb59d03ed2cf65da9822",
+          "file": "aw05.spec.ts",
+          "line": 49,
+          "column": 5
+        },
+        {
+          "title": "UI transport fault AW05 late failed send cannot overwrite a newer composer draft or another project",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 662,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:03.018Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-9a2e8cf20b24de4bbb2a",
+          "file": "aw05.spec.ts",
+          "line": 55,
+          "column": 5
+        },
+        {
+          "title": "REAL AW05 lost import ACK retries one logical import without another workspace",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 604,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:03.686Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-f6799cd7861ec5a82651",
+          "file": "aw05.spec.ts",
+          "line": 61,
+          "column": 5
+        },
+        {
+          "title": "REAL AW05 late import receipt does not select over another project's new draft",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 842,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:04.295Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-45e59cd60d1364a69312",
+          "file": "aw05.spec.ts",
+          "line": 65,
+          "column": 5
+        },
+        {
+          "title": "REAL local AW05 mobile import and project navigation remain accessible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1146,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:05.142Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-9f46d492400cc4282492",
+          "file": "aw05.spec.ts",
+          "line": 69,
+          "column": 5
+        },
+        {
+          "title": "UI storage fault AW05 unsaved composer stays scoped in this tab with an explicit reload warning",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 489,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:06.294Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-37f729f099c11738e72f",
+          "file": "aw05.spec.ts",
+          "line": 75,
+          "column": 5
+        },
+        {
+          "title": "REAL mock AW05 failed cache clearing after send is visible while empty and recoverable before reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1043,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:06.790Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6e1c0b66a0c40a50e0d4-864310b78254d14314f4",
+          "file": "aw05.spec.ts",
+          "line": 81,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "aw06.spec.ts",
+      "file": "aw06.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "REAL local mock AW06 selected source → bounded preview → saved manifest and exact read lineage",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1397,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:07.858Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2228cb61dcbc9d9030a-c426f75d7172870c2166",
+          "file": "aw06.spec.ts",
+          "line": 23,
+          "column": 5
+        },
+        {
+          "title": "REAL AW06 user project brief saves reloads and conflict keeps unsaved edits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 736,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:09.268Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2228cb61dcbc9d9030a-fb122db03b7dd03be68a",
+          "file": "aw06.spec.ts",
+          "line": 34,
+          "column": 5
+        },
+        {
+          "title": "REAL AW06 local search pins exact output version and context stays scoped after reload and project switch",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 828,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:10.010Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2228cb61dcbc9d9030a-2f35f956c01c851ccd29",
+          "file": "aw06.spec.ts",
+          "line": 41,
+          "column": 5
+        },
+        {
+          "title": "REAL mock AW06 Continue exact saved version preserves old output and never overwrites newer manual version",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1390,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:10.846Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2228cb61dcbc9d9030a-a1846c5743b89a832874",
+          "file": "aw06.spec.ts",
+          "line": 47,
+          "column": 5
+        },
+        {
+          "title": "REAL AW06 explicit source replacement marks only dependent output and preserves both original files",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1651,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:12.243Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2228cb61dcbc9d9030a-7fbcb5a4d6213e9221c4",
+          "file": "aw06.spec.ts",
+          "line": 58,
+          "column": 5
+        },
+        {
+          "title": "REAL AW06 references and actual run manifests reject foreign workspace identities",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 960,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:13.904Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2228cb61dcbc9d9030a-94bf091bc897d93e1aa1",
+          "file": "aw06.spec.ts",
+          "line": 66,
+          "column": 5
+        },
+        {
+          "title": "REAL AW06 cleared brief fences old context and the UI explains its unavailable snapshot",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1141,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:14.872Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2228cb61dcbc9d9030a-b3d68db5747b380a5db0",
+          "file": "aw06.spec.ts",
+          "line": 71,
+          "column": 5
+        },
+        {
+          "title": "UI transport fault AW06 late context preview cannot replace another project's draft",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 792,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:16.020Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2228cb61dcbc9d9030a-4ba8a29a65276a78c5ce",
+          "file": "aw06.spec.ts",
+          "line": 77,
+          "column": 5
+        },
+        {
+          "title": "REAL local AW06 context panel on mobile is keyboard accessible and keeps the composer readable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 911,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:16.819Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2228cb61dcbc9d9030a-28363170c5e048389225",
+          "file": "aw06.spec.ts",
+          "line": 82,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "aw07.spec.ts",
+      "file": "aw07.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "REAL AW07 explicit diagnostics contains aggregate owner health, no synthetic private data and no provider calls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 600,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:17.739Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bfafb3546ec3c62318b-f6192a8413b74e22f56f",
+          "file": "aw07.spec.ts",
+          "line": 17,
+          "column": 5
+        },
+        {
+          "title": "REAL AW07 diagnostics is authenticated and owner scoped; browser runtime mutations stay absent",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 456,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:18.347Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bfafb3546ec3c62318b-4ab5bc8dc6b4be26f378",
+          "file": "aw07.spec.ts",
+          "line": 28,
+          "column": 5
+        },
+        {
+          "title": "AW07 injected API outage gives recovery guidance, retry works and composer draft survives",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 549,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:18.813Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bfafb3546ec3c62318b-3b76272169891895244c",
+          "file": "aw07.spec.ts",
+          "line": 36,
+          "column": 5
+        },
+        {
+          "title": "REAL AW07 first-project guide keeps manual document creation and versioned export useful without dispatch",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 833,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:19.373Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bfafb3546ec3c62318b-b42ab106c4c71b89500f",
+          "file": "aw07.spec.ts",
+          "line": 44,
+          "column": 5
+        },
+        {
+          "title": "REAL AW07 mobile keyboard guide/check remains accessible, bounded and does not force onboarding",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1290,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:20.214Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bfafb3546ec3c62318b-42dd4a61e660c40eac48",
+          "file": "aw07.spec.ts",
+          "line": 51,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "aw08-comparison.spec.ts",
+      "file": "aw08-comparison.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Contractor AW08 raw vs focused paragraph: exact retained content, declared actions and typed bytes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1123,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "AW08_COMPARISON {\"task\":\"one exact paragraph revision\",\"raw\":{\"actions\":3,\"typed_utf8_bytes\":181,\"scripted_ms\":133.78283300000476},\"focused\":{\"actions\":5,\"typed_utf8_bytes\":70,\"scripted_ms\":180.67495800000324},\"invariant\":\"same exact saved v2 and untouched v1\",\"provenance\":\"one warm automated browser sample, both text variants precomputed; raw uses full-document fill, not a human timing or proof that snippets cannot be edited in raw mode\"}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:21.513Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "aw08-comparison-document",
+                      "contentType": "application/json",
+                      "body": "ewogICJ0YXNrIjogIm9uZSBleGFjdCBwYXJhZ3JhcGggcmV2aXNpb24iLAogICJyYXciOiB7CiAgICAiYWN0aW9ucyI6IDMsCiAgICAidHlwZWRfdXRmOF9ieXRlcyI6IDE4MSwKICAgICJzY3JpcHRlZF9tcyI6IDEzMy43ODI4MzMwMDAwMDQ3NgogIH0sCiAgImZvY3VzZWQiOiB7CiAgICAiYWN0aW9ucyI6IDUsCiAgICAidHlwZWRfdXRmOF9ieXRlcyI6IDcwLAogICAgInNjcmlwdGVkX21zIjogMTgwLjY3NDk1ODAwMDAwMzI0CiAgfSwKICAiaW52YXJpYW50IjogInNhbWUgZXhhY3Qgc2F2ZWQgdjIgYW5kIHVudG91Y2hlZCB2MSIsCiAgInByb3ZlbmFuY2UiOiAib25lIHdhcm0gYXV0b21hdGVkIGJyb3dzZXIgc2FtcGxlLCBib3RoIHRleHQgdmFyaWFudHMgcHJlY29tcHV0ZWQ7IHJhdyB1c2VzIGZ1bGwtZG9jdW1lbnQgZmlsbCwgbm90IGEgaHVtYW4gdGltaW5nIG9yIHByb29mIHRoYXQgc25pcHBldHMgY2Fubm90IGJlIGVkaXRlZCBpbiByYXcgbW9kZSIKfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "998de312b43145cafa89-4e72532e4cf8a4d6aadc",
+          "file": "aw08-comparison.spec.ts",
+          "line": 34,
+          "column": 5
+        },
+        {
+          "title": "Contractor AW08 raw vs grid: literal values, equal selected edits and bounded field operations",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 989,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "AW08_COMPARISON {\"task\":\"two string cell revisions\",\"raw\":{\"actions\":3,\"typed_utf8_bytes\":105,\"scripted_ms\":143.40087499999936},\"grid\":{\"actions\":3,\"typed_utf8_bytes\":23,\"scripted_ms\":91.68208400000003},\"invariant\":\"same canonical v2; leading zero IDs, decimal-comma and formula-like text remain unchanged\",\"provenance\":\"one warm automated browser sample, complete raw replacement precomputed; field actions are not human productivity or provider quality\"}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:22.643Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "aw08-comparison-table",
+                      "contentType": "application/json",
+                      "body": "ewogICJ0YXNrIjogInR3byBzdHJpbmcgY2VsbCByZXZpc2lvbnMiLAogICJyYXciOiB7CiAgICAiYWN0aW9ucyI6IDMsCiAgICAidHlwZWRfdXRmOF9ieXRlcyI6IDEwNSwKICAgICJzY3JpcHRlZF9tcyI6IDE0My40MDA4NzQ5OTk5OTkzNgogIH0sCiAgImdyaWQiOiB7CiAgICAiYWN0aW9ucyI6IDMsCiAgICAidHlwZWRfdXRmOF9ieXRlcyI6IDIzLAogICAgInNjcmlwdGVkX21zIjogOTEuNjgyMDg0MDAwMDAwMDMKICB9LAogICJpbnZhcmlhbnQiOiAic2FtZSBjYW5vbmljYWwgdjI7IGxlYWRpbmcgemVybyBJRHMsIGRlY2ltYWwtY29tbWEgYW5kIGZvcm11bGEtbGlrZSB0ZXh0IHJlbWFpbiB1bmNoYW5nZWQiLAogICJwcm92ZW5hbmNlIjogIm9uZSB3YXJtIGF1dG9tYXRlZCBicm93c2VyIHNhbXBsZSwgY29tcGxldGUgcmF3IHJlcGxhY2VtZW50IHByZWNvbXB1dGVkOyBmaWVsZCBhY3Rpb25zIGFyZSBub3QgaHVtYW4gcHJvZHVjdGl2aXR5IG9yIHByb3ZpZGVyIHF1YWxpdHkiCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "998de312b43145cafa89-f0633a854acac35a21d9",
+          "file": "aw08-comparison.spec.ts",
+          "line": 67,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "aw08.spec.ts",
+      "file": "aw08.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "REAL AW08 focused replacement survives reload, exact apply undo redo save preserves original",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1093,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:23.645Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f482323b6ad7632ff501-25e58942b3e60bc3315b",
+          "file": "aw08.spec.ts",
+          "line": 40,
+          "column": 5
+        },
+        {
+          "title": "REAL AW08 grid string cells, atomic malformed TSV and CSV paste retain exact values and undo",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 962,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:24.746Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f482323b6ad7632ff501-5a25bef5f0d9ccd5ef5f",
+          "file": "aw08.spec.ts",
+          "line": 46,
+          "column": 5
+        },
+        {
+          "title": "REAL AW08 optional edit candidate partial accept with lost ACK is one saved version",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1264,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:25.717Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f482323b6ad7632ff501-349b78281f8c0404335e",
+          "file": "aw08.spec.ts",
+          "line": 51,
+          "column": 5
+        },
+        {
+          "title": "REAL AW08 full accept and reject retain proposal versus saved state, stale reject remains usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2060,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:26.988Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f482323b6ad7632ff501-4d87bc7ab5de0770313d",
+          "file": "aw08.spec.ts",
+          "line": 56,
+          "column": 5
+        },
+        {
+          "title": "REAL AW08 exact selected handoff parses DOCX PDF XLSX and omits unselected private synthetic data",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1400,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:29.057Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f482323b6ad7632ff501-21fd88062b6819296f91",
+          "file": "aw08.spec.ts",
+          "line": 61,
+          "column": 5
+        },
+        {
+          "title": "REAL AW08 mobile keyboard focused editing and review/handoff disclosures stay accessible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1732,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:30.461Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f482323b6ad7632ff501-ffdfc49f4a45276f48e2",
+          "file": "aw08.spec.ts",
+          "line": 68,
+          "column": 5
+        },
+        {
+          "title": "REAL AW08 two tabs retain divergent drafts and stale save never overwrites current version",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1076,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:32.200Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f482323b6ad7632ff501-ca723686dbe1293dd118",
+          "file": "aw08.spec.ts",
+          "line": 73,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "workspace.spec.ts",
+      "file": "workspace.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "REAL local API + deterministic model: source → brief → versioned revision → download → reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1365,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:33.288Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-9f50db6e6d4bb548333d",
+          "file": "workspace.spec.ts",
+          "line": 14,
+          "column": 5
+        },
+        {
+          "title": "REAL API scope + duplicate idempotency + replay cursor are enforced",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1011,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:34.659Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-0a33fd1166181adaba62",
+          "file": "workspace.spec.ts",
+          "line": 55,
+          "column": 5
+        },
+        {
+          "title": "REAL API: closing/reloading the subscription does not cancel or redispatch",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8728,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:35.674Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-6d29ee0946c1914a7632",
+          "file": "workspace.spec.ts",
+          "line": 76,
+          "column": 5
+        },
+        {
+          "title": "REAL API cancel confirms terminal state and preserves workspace",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 884,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:44.408Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-393f2e011d96afac18f7",
+          "file": "workspace.spec.ts",
+          "line": 90,
+          "column": 5
+        },
+        {
+          "title": "REAL API + browser transport fault: a lost completed ACK reconciles without redispatch",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1155,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:45.297Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-a7d708897b2d89e1a408",
+          "file": "workspace.spec.ts",
+          "line": 101,
+          "column": 5
+        },
+        {
+          "title": "UI-only unavailable status fixture is immediate and disables dispatch",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 213,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:46.457Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-406eb989bdbfcf25a096",
+          "file": "workspace.spec.ts",
+          "line": 121,
+          "column": 5
+        },
+        {
+          "title": "mobile keyboard, plain-text upload rejection, viewport geometry and accessibility",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 720,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T02:17:46.678Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b163ed09f68681248ada-5194cd6191d19b165718",
+          "file": "workspace.spec.ts",
+          "line": 128,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T02:16:25.505Z",
+    "duration": 82178.00099999999,
+    "expected": 55,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

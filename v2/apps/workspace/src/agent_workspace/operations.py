@@ -22,14 +22,18 @@ import zlib
 
 from .store import WorkspaceError
 
-APP_VERSION = "0.1.0-aw07"
-DATA_CONTRACT = "workspace-data-aw06-v1"
+APP_VERSION = "0.1.0-aw08"
+DATA_CONTRACT = "workspace-data-aw08-v1"
 FORMAT_FILE = "workspace-format.json"
-FORMAT = {"format": "agent-workspace-data-v1", "version": 1, "data_contract": DATA_CONTRACT}
+LEGACY_CONTRACT = "workspace-data-aw06-v1"
+LEGACY_FORMAT = {"format": "agent-workspace-data-v1", "version": 1, "data_contract": LEGACY_CONTRACT}
+FORMAT = {"format": "agent-workspace-data-v1", "version": 2, "data_contract": DATA_CONTRACT}
 DATABASES = ("catalogue.sqlite", "dbos.sqlite", "fixture-outbox.sqlite")
 MAX_BYTES = 256 * 1024 * 1024
 MIN_DISK = 10 * 1024 ** 3
 TABLES = set("sessions workspaces files runs messages events artifacts versions receipts revisions workspace_tombstones workspace_delete_previews workspace_deletions workspace_metadata_requests workspace_memory_meta workspace_memory workspace_memory_reads workspace_clocks workspace_schedules workspace_state_requests connection_grants approvals effects connection_requests connection_reads project_briefs continuity_requests source_replacements run_contexts context_reads artifact_dependencies workspace_import_previews workspace_import_receipts workspace_import_lineage".split())
+PROPOSAL_TABLES = {"artifact_proposals", "proposal_decisions"}
+TABLES |= PROPOSAL_TABLES
 REQUIRED = {"sessions": {"token_hash", "owner", "expires"}, "workspaces": {"id", "owner", "name"}, "files": {"id", "workspace_id", "content"}, "runs": {"id", "workspace_id", "state", "workflow_version", "context_options"}, "messages": {"id", "workspace_id", "role", "content"}, "artifacts": {"id", "workspace_id", "version"}, "versions": {"artifact_id", "version", "content"}}
 DIRECT = {"pydantic-ai-slim": "2.62.0", "dbos": "3.2.0", "fastapi": "0.162.0", "uvicorn": "0.54.0", "httpx": "0.28.1", "python-docx": "1.2.0", "openpyxl": "3.1.5", "reportlab": "4.4.3", "pypdf": "6.14.2", "defusedxml": "0.7.1", "psutil": "7.0.0", "mcp": "1.26.0", "openai": "3.31.0"}
 HINTS = {
@@ -144,15 +148,16 @@ def readonly(path):
         db.close()
 
 
-def inspect_data(path, *, require_quiet=False):
+def inspect_data(path, *, require_quiet=False, for_upgrade=False):
     path = safe_path(path)
     if not path.exists():
         return {"state": "new", "data_contract": DATA_CONTRACT}
     sidecar = path / FORMAT_FILE
+    value = None
     if sidecar.exists() or sidecar.is_symlink():
         regular(sidecar)
         value = strict_json(sidecar.read_bytes()) if sidecar.stat().st_size <= 4096 else {}
-        if value != FORMAT or type(value.get("version")) is not int:
+        if value not in (FORMAT, LEGACY_FORMAT) or type(value.get("version")) is not int:
             failure("data_version_incompatible")
     catalogue = path / "catalogue.sqlite"
     try:
@@ -164,6 +169,14 @@ def inspect_data(path, *, require_quiet=False):
                 tables = {name for name, kind in objects if kind == "table"}
                 if not set(REQUIRED).issubset(tables) or tables - TABLES or any(kind in {"trigger", "view"} for _, kind in objects):
                     failure("data_schema_unrecognized")
+                if not for_upgrade and (value == LEGACY_FORMAT and tables & PROPOSAL_TABLES or value == FORMAT and not PROPOSAL_TABLES.issubset(tables)):
+                    failure("data_schema_unrecognized")
+                if tables & PROPOSAL_TABLES and not PROPOSAL_TABLES.issubset(tables):
+                    failure("data_schema_unrecognized")
+                if PROPOSAL_TABLES.issubset(tables):
+                    for table, columns in {"artifact_proposals": {"id", "workspace_id", "artifact_id", "run_id", "base_version", "base_sha256", "base_content", "proposed_content", "changes", "diff_unit", "memory_revision", "brief_revision", "status", "created_at", "result_version"}, "proposal_decisions": {"owner", "request_id", "workspace_id", "args_digest", "result"}}.items():
+                        if {r[1] for r in db.execute(f"PRAGMA table_info({table})")} != columns:
+                            failure("data_schema_unrecognized")
                 for table, columns in REQUIRED.items():
                     if not columns.issubset({row[1] for row in db.execute(f"PRAGMA table_info({table})")}):
                         failure("data_schema_unrecognized")
@@ -198,7 +211,7 @@ def inspect_data(path, *, require_quiet=False):
                     elif name == "fixture-outbox.sqlite":
                         if tables != {"outbox"} or {row[1] for row in db.execute("PRAGMA table_info(outbox)")} != {"scope", "key", "note"}:
                             failure("data_schema_unrecognized")
-        return {"state": "compatible" if catalogue.exists() else "new", "data_contract": DATA_CONTRACT}
+        return {"state": "compatible" if catalogue.exists() else "new", "data_contract": LEGACY_CONTRACT if value == LEGACY_FORMAT else DATA_CONTRACT, "upgrade_required": value != FORMAT and catalogue.exists()}
     except sqlite3.Error:
         failure("data_corrupt")
 
@@ -217,10 +230,28 @@ def initialize_format(path):
 
 
 def upgrade_data(path):
+    path = Path(path)
     with DataLease(path, create=False):
-        inspect_data(path, require_quiet=True)
-        initialize_format(path)
-    return {"status": "compatible", "data_contract": DATA_CONTRACT, "migration": "metadata-only additive marker", "replay_started": False}
+        inspect_data(path, require_quiet=True, for_upgrade=True)
+        if not (path / "catalogue.sqlite").exists():
+            failure("data_schema_unrecognized")
+        from .reviews import SCHEMA
+        db = sqlite3.connect(path / "catalogue.sqlite")
+        try:
+            db.executescript(SCHEMA)
+        finally:
+            db.close()
+        fd, name = tempfile.mkstemp(prefix=".workspace-upgrade-", dir=path)
+        try:
+            with os.fdopen(fd, "wb") as stream:
+                stream.write(encoded(FORMAT))
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(name, path / FORMAT_FILE)
+        finally:
+            if os.path.exists(name):
+                os.unlink(name)
+    return {"status": "compatible", "data_contract": DATA_CONTRACT, "migration": "explicit additive review schema and format-v2 marker", "replay_started": False}
 
 
 def publish_new(source, destination, *, directory=False):
@@ -278,12 +309,19 @@ def backup_data(data_dir, output):
                             target.close()
                     os.chmod(scratch / name, 0o600)
                     files[name] = (scratch / name).read_bytes()
-            files[FORMAT_FILE] = encoded(FORMAT)
+            marker = strict_json((data_dir / FORMAT_FILE).read_bytes()) if (data_dir / FORMAT_FILE).exists() else LEGACY_FORMAT
+            if marker == LEGACY_FORMAT and (data_dir / FORMAT_FILE).exists() is False:
+                # Unversioned source may already be a current fresh test/source
+                # catalogue; inspect the two explicitly known schema extensions.
+                with readonly(data_dir / "catalogue.sqlite") as db:
+                    if db.execute("SELECT 1 FROM sqlite_master WHERE name='artifact_proposals'").fetchone():
+                        marker = FORMAT
+            files[FORMAT_FILE] = encoded(marker)
             total = sum(map(len, files.values()))
             if total > MAX_BYTES:
                 failure("backup_limit", 413)
-            manifest = dict(format="agent-workspace-private-backup-v1", version=1, data_contract=DATA_CONTRACT,
-                application_version=APP_VERSION, created_at=time.time(), entries=[dict(path=name, bytes=len(body), sha256=hashlib.sha256(body).hexdigest()) for name, body in sorted(files.items())],
+            manifest = dict(format="agent-workspace-private-backup-v1", version=1, data_contract=marker["data_contract"],
+                application_version=APP_VERSION if marker == FORMAT else "0.1.0-aw07", created_at=time.time(), entries=[dict(path=name, bytes=len(body), sha256=hashlib.sha256(body).hexdigest()) for name, body in sorted(files.items())],
                 privacy="PRIVATE: includes application content, session hashes, grants and DBOS audit; no provider profiles. Not shareable diagnostics.")
             archive = scratch / "backup.zip"
             with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zipped:
@@ -318,7 +356,7 @@ def restore_data(archive, destination):
             manifest = strict_json(manifest_raw)
             if (not isinstance(manifest, dict) or set(manifest) != {"format", "version", "data_contract", "application_version", "created_at", "entries", "privacy"}
                     or manifest.get("format") != "agent-workspace-private-backup-v1" or type(manifest.get("version")) is not int or manifest.get("version") != 1
-                    or manifest.get("data_contract") != DATA_CONTRACT or manifest.get("application_version") != APP_VERSION
+                    or (manifest.get("data_contract"), manifest.get("application_version")) not in {(DATA_CONTRACT, APP_VERSION), (LEGACY_CONTRACT, "0.1.0-aw07")}
                     or not isinstance(manifest.get("entries"), list)):
                 failure("data_version_incompatible")
             entries = manifest["entries"]
@@ -343,11 +381,13 @@ def restore_data(archive, destination):
                         stream.write(body)
                         stream.flush()
                         os.fsync(stream.fileno())
-                inspect_data(stage, require_quiet=True)
+                inspected = inspect_data(stage, require_quiet=True)
+                if inspected["data_contract"] != manifest["data_contract"]:
+                    failure("backup_invalid")
                 publish_new(stage, destination, directory=True)
     except (zipfile.BadZipFile, zlib.error, RuntimeError, EOFError, KeyError, TypeError, ValueError, UnicodeError, RecursionError):
         failure("backup_invalid")
-    return {"status": "restored", "data_contract": DATA_CONTRACT, "destination_new": True, "replay_started": False,
+    return {"status": "restored", "data_contract": inspected["data_contract"], "upgrade_required": inspected.get("upgrade_required", False), "destination_new": True, "replay_started": False,
         "retained": "Session hashes and private audit retained. Browser drafts are not in this backup. Permissions and manual schedules remain stored; no scheduler or execution started."}
 
 
@@ -398,7 +438,7 @@ def preflight(data_dir, web_dir, *, api_port=8110, web_port=3110, production=Tru
         check(name, available, "port_busy", HINTS["port_busy"])
     try:
         result = inspect_data(data_dir)
-        if result["state"] == "compatible" and not (Path(data_dir) / FORMAT_FILE).exists():
+        if result["state"] == "compatible" and result.get("upgrade_required"):
             failure("data_upgrade_required")
         if Path(data_dir).exists():
             with DataLease(data_dir, create=False):

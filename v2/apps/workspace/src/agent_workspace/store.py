@@ -512,6 +512,13 @@ class Store:
                     raise WorkspaceError("context_target_mismatch", 409)
             if len(content.encode()) + run["output_bytes"] + run["stream_bytes"] > json.loads(run["limits"])["output_bytes_limit"]:
                 raise WorkspaceError("artifact_output_limit", 413)
+            reviews = getattr(self, "reviews", None)
+            candidate = reviews.capture(db, run, artifact_id, expected_version, content, title, filename) if reviews else None
+            if candidate:
+                db.execute("UPDATE runs SET output_bytes=output_bytes+? WHERE id=?", (len(content.encode()), run_id))
+                db.execute("INSERT INTO receipts VALUES(?,?,?,?,?)", (run_id, call_id, "artifact.proposal", digest, json.dumps(candidate)))
+                self._event(db, run_id, "artifact.proposed", candidate)
+                return candidate
             now = time.time()
             if artifact_id:
                 old = db.execute("SELECT * FROM artifacts WHERE id=? AND workspace_id=?", (artifact_id, run["workspace_id"])).fetchone()

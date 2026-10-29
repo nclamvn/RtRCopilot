@@ -1,0 +1,129 @@
+{
+  "status": "PASS",
+  "external_model_calls": 0,
+  "source_files": [
+    {
+      "path": "workspace-web/src/app/layout.tsx",
+      "sha256": "6ca322d89819a0fe94e74f5c28ad9f1c00d4467730066866e0d90c5097d65dd6"
+    },
+    {
+      "path": "workspace-web/src/app/globals.css",
+      "sha256": "049680c6d3b6f7b690ab6ac30379a392a56eece0819da61b01a0588ef6d75b25"
+    },
+    {
+      "path": "workspace-web/src/app/page.tsx",
+      "sha256": "0920a6d9bdca51533f5224c7317fc73d942d488e5f2a7accd6aa8a362dc15c0b"
+    },
+    {
+      "path": "workspace-web/src/app/workspace/page.tsx",
+      "sha256": "d181b13669546958ecf947b08b84d3da1003f19c8f1411d915087f38560ab565"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceApp.tsx",
+      "sha256": "8b4aab1a8b1a7c8cf94cdf23f59f33e73904854f0f1f1f5fe465ef5c4a56c4c5"
+    },
+    {
+      "path": "web/src/workspace/contracts.ts",
+      "sha256": "a70e2610a6fe3771cba48eb7713f202da2d1b8176312305bfef6f9538fb0a6ed"
+    },
+    {
+      "path": "web/src/workspace/Markdown.tsx",
+      "sha256": "ca234bf069b62dfcabde2b86dc0b2610dad545c2b0c500a3fa1a7133f5a7d728"
+    },
+    {
+      "path": "web/src/workspace/api.ts",
+      "sha256": "a1627bed0d91c5cc60b7fe9864b3bedbc6eaf7a0cbf746c20dd563978e0ce69f"
+    },
+    {
+      "path": "web/src/workspace/ArtifactEditor.tsx",
+      "sha256": "4df524ec34e524478aa0e2a48c80f4a45cd1e8e39212a684d1ec9bdb02cdedb8"
+    },
+    {
+      "path": "web/src/workspace/FocusedEditor.tsx",
+      "sha256": "561aeb1d2ee940d65da76bf5df1473cc4eb1025dcaeb3acad4b4e233610fdd54"
+    },
+    {
+      "path": "web/src/workspace/editing.ts",
+      "sha256": "647161a92f088d3ccc19345dda57df5c02f7bbfced4e888455d42832d1f4fe11"
+    },
+    {
+      "path": "web/src/workspace/Deliverables.tsx",
+      "sha256": "e7d5cdfc1f75563750b60c7cfaeafdcac28de10b79c1d52819410d5534254109"
+    },
+    {
+      "path": "web/src/workspace/Sources.tsx",
+      "sha256": "2bfe7cd2c30d172dbe8792a3ddb85a55ee55af2ea61f0f52ae832ef59a8c3003"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceControls.tsx",
+      "sha256": "87466f1c81ad53e37bd6ddec94239cbdd124ff7ab6d1a21db8680b5a2ca4f0a2"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceSettings.tsx",
+      "sha256": "050be676dcfc7035b6c900a6a71d1f29576e13d0ed237a8ad4c6a2000f2b0dd1"
+    },
+    {
+      "path": "web/src/workspace/LocalPilot.tsx",
+      "sha256": "a245f130db94f82f1e924e06d69d17cc1af338f403fe82aaa780f7f587ee113a"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceProjects.tsx",
+      "sha256": "df27701005d8c84eab5a8c097c9012156e22abc223df92b076bf55597fcd201c"
+    },
+    {
+      "path": "web/src/workspace/composerDrafts.ts",
+      "sha256": "efa1e1c478ba0e4b567a6d81a06e2e6e95523c57196dc7fd6be2955dcd234afe"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceContext.tsx",
+      "sha256": "518d0fab05104a1c00a4ae51544eab20d7486d5a2968162da5dafcff74e3abe1"
+    },
+    {
+      "path": "web/src/workspace/contextChoices.ts",
+      "sha256": "9f63dbada9044c5225ed2bd1e8c19e9b26b39cf35e7cf5f6dfc3c9aed84e04b3"
+    },
+    {
+      "path": "web/src/workspace/workspace.css",
+      "sha256": "c038e869e6a22fc28dde37c30f0c1af706e19f7cd85057a3b5e2f209b158046c"
+    },
+    {
+      "path": "web/src/workspace/project-continuity.css",
+      "sha256": "64138add6d264e9e19d3ff58960cc8c3d23e048c671313b057b2de939b2c50da"
+    },
+    {
+      "path": "web/src/workspace/context.css",
+      "sha256": "41d448caf381e35ec76f9a5177afb354069548a15909528376883f0dda184a9b"
+    },
+    {
+      "path": "web/src/workspace/coediting.css",
+      "sha256": "9616e3f5018bc94427c8b3839104f90de61885e5a7097859d24cb9d2934b5a4f"
+    },
+    {
+      "path": "workspace-web/src/app/api/workspace/[[...path]]/route.ts",
+      "sha256": "4aca2e31a71a3f626cc6e5b273ca0e89a67b28e28d804a507b0cb8c668e53a73"
+    },
+    {
+      "path": "web/src/app/api/workspace/[[...path]]/route.ts",
+      "sha256": "13826e7b0ac1923aac79a19481d16451942975f1e4571be457a744211b983e85"
+    }
+  ],
+  "allowed_package_imports": [
+    "next",
+    "next/navigation",
+    "next/server",
+    "react"
+  ],
+  "built_routes": [
+    "/_global-error/page",
+    "/_not-found/page",
+    "/api/workspace/[[...path]]/route",
+    "/page",
+    "/workspace/page"
+  ],
+  "excludes": [
+    "legacy app layout/styles/proxy/auth",
+    "company services/corpus",
+    "remote CSS/fonts"
+  ],
+  "limitation": "Static source imports and compiled route manifest, not a transitive dependency/license audit or AI-quality certification. Shared neutral source remains in the monorepo."
+}

@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "date": "2026-10-29",
+  "provenance": "Contractor actual HTTP/SQLite/DBOS and existing binary renderers, explicit scripted FunctionModel, synthetic data only",
+  "checks": [
+    "Actual mock producer creates an unpublished two-change candidate; partial accept is one exact version, ACK replay retains that receipt even after a later manual revision",
+    "A newer manual version blocks stale acceptance but still permits nonpublishing rejection; foreign session cannot inspect candidate or handoff",
+    "Selected old saved version and literal-string XLSX values parsed back, including Unicode/leading zero/decimal/formula-like text/newline; DOCX/PDF parsed back; no private memory, unselected source or pending candidate in the handoff"
+  ],
+  "measurements": {
+    "mock_review_runs": 3,
+    "request_to_readable_candidate_ms": [
+      207.828,
+      189.782,
+      203.93
+    ],
+    "request_to_readable_candidate_ms_median": 203.93,
+    "natural_language_quality": "NOT_MEASURED",
+    "real_first_useful_ai_output_ms": null
+  },
+  "external_calls": 0,
+  "elapsed_seconds": 1.446,
+  "limitations": [
+    "Scripted candidate is prewritten transport behavior, not AI semantic review or human acceptance",
+    "Small warm samples with concurrent local testing are not capacity/provider-latency certification"
+  ],
+  "own_workspaces_created_and_deleted": 1
+}

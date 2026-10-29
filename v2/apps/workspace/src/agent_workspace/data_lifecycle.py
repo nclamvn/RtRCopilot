@@ -196,7 +196,7 @@ class DataLifecycle:
             for table in ("workspace_import_lineage", "workspace_metadata_requests"):
                 if table in tables:
                     db.execute(f"DELETE FROM {table} WHERE workspace_id=?", (wid,))
-            for table in ("project_briefs", "continuity_requests", "source_replacements", "run_contexts", "context_reads", "artifact_dependencies"):
+            for table in ("project_briefs", "continuity_requests", "source_replacements", "run_contexts", "context_reads", "artifact_dependencies", "artifact_proposals", "proposal_decisions"):
                 if table in tables:
                     db.execute(f"DELETE FROM {table} WHERE workspace_id=?", (wid,))
             if "workspace_import_receipts" in tables:

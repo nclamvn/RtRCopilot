@@ -43,6 +43,23 @@ class ContextPreview(StrictInput):
     message: str = Field(min_length=1, max_length=16000)
     references: list[dict] = Field(default_factory=list, max_length=20)
     target: dict | None = None
+    review_edits: bool = Field(default=False, strict=True)
+
+
+class ProposalDecision(StrictInput):
+    decision: Literal["accept", "reject"]
+    change_ids: list[str] = Field(max_length=100)
+    request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_-]+$")
+
+
+class HandoffSelection(StrictInput):
+    artifact_id: str = Field(min_length=1, max_length=80)
+    version: int = Field(ge=1, strict=True)
+    format: Literal["md", "docx", "pdf", "csv", "xlsx"]
+
+
+class Handoff(StrictInput):
+    selections: list[HandoffSelection] = Field(min_length=1, max_length=10)
 
 
 class ProjectBrief(StrictInput):
@@ -159,8 +176,7 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
         # including no-model mode. Startup failure releases ownership as well.
         with DataLease(settings.data_dir):
             inspected = inspect_data(settings.data_dir)
-            from .operations import FORMAT_FILE
-            if inspected["state"] == "compatible" and not (settings.data_dir / FORMAT_FILE).exists():
+            if inspected["state"] == "compatible" and inspected.get("upgrade_required"):
                 raise WorkspaceError("data_upgrade_required", 409)
             store = Store(settings.data_dir / "catalogue.sqlite")
             app.state.store = store
@@ -381,6 +397,23 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
     def artifact(artifact_id: str, actor: Owner, version: int | None = None):
         return store.artifact(actor, artifact_id, version)
 
+    @app.get(PREFIX + "/workspaces/{wid}/proposals")
+    def proposals(wid: str, request: Request, actor: Owner):
+        return request.app.state.runtime.reviews.listing(actor, wid)
+
+    @app.get(PREFIX + "/proposals/{pid}")
+    def proposal(pid: str, request: Request, actor: Owner):
+        return request.app.state.runtime.reviews.get(actor, pid)
+
+    @app.post(PREFIX + "/proposals/{pid}/decision")
+    def proposal_decision(pid: str, body: ProposalDecision, request: Request, actor: Owner):
+        return request.app.state.runtime.reviews.decide(actor, pid, body.decision, body.change_ids, body.request_id)
+
+    @app.post(PREFIX + "/workspaces/{wid}/handoff")
+    def handoff(wid: str, body: Handoff, request: Request, actor: Owner):
+        data = request.app.state.runtime.reviews.handoff(actor, wid, [s.model_dump() for s in body.selections])
+        return Response(data, media_type="application/zip", headers={"Content-Disposition": 'attachment; filename="handoff.zip"'})
+
     @app.get(PREFIX + "/artifacts/{artifact_id}/download")
     def download(artifact_id: str, actor: Owner, version: int | None = None, format: str | None = None):
         from urllib.parse import quote
@@ -499,7 +532,7 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
 
     @app.post(PREFIX + "/workspaces/{wid}/context-preview")
     def context_preview(wid: str, body: ContextPreview, request: Request, actor: Owner):
-        return request.app.state.runtime.continuity.preview(actor, wid, body.message, {"references": body.references, "target": body.target})
+        return request.app.state.runtime.continuity.preview(actor, wid, body.message, {"references": body.references, "target": body.target, **({"review_edits": True} if body.review_edits else {})})
 
     @app.get(PREFIX + "/workspaces/{wid}/search")
     def project_search(wid: str, request: Request, actor: Owner, q: str):
