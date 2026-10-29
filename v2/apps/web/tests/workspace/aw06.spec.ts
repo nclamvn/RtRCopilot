@@ -1,0 +1,85 @@
+import {test, expect, type Page, type APIRequestContext} from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+type FileRef = {id: string; filename: string};
+async function create(page: Page, name: string) {
+  await page.goto("/workspace"); await expect(page.getByRole("status").filter({hasText: "Simulation"}).first()).toBeVisible();
+  await page.getByRole("button", {name: "New workspace", exact: false}).click(); await page.getByLabel("Workspace name", {exact: true}).fill(name); await page.getByRole("button", {name: "Create workspace", exact: true}).click(); await expect(page.getByRole("heading", {name, exact: true})).toBeVisible();
+  const response = await page.request.get("/api/workspace/workspaces"); return (await response.json()).items.find((item: {name: string}) => item.name === name).id as string;
+}
+async function upload(request: APIRequestContext, wid: string, filename: string, content: string): Promise<FileRef> {
+  const response = await request.post(`/api/workspace/workspaces/${wid}/files`, {data: {filename, content, media_type: "text/plain"}}); expect(response.ok()).toBe(true); return response.json();
+}
+async function openContext(page: Page) {
+  await page.getByRole("button", {name: "Project context", exact: true}).click(); await expect(page.getByRole("heading", {name: "Project context", exact: true})).toBeVisible();
+}
+async function run(request: APIRequestContext, wid: string, message: string, context?: unknown) {
+  const response = await request.post("/api/workspace/runs", {data: {workspace_id: wid, message, client_request_id: crypto.randomUUID(), ...(context ? {context} : {})}}); expect(response.ok()).toBe(true); const value = await response.json();
+  await expect.poll(async () => (await (await request.get(`/api/workspace/runs/${value.run_id}`)).json()).state).toMatch(/completed|failed|cancelled/); return value.run_id as string;
+}
+async function artifact(request: APIRequestContext, wid: string, content = "# Synthetic draft\n\n004173, 91.125\n") {
+  const response = await request.post(`/api/workspace/workspaces/${wid}/artifacts`, {data: {title: "Museum brief", kind: "document", content, request_id: crypto.randomUUID()}}); expect(response.ok()).toBe(true); return response.json();
+}
+
+test("REAL local mock AW06 selected source → bounded preview → saved manifest and exact read lineage", async ({page}) => {
+  const wid = await create(page, "AW06 selected sources"); const first = await upload(page.request, wid, "museum.txt", "Museum batch 004173 has quantity 91.125.\n"); await upload(page.request, wid, "unrelated.txt", "Unrelated synthetic library stock 77261.\n"); await page.reload();
+  const composer = page.getByRole("textbox", {name: "Message", exact: true}); await composer.fill("fixture:brief"); await openContext(page); await page.getByText(/Add project sources/).click(); await page.getByLabel("museum.txt", {exact: true}).check();
+  await page.getByRole("button", {name: "Preview request context"}).click(); const preview = page.getByLabel("Context preview"); await expect(preview).toContainText("museum.txt"); await expect(preview).not.toContainText("unrelated.txt");
+  const pending = page.waitForResponse(response => response.url().endsWith("/api/workspace/runs") && response.request().method() === "POST"); await composer.press("Enter"); const submitted = await (await pending).json(); await expect.poll(async () => (await (await page.request.get(`/api/workspace/runs/${submitted.run_id}`)).json()).state).toBe("completed");
+  const snapshot = await (await page.request.get(`/api/workspace/runs/${submitted.run_id}/context`)).json(); expect(snapshot.request_context.references).toEqual([{kind: "file", id: first.id}]); expect(snapshot.context_bytes).toBeLessThanOrEqual(snapshot.limit_bytes); expect(snapshot.read_ledger.some((item: {id: string}) => item.id === first.id)).toBe(true);
+  const outputs = await (await page.request.get(`/api/workspace/workspaces/${wid}/artifacts`)).json(); expect(outputs.items).toHaveLength(1); const output = await (await page.request.get(`/api/workspace/artifacts/${outputs.items[0].id}`)).json(); expect(output.content).toContain("004173"); expect(output.content).not.toContain("77261");
+  const dependencies = await (await page.request.get(`/api/workspace/artifacts/${output.id}/dependencies?version=1`)).json(); expect(dependencies.status).toBe("known"); expect(dependencies.dependencies.some((item: {id: string}) => item.id === first.id)).toBe(true);
+  await page.getByRole("button", {name: "Project context", exact: true}).click(); await page.getByRole("button", {name: "Inspect saved run context"}).click(); await expect(page.getByLabel("Saved run context")).toContainText("Context used by this run"); await page.screenshot({path: "test-results/workspace/aw06-saved-context.png"});
+});
+
+test("REAL AW06 user project brief saves reloads and conflict keeps unsaved edits", async ({page}) => {
+  const wid = await create(page, "AW06 handover"); await openContext(page); await page.getByText("Project brief", {exact: true}).click(); await page.getByRole("textbox", {name: "Goal", exact: true}).fill("Prepare a museum handover for batch 004173."); await page.getByRole("textbox", {name: "Decisions", exact: true}).fill("Keep decimal 91.125 unchanged."); await page.getByRole("textbox", {name: "Remaining work", exact: true}).fill("Review the second source."); await page.getByRole("button", {name: "Save project brief"}).click(); await expect(page.getByText(/Project brief saved/)).toBeVisible();
+  await page.reload(); await openContext(page); if (!await page.getByRole("textbox", {name: "Goal", exact: true}).isVisible()) await page.getByText("Project brief", {exact: true}).click(); await expect(page.getByRole("textbox", {name: "Goal", exact: true})).toHaveValue("Prepare a museum handover for batch 004173.");
+  const current = await (await page.request.get(`/api/workspace/workspaces/${wid}/brief`)).json(); expect(current.goal).toBe("Prepare a museum handover for batch 004173."); expect((await page.request.post(`/api/workspace/workspaces/${wid}/brief`, {data: {goal: "Newer saved goal", decisions: current.decisions, remaining: current.remaining, expected_revision: current.revision, request_id: crypto.randomUUID()}})).ok()).toBe(true);
+  await page.getByRole("textbox", {name: "Goal", exact: true}).fill("My unsaved goal remains"); await page.getByRole("button", {name: "Save project brief"}).click(); await expect(page.getByLabel("Project context").getByRole("alert")).toBeVisible(); await expect(page.getByRole("textbox", {name: "Goal", exact: true})).toHaveValue("My unsaved goal remains"); expect((await (await page.request.get(`/api/workspace/workspaces/${wid}/brief`)).json()).goal).toBe("Newer saved goal");
+});
+
+test("REAL AW06 local search pins exact output version and context stays scoped after reload and project switch", async ({page}) => {
+  const alpha = await create(page, "AW06 Context Alpha"); const output = await artifact(page.request, alpha); await create(page, "AW06 Context Beta"); await page.getByRole("button", {name: "AW06 Context Alpha", exact: false}).click(); await openContext(page); await page.getByLabel("Find in this project").fill("004173"); await page.getByRole("button", {name: "Search project"}).click(); await expect(page.getByLabel("Project search results")).toContainText("Museum brief"); await page.getByRole("button", {name: "Use for next request"}).click();
+  await page.getByRole("button", {name: "AW06 Context Beta", exact: false}).click(); await expect(page.locator(".aw-context-summary")).toContainText("Automatic selection"); await page.getByRole("button", {name: "AW06 Context Alpha", exact: false}).click(); await expect(page.locator(".aw-context-summary")).toContainText("1 selected reference"); await page.reload(); await expect(page.locator(".aw-context-summary")).toContainText("1 selected reference");
+  expect(await page.evaluate(id => JSON.parse(localStorage.getItem(`agent-workspace:context:${id}`)!), alpha)).toEqual({references: [{kind: "artifact", id: output.id, version: 1}], target: null});
+});
+
+test("REAL mock AW06 Continue exact saved version preserves old output and never overwrites newer manual version", async ({page}) => {
+  const wid = await create(page, "AW06 output continuation"); const output = await artifact(page.request, wid); await page.reload(); await page.getByRole("button", {name: "Outputs", exact: false}).click(); await page.getByRole("button", {name: /Museum brief/}).click(); await expect(page.getByLabel("Output source freshness")).toContainText("unknown"); await page.getByRole("button", {name: "Continue from this version"}).click(); await expect(page.getByLabel("Project context")).toContainText("Continue from Museum brief · Version 1");
+  await page.getByRole("textbox", {name: "Message", exact: true}).fill("fixture:edit"); await page.getByRole("button", {name: "Send", exact: true}).click(); await expect(page.getByLabel("Artifact version", {exact: true})).toHaveValue("2");
+  expect((await (await page.request.get(`/api/workspace/artifacts/${output.id}?version=1`)).json()).content).toBe(output.content);
+  // The pinned target remains version 1; a later manual version must not be replaced.
+  const manual = await page.request.post(`/api/workspace/artifacts/${output.id}/revisions`, {data: {expected_version: 2, content: "# Manual v3\n\n004173 and 91.125 retained.", request_id: crypto.randomUUID()}}); expect(manual.ok()).toBe(true);
+  const rejected = await page.request.post("/api/workspace/runs", {data: {workspace_id: wid, message: "fixture:edit", client_request_id: crypto.randomUUID(), context: {references: [], target: {kind: "artifact", id: output.id, version: 1}}}});
+  if (rejected.ok()) {const value = await rejected.json(); await expect.poll(async () => (await (await page.request.get(`/api/workspace/runs/${value.run_id}`)).json()).state).toBe("failed");} else expect(rejected.status()).toBe(409);
+  expect((await (await page.request.get(`/api/workspace/artifacts/${output.id}`)).json()).content).toBe("# Manual v3\n\n004173 and 91.125 retained."); expect((await (await page.request.get(`/api/workspace/artifacts/${output.id}/versions`)).json()).items).toHaveLength(3);
+});
+
+test("REAL AW06 explicit source replacement marks only dependent output and preserves both original files", async ({page}) => {
+  const wid = await create(page, "AW06 source changes"); const oldFile = await upload(page.request, wid, "old-record.txt", "Synthetic museum quantity 91.125, batch 004173."); const unrelated = await upload(page.request, wid, "library.txt", "Synthetic library quantity 250.25, batch 005001.");
+  await run(page.request, wid, "fixture:create", {references: [{kind: "file", id: oldFile.id}], target: null}); await run(page.request, wid, "fixture:create", {references: [{kind: "file", id: unrelated.id}], target: null}); const outputs = await (await page.request.get(`/api/workspace/workspaces/${wid}/artifacts`)).json(); expect(outputs.items).toHaveLength(2);
+  const fresh = await upload(page.request, wid, "new-record.txt", "Synthetic museum quantity 92.125, batch 004173."); await page.reload(); await openContext(page); await page.getByText("Record a source replacement", {exact: true}).click(); await page.getByLabel("Previous source").selectOption(oldFile.id); await page.getByLabel("Replacement source").selectOption(fresh.id); await page.getByRole("button", {name: "Record replacement"}).click(); await expect(page.getByText(/Both originals are retained/)).toBeVisible();
+  const deps = await Promise.all(outputs.items.map(async (item: {id: string}) => (await page.request.get(`/api/workspace/artifacts/${item.id}/dependencies`)).json())); expect(deps.filter(item => item.stale)).toHaveLength(1); expect(deps.find(item => item.stale).dependencies.some((item: {id: string; replacement_id?: string}) => item.id === oldFile.id && item.replacement_id === fresh.id)).toBe(true);
+  expect(await (await page.request.get(`/api/workspace/files/${oldFile.id}/download`)).text()).toContain("91.125"); expect(await (await page.request.get(`/api/workspace/files/${fresh.id}/download`)).text()).toContain("92.125");
+});
+
+test("REAL AW06 references and actual run manifests reject foreign workspace identities", async ({page, browser}) => {
+  const wid = await create(page, "AW06 owner boundary"); const file = await upload(page.request, wid, "private.txt", "Synthetic restricted 004173"); const runId = await run(page.request, wid, "fixture:chat"); const origin = new URL(page.url()).origin; const stranger = await browser.newContext({baseURL: origin, extraHTTPHeaders: {origin}}); await stranger.request.post("/api/workspace/session", {data: {}}); const other = await (await stranger.request.post("/api/workspace/workspaces", {data: {name: "Other owner"}})).json();
+  expect((await stranger.request.get(`/api/workspace/workspaces/${wid}/brief`)).status()).toBe(404); expect((await stranger.request.get(`/api/workspace/runs/${runId}/context`)).status()).toBe(404); expect((await stranger.request.post(`/api/workspace/workspaces/${other.id}/context-preview`, {data: {message: "004173", references: [{kind: "file", id: file.id}], target: null}})).status()).toBe(404); expect((await stranger.request.get(`/api/workspace/workspaces/${other.id}/search?q=004173`)).ok()).toBe(true); expect((await (await stranger.request.get(`/api/workspace/workspaces/${other.id}/search?q=004173`)).json()).items).toEqual([]); await stranger.close();
+});
+
+test("REAL AW06 cleared brief fences old context and the UI explains its unavailable snapshot", async ({page}) => {
+  const wid = await create(page, "AW06 context lifecycle"); await page.request.post(`/api/workspace/workspaces/${wid}/brief`, {data: {goal: "Synthetic private goal 004173", decisions: "", remaining: "", expected_revision: 0, request_id: crypto.randomUUID()}}); const runId = await run(page.request, wid, "fixture:chat");
+  const saved = await (await page.request.get(`/api/workspace/workspaces/${wid}/brief`)).json(); const cleared = await page.request.post(`/api/workspace/workspaces/${wid}/brief`, {data: {goal: "", decisions: "", remaining: "", expected_revision: saved.revision, request_id: crypto.randomUUID()}}); expect(cleared.ok()).toBe(true); const snapshot = await (await page.request.get(`/api/workspace/runs/${runId}/context`)).json(); expect(snapshot.status).toBe("unavailable"); expect(JSON.stringify(snapshot)).not.toContain("Synthetic private goal 004173");
+  await page.reload(); await openContext(page); await page.getByRole("button", {name: "Inspect saved run context"}).click(); await expect(page.getByText("Saved context is unavailable", {exact: true})).toBeVisible(); await expect(page.getByText(/A missing snapshot is not proof/)).toBeVisible();
+});
+
+test("UI transport fault AW06 late context preview cannot replace another project's draft", async ({page}) => {
+  const alpha = await create(page, "AW06 delayed Alpha"); await create(page, "AW06 delayed Beta"); await page.getByRole("button", {name: "AW06 delayed Alpha", exact: false}).click(); await page.getByRole("textbox", {name: "Message", exact: true}).fill("Original Alpha question"); await openContext(page);
+  let release!: () => void; let held = false; await page.route(`**/api/workspace/workspaces/${alpha}/context-preview`, async route => {const response = await route.fetch(); held = true; await new Promise<void>(resolve => {release = resolve;}); await route.fulfill({response});}); await page.getByRole("button", {name: "Preview request context"}).click(); await expect.poll(() => held).toBe(true); await page.getByRole("button", {name: "AW06 delayed Beta", exact: false}).click(); await page.getByRole("textbox", {name: "Message", exact: true}).fill("Beta draft survives"); release(); await expect(page.getByRole("heading", {name: "AW06 delayed Beta", exact: true})).toBeVisible(); await expect(page.getByRole("textbox", {name: "Message", exact: true})).toHaveValue("Beta draft survives"); expect(await page.getByLabel("Context preview").count()).toBe(0);
+});
+
+test("REAL local AW06 context panel on mobile is keyboard accessible and keeps the composer readable", async ({page}) => {
+  const wid = await create(page, "AW06 mobile context"); await upload(page.request, wid, "mobile.txt", "Synthetic mobile source 004173."); await page.reload(); await page.setViewportSize({width: 390, height: 844}); await openContext(page); await expect(page.getByRole("heading", {name: "Project context", exact: true})).toBeInViewport();
+  await page.getByText("Project brief", {exact: true}).focus(); await page.keyboard.press("Enter"); await expect(page.getByLabel("Goal", {exact: true})).toBeVisible(); expect((await new AxeBuilder({page}).include(".agent-workspace").analyze()).violations).toEqual([]); await page.screenshot({path: "test-results/workspace/aw06-mobile-context.png"}); await page.getByRole("button", {name: "Close outputs", exact: true}).click(); await expect(page.getByRole("textbox", {name: "Message", exact: true})).toBeInViewport();
+});

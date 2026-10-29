@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "provenance": "Contractor real loopback HTTP, deterministic synthetic model; not AI semantic evidence",
+  "checks": [
+    "user brief CAS, reload and lost-ACK identity",
+    "explicit context, actual read ranges and context-bound run idempotency",
+    "affected-only source freshness and immutable original",
+    "continue exact output revision, immutable previous version",
+    "owner and same-owner cross-workspace reference isolation",
+    "portable user brief and non-executable archived dialogue",
+    "new workflow cancellation remains bounded"
+  ],
+  "workspaces_created_and_deleted": 3,
+  "measurements": {
+    "one_source_preview_bytes": 1287
+  },
+  "elapsed_seconds": 0.784,
+  "external_calls": 0,
+  "real_ai_acceptance": "NOT_MEASURED"
+}

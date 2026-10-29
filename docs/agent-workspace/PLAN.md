@@ -35,6 +35,15 @@ Không external hay deploy; evidence giữ provenance của lượt kiểm thử
 Các checkpoint phía trên là lịch sử
 tại thời điểm capture, không phải khẳng định AW-03/AW-04 vẫn chưa push.
 
+**Cập nhật AW-06, 2026-10-28:** AW-05 đã commit/push ở `683aebc`. Người dùng
+duyệt triển khai trọn [AW-06](AW-06.md): ngữ cảnh dự án có chọn lọc, handover do
+người dùng quản lý, tiếp tục từ phiên bản đầu ra và freshness theo nguồn. Đã đạt
+nghiệm thu kỹ thuật local/mock có giới hạn:191Python(gồm24probeđộc lập),286webunit,
+41browserE2E; source/build binding và lỗi ban đầu được giữ trong evidence.
+Demo<http://localhost:3120/workspace>đã cập nhật và kiểm restart, dữ liệu/draft cũ
+được giữ. Chưa external/deploy/commit/push; AI thật, human acceptance và giá trị
+so với direct tool-agent vẫn chưa đo. Không tự mở mốc tiếp theo.
+
 **Quyết định thiết kế đề xuất: PydanticAI làm agent loop, bổ sung capability chọn lọc từ Pydantic AI Harness; thử DBOS làm chủ sở hữu duy nhất của recovery trong workflow mới.** Không đưa harness vào pipeline RAG cũ, không ghép hai executor cho cùng một run. Deep Agents/LangGraph là phương án thay thế nếu phép thử tích hợp đầu tiên bác bỏ lựa chọn này.
 
 Đây là kế hoạch phát triển, chưa phải chứng thực harness hay bản triển khai. Người dùng đã đồng ý hướng sản phẩm độc lập và yêu cầu so sánh, lựa chọn, lập kế hoạch. Phiên này không cài dependency, chạy model trả phí, SQL/Docker, campaign, executor hoặc deploy. Quyền chạy các campaign RtR trước đây không mở rộng sang sản phẩm mới.

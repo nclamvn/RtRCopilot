@@ -1,0 +1,44 @@
+.aw-context {padding: 20px; color: #404040; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere;}
+.aw-context h3, .aw-artifact-dependencies h3 {font-size: 14px; font-weight: 600; color: #171717; margin: 0 0 8px;}
+.aw-context > p:first-child {margin-top: 0;}
+.aw-context details {margin-top: 14px;}
+.aw-context summary {cursor: pointer; color: #171717; padding-block: 5px;}
+.aw-context input:not([type=checkbox]), .aw-context select, .aw-context textarea {width: 100%; font: inherit; border: 1px solid #d4d4d4; border-radius: 8px; padding: 8px 10px; background: #fff; color: #171717;}
+.aw-context textarea {resize: vertical; min-height: 76px;}
+.aw-context label {display: block; margin: 10px 0;}
+.aw-context button, .aw-artifact-dependencies button {font: inherit; color: #171717; background: transparent; border: 1px solid #d4d4d4; border-radius: 7px; padding: 6px 10px; cursor: pointer;}
+.aw-context button:disabled {opacity: .5; cursor: default;}
+.aw-context button:focus-visible, .aw-context input:focus-visible, .aw-context textarea:focus-visible, .aw-context select:focus-visible, .aw-context summary:focus-visible {outline: 2px solid #404040; outline-offset: 3px;}
+.aw-context-selection {margin-top: 20px;}
+.aw-context-selection > ul {padding: 0; list-style: none;}
+.aw-context-selection > ul > li {display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0;}
+.aw-context-selection > ul > li > button {border: 0; padding: 4px 8px; font-size: 19px;}
+.aw-context-target {display: grid; gap: 8px; padding: 10px 0;}
+.aw-context-target strong {font-weight: 500;}
+.aw-context-target button {justify-self: start;}
+.aw-context-options {max-height: 220px; overflow-y: auto;}
+.aw-context-options label {display: flex; align-items: start; gap: 8px; margin: 8px 0;}
+.aw-context-options input {margin-top: 4px; flex: 0 0 auto;}
+.aw-context-actions {display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;}
+.aw-context-search {margin-block: 22px;}
+.aw-context-search > div {display: flex; gap: 8px;}
+.aw-context-search input {min-width: 0;}
+.aw-context-search button {flex-shrink: 0;}
+.aw-context-matches {list-style: none; padding: 0;}
+.aw-context-matches > li {padding-block: 12px; border-bottom: 1px solid #e5e5e5;}
+.aw-context-matches strong {font-weight: 500; color: #171717;}
+.aw-context-matches p {white-space: pre-wrap; margin: 6px 0;}
+.aw-project-brief, .aw-source-replacement {border-top: 1px solid #e5e5e5; padding-top: 12px;}
+.aw-context-snapshot {border-top: 1px solid #e5e5e5; margin-top: 20px; padding-top: 18px;}
+.aw-context-snapshot pre {font: inherit; white-space: pre-wrap; max-height: 220px; overflow: auto; padding: 10px 0; color: #404040;}
+.aw-context-digest {font-size: 11px; word-break: break-all;}
+.aw-context-omissions, .aw-context-notice {color: #404040; background: #f5f5f5; border-radius: 7px; padding: 10px 12px;}
+.aw-context-omissions {padding-left: 26px;}
+.aw-artifact-dependencies {padding: 16px 20px; font-size: 13px; line-height: 1.5; border-top: 1px solid #e5e5e5; overflow-wrap: anywhere;}
+.aw-artifact-dependencies ul {padding-left: 18px;}
+.aw-context-continue {margin: 12px 20px; padding: 7px 10px; border: 1px solid #d4d4d4; border-radius: 7px; background: transparent; color: #171717; cursor: pointer;}
+.aw-context-open {border: 0; background: transparent; color: #404040; font: inherit; font-size: 13px; cursor: pointer; padding: 6px; border-radius: 6px;}
+.aw-context-open[aria-pressed=true] {background: #f5f5f5; color: #171717;}
+.aw-context-summary {font-size: 12px; color: #737373; display: flex; gap: 8px; align-items: center; margin: 0 0 8px; padding-inline: 4px;}
+.aw-context-summary > span {white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+@media(max-width: 600px) {.aw-context {padding: 16px;} .aw-context-search > div {flex-wrap: wrap;} .aw-context-search button {flex-shrink: 1;} .aw-context-summary {flex-wrap: wrap;}}

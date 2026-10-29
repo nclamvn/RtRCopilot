@@ -85,4 +85,16 @@ describe("Workspace BFF boundary", () => {
     for (const path of [["imports", "execute"], ["workspaces", "w-one", "restore"], ["imports", "commit", "w-one"], ["filesystem", "import"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method:"POST", body:"{}"}), {params:Promise.resolve({path})})).status).toBe(400);
     expect(fetcher).toHaveBeenCalledTimes(before);
   });
+  test("AW06 exposes only bounded context and lineage routes, not arbitrary index or execution commands", async () => {
+    const fetcher = vi.fn(async () => new Response("{}")); vi.stubGlobal("fetch", fetcher);
+    for (const path of [["workspaces", "w-one", "brief"], ["workspaces", "w-one", "search"], ["runs", "r-one", "context"], ["artifacts", "a-one", "dependencies"]]) {
+      expect((await GET(new NextRequest(`http://localhost/api/workspace/${path.join("/")}?version=2`), {params: Promise.resolve({path})})).status).toBe(200);
+    }
+    for (const path of [["workspaces", "w-one", "brief"], ["workspaces", "w-one", "context-preview"], ["workspaces", "w-one", "source-replacements"]]) {
+      expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method: "POST", body: "{}"}), {params: Promise.resolve({path})})).status).toBe(200);
+    }
+    const before = fetcher.mock.calls.length;
+    for (const path of [["workspaces", "w-one", "reindex"], ["runs", "r-one", "context", "execute"], ["artifacts", "a-one", "dependencies", "verify"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method: "POST", body: "{}"}), {params: Promise.resolve({path})})).status).toBe(400);
+    expect(fetcher).toHaveBeenCalledTimes(before);
+  });
 });

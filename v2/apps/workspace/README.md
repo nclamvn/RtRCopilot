@@ -266,6 +266,49 @@ generated/downloaded file cannot be revoked by deleting its workspace.
 
 ## Verify
 
+### AW-06 bounded project context
+
+New runs use workflow `workspace-aw06-v1`; incompatible older workflows fail
+closed rather than replaying a changed topology. The original transcript and
+artifact versions remain saved. The agent receives a deterministic selection of
+source excerpts, the editable user-authored project brief, and recent complete
+user/assistant pairs from the current memory/brief epoch. Imported archived chat
+is not automatically admitted as model history. No model-generated summary or
+embeddings are used. Memory is still read through the current scoped memory tool.
+
+Initial user-prompt context is limited to **65,536 UTF-8 bytes**, including the
+message, manifest, digest, wrapper and inventory, not tokenizer tokens. Fixed
+agent instructions and subsequent tool responses are outside this byte measure;
+the existing total request/token/tool/deadline/output budgets still apply.
+At most20 explicit references plus a pinned output target may be requested;
+oversized explicit selections fail clearly. Automatic local lexical selection
+uses at most8 resources. Each initial excerpt is at most4,000 characters, with
+partial coverage and omitted history disclosed. Exact source bytes are immutable.
+
+The Context panel's search is local lexical matching, not semantic understanding.
+The brief can be edited/cleared with revision CAS; clearing cancels old consumers
+and prevents their prior dialogue/checkpoint context from being reused. Existing
+visible transcript/artifacts are not silently erased by clearing a brief/memory.
+Manual output edits may proceed during an active run under artifact-version CAS.
+A pinned target advances only through contiguous writes by that same run;
+another writer's revision fences late output. Prior versions remain available.
+
+Read lineage records context excerpts and actual tool-read ranges, not proof of
+semantic completeness or source truth. Explicit user-recorded source replacement
+marks direct/known upstream consumers stale without mutating old files. Legacy
+or manually authored outputs can have unknown lineage. Upstream traversal is
+bounded and reports unknown coverage instead of certifying freshness.
+
+Exports optionally include `continuity.json` (`agent-workspace-continuity-v1`)
+inside the existing v1 archive. Current import restores the user brief and
+remapped source-replacement links. Dependency claims are retained as untrusted
+archived metadata with original IDs, not promoted into live read authority;
+restored outputs therefore have unknown live lineage. Old archives without the
+extension remain supported. Older application versions may explicitly reject
+archives with this new member. No old run/checkpoint/approval is restored.
+Deletion removes all new application continuity records under the same scope;
+DBOS/private backup/download retention limits remain unchanged.
+
 ```sh
 cd /Users/os/RtR/KnowledgeBase/RtR_Copilot/v2/apps/workspace
 PYTHONPATH=src PYDANTIC_AI_NO_BANNER=1 .venv/bin/python -m pytest tests -q
@@ -285,7 +328,7 @@ The lost-ACK case injects a browser transport fault after the real API dispatch.
 Do not add overlapping test runs together or equate passing these cases with
 real-model usefulness.
 
-See `/Users/os/RtR/KnowledgeBase/RtR_Copilot/docs/agent-workspace/AW-04.md` for
-the current milestone record, AW-03.md, AW-02.md and AW-01.md for preserved baselines. Real-model
+See `/Users/os/RtR/KnowledgeBase/RtR_Copilot/docs/agent-workspace/AW-06.md` for
+the current milestone record, AW-01.md through AW-05.md for preserved baselines. Real-model
 quality and live-web acceptance remain open. See `proof/README.md`
 for the native integration proof and raw dependency-license inventory.

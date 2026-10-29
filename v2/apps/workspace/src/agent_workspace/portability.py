@@ -208,6 +208,8 @@ def _inspect_archive(raw):
         if integer(entry["bytes"], 0, MAX_EXPORT_BYTES) != len(members[path]) or not isinstance(entry["sha256"], str) or not SHA.fullmatch(entry["sha256"]) or hashlib.sha256(members[path]).hexdigest() != entry["sha256"]:
             fail("snapshot_digest_mismatch")
     expected = {"sources/index.json", "artifacts.json", "messages.json", "memory.json", "schedules.json"}
+    if "continuity.json" in paths:
+        expected.add("continuity.json")
     if not expected <= paths:
         fail()
     value = {"workspace": workspace, "sha256": hashlib.sha256(raw).hexdigest(), "files": [], "artifacts": [], "versions": [], "messages": [], "memory": [], "schedules": []}
@@ -347,6 +349,53 @@ def _inspect_archive(raw):
         if item["error"] is not None:
             text(item["error"], 1000)
         value["schedules"].append(item)
+    if "continuity.json" in paths:
+        extension = record(json_value(members["continuity.json"]), {"format", "brief", "source_replacements", "artifact_dependencies"})
+        if extension["format"] != "agent-workspace-continuity-v1":
+            fail("unsupported_snapshot_continuity")
+        brief = record(extension["brief"], {"revision", "goal", "decisions", "remaining", "source"})
+        integer(brief["revision"], 0)
+        if brief["source"] != "user":
+            fail()
+        for key in ("goal", "decisions", "remaining"):
+            text(brief[key], 12000)
+            if len(brief[key]) > 4000:
+                fail()
+        links = extension["source_replacements"]
+        if not isinstance(links, list) or len(links) > 20:
+            fail()
+        file_ids = {i["id"] for i in value["files"]}
+        mapping = {}
+        for link in links:
+            record(link, {"old_file_id", "new_file_id"})
+            old, new = link["old_file_id"], link["new_file_id"]
+            if old not in file_ids or new not in file_ids or old in mapping:
+                fail()
+            mapping[old] = new
+        for old in mapping:
+            seen, cursor = set(), old
+            while cursor in mapping:
+                if cursor in seen:
+                    fail()
+                seen.add(cursor)
+                cursor = mapping[cursor]
+        # Imported dependency claims are retained for inspection only, not
+        # admitted to the live verified read ledger or execution authority.
+        claims = extension["artifact_dependencies"]
+        if not isinstance(claims, list) or len(claims) > MAX_EXPORT_MEMBERS:
+            fail()
+        for claim in claims:
+            record(claim, {"artifact_id", "version", "dependencies"})
+            if not any(a["id"] == claim["artifact_id"] and 1 <= integer(claim["version"], 1) <= a["version"] for a in value["artifacts"]):
+                fail()
+            if not isinstance(claim["dependencies"], str):
+                fail()
+            data = json_value(claim["dependencies"].encode())
+            if not isinstance(data, list) or len(data) > 500:
+                fail()
+            for dep in data:
+                bounded_object(dep)
+        value["continuity"] = extension
     if expected != paths:
         fail("snapshot_unexpected_members")
     return value
@@ -356,6 +405,9 @@ class SnapshotImporter:
     def __init__(self, store):
         self.store = store
         WorkspaceState(store)
+        from .continuity import Continuity
+        if not getattr(store, "continuity", None):
+            Continuity(store)
         with store.tx() as db:
             db.executescript("""
             CREATE TABLE IF NOT EXISTS workspace_import_previews(token_hash TEXT PRIMARY KEY,owner TEXT NOT NULL,args_digest TEXT NOT NULL,expires_at REAL NOT NULL);
@@ -439,9 +491,21 @@ class SnapshotImporter:
             for item in value["artifacts"]:
                 db.execute("INSERT INTO artifacts(id,workspace_id,title,filename,media_type,version,created_at,kind) VALUES(?,?,?,?,?,?,?,?)", (maps["artifacts"][item["id"]], wid, item["title"], item["filename"], item["media_type"], item["version"], item["created_at"], item["kind"]))
             for item in value["versions"]:
-                db.execute("INSERT INTO versions(artifact_id,version,content,run_id,created_at,metadata) VALUES(?,?,?,NULL,?,?)", (maps["artifacts"][item["artifact_id"]], item["version"], item["content"], item["created_at"], json.dumps(item["metadata"])))
+                metadata = dict(item["metadata"])
+                claims = [c for c in value.get("continuity", {}).get("artifact_dependencies", []) if c["artifact_id"] == item["artifact_id"] and c["version"] == item["version"]]
+                if claims:
+                    metadata["import_lineage"] = dict(metadata.get("import_lineage", {})) | {"archived_dependency_claims": json.loads(claims[0]["dependencies"]), "authority": "untrusted archive, original IDs; not live lineage"}
+                db.execute("INSERT INTO versions(artifact_id,version,content,run_id,created_at,metadata) VALUES(?,?,?,NULL,?,?)", (maps["artifacts"][item["artifact_id"]], item["version"], item["content"], item["created_at"], json.dumps(metadata)))
             for item in value["messages"]:
                 db.execute("INSERT INTO messages VALUES(?,?,NULL,?,?,?)", (maps["messages"][item["id"]], wid, item["role"], item["content"], item["created_at"]))
+            if "continuity" in value:
+                # Ensure tables exist before entering this transaction via the
+                # app Runtime; direct importer users initialize below in __init__.
+                extension = value["continuity"]
+                brief = extension["brief"]
+                db.execute("INSERT INTO project_briefs VALUES(?,?,?,?,?)", (wid, brief["revision"], brief["goal"], brief["decisions"], brief["remaining"]))
+                for link in extension["source_replacements"]:
+                    db.execute("INSERT INTO source_replacements VALUES(?,?,?,?)", (wid, maps["files"][link["old_file_id"]], maps["files"][link["new_file_id"]], now))
             if include_memory:
                 for item in value["memory"]:
                     db.execute("INSERT INTO workspace_memory VALUES(?,?,?,?,0,?,?)", (maps["memory"][item["id"]], wid, item["content"], item["version"], item["created_at"], item["updated_at"]))
@@ -450,7 +514,7 @@ class SnapshotImporter:
                 maps["memory"] = {}
             db.execute("INSERT INTO workspace_import_lineage VALUES(?,?,?,?,?)", (wid, sha, value["workspace"]["id"], json.dumps(maps), now))
             result = dict(workspace=self.store._workspace_view(self.store._workspace(db, owner, wid)), imported=True,
-                lineage={"archive_sha256": sha}, omissions=OMISSIONS + ([] if include_memory else ["Saved memory omitted by your choice."]))
+                lineage={"archive_sha256": sha}, omissions=OMISSIONS + ([] if include_memory else ["Saved memory omitted by your choice."]) + (["Imported dependency claims are archived only; live artifact lineage is unknown until new reads occur."] if "continuity" in value else []))
             db.execute("INSERT INTO workspace_import_receipts VALUES(?,?,?,?,?)", (owner, key, digest, wid, json.dumps(result)))
             db.execute("DELETE FROM workspace_import_previews WHERE token_hash=?", (hashlib.sha256(token.encode()).hexdigest(),))
             return result

@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "provenance": "Contractor deterministic SQLite/service measurement on assistant-authored synthetic inputs; not model evaluation",
+  "input": {
+    "files": 12,
+    "original_source_bytes": 936000,
+    "synthetic_prior_protocol_bytes": 579831,
+    "historical_pairs": 20
+  },
+  "baseline": {
+    "path": "retained AW-05 Store.context + 512000-byte Runtime threshold from checkpoint683aebc",
+    "history_bytes": 579831,
+    "inventory_files": 12,
+    "inventory_outputs": 0,
+    "would_exceed_old_history_guard": true
+  },
+  "aw06": {
+    "selected_sources": 1,
+    "prompt_bytes": 5647,
+    "limit_bytes": 65536,
+    "excerpt_characters": 4000,
+    "source_characters": 78000,
+    "recent_pairs": 0,
+    "omissions": [
+      "11 resources outside your selection were not included.",
+      "synthetic-08.txt: excerpt only (4000/78000 characters); further chunks must be read.",
+      "2 earlier conversation turns omitted from model context; full transcript remains saved. Imported archived dialogue is not resumed."
+    ],
+    "preview_samples": 20,
+    "preview_ms_median": 2.216,
+    "preview_ms_max": 2.617
+  },
+  "limitations": [
+    "Not a like-for-like semantic comparison: AW-05 full protocol and unselected resources are deliberately excluded.",
+    "An excerpt is not complete reading; additional bounded tools/read budget are required.",
+    "No claimed token/API cost saving, real-provider latency, human effort or direct-agent superiority.",
+    "Twenty repeated warm previews on one small declared local dataset do not establish capacity or latency-tail guarantees."
+  ],
+  "real_ai_acceptance": "NOT_MEASURED",
+  "elapsed_seconds": 0.182,
+  "scratch_removed": true
+}

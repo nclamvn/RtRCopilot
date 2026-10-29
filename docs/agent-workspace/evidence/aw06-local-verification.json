@@ -1,0 +1,242 @@
+{
+  "milestone": "AW-06",
+  "date": "2026-10-28",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "baseline_commit": "683aebc90a2d22934c473dd3078ff6bb81fd8a0f",
+  "status": "READY-with-deferred",
+  "accepted_scope": "Local/mock technical integration on synthetic non-RtR data only; not real-AI, human or release acceptance",
+  "authority": {
+    "external_model": false,
+    "real_web": false,
+    "embeddings": false,
+    "live_connector": false,
+    "downloads": false,
+    "deployment": false,
+    "general_executor": false,
+    "background_scheduler": false,
+    "legacy_corpus": false,
+    "commit_push": false
+  },
+  "build_binding": {
+    "source_manifest": "aw06-source-manifest.sha256",
+    "source_files": 100,
+    "source_manifest_sha256": "da81ea188cbb40b965747a3cdb9f0d02fdc3599556a4735985875fd0c56d79ca",
+    "local_optimized_build_id": "0II3MgxKVrlM198UIN-Hn",
+    "route_manifest_sha256": "ddd1e09f05f9b265a422872b4a816c6c27166f7e0b4ad9bdc86d73e84ee65d5e",
+    "workflow_version": "workspace-aw06-v1",
+    "note": "Working-tree evidence after AW-05, not a committed candidate or deployment. The new workflow version owns new runs; previous active versions fail closed rather than replaying a changed context contract."
+  },
+  "requirements": {
+    "implemented_and_checked": 7,
+    "total": 7,
+    "coverage": [
+      "Long historical SDK protocol is not injected; bounded complete recent turns and visible transcript remain separate.",
+      "Exact scoped source/artifact choices, local lexical search and explicit partial coverage/omissions.",
+      "User-authored project goal/decisions/remaining, CAS/idempotency and scope-change privacy fences.",
+      "Immutable original sources, explicit replacements, direct/transitive recorded dependency freshness with unknown states.",
+      "Exact output target, contiguous own-run repair, concurrent manual-edit CAS, cancel/error/recovery publication fences.",
+      "Brief and source-link snapshot round-trip, archived untrusted dependency claims, lifecycle deletion without restoring execution authority.",
+      "Minimal Context panel and scoped choices; integrated happy/unhappy, mobile/keyboard/accessibility, reload/restart and AW01–05 regressions."
+    ]
+  },
+  "technical_verification": {
+    "python": {
+      "status": "PASS",
+      "tests": 191,
+      "elapsed_seconds": 96.73,
+      "breakdown": {
+        "workspace_suite": 167,
+        "new_aw06_in_workspace_suite": 19,
+        "independent_probes": 24
+      },
+      "command": "PYTHONPATH=src PYDANTIC_AI_NO_BANNER=1 .venv/bin/python -m pytest tests /Users/os/RtR/KnowledgeBase/RtR_Copilot/docs/agent-workspace/evidence/test_aw06_independent.py -q --basetemp=.aw06-root-final",
+      "note": "167 already includes 19 new AW06 cases; 24 independent cases are included in total191. Author/reviewer repeat runs overlap and are not additional coverage."
+    },
+    "web_unit": {
+      "status": "PASS",
+      "tests": 286,
+      "files": 32,
+      "elapsed_seconds": 12.49,
+      "baseline_tests": 270,
+      "new_tests": 16
+    },
+    "browser": {
+      "status": "PASS",
+      "tests": 41,
+      "baseline_cases": 32,
+      "new_aw06_cases": 9,
+      "elapsed_reported": "1.1m",
+      "runtime": "Actual loopback standalone optimized Next app + product Python/SQLite/DBOS + scripted FunctionModel. UI-only/readiness and transport/storage fault fixtures explicitly labelled in test names.",
+      "base_url": "http://127.0.0.1:3130",
+      "concurrency": 1
+    },
+    "build": {
+      "status": "PASS",
+      "compile_reported": "4.3s",
+      "typescript_reported": "2.2s",
+      "static_generation_reported": "426ms",
+      "note": "Stage times, not summed as end-to-end build time. One reusable .next-build, no per-task distDir."
+    },
+    "typecheck": {
+      "status": "PASS",
+      "scope": "shared web and independent workspace-web"
+    },
+    "eslint": {
+      "status": "PASS",
+      "scope": "neutral workspace source and scoped BFF route/tests"
+    },
+    "python_fatal_ruff": {
+      "status": "PASS",
+      "scope": "changed Python source/tests, fatal rule subset; author evidence plus final Contractor run"
+    },
+    "whitespace": "PASS",
+    "neutral_graph": {
+      "status": "PASS",
+      "files": 21,
+      "allowed_routes": [
+        "/_global-error/page",
+        "/_not-found/page",
+        "/api/workspace/[[...path]]/route",
+        "/page",
+        "/workspace/page"
+      ],
+      "note": "Static source imports and compiled route manifest, not a transitive dependency/license audit or AI-quality certification. Shared neutral source remains in the monorepo."
+    }
+  },
+  "contractor_http": {
+    "status": "PASS",
+    "provenance": "Contractor real loopback HTTP, deterministic synthetic model; not AI semantic evidence",
+    "checks": [
+      "user brief CAS, reload and lost-ACK identity",
+      "explicit context, actual read ranges and context-bound run idempotency",
+      "affected-only source freshness and immutable original",
+      "continue exact output revision, immutable previous version",
+      "owner and same-owner cross-workspace reference isolation",
+      "portable user brief and non-executable archived dialogue",
+      "new workflow cancellation remains bounded"
+    ],
+    "workspaces_created_and_deleted": 3,
+    "measurements": {
+      "one_source_preview_bytes": 1287
+    },
+    "elapsed_seconds": 0.784,
+    "external_calls": 0,
+    "real_ai_acceptance": "NOT_MEASURED"
+  },
+  "native_browser": {
+    "status": "PASS",
+    "surface": "Codex integrated browser, existing localhost3120 tab; synthetic demo only",
+    "checks": [
+      "AW05 unsent museum draft and manual artifact v2 retained after upgrade, reload, process restart and workspace switches.",
+      "Created separate synthetic weather notebook, uploaded two explicit fixture files, saved user brief and selected only original source.",
+      "Observed exact preview1529bytes, original71.625mm copied by scripted model to one versioned artifact.",
+      "Recorded v1-to-v2 source replacement; original content unchanged; actual UI exposed affected-output freshness warning.",
+      "Continue pins artifactv1; actual saved context reports current replacement annotation without rewriting saved input/fingerprint.",
+      "Stopped both demo processes, verified no listeners8120/3120, restarted same catalogue; draft, target, selected source, saved run context survived."
+    ],
+    "screenshots": [
+      "aw06-native-freshness.png",
+      "aw06-native-context.png",
+      "aw06-local-context.png",
+      "aw06-local-mobile.png"
+    ],
+    "note": "Native selector getByLabel exact did not match wrapped control labels; actual AX/role selector used. Not a lost-data or authority failure."
+  },
+  "failures_and_repairs": [
+    {
+      "type": "privacy",
+      "severity": "P1",
+      "finding": "Old recent assistant text could reintroduce a cleared project brief.",
+      "resolution": "Current brief+memory generation binding, manifest/history invalidation and active consumer fencing; independent canary passes."
+    },
+    {
+      "type": "byte_bound",
+      "severity": "P2",
+      "finding": "Pre-fix accepted manifest reported65536bytes versus actual65634.",
+      "resolution": "Measure exact serialized initial prompt including final fields/digest/wrapper/inventory; binary-searched UTF8 boundary passes."
+    },
+    {
+      "type": "versioning",
+      "severity": "P2",
+      "finding": "Blanket busy restriction blocked intended concurrent manual edits; static target pin blocked same-run repair.",
+      "resolution": "Manual CAS allowed; contiguous own-run version progress only, external interleaving fences writes; recovery/probes pass."
+    },
+    {
+      "type": "freshness",
+      "severity": "P2",
+      "finding": "Initial direct-only freshness missed changed dependencies further upstream.",
+      "resolution": "Bounded recursive lookup128nodes with unknown fallback; unrelated outputs remain unchanged."
+    },
+    {
+      "type": "ui_contract",
+      "severity": "P2",
+      "finding": "Missing run-context shape, reference-order identity, stale previews, storage durability warning and live source annotations needed fixes.",
+      "resolution": "Explicit unavailable rendering; ordered identity; sequence invalidation; scoped durability state; separate current annotations. Unit/browser coverage."
+    },
+    {
+      "type": "browser_regression",
+      "severity": "P1",
+      "finding": "First full browser36pass5fail:4failures from duplicate sibling React keys retaining old and new artifact editors.",
+      "resolution": "New integration unit reproduced two controls before fix. Atomic keyed artifact-version wrapper; final suite41passes, one editor and unique IDs."
+    },
+    {
+      "type": "test_fixture",
+      "severity": null,
+      "finding": "One brief case still failed in second browser capture40pass1fail because exact DOM-label selector included saved textarea text.",
+      "resolution": "Fresh Chromium inspection found exact label count0, actual accessible textbox count1, correct persisted DOM/AX/API value. Switched test to accessible-role selector; preserved persistence/conflict assertions. Final41passes."
+    }
+  ],
+  "measurements": {
+    "evidence": "aw06-context-measurement.json",
+    "status": "PARTIAL",
+    "source_bytes": 936000,
+    "synthetic_prior_sdk_protocol_bytes": 579831,
+    "selected_initial_prompt_bytes": 5647,
+    "initial_prompt_cap_bytes": 65536,
+    "preview_samples": 20,
+    "preview_ms_median": 2.216,
+    "preview_ms_max": 2.617,
+    "note": "Selected4000/78000-character excerpt, 11 other resources and old protocol deliberately omitted and disclosed. Not like-for-like semantics, model token savings, API cost/latency, productivity or direct-agent advantage."
+  },
+  "limits": [
+    "Real AI reasoning, retrieval relevance, long-session coherence, quality and price/latency NOT_MEASURED; human acceptance NOT_REVIEWED.",
+    "64KiB cap is initial rendered prompt only; fixed agent instructions, subsequent live memory/tools/results and SDK token/tool/deadline/output budgets are separate.",
+    "Automatic selection is lexical with bounded excerpts, not semantic indexing or full project understanding; explicit context is not proof the output used every fact correctly.",
+    "Imported dependency claims are archived untrusted metadata and live lineage is unknown until new tracked reads; archived chat is not SDK history or execution authority.",
+    "Changes to brief/memory can stop active consumers; visible transcript/artifacts, DBOS audit, backups/downloads are separate retained records, not forensic erasure.",
+    "Still monorepo shared neutral source/local session identity, not clean-machine distributable binary, production security/scale or commercial/legal certification."
+  ],
+  "cleanup": {
+    "root_removed": [
+      {
+        "path": "v2/apps/workspace/.aw06-root-final",
+        "kib": 35244
+      },
+      {
+        "path": "v2/apps/workspace/.workspace-data/aw06-e2e",
+        "kib": 4176
+      },
+      {
+        "path": "v2/apps/web/test-results/workspace",
+        "kib": 940
+      }
+    ],
+    "root_measure_temp": "TemporaryDirectory .aw06-root-measure-* auto-removed on each probe",
+    "builder_removed_kib": 47400,
+    "reviewer_removed": "9.3MiB +768KiB, exact owned review scratch; final review scratch removed",
+    "runtime": "Test runtime3130/8130 stopped. Demo3120/8120 retained; original3110/8110 same processes untouched.",
+    "retained": [
+      "one fixed reusable workspace-web/.next-build",
+      "existing synthetic demo .workspace-data/aw05-e2e, migrated after draining",
+      "private ignored .workspace-data/aw05-pre-aw06-backup-20261028 (both catalogue/DBOS SQLite backup quick_check OK)"
+    ],
+    "docker_used": false,
+    "dependency_downloads": false,
+    "project_temp_copies": false,
+    "disk_free_final": "17GiB; above10GiB before large actions"
+  },
+  "open_important_bugs_in_checked_scope": [],
+  "real_ai_acceptance": "NOT_MEASURED",
+  "human_acceptance": "NOT_REVIEWED",
+  "disposition": "Close AW06 local/mock technical milestone; preserve honest deferred AI acceptance. No commit/push or deployment authorized/performed."
+}

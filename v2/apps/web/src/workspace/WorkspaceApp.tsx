@@ -10,8 +10,11 @@ import {ApprovalPrompt, ConnectionPanel, MemoryPanel, SchedulePanel, type Contro
 import {clearWorkspaceBrowserData, ModelSetup, WorkspaceData, type DeletedWorkspace} from "./WorkspaceSettings";
 import {WorkspaceDetails, WorkspaceImporter, type ImportedWorkspace} from "./WorkspaceProjects";
 import {ComposerDrafts} from "./composerDrafts";
+import {ArtifactDependencies, WorkspaceContext} from "./WorkspaceContext";
+import {artifactReference, contextIdentity, emptyContext, WorkspaceContextChoices, type ContextChoices} from "./contextChoices";
 import "./workspace.css";
 import "./project-continuity.css";
+import "./context.css";
 
 const freshLive = (): LiveState => ({cursor: 0, content: "", state: "queued", activities: []});
 function storeRun(workspaceId: string, runId?: string) {try {if (runId) localStorage.setItem(`agent-workspace:run:${workspaceId}`, runId); else localStorage.removeItem(`agent-workspace:run:${workspaceId}`);} catch { /* Server history remains the recovery source. */ }}
@@ -31,6 +34,9 @@ export function WorkspaceApp() {
   const [artifact, setArtifact] = useState<Artifact | null>(null);
   const [draft, setDraft] = useState("");
   const [draftStored, setDraftStored] = useState(true);
+  const [contextChoices, setContextChoices] = useState<ContextChoices>(emptyContext);
+  const [contextStored, setContextStored] = useState(true);
+  const [sourceRefreshToken, setSourceRefreshToken] = useState(0);
   const [workspaceQuery, setWorkspaceQuery] = useState("");
   const [workspaceFilter, setWorkspaceFilter] = useState<"active" | "archived">("active");
   const [importViewToken, setImportViewToken] = useState(0);
@@ -46,7 +52,7 @@ export function WorkspaceApp() {
   const [run, setRun] = useState<Run | null>(null);
   const [live, setLive] = useState<LiveState>(freshLive);
   const [panel, setPanel] = useState(false);
-  const [panelView, setPanelView] = useState<"outputs" | "source" | "research" | "setup" | "data" | "import" | "details" | ControlView>("outputs");
+  const [panelView, setPanelView] = useState<"outputs" | "source" | "research" | "setup" | "data" | "import" | "details" | "context" | ControlView>("outputs");
   const [source, setSource] = useState<SourceFile | null>(null);
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
   const [newKind, setNewKind] = useState<"document" | "table" | null>(null);
@@ -54,7 +60,7 @@ export function WorkspaceApp() {
   const liveRef = useRef(live);
   const sendLock = useRef(false);
   const uploadLock = useRef(false);
-  const pendingCommand = useRef<{workspaceId: string; text: string; requestId: string} | null>(null);
+  const pendingCommand = useRef<{workspaceId: string; text: string; contextKey: string; requestId: string} | null>(null);
   const uploadInput = useRef<HTMLInputElement>(null);
   const transcript = useRef<HTMLDivElement>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
@@ -63,6 +69,7 @@ export function WorkspaceApp() {
   const artifactRequest = useRef(0);
   const deletedWorkspaces = useRef(new Set<string>());
   const composerDrafts = useRef(new ComposerDrafts());
+  const projectContexts = useRef(new WorkspaceContextChoices());
   const viewGeneration = useRef(0);
   const active = !!run && !terminal(run.state);
   const sendingCurrent = sending && sendingWorkspace === selected?.id;
@@ -72,6 +79,11 @@ export function WorkspaceApp() {
     const value = composerDrafts.current.write(workspaceId, content);
     if (selection.current === workspaceId) {setDraft(value.draft.content); setDraftStored(value.stored);}
     return value.draft.revision;
+  }
+  function changeContext(value: ContextChoices, workspaceId = selection.current) {
+    if (!workspaceId || deletedWorkspaces.current.has(workspaceId)) return;
+    const stored = projectContexts.current.save(workspaceId, value);
+    if (selection.current === workspaceId) {setContextChoices(value); setContextStored(stored);}
   }
 
   const refresh = useCallback(async (workspaceId: string) => {
@@ -90,6 +102,7 @@ export function WorkspaceApp() {
     selection.current = workspace.id;
     setSelected(workspace); setMessages([]); setFiles([]); setArtifacts([]); setArtifact(null); setNewKind(null); setSource(null); setUploadQueue([]); setPanelView("outputs"); setRun(null); setLive(freshLive()); liveRef.current = freshLive(); setError(""); setNavigation(false);
     const savedDraft = composerDrafts.current.load(workspace.id); setDraft(savedDraft.draft.content); setDraftStored(savedDraft.stored);
+    setContextChoices(projectContexts.current.load(workspace.id)); setContextStored(projectContexts.current.isStored(workspace.id));
     try {localStorage.setItem("agent-workspace:selected", workspace.id);} catch { /* Selection can still be changed without browser storage. */ }
     try {
       const history = await refresh(workspace.id);
@@ -184,14 +197,15 @@ export function WorkspaceApp() {
     event.preventDefault(); if (!selected || selected.archived || !draft.trim() || active || sendLock.current || !availability?.available) return;
     const text = draft.trim(); const workspaceId = selected.id;
     const knownRuns = new Set(messages.map(item => item.run_id).filter(Boolean));
+    const submittedContext = contextChoices; const contextKey = contextIdentity(submittedContext);
     const previous = pendingCommand.current;
-    const requestId = previous?.workspaceId === workspaceId && previous.text === text ? previous.requestId : crypto.randomUUID();
-    pendingCommand.current = {workspaceId, text, requestId};
+    const requestId = previous?.workspaceId === workspaceId && previous.text === text && previous.contextKey === contextKey ? previous.requestId : crypto.randomUUID();
+    pendingCommand.current = {workspaceId, text, contextKey, requestId};
     sendLock.current = true; setSending(true); setSendingWorkspace(workspaceId); const clearedRevision = writeDraft("", workspaceId); setError(""); nearBottom.current = true;
     setMessages(previous => [...previous, {id: requestId, role: "user", content: text}]);
     setLive(freshLive()); liveRef.current = freshLive();
     try {
-      const result = await api<{run_id: string; state: string}>("/runs", {workspace_id: workspaceId, message: text, client_request_id: requestId});
+      const result = await api<{run_id: string; state: string}>("/runs", {workspace_id: workspaceId, message: text, client_request_id: requestId, context: submittedContext});
       if (deletedWorkspaces.current.has(workspaceId)) return;
       storeRun(workspaceId, result.run_id);
       pendingCommand.current = null;
@@ -208,6 +222,8 @@ export function WorkspaceApp() {
         const history = await refresh(workspaceId);
         const last = history?.toReversed().find(item => item.role === "user" && item.content === text && item.run_id && !knownRuns.has(item.run_id));
         if (last?.run_id) {
+          const savedContext = await api<ContextChoices & {request_context?: ContextChoices}>(`/runs/${last.run_id}/context`);
+          if (contextIdentity(savedContext.request_context ?? savedContext) !== contextKey) throw new Error("A saved request used different context choices. Review it before sending another request.");
           const recovered = await api<Run>(`/runs/${last.run_id}`);
           if (selection.current === workspaceId) setRun(recovered);
           if (!deletedWorkspaces.current.has(workspaceId)) storeRun(workspaceId, last.run_id);
@@ -269,7 +285,7 @@ export function WorkspaceApp() {
       }
     }
   }
-  function openControl(view: ControlView | "setup" | "data" | "details") {
+  function openControl(view: ControlView | "setup" | "data" | "details" | "context") {
     if (!safeNavigate()) return;
     viewGeneration.current++;
     setPanelView(view); setPanel(true); setNavigation(false);
@@ -278,6 +294,7 @@ export function WorkspaceApp() {
     const workspaceId = result.workspace_id;
     deletedWorkspaces.current.add(workspaceId);
     composerDrafts.current.forget(workspaceId);
+    projectContexts.current.forget(workspaceId);
     let browserCleared = true;
     try {clearWorkspaceBrowserData(workspaceId, artifactIds);} catch {browserCleared = false;}
     if (pendingCommand.current?.workspaceId === workspaceId) pendingCommand.current = null;
@@ -286,6 +303,7 @@ export function WorkspaceApp() {
     if (selection.current !== workspaceId) return;
     selection.current = ""; artifactRequest.current++; viewGeneration.current++;
     setSelected(null); setMessages([]); setFiles([]); setArtifacts([]); setArtifact(null); setSource(null); setNewKind(null); setRun(null); setLive(freshLive()); liveRef.current = freshLive(); setDraft(""); setUploadQueue([]); setConnection(""); setPanel(false); setPanelView("outputs");
+    setContextChoices(emptyContext()); setContextStored(true);
     setError(""); setNotice(browserCleared ? "Workspace deleted. Its application data and this browser’s scoped drafts were removed. Audit history, private backups and downloaded exports may remain." : "Workspace deleted from the application. Browser storage was unavailable, so cached drafts could not be cleared. Remove this site’s browser data before sharing this device. Audit history, private backups and downloaded exports may remain.");
   }
   function openImporter() {if (!safeNavigate()) return; setImportViewToken(++viewGeneration.current); setPanelView("import"); setPanel(true); setNavigation(false);}
@@ -302,7 +320,7 @@ export function WorkspaceApp() {
     if (selection.current === value.id) {setSelected(previous => previous && (previous.revision ?? 0) <= (value.revision ?? 0) ? value : previous); setWorkspaceFilter(value.archived ? "archived" : "active");}
   }
   const visibleWorkspaces = workspaces.filter(item => !!item.archived === (workspaceFilter === "archived") && item.name.toLocaleLowerCase().includes(workspaceQuery.trim().toLocaleLowerCase()));
-  const panelTitle = panelView === "import" ? "Import workspace" : panelView === "details" ? "Workspace details" : panelView === "setup" ? "Model & setup" : panelView === "data" ? "Workspace data" : panelView === "source" ? "Source file" : panelView === "research" ? "Local research" : panelView === "memory" ? "Memory" : panelView === "connections" ? "Connections" : panelView === "schedules" ? "Schedules" : "Outputs";
+  const panelTitle = panelView === "context" ? "Project context" : panelView === "import" ? "Import workspace" : panelView === "details" ? "Workspace details" : panelView === "setup" ? "Model & setup" : panelView === "data" ? "Workspace data" : panelView === "source" ? "Source file" : panelView === "research" ? "Local research" : panelView === "memory" ? "Memory" : panelView === "connections" ? "Connections" : panelView === "schedules" ? "Schedules" : "Outputs";
   const status = loading ? "Connecting…" : availability?.test_mode ? "Simulation · no model calls · fixture:brief / table / patch / research / mcp-read / mcp-effect" : availability?.available ? availability.model ?? "Model ready" : "Model unavailable";
   return <div className="agent-workspace" data-navigation={navigation} data-panel={panel}>
     <a className="aw-skip" href="#aw-composer">Skip to message</a>
@@ -340,17 +358,20 @@ export function WorkspaceApp() {
       <div className="aw-compose-wrap">
         {selected && run && active && availability?.test_mode && <ApprovalPrompt key={`${selected.id}:${run.id}`} workspaceId={selected.id} runId={run.id} onResolved={() => void reconcileWorkspaceRun(selected.id).catch(cause => setError(cause.message))}/>}
         <form className="aw-composer" onSubmit={submit} data-unsafe-draft={!draftStored || undefined} data-draft-clear-failed={!draftStored && !draft || undefined}>
+          {selected && <div className="aw-context-summary"><button type="button" className="aw-context-open" aria-pressed={panel && panelView === "context"} onClick={() => openControl("context")}>Project context</button><span>{contextChoices.references.length ? `${contextChoices.references.length} selected reference(s)` : "Automatic selection"}{contextChoices.target ? ` · Continue from version ${contextChoices.target.version}` : ""}</span></div>}
           <label className="aw-visually-hidden" htmlFor="aw-composer">Message</label>
           <textarea id="aw-composer" ref={composer} rows={3} maxLength={16000} value={draft} onChange={event => writeDraft(event.target.value)} placeholder={selected ? "Ask anything, or describe what you want to make…" : "Create a workspace to start…"} disabled={!selected} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); event.currentTarget.form?.requestSubmit();}}}/>
           <div className="aw-composer-bottom"><button type="button" className="aw-attach" onClick={() => uploadInput.current?.click()} disabled={!selected || uploading} aria-label="Attach source file">＋ <span>Add file</span></button><span className="aw-input-hint">Enter to send · Shift + Enter for a new line</span>{active ? <button type="button" className="aw-send" onClick={() => void stop()} disabled={run?.cancel_requested}>{run?.cancel_requested ? "Stop requested" : "Stop"}</button> : <button className="aw-send" type="submit" disabled={!selected || selected.archived || !draft.trim() || !availability?.available || sending}>Send <span aria-hidden="true">↑</span></button>}</div>
         </form>
         {!draftStored && <p className="aw-draft-warning" role="status">{draft ? "This draft is kept in this tab only because browser storage is unavailable. Copy it before closing or reloading." : "Browser storage could not clear an older draft. It may reappear after reload; saved server work is unchanged."} <button className="aw-text-action" onClick={() => writeDraft(draft)}>Retry draft storage</button></p>}
+        {!contextStored && <p className="aw-draft-warning" role="status">Context choices are kept in this tab only. Check them again after reload. <button className="aw-text-action" onClick={() => changeContext(contextChoices)}>Retry saving context choices</button></p>}
         <p className="aw-compose-note" role="status">{connection || (availability?.test_mode ? "Simulation uses a deterministic test model. Outputs are not AI quality evidence." : "Review important details in generated drafts.")}</p>
       </div>
     </main>
     {panel && <aside className="aw-panel" aria-label="Outputs and activity"><div className="aw-panel-head"><h2>{panelTitle}</h2><button onClick={() => {if (safeNavigate()) {viewGeneration.current++; setPanel(false);}}} aria-label="Close outputs">×</button></div>
       {panelView === "import" && <WorkspaceImporter key={importViewToken} viewToken={importViewToken} onImported={importedWorkspace} onCheck={checkWorkspaces}/>}
       {panelView === "details" && selected && <WorkspaceDetails key={selected.id} workspace={selected} active={active || sendingCurrent} onChanged={changedWorkspace}/>}
+      {panelView === "context" && selected && <WorkspaceContext key={selected.id} workspaceId={selected.id} files={files} artifacts={artifacts} choices={contextChoices} message={draft} runId={run?.id} archived={selected.archived} onChoices={value => changeContext(value, selected.id)} onSourceReplaced={() => setSourceRefreshToken(value => value + 1)}/>}
       {panelView === "setup" && <ModelSetup onReadiness={setAvailability}/>}
       {panelView === "data" && selected && <WorkspaceData key={selected.id} workspace={selected} active={active || sendingCurrent || uploading} onDeleted={removeWorkspace} onRecover={() => {if (availability?.test_mode) openControl("connections"); else {setPanelView("outputs"); setPanel(true);}}}/>}
       {panelView === "memory" && selected && <MemoryPanel key={selected.id} workspaceId={selected.id}/>}
@@ -359,7 +380,8 @@ export function WorkspaceApp() {
       {panelView === "source" && source && <SourcePreview key={source.id} file={source}/>}
       {panelView === "research" && selected && <LocalResearch key={selected.id} workspaceId={selected.id} onImported={async file => {const workspaceId = selected.id; await refresh(workspaceId); if (selection.current === workspaceId) {setSource(file); setPanelView("source");}}}/>}
       {panelView === "outputs" && <><div className="aw-output-create">{(["document", "table"] as const).map(kind => <button key={kind} disabled={!selected} onClick={() => {if (safeNavigate()) setNewKind(kind);}}>＋ New {kind}</button>)}</div><div className="aw-output-list">{artifacts.length ? artifacts.map(item => <button key={item.id} aria-current={!newKind && artifact?.id === item.id ? "true" : undefined} onClick={() => void openArtifact(item)}><strong>{item.title || item.filename}</strong><small>{item.kind === "table" ? "Table · CSV" : "Markdown"} · Version {item.version}</small></button>) : <p className="aw-muted">Drafts you create appear here. Open, revise, and download them without leaving the conversation.</p>}</div>
-      {newKind && selected ? <ArtifactCreator key={`${selected.id}:${newKind}`} workspaceId={selected.id} kind={newKind} onCreated={async result => {const workspaceId = selected.id; await refresh(workspaceId); if (selection.current === workspaceId) {setArtifact(result); setNewKind(null);}}} onCancel={() => {if (safeNavigate()) setNewKind(null);}}/> : artifact && <ArtifactEditor key={`${artifact.id}:${artifact.version}`} artifact={artifact} latestVersion={artifacts.find(item => item.id === artifact.id)?.version ?? artifact.version} allowChatRevision={!availability?.test_mode && !selected?.archived} onOpen={version => void openArtifact(artifact, version)} onConflict={async () => {if (selected) await refresh(selected.id);}} onSaved={async result => {const workspaceId = selected?.id; if (!workspaceId) return; await refresh(workspaceId); if (selection.current === workspaceId) setArtifact(result);}} onRevise={() => {writeDraft(`Revise "${artifact.title || artifact.filename}" (version ${artifact.version}): `); composer.current?.focus();}}/>}
+      {newKind && selected ? <ArtifactCreator key={`${selected.id}:${newKind}`} workspaceId={selected.id} kind={newKind} onCreated={async result => {const workspaceId = selected.id; await refresh(workspaceId); if (selection.current === workspaceId) {setArtifact(result); setNewKind(null);}}} onCancel={() => {if (safeNavigate()) setNewKind(null);}}/> : artifact && <div className="aw-output-detail" key={`${artifact.id}:${artifact.version}`}><ArtifactEditor artifact={artifact} latestVersion={artifacts.find(item => item.id === artifact.id)?.version ?? artifact.version} allowChatRevision={!availability?.test_mode && !selected?.archived} onOpen={version => void openArtifact(artifact, version)} onConflict={async () => {if (selected) await refresh(selected.id);}} onSaved={async result => {const workspaceId = selected?.id; if (!workspaceId) return; await refresh(workspaceId); if (selection.current === workspaceId) setArtifact(result);}} onRevise={() => {changeContext({...contextChoices, target: artifactReference(artifact)}); writeDraft(`Revise "${artifact.title || artifact.filename}" (version ${artifact.version}): `); composer.current?.focus();}}/>
+        <button className="aw-context-continue" disabled={selected?.archived || active || sendingCurrent} onClick={() => {if (!safeNavigate()) return; changeContext({...contextChoices, target: artifactReference(artifact)}); setPanelView("context"); composer.current?.focus();}}>Continue from this version</button><ArtifactDependencies artifact={artifact} refreshToken={sourceRefreshToken}/></div>}
       <section className="aw-activity" aria-label="Run activity"><h2>Activity</h2>{live.activities.length ? <ol>{live.activities.map((activity, index) => <li key={index}>{activity}</li>)}</ol> : <p className="aw-muted">Tool progress appears here while a request is running.</p>}{run?.usage && <p className="aw-muted">{run.usage.requests} model request(s), {run.usage.input_tokens + run.usage.output_tokens} tokens. Cost: {run.usage.cost_usd === null ? "unknown" : `$${run.usage.cost_usd}`}.</p>}</section></>}
     </aside>}
   </div>;

@@ -1,0 +1,5 @@
+Synthetic weather notebook, not real observations.
+Station: 008291
+Rainfall: 71.625 mm
+Observation status: first provisional record.
+Keep the original number and its unit when comparing later records.

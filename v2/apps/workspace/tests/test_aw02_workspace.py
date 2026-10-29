@@ -100,7 +100,11 @@ def test_manual_versions_diff_duplicate_stale_busy_and_exports(aw02):
     assert failed.status_code == 422 and failed.json() == {"detail": "artifact_export_failed"}
     assert c.get(P + f"/artifacts/{item['id']}").json()["content"] == new_content
     rid = start(c, wid, "fixture:slow", "aw02-busy-revision")
-    assert post(c, f"/artifacts/{item['id']}/revisions", dict(body, expected_version=2, request_id="aw02-busy-manual")).json()["detail"] == "workspace_busy"
+    # AW-06 deliberately allows manual revisions while a run is active. Exact
+    # artifact CAS, not a workspace-wide editing lock, protects both writers.
+    concurrent = post(c, f"/artifacts/{item['id']}/revisions", dict(body, expected_version=2, request_id="aw02-busy-manual"))
+    assert concurrent.status_code == 200 and concurrent.json()["version"] == 3
+    assert c.get(P + f"/artifacts/{item['id']}?version=2").json()["content"] == new_content
     post(c, f"/runs/{rid}/cancel")
     assert terminal(c, rid)["state"] == "cancelled"
 

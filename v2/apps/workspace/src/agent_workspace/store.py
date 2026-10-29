@@ -86,6 +86,8 @@ class Store:
                 db.execute("ALTER TABLE runs ADD COLUMN stream_bytes INTEGER NOT NULL DEFAULT 0")
             if "workflow_version" not in columns:
                 db.execute("ALTER TABLE runs ADD COLUMN workflow_version TEXT NOT NULL DEFAULT 'workspace-aw01-v1'")
+            if "context_options" not in columns:
+                db.execute("ALTER TABLE runs ADD COLUMN context_options TEXT NOT NULL DEFAULT '{}'")
             file_columns = {r[1] for r in db.execute("PRAGMA table_info(files)")}
             for column, definition in {"raw_content": "BLOB", "sha256": "TEXT", "warnings": "TEXT NOT NULL DEFAULT '[]'", "provenance": "TEXT NOT NULL DEFAULT '{}'", "metadata": "TEXT NOT NULL DEFAULT '{}'"}.items():
                 if column not in file_columns:
@@ -254,16 +256,20 @@ class Store:
             item.update(content=chunk, offset=offset, next_offset=offset + len(chunk), has_more=offset + len(chunk) < len(content), total_characters=len(content))
             return item
 
-    def create_run(self, owner, workspace_id, message, request_key, limits):
+    def create_run(self, owner, workspace_id, message, request_key, limits, context=None):
         with self.tx() as db:
-            return self._create_run(db, owner, workspace_id, message, request_key, limits)
+            return self._create_run(db, owner, workspace_id, message, request_key, limits, context=context)
 
-    def _create_run(self, db, owner, workspace_id, message, request_key, limits):
+    def _create_run(self, db, owner, workspace_id, message, request_key, limits, context=None):
         """Caller-owned transaction permits atomic schedule claim + run creation."""
         workspace = self._workspace(db, owner, workspace_id)
+        options = context or {}
+        continuity = getattr(self, "continuity", None)
+        if continuity:
+            continuity._refs(db, workspace_id, options)
         old = db.execute("SELECT * FROM runs WHERE owner=? AND request_key=?", (owner, request_key)).fetchone()
         if old:
-            if old["workspace_id"] != workspace_id or old["message"] != message:
+            if old["workspace_id"] != workspace_id or old["message"] != message or json.loads(old["context_options"]) != options:
                 raise WorkspaceError("idempotency_conflict", 409)
             return self._view(old)
         if workspace["archived"]:
@@ -274,8 +280,8 @@ class Store:
             raise WorkspaceError("runtime_run_capacity", 409)
         run_id, now = identity(), time.time()
         usage = {"requests": 0, "tool_calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": None, "complete": False}
-        db.execute("INSERT INTO runs(id,workspace_id,owner,request_key,message,state,created_at,deadline_at,limits,usage,workflow_version) VALUES(?,?,?,?,?,'queued',?,?,?,?, 'workspace-aw04-v1')",
-                   (run_id, workspace_id, owner, request_key, message, now, now + limits["deadline_seconds"], json.dumps(limits), json.dumps(usage)))
+        db.execute("INSERT INTO runs(id,workspace_id,owner,request_key,message,state,created_at,deadline_at,limits,usage,workflow_version,context_options) VALUES(?,?,?,?,?,'queued',?,?,?,?, 'workspace-aw06-v1',?)",
+                   (run_id, workspace_id, owner, request_key, message, now, now + limits["deadline_seconds"], json.dumps(limits), json.dumps(usage), json.dumps(options)))
         db.execute("INSERT INTO messages VALUES(?,?,?,?,?,?)", (identity(), workspace_id, run_id, "user", message, now))
         self._event(db, run_id, "run.state", {"state": "queued"})
         return self._view(self._run(db, owner, run_id))
@@ -352,6 +358,9 @@ class Store:
         connection_guard = getattr(self, "connection_guard", None)
         if connection_guard:
             connection_guard(db, owner, run_id)
+        context_guard = getattr(self, "context_guard", None)
+        if context_guard:
+            context_guard(db, owner, run_id)
         return row
 
     def check(self, owner, run_id):
@@ -425,12 +434,17 @@ class Store:
             return (history[0] if history else None), files, artifacts
 
     def read_file(self, owner, run_id, file_id, offset=0, limit=16000):
+        if getattr(self, "continuity", None):
+            self.continuity.authorize_read(owner, run_id, "file", file_id)
         with self.tx() as db:
             run = self.fence(db, owner, run_id)
             row = db.execute("SELECT id FROM files WHERE id=? AND workspace_id=?", (file_id, run["workspace_id"])).fetchone()
             if not row:
                 raise WorkspaceError("not_found", 404)
-        return self.source(owner, file_id, offset, limit)
+        item = self.source(owner, file_id, offset, limit)
+        if getattr(self, "continuity", None):
+            self.continuity.record_read(owner, run_id, "file", item)
+        return item
 
     def artifact(self, owner, artifact_id, version=None):
         if version is not None and version < 1:
@@ -449,12 +463,18 @@ class Store:
             return item
 
     def read_artifact(self, owner, run_id, artifact_id):
+        if getattr(self, "continuity", None):
+            self.continuity.authorize_read(owner, run_id, "artifact", artifact_id)
         with self.tx() as db:
             run = self.fence(db, owner, run_id)
             target = db.execute("SELECT workspace_id FROM artifacts WHERE id=?", (artifact_id,)).fetchone()
             if not target or target[0] != run["workspace_id"]:
                 raise WorkspaceError("not_found", 404)
-        return self.artifact(owner, artifact_id)
+        version = self.continuity.pinned_version(owner, run_id, artifact_id) if getattr(self, "continuity", None) else None
+        item = self.artifact(owner, artifact_id, version)
+        if getattr(self, "continuity", None):
+            self.continuity.record_read(owner, run_id, "artifact", item)
+        return item
 
     def publish(self, owner, run_id, call_id, title, filename, content, artifact_id=None, expected_version=None, *, receipt_args=None):
         valid_filename(filename)
@@ -479,6 +499,17 @@ class Store:
                 if receipt["args_digest"] != digest:
                     raise WorkspaceError("receipt_argument_conflict", 409)
                 return json.loads(receipt["result"])
+            context = db.execute("SELECT manifest FROM run_contexts WHERE run_id=?", (run_id,)).fetchone() if getattr(self, "continuity", None) else None
+            target = json.loads(context[0]).get("target") if context else None
+            if target:
+                # A selected target is the only output that may be revised; a
+                # stale target must never escape CAS by creating a new artifact.
+                current = db.execute("SELECT version FROM artifacts WHERE id=? AND workspace_id=?", (target["id"], run["workspace_id"])).fetchone()
+                allowed_version = self.continuity.target_progress(db, run_id, target["id"], target["version"])
+                if not current or current[0] != allowed_version:
+                    raise WorkspaceError("stale_artifact_version", 409)
+                if artifact_id != target["id"] or expected_version != allowed_version:
+                    raise WorkspaceError("context_target_mismatch", 409)
             if len(content.encode()) + run["output_bytes"] + run["stream_bytes"] > json.loads(run["limits"])["output_bytes_limit"]:
                 raise WorkspaceError("artifact_output_limit", 413)
             now = time.time()
@@ -496,6 +527,8 @@ class Store:
                 artifact_id, version = identity(), 1
                 db.execute("INSERT INTO artifacts(id,workspace_id,title,filename,media_type,version,created_at,kind) VALUES(?,?,?,?,?,?,?,?)", (artifact_id, run["workspace_id"], title, filename, media_type, version, now, kind))
             db.execute("INSERT INTO versions(artifact_id,version,content,run_id,created_at,metadata) VALUES(?,?,?,?,?,?)", (artifact_id, version, content, run_id, now, json.dumps(dict(title=title, filename=filename, kind=kind, media_type=media_type))))
+            if getattr(self, "continuity", None):
+                self.continuity.record_publish(db, run, artifact_id, version)
             db.execute("UPDATE runs SET output_bytes=output_bytes+? WHERE id=?", (len(content.encode()), run_id))
             result = {"artifact_id": artifact_id, "version": version, "status": "draft"}
             db.execute("INSERT INTO receipts VALUES(?,?,?,?,?)", (run_id, call_id, "artifact.publish", digest, json.dumps(result)))
@@ -539,8 +572,6 @@ class Store:
                     raise WorkspaceError("idempotency_conflict", 409)
                 result = json.loads(old_receipt["result"])
             else:
-                if db.execute("SELECT 1 FROM runs WHERE workspace_id=? AND state NOT IN ('completed','failed','cancelled')", (item["workspace_id"],)).fetchone():
-                    raise WorkspaceError("workspace_busy", 409)
                 current = db.execute("SELECT version FROM artifacts WHERE id=?", (artifact_id,)).fetchone()[0]
                 if current != expected_version:
                     raise WorkspaceError("stale_artifact_version", 409)

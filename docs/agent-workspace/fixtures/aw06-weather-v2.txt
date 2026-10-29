@@ -1,0 +1,5 @@
+Synthetic weather notebook, not real observations.
+Station: 008291
+Rainfall: 73.875 mm
+Observation status: corrected record supplied by the user.
+Retain both snapshots. This correction does not verify either observation.

@@ -1,0 +1,132 @@
+{
+  "milestone": "AW-06",
+  "date": "2026-10-28",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "baseline_commit": "683aebc90a2d22934c473dd3078ff6bb81fd8a0f",
+  "reviewer": "Separate-author agent /root/aw06_review, not a production author",
+  "status": "PASS_WITH_LIMITS",
+  "scope": "Local synthetic SQLite/ASGI contracts, one actual product FunctionModel/DBOS simulation, and scoped source review. Parent owns browser/build and overall acceptance.",
+  "authority": {
+    "external_model": false,
+    "real_web": false,
+    "embeddings": false,
+    "live_connector": false,
+    "deployment": false,
+    "commit_push": false,
+    "legacy_data": false
+  },
+  "verification": {
+    "command": ".venv/bin/python -m pytest ../../../docs/agent-workspace/evidence/test_aw06_independent.py --basetemp=.aw06-review -q --disable-warnings",
+    "working_directory": "v2/apps/workspace",
+    "final_tests": 24,
+    "final_passed": 24,
+    "final_failed": 0,
+    "pytest_elapsed_seconds": 4.19,
+    "count_note": "The earlier13/15,20/20 and24/24(4.88s) runs overlap the final24; do not add them as separate coverage. Final24/24rerun after sourcefreeze used continuity hashcf1ba5b. Source hashes bind the reviewed Python state, not a committed or deployed build.",
+    "coverage": [
+      "Brief CAS, exact request idempotency, empty clear, foreign-owner denial, parallel edits and restart replay",
+      "Exact historical artifact selection, invalid versions, cross-workspace refs/search and invalid path-like handles",
+      "Source replacement idempotency, changed arguments, cycles, ambiguity, self-link rejection and immutable original content",
+      "Run request identity includes context choices; manual/legacy outputs retain unknown lineage",
+      "Context snapshot stays byte-identical after later upload and catalogue reopen; foreign run-context read denied",
+      "Cleared brief and deleted memory cannot return through recent model input or a saved run context; visible archival transcript remains separate",
+      "A large visible turn is omitted whole; old SDK history above 512KB and full transcript remain preserved",
+      "Actual FunctionModel/DBOS simulation continues without parsing an oversized old protocol history",
+      "Stale target/new-artifact bypass and post-cancel writes cannot overwrite a newer manual version",
+      "Contiguous own-run target updates permit read/repair without changing original input pin; interleaved manual versions cannot be adopted as own progress",
+      "Recorded direct and multi-hop file/artifact dependencies expose source/version changes without invalidating unrelated output",
+      "Snapshot restores user brief and remapped source links; dependency claims stay archived/untrusted, not live execution lineage",
+      "Delete confirmation changes with brief state; deletion purges the six new scoped continuity tables and fences later reads",
+      "Binary-searched UTF-8 boundary includes final metadata and exact rendered prompt; explicit overflow rejects",
+      "Exhausting edit quota does not prevent bounded forgetting; already-empty clears do not create unbounded receipts"
+    ]
+  },
+  "findings": [
+    {
+      "id": "IR-01",
+      "severity": "P1",
+      "observation": "Source review found that recent-message selection originally matched only memory revision, allowing old assistant text to reintroduce a cleared project brief.",
+      "repair": "Builder restricted reusable turns to current brief generation plus live context records; brief changes remove reusable manifests/history and fence active consumers.",
+      "verification": "Independent deleted-brief canary probe passes. The pre-fix privacy issue was source-reviewed, not claimed as a separately executed failing test.",
+      "state": "resolved_in_reviewed_scope"
+    },
+    {
+      "id": "IR-02",
+      "severity": "P2",
+      "observation": "Executed boundary probe accepted a manifest reporting65536 bytes while compact manifest plus user message measured65634, because metadata/digest were added after accounting.",
+      "repair": "Builder now accounts for the exact rendered prompt, wrapper, inventory, byte field and fixed-length digest before accepting a context.",
+      "verification": "Independent binary-searched UTF-8 boundary test checks rendered length equals context_bytes and never exceeds the advertised limit.",
+      "state": "resolved_in_reviewed_scope"
+    },
+    {
+      "id": "IR-03",
+      "severity": "P2",
+      "observation": "Initial independent run observed409 workspace_busy when a user manually revised an artifact during an active run, preventing the proposed concurrent-edit contract.",
+      "repair": "Contractor approved allowing manual revisions under existing atomic expected-version CAS; stale agent publication remains fenced.",
+      "verification": "Independent active-run manual edit, stale publish, bypass and cancel probes pass.",
+      "state": "resolved_in_reviewed_scope"
+    },
+    {
+      "id": "IR-04",
+      "severity": "P2",
+      "observation": "Source review found static target pinning prevented reading and repairing a successful own-run update; recursive freshness also initially checked replacement files but missed changed artifact versions beyond one hop.",
+      "repair": "Contractor approved contiguous own-run version progression while retaining original input pin; Builder added recursive version checks under the existing bounded traversal.",
+      "verification": "Independent own-update/read/patch, manual-interleave rejection and two-hop artifact freshness probes pass.",
+      "state": "resolved_in_reviewed_scope"
+    },
+    {
+      "id": "IR-05",
+      "severity": "P2",
+      "observation": "Source review identified UI/server mismatch for ordered-reference request identity, omitted current_changes annotations, and stale previews after reloading brief or recording a source replacement.",
+      "repair": "Contractor approved one narrow UI batch; UI Builder owns regression tests and parent verifies final build/browser behavior.",
+      "verification": "Reviewer re-read the repaired ordered identity, current_changes annotation and brief/replacement invalidation code. Builder reported30targetedunits passed; not independently rerun here. Final browser/unit completion must be read from parent consolidated evidence, not inferred from the Python suite.",
+      "state": "source_rechecked_parent_browser_verification_required"
+    },
+    {
+      "id": "IR-06",
+      "severity": "P2",
+      "observation": "Parent browser run reported four retained-path regressions caused by duplicate sibling React keys: ArtifactEditor and ArtifactDependencies shared the same artifact/version key, allowing duplicate editor controls after a version transition. A separate brief-disclosure browser assertion defect was reported by parent and is not counted as a product bug here.",
+      "repair": "UI Builder moved the artifact/version key to one atomic aw-output-detail wrapper containing the editor, continue action and dependency panel. Existing API payloads, version/CAS and context source contracts are unchanged.",
+      "verification": "Reviewer read the final WorkspaceApp wrapper and new WorkspaceApp.test.tsx integration test. Builder reports the test reproduced two version controls before the fix and passes with one editor, one freshness panel, unique DOM IDs and no duplicate-key warning after the fix. This reviewer did not independently run the pre-fix or final browser campaign; parent owns the final browser rerun.",
+      "state": "source_rechecked_parent_browser_verification_required"
+    }
+  ],
+  "retained_failures": [
+    {
+      "run": "initial 15-test capture",
+      "result": "13 passed,2 failed in2.40 seconds",
+      "interpretation": "One real409 concurrent-edit contract issue (IR-03). One probe-fixture error attempted a627000-byte answer beyond the existing256000-byte output cap; corrected to114000-byte visible output plus oversized historical protocol. The output cap was not relaxed."
+    },
+    {
+      "run": "byte-boundary search",
+      "result": "Actual reported65536 versus measured65634 before repair",
+      "interpretation": "Local deterministic reproduction, no provider invocation. An exploratory edit loop reached the existing2000-request quota; it used only a disposable catalogue, then a bounded binary search reproduced the defect."
+    }
+  ],
+  "source_sha256": {
+    "v2/apps/workspace/src/agent_workspace/continuity.py": "cf1ba5b77dc7b582cddcbe22b51fbf250f56cb016b2af3f29336a6627011799f",
+    "v2/apps/workspace/src/agent_workspace/store.py": "5478ea700ab8b2d0dd45b6a778c9044ad8a31b2fc49bbcf5039168a6707eb09c",
+    "v2/apps/workspace/src/agent_workspace/runtime.py": "cc44f8ac9e34a1ab4ba47066a1e0ca815f382e8e62375464a3ef075b8b8def4e",
+    "v2/apps/workspace/src/agent_workspace/api.py": "4e854186629e32ffb1885498ee23f14057938f53208d100c455c97a9f5402519",
+    "v2/apps/workspace/src/agent_workspace/workspace_state.py": "c22b0892f9f7c18f84a4369d1ec4960cd5ea200fb5abd3e8f46c237810cc8a36",
+    "v2/apps/workspace/src/agent_workspace/data_lifecycle.py": "6e86338d08cec1402a9bff93ebd83c92056ec34374e433c940eda5361e64d083",
+    "v2/apps/workspace/src/agent_workspace/portability.py": "386c2bc61cfd890f87465b9592ec8531996ded9bac6e8c663459721ee27c5ce4",
+    "docs/agent-workspace/evidence/test_aw06_independent.py": "57a322e346ea0d1d8ea122aa54ac03efc20362ccaa9f03fa9bf942422c132daf",
+    "v2/apps/web/src/workspace/WorkspaceApp.tsx": "e53afccdc7b9eb170ea2e6de3d12e83aaacd501f96c98586f5ccd92ffb8fdfb3",
+    "v2/apps/web/src/workspace/WorkspaceApp.test.tsx": "223554994de31f58890b37c29b19c462374a80a400e3a0e4938524eb3aa02ea3"
+  },
+  "limits": [
+    "No real AI quality, tokenization, provider latency/billing, live connector, web quality or human productivity measured.",
+    "A deterministic lexical match and read ledger do not establish semantic completeness or source truth.",
+    "Imported dependency claims deliberately remain unknown live lineage; archived transcript is not execution history.",
+    "The64KB cap is for the initial rendered context prompt; later bounded tools/model usage remain governed separately by existing run limits.",
+    "Static UI review is not final browser acceptance; parent owns full integrated E2E and visual QA.",
+    "No full transitive security audit, commercial release, fresh-machine distribution or legal clearance is claimed."
+  ],
+  "cleanup": {
+    "owned_scratch": ["v2/apps/workspace/.aw06-review", "v2/apps/workspace/.aw06-review-byte-probe"],
+    "observed_size_before_removal": "9.3MiB plus768KiB",
+    "status": "removed_exact_owned_paths"
+  },
+  "disposition": "No observed openP0/P1 in the reviewed Python contracts. Ready for parent final-source/build/browser integration, not overall AI or release acceptance."
+}

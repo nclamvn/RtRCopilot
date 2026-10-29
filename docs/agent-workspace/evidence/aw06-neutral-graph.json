@@ -1,0 +1,109 @@
+{
+  "status": "PASS",
+  "external_model_calls": 0,
+  "source_files": [
+    {
+      "path": "workspace-web/src/app/layout.tsx",
+      "sha256": "6ca322d89819a0fe94e74f5c28ad9f1c00d4467730066866e0d90c5097d65dd6"
+    },
+    {
+      "path": "workspace-web/src/app/globals.css",
+      "sha256": "049680c6d3b6f7b690ab6ac30379a392a56eece0819da61b01a0588ef6d75b25"
+    },
+    {
+      "path": "workspace-web/src/app/page.tsx",
+      "sha256": "0920a6d9bdca51533f5224c7317fc73d942d488e5f2a7accd6aa8a362dc15c0b"
+    },
+    {
+      "path": "workspace-web/src/app/workspace/page.tsx",
+      "sha256": "d181b13669546958ecf947b08b84d3da1003f19c8f1411d915087f38560ab565"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceApp.tsx",
+      "sha256": "e53afccdc7b9eb170ea2e6de3d12e83aaacd501f96c98586f5ccd92ffb8fdfb3"
+    },
+    {
+      "path": "web/src/workspace/contracts.ts",
+      "sha256": "a70e2610a6fe3771cba48eb7713f202da2d1b8176312305bfef6f9538fb0a6ed"
+    },
+    {
+      "path": "web/src/workspace/Markdown.tsx",
+      "sha256": "ca234bf069b62dfcabde2b86dc0b2610dad545c2b0c500a3fa1a7133f5a7d728"
+    },
+    {
+      "path": "web/src/workspace/api.ts",
+      "sha256": "a1627bed0d91c5cc60b7fe9864b3bedbc6eaf7a0cbf746c20dd563978e0ce69f"
+    },
+    {
+      "path": "web/src/workspace/ArtifactEditor.tsx",
+      "sha256": "df371b5aee77da544cdc508876b76753a1246b3c31a9f0ee5c6bfa085629d24e"
+    },
+    {
+      "path": "web/src/workspace/Sources.tsx",
+      "sha256": "2bfe7cd2c30d172dbe8792a3ddb85a55ee55af2ea61f0f52ae832ef59a8c3003"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceControls.tsx",
+      "sha256": "87466f1c81ad53e37bd6ddec94239cbdd124ff7ab6d1a21db8680b5a2ca4f0a2"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceSettings.tsx",
+      "sha256": "f898636e33afd3c50d332363350f9a953a14fb432139c33fff1edc917bc41fb5"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceProjects.tsx",
+      "sha256": "df27701005d8c84eab5a8c097c9012156e22abc223df92b076bf55597fcd201c"
+    },
+    {
+      "path": "web/src/workspace/composerDrafts.ts",
+      "sha256": "efa1e1c478ba0e4b567a6d81a06e2e6e95523c57196dc7fd6be2955dcd234afe"
+    },
+    {
+      "path": "web/src/workspace/WorkspaceContext.tsx",
+      "sha256": "38530f04dfff7e3b60ebe1025200d7a45ba50b20882b543d8c971fc0520e6951"
+    },
+    {
+      "path": "web/src/workspace/contextChoices.ts",
+      "sha256": "48f2bf48349c29d264ae033bf1ea9b01d7e2a5575fa1a08bb0dd61bff8b400eb"
+    },
+    {
+      "path": "web/src/workspace/workspace.css",
+      "sha256": "5323e058d2c83a7440166bba4a21e76d9ccca911ef3020110f5ca95169e1fc9f"
+    },
+    {
+      "path": "web/src/workspace/project-continuity.css",
+      "sha256": "64138add6d264e9e19d3ff58960cc8c3d23e048c671313b057b2de939b2c50da"
+    },
+    {
+      "path": "web/src/workspace/context.css",
+      "sha256": "41d448caf381e35ec76f9a5177afb354069548a15909528376883f0dda184a9b"
+    },
+    {
+      "path": "workspace-web/src/app/api/workspace/[[...path]]/route.ts",
+      "sha256": "4aca2e31a71a3f626cc6e5b273ca0e89a67b28e28d804a507b0cb8c668e53a73"
+    },
+    {
+      "path": "web/src/app/api/workspace/[[...path]]/route.ts",
+      "sha256": "da4f8ba412c3140c0ba38b2290ec9740b32eaa87909eb957a3181c7122667495"
+    }
+  ],
+  "allowed_package_imports": [
+    "next",
+    "next/navigation",
+    "next/server",
+    "react"
+  ],
+  "built_routes": [
+    "/_global-error/page",
+    "/_not-found/page",
+    "/api/workspace/[[...path]]/route",
+    "/page",
+    "/workspace/page"
+  ],
+  "excludes": [
+    "legacy app layout/styles/proxy/auth",
+    "company services/corpus",
+    "remote CSS/fonts"
+  ],
+  "limitation": "Static source imports and compiled route manifest, not a transitive dependency/license audit or AI-quality certification. Shared neutral source remains in the monorepo."
+}

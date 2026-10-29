@@ -36,6 +36,27 @@ class NewRun(StrictInput):
     workspace_id: str
     message: str = Field(min_length=1, max_length=16000)
     client_request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_-]+$")
+    context: dict | None = None
+
+
+class ContextPreview(StrictInput):
+    message: str = Field(min_length=1, max_length=16000)
+    references: list[dict] = Field(default_factory=list, max_length=20)
+    target: dict | None = None
+
+
+class ProjectBrief(StrictInput):
+    expected_revision: int = Field(ge=0, strict=True)
+    goal: str = Field(max_length=4000)
+    decisions: str = Field(max_length=4000)
+    remaining: str = Field(max_length=4000)
+    request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_-]+$")
+
+
+class SourceReplacement(StrictInput):
+    old_file_id: str
+    new_file_id: str
+    request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_-]+$")
 
 
 class BatchUpload(StrictInput):
@@ -450,9 +471,37 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
             raise WorkspaceError("empty_message")
         limits = {key: getattr(settings, key) for key in (
             "deadline_seconds", "request_limit", "tool_limit", "token_limit", "output_bytes_limit")}
-        run = store.create_run(actor, body.workspace_id, body.message, body.client_request_id, limits)
+        run = store.create_run(actor, body.workspace_id, body.message, body.client_request_id, limits, context=body.context)
         await runtime.dispatch_pending()
         return {"run_id": run["id"], "state": run["state"]}
+
+    @app.get(PREFIX + "/workspaces/{wid}/brief")
+    def project_brief(wid: str, request: Request, actor: Owner):
+        return request.app.state.runtime.continuity.brief(actor, wid)
+
+    @app.post(PREFIX + "/workspaces/{wid}/brief")
+    def save_project_brief(wid: str, body: ProjectBrief, request: Request, actor: Owner):
+        return request.app.state.runtime.continuity.save_brief(actor, wid, body.expected_revision, body.goal, body.decisions, body.remaining, body.request_id)
+
+    @app.post(PREFIX + "/workspaces/{wid}/context-preview")
+    def context_preview(wid: str, body: ContextPreview, request: Request, actor: Owner):
+        return request.app.state.runtime.continuity.preview(actor, wid, body.message, {"references": body.references, "target": body.target})
+
+    @app.get(PREFIX + "/workspaces/{wid}/search")
+    def project_search(wid: str, request: Request, actor: Owner, q: str):
+        return request.app.state.runtime.continuity.search(actor, wid, q)
+
+    @app.post(PREFIX + "/workspaces/{wid}/source-replacements")
+    def source_replacement(wid: str, body: SourceReplacement, request: Request, actor: Owner):
+        return request.app.state.runtime.continuity.replace(actor, wid, body.old_file_id, body.new_file_id, body.request_id)
+
+    @app.get(PREFIX + "/runs/{run_id}/context")
+    def run_context(run_id: str, request: Request, actor: Owner):
+        return request.app.state.runtime.continuity.run_context(actor, run_id)
+
+    @app.get(PREFIX + "/artifacts/{artifact_id}/dependencies")
+    def dependencies(artifact_id: str, request: Request, actor: Owner, version: int | None = None):
+        return request.app.state.runtime.continuity.dependencies(actor, artifact_id, version)
 
     @app.get(PREFIX + "/runs/{run_id}")
     def run(run_id: str, actor: Owner):

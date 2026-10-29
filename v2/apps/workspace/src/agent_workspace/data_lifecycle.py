@@ -63,6 +63,11 @@ class DataLifecycle:
         value["versions"] = [dict(r) for r in db.execute(f"SELECT {columns} FROM versions v JOIN artifacts a ON a.id=v.artifact_id WHERE a.workspace_id=? ORDER BY v.artifact_id,v.version", (wid,))]
         value["runs"] = [dict(r) for r in db.execute("SELECT id,state,cancel_requested,error,usage,output_bytes,stream_bytes FROM runs WHERE workspace_id=? ORDER BY id", (wid,))]
         value["effect_states"] = [dict(r) for r in db.execute("SELECT id,status FROM effects WHERE workspace_id=? ORDER BY id", (wid,))] if "effects" in tables else []
+        if "project_briefs" in tables:
+            from .continuity import Continuity
+            value["continuity"] = {"format": "agent-workspace-continuity-v1", "brief": Continuity._brief(db, wid),
+                "source_replacements": [dict(r) for r in db.execute("SELECT old_file_id,new_file_id FROM source_replacements WHERE workspace_id=? ORDER BY old_file_id", (wid,))],
+                "artifact_dependencies": [dict(r) for r in db.execute("SELECT artifact_id,version,dependencies FROM artifact_dependencies WHERE workspace_id=? ORDER BY artifact_id,version", (wid,))]}
         if content and "workspace_import_lineage" in tables:
             row = db.execute("SELECT archive_sha256,source_workspace_id,id_map,imported_at FROM workspace_import_lineage WHERE workspace_id=?", (wid,)).fetchone()
             if row:
@@ -135,6 +140,8 @@ class DataLifecycle:
             add(path + ".json", encoded({k: v for k, v in item.items() if k != "content"}))
         for key in ("artifacts", "messages", "memory", "schedules"):
             add(key + ".json", encoded(value[key]))
+        if "continuity" in value:
+            add("continuity.json", encoded(value["continuity"]))
         manifest["entries"] = [{"path": p, "bytes": len(b), "sha256": hashlib.sha256(b).hexdigest()} for p, b in members.items()]
         add("manifest.json", encoded(manifest))
         output = io.BytesIO()
@@ -187,6 +194,9 @@ class DataLifecycle:
                 if table in tables:
                     db.execute(f"DELETE FROM {table} WHERE workspace_id=?", (wid,))
             for table in ("workspace_import_lineage", "workspace_metadata_requests"):
+                if table in tables:
+                    db.execute(f"DELETE FROM {table} WHERE workspace_id=?", (wid,))
+            for table in ("project_briefs", "continuity_requests", "source_replacements", "run_contexts", "context_reads", "artifact_dependencies"):
                 if table in tables:
                     db.execute(f"DELETE FROM {table} WHERE workspace_id=?", (wid,))
             if "workspace_import_receipts" in tables:
