@@ -55,7 +55,10 @@ def child_environments(args):
     if api_port == web_port:
         raise ValueError("API and UI require distinct loopback ports")
     origins = [f"http://{host}:{port}" for host in ("localhost", "127.0.0.1") for port in (web_port, api_port)]
-    server = common | {"WORKSPACE_DATA_DIR": str(Path(args.data_dir).resolve()), "WORKSPACE_ORIGINS": json.dumps(origins)}
+    server = common | {"WORKSPACE_DATA_DIR": str(Path(args.data_dir).absolute()), "WORKSPACE_ORIGINS": json.dumps(origins)}
+    # The current neutral package source, including an explicitly extracted kit.
+    # Never inherit an arbitrary caller PYTHONPATH or legacy environment.
+    server["PYTHONPATH"] = str(Path(__file__).resolve().parent.parent)
     if args.config:
         server["WORKSPACE_CONFIG"] = str(Path(args.config).absolute())
     if args.simulation:
@@ -68,7 +71,8 @@ def child_environments(args):
 
 def launch(args):
     server_env, web_env = child_environments(args)
-    web_dir = Path(__file__).resolve().parents[3] / "workspace-web"
+    web_dir = Path(getattr(args, "web_dir", None) or Path(__file__).resolve().parents[3] / "workspace-web").absolute()
+    modules = Path(getattr(args, "node_modules", None) or web_dir / "node_modules").absolute()
     api_port = local_port(getattr(args, "api_port", 8110))
     web_port = local_port(getattr(args, "web_port", 3110))
     production = getattr(args, "production", False)
@@ -80,7 +84,7 @@ def launch(args):
         processes.append(subprocess.Popen([sys.executable, "-m", "uvicorn", "agent_workspace.api:app", "--host", "127.0.0.1", "--port", str(api_port)], env=server_env, start_new_session=True))
         # Execute Next directly, not through npm's extra parent. Each child owns
         # a new process group so descendants are cleaned up even on startup failure.
-        processes.append(subprocess.Popen(["node", str(web_dir / "node_modules/next/dist/bin/next"), "start" if production else "dev", "--hostname", "127.0.0.1", "--port", str(web_port)], cwd=web_dir, env=web_env, start_new_session=True))
+        processes.append(subprocess.Popen(["node", str(modules / "next/dist/bin/next"), "start" if production else "dev", "--hostname", "127.0.0.1", "--port", str(web_port)], cwd=web_dir, env=web_env, start_new_session=True))
         print(f"Agent Workspace: http://127.0.0.1:{web_port}/workspace (local only)", flush=True)
         while all(process.poll() is None for process in processes):
             time.sleep(.2)
@@ -113,6 +117,25 @@ def main(argv=None):
     configure.add_argument("--allow-external-processing", action="store_true")
     configure.add_argument("--fixture-tools", action="store_true", help="Allow local synthetic research/MCP ports, not live connectors")
     commands.add_parser("doctor", help="Sanitized offline readiness, no connectivity/model call")
+    commands.add_parser("version", help="Local source/workflow/data identifiers; no network")
+    check = commands.add_parser("preflight", help="Offline local runtime prerequisites and safe data check")
+    check.add_argument("--data-dir", type=Path, default=Path(".workspace-data"))
+    check.add_argument("--web-dir", type=Path)
+    check.add_argument("--node-modules", type=Path)
+    check.add_argument("--api-port", type=local_port, default=8110)
+    check.add_argument("--web-port", type=local_port, default=3110)
+    backup = commands.add_parser("backup", help="Private stopped-runtime backup; not shareable diagnostics")
+    backup.add_argument("--data-dir", type=Path, required=True)
+    backup.add_argument("--output", type=Path, required=True)
+    restore = commands.add_parser("restore", help="Verify private backup and restore into a NEW directory only")
+    restore.add_argument("--archive", type=Path, required=True)
+    restore.add_argument("--destination", type=Path, required=True)
+    upgrade = commands.add_parser("upgrade-data", help="Explicit offline compatibility marker for drained recognized AW06 data")
+    upgrade.add_argument("--data-dir", type=Path, required=True)
+    kit = commands.add_parser("source-kit", help="Create an allowlisted neutral source pilot kit, no dependencies or private data")
+    kit.add_argument("--output", type=Path, required=True)
+    verify = commands.add_parser("verify-kit", help="Verify a source kit integrity manifest; not a signature")
+    verify.add_argument("--archive", type=Path, required=True)
     start = commands.add_parser("launch", help="Start loopback API and UI, no legacy services")
     start.add_argument("--config", type=Path)
     start.add_argument("--data-dir", default=".workspace-data")
@@ -120,6 +143,8 @@ def main(argv=None):
     start.add_argument("--api-port", type=local_port, default=8110)
     start.add_argument("--web-port", type=local_port, default=3110)
     start.add_argument("--production", action="store_true", help="Use the independent UI's existing local .next-build, not deployment")
+    start.add_argument("--web-dir", type=Path, help="Explicit trusted neutral frontend directory, e.g. an extracted source kit")
+    start.add_argument("--node-modules", type=Path, help="Explicit trusted installed pinned frontend dependencies, not shipped by the source kit")
     args = parser.parse_args(argv)
     if args.command == "configure":
         if not args.allow_external_processing:
@@ -141,8 +166,42 @@ def main(argv=None):
     if args.command == "doctor":
         print(json.dumps(doctor(Settings.from_env()), sort_keys=True))
         return 0
+    if args.command in {"version", "preflight", "backup", "restore", "upgrade-data", "source-kit", "verify-kit"}:
+        from .operations import APP_VERSION, DATA_CONTRACT, HINTS, backup_data, preflight, restore_data, upgrade_data
+        from .store import WorkspaceError
+        try:
+            if args.command == "version":
+                value = dict(application_version=APP_VERSION, workflow_version="workspace-aw06-v1", data_contract=DATA_CONTRACT, real_ai_accepted=False)
+            elif args.command == "preflight":
+                value = preflight(args.data_dir, args.web_dir or Path(__file__).resolve().parents[3] / "workspace-web", api_port=args.api_port, web_port=args.web_port, node_modules=args.node_modules)
+            elif args.command == "backup":
+                value = backup_data(args.data_dir, args.output)
+            elif args.command == "restore":
+                value = restore_data(args.archive, args.destination)
+            elif args.command == "upgrade-data":
+                value = upgrade_data(args.data_dir)
+            else:
+                from .source_kit import build_kit, verify_kit
+                value = build_kit(args.output) if args.command == "source-kit" else verify_kit(args.archive)
+            print(json.dumps(value, sort_keys=True))
+            return 1 if value.get("status") == "not_ready" else 0
+        except (WorkspaceError, OSError, ValueError) as exc:
+            code = exc.code if isinstance(exc, WorkspaceError) else "filesystem_operation_failed"
+            print(json.dumps(dict(status="not_ready", code=code, hint=HINTS.get(code, HINTS["filesystem_operation_failed"]), network_tested=False)), file=sys.stderr)
+            return 1
     if args.api_port == args.web_port:
         parser.error("API and UI require distinct loopback ports")
+    from .operations import HINTS, preflight
+    from .store import WorkspaceError
+    try:
+        report = preflight(args.data_dir, args.web_dir or Path(__file__).resolve().parents[3] / "workspace-web",
+                           api_port=args.api_port, web_port=args.web_port, production=args.production, node_modules=args.node_modules)
+        if report["status"] != "ready":
+            print(json.dumps(report, sort_keys=True), file=sys.stderr)
+            return 1
+    except (WorkspaceError, OSError, ValueError):
+        print(json.dumps(dict(status="not_ready", code="filesystem_operation_failed", hint=HINTS["filesystem_operation_failed"])), file=sys.stderr)
+        return 1
     return launch(args)
 
 

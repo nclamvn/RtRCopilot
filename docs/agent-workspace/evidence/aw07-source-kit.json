@@ -1,0 +1,90 @@
+{
+  "status": "PASS",
+  "provenance": "Contractor neutral allowlisted kit, exact hash verification, actual Next build and Python/Next processes from extracted source",
+  "archive": {
+    "sha256": "622a15a89112ab2449268e48b5801d41636a61e6f742c6d51eb46d8105da2716",
+    "bytes": 250628,
+    "members": 55
+  },
+  "frontend_build_id": "qpUQYB9YP2uD86nNMEWlw",
+  "preflight": {
+    "application_version": "0.1.0-aw07",
+    "checks": [
+      {
+        "check": "python",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "dependencies",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "node",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "frontend_dependencies",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "frontend_build",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "disk",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "api_port",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "web_port",
+        "code": null,
+        "hint": null,
+        "passed": true
+      },
+      {
+        "check": "data",
+        "code": null,
+        "hint": null,
+        "passed": true
+      }
+    ],
+    "format": "agent-workspace-preflight-v1",
+    "network_tested": false,
+    "real_ai_accepted": false,
+    "status": "ready"
+  },
+  "checks": [
+    "Archive excludes private data, tests, dependency trees and build output",
+    "Python CLI and actual API import extracted source, proved with a nonsemantic extracted-only sentinel fingerprint",
+    "Neutral frontend compiles using declared existing same-host dependencies",
+    "Packaged scripted model and packaged research fixtures produce an artifact through the actual BFF",
+    "Ctrl-C launcher cleanup releases both owned loopback ports"
+  ],
+  "external_calls": 0,
+  "real_ai_acceptance": "NOT_MEASURED",
+  "limitations": [
+    "Existing trusted Python environment and Node dependency trees explicitly reused",
+    "One synthetic comment added after archive integrity verification only to prove API source provenance",
+    "Not a fresh-machine install, signed distributor, self-contained binary or real AI evaluation"
+  ],
+  "elapsed_seconds": 9.964,
+  "extracted_build_removed": true,
+  "scratch_removed": true
+}

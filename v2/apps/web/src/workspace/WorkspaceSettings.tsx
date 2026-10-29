@@ -3,6 +3,7 @@
 import {useEffect, useRef, useState} from "react";
 import {api, apiRoot, checkedResponse} from "./api";
 import type {Availability, Workspace} from "./contracts";
+import {LocalPilot} from "./LocalPilot";
 
 export type Readiness = Availability & {provider: {configured: boolean; endpoint: string | null; external_processing: boolean; storage: boolean; transport: string; requires_restart: boolean}; setup_command: string; capabilities?: Record<string, unknown>};
 export type DeletePreview = {workspace_id: string; name: string; confirmation_token: string; artifact_ids?: string[]; counts: Record<string, number>; blocked_reason: string | null; retained: string[]};
@@ -40,6 +41,7 @@ export function ModelSetup({onReadiness}: {onReadiness: (value: Availability) =>
       <pre className="aw-setup-command">{readiness.setup_command}</pre><button className="aw-text-action" onClick={() => {void navigator.clipboard.writeText(readiness.setup_command).then(() => setNotice("Command copied. Run it in your local terminal."), () => setNotice("Copy the displayed command into your local terminal."));}}>Copy setup command</button>
     </>}
     <div className="aw-control-actions"><button onClick={() => void refresh()}>Check readiness again</button></div>{notice && <p className="aw-muted" role="status">{notice}</p>}
+    <LocalPilot/>
   </section>;
 }
 

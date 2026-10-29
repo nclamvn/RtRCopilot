@@ -1,0 +1,91 @@
+{
+  "format": "agent-workspace-independent-review-v1",
+  "milestone": "AW-07",
+  "reviewed_at_utc": "2026-10-29T01:31:19Z",
+  "reviewer_role": "separate-author reviewer; no production code authored",
+  "base_commit": "48a2cebbc858dfe0ea117727ab59c72acf948744",
+  "binding": "Uncommitted working-tree files identified below, not a release certification or immutable candidate",
+  "verdict": "No remaining P1 found in the reviewed local/mock operations, source-kit, diagnostics and UI/BFF scope after targeted repairs",
+  "checks": {
+    "independent_pytest": {
+      "cwd": "v2/apps/workspace",
+      "command": "PYTHONPATH=src PYDANTIC_AI_NO_BANNER=1 .venv/bin/python -m pytest ../../../docs/agent-workspace/evidence/test_aw07_independent.py --basetemp=.aw07-review -q",
+      "exit_code": 0,
+      "passed": 36,
+      "failed": 0,
+      "duration_seconds": 2.29,
+      "warnings": "One intentional zipfile duplicate-member warning from a rejected adversarial archive"
+    },
+    "neutral_web_typecheck": {
+      "command": "pnpm --dir v2/apps/workspace-web typecheck",
+      "exit_code": 0
+    },
+    "read_path_review": [
+      "DataLease acquisition and compatibility checks precede Store mutation at supported ASGI startup, including unavailable model mode",
+      "Explicit offline metadata upgrade required for recognized unversioned AW06 data",
+      "CLI errors use bounded codes and known guidance without raw exception paths",
+      "LocalPilot reconstructs diagnostics using field and enum allowlists, strips untrusted extras and raw hints, handles outage/unmount/double-click",
+      "BFF allows authenticated diagnostics GET through loopback-only upstream and constrained route paths; no browser backup/restore surface",
+      "Private backup documentation declares retained sessions, permissions, memory, schedules, audit and content, and excludes browser drafts/provider profiles",
+      "Source kit contains source and locked manifests, not a self-contained binary, external runtime bundle or authenticated publisher signature"
+    ]
+  },
+  "probe_coverage": [
+    "Actual second Python process cannot acquire held advisory lease; acquisition succeeds after release",
+    "Future marker/user_version, corrupt catalogue, unknown table and trigger fail before Store mutation",
+    "Lock/catalogue symlinks rejected without changing target bytes",
+    "Actual ASGI environment parsing and launcher child-environment entry paths preserve final/parent aliases until pre-Store unsafe-path rejection, with no target catalogue or lock creation",
+    "Backup refuses held lease and active application run",
+    "Private backup archive mode0600 and parent0700; original durable bytes preserved",
+    "Restore new-directory only; exact retained content, original bytes, artifact versions, revisions, memory, brief, schedules and session authentication verified",
+    "Path traversal, absolute/extra members, duplicate names, hash mismatch, NaN, duplicate JSON keys and boolean version rejected",
+    "Declared ZIP expansion bound rejected before extraction; interrupted publication leaves no destination or staging directory",
+    "Recomputed valid outer hashes do not permit queued application work; unknown auxiliary DBOS schema and auxiliary SQL triggers rejected",
+    "Diagnostics authentication, owner-scoped aggregates, private model/error/content/path canaries and fixed format verified",
+    "Offline preflight low disk/future/busy states and incompatible frontend versions fail with no private paths",
+    "Actual built source kit excludes data/legacy/tests/secrets; byte tampering and manifest-only empty kit rejected",
+    "Synthetic source-tree parent symlink cannot leak outside bytes into source kit",
+    "Actual CLI failure returns typed JSON without private path or traceback"
+  ],
+  "finding_history": [
+    {"finding": "Boolean backup version accepted as integer1", "resolution": "Builder added strict integer type checks; independent adversarial probe passes"},
+    {"finding": "Arbitrary auxiliary database without recognized workflow table accepted", "resolution": "Builder added auxiliary schema checks; independent probe passes"},
+    {"finding": "Auxiliary SQL triggers accepted despite catalogue trigger prohibition", "resolution": "Builder rejects auxiliary triggers/views and validates workflow/outbox columns; independent probes pass"},
+    {"finding": "Existence-only frontend dependency preflight accepted wrong pinned versions", "resolution": "Builder checks installed package versions; independent incompatible-version probe passes"},
+    {"finding": "Unversioned AW06 startup implicitly created format metadata", "resolution": "Builder added explicit offline upgrade gate before Store construction; independent no-mutation/upgrade probe passes"},
+    {"finding": "Manifest-only empty source kit verified", "resolution": "Builder added required members and admitted source scopes; independent probe passes"},
+    {"finding": "Source kit input files lacked parent-symlink containment validation", "resolution": "Builder added safe-parent and resolved-repository containment checks; independent unsafe-path probe passes"},
+    {"finding": "Builder post-freeze review found environment/launcher resolve() erased data-directory aliases before the ownership gate", "resolution": "Builder changed both supported path entry seams to absolute() preservation; four separate-author final/parent-alias ASGI/child-environment probes pass without touching the target"},
+    {"finding": "Final packaging-only README neutralization", "resolution": "Reviewed mapping copies already admitted safe LOCAL_PILOT.md bytes into the packaged README instead of shipping checkout-specific historical README. No runtime change or new input surface. Independent36 rerun passes on refreshed source-kit hash"}
+  ],
+  "limitations": [
+    "Only local synthetic data and scripted mock behavior tested; no external model, real web, connector, deployment or AI semantic acceptance",
+    "Test count is structural evidence, not general product usefulness or human acceptance",
+    "Advisory locking protects cooperating AW07 processes, not an already running uncooperative AW06 worker; old runtimes must be manually drained first",
+    "Database validation checks recognized table families/minimum required columns, quiet state and SQLite integrity; it is not full SQL DDL authentication or a sandbox for arbitrary malicious backups",
+    "Restore only operator-owned trusted private backups; retained sessions and permissions are an explicit private recovery responsibility, not new authority approval",
+    "Source-kit hashes prove byte consistency, not code authentication, publisher trust, clean-machine installation, cross-platform portability or commercial licensing clearance",
+    "Read-only SQLite may materialize WAL/SHM bookkeeping; original-data assertions compare durable files and retained user data, excluding those transient sidecars",
+    "Backend Python source fingerprint does not identify frontend build or certify a full release",
+    "Parent owns full regression, browser E2E, extracted-kit smoke and final milestone acceptance"
+  ],
+  "file_sha256": {
+    "docs/agent-workspace/evidence/test_aw07_independent.py": "03f86d049c0dcfd659032cc1850fd1ab0e170a2ce3e37057e901069a730b36b7",
+    "v2/apps/workspace/src/agent_workspace/operations.py": "23a63c7a80c1c97b309404e7d08e4141d47d1be153bc1207b837eeaa2939e37a",
+    "v2/apps/workspace/src/agent_workspace/source_kit.py": "cddf52560f1a980460f61d7b2da50ba9142bd5c48c34bf96eca6c89932cfcefc",
+    "v2/apps/workspace/src/agent_workspace/api.py": "eda1cf7487f1274eaedf7461fff932166e6e800816b519b6a900a0033234f6d4",
+    "v2/apps/workspace/src/agent_workspace/cli.py": "7a7394de926f5c8ace18e513422189681d7862fba08c319147a0038bb3f0d2cb",
+    "v2/apps/workspace/src/agent_workspace/config.py": "903172a288daa1618fe0afaa8dd8b29218ef2ca35830e713189cd9d66bed78a2",
+    "v2/apps/web/src/workspace/LocalPilot.tsx": "136d043ed02da59da563527d621f7837e63e84273e7af1fa47257574b7c62ad1",
+    "v2/apps/web/src/app/api/workspace/[[...path]]/route.ts": "519dcbec014badd6cea8c6fb245cb3b2bc80b16cf7f94f245e58785e8bdda710"
+  },
+  "cleanup": {
+    "owned_scratch": "v2/apps/workspace/.aw07-review",
+    "size_before_removal": "8.6MiB",
+    "removed": true,
+    "external_calls": 0,
+    "docker_operations": 0,
+    "deployments": 0,
+    "commits": 0
+  }
+}

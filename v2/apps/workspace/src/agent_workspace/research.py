@@ -10,7 +10,7 @@ class OfflineResearch:
     def __init__(self, enabled):
         self.sources = []
         if enabled:
-            path = Path(__file__).resolve().parents[2] / "tests" / "research_fixtures.json"
+            path = Path(__file__).resolve().parent / "assets" / "research_fixtures.json"
             if path.is_file():
                 self.sources = json.loads(path.read_text())
 

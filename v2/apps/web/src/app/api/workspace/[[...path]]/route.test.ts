@@ -4,6 +4,12 @@ import {GET, POST, workspaceUpstream} from "./route";
 afterEach(() => {vi.unstubAllGlobals(); vi.unstubAllEnvs();});
 beforeEach(() => {vi.stubEnv("WORKSPACE_UI_ENABLED", "1");});
 describe("Workspace BFF boundary", () => {
+  test("AW07 diagnostics is read-only; backup, restore and arbitrary health commands remain private CLI operations", async () => {
+    const fetcher = vi.fn(async () => new Response("{}")); vi.stubGlobal("fetch", fetcher);
+    expect((await GET(new NextRequest("http://localhost/api/workspace/diagnostics"), {params: Promise.resolve({path: ["diagnostics"]})})).status).toBe(200);
+    for (const path of [["diagnostics"], ["backup"], ["restore"], ["preflight"], ["diagnostics", "upload"], ["runtime", "restart"]]) expect((await POST(new NextRequest(`http://localhost/api/workspace/${path.join("/")}`, {method: "POST", body: "{}"}), {params: Promise.resolve({path})})).status).toBe(400);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   test("is unavailable by default in a generic legacy web deployment", async () => {
     vi.stubEnv("WORKSPACE_UI_ENABLED", ""); const fetcher = vi.fn(); vi.stubGlobal("fetch", fetcher);
     const response = await POST(new NextRequest("http://localhost/api/workspace/session", {method: "POST", body: "{}"}), {params: Promise.resolve({path: ["session"]})});

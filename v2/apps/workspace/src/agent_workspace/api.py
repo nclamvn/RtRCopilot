@@ -154,19 +154,28 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
     async def lifespan(app):
         nonlocal store
         from .runtime import Runtime
-        store = Store(settings.data_dir / "catalogue.sqlite")
-        app.state.store = store
-        runtime = (runtime_factory or Runtime)(settings, store)
-        app.state.runtime = runtime
-        from .data_lifecycle import DataLifecycle
-        app.state.lifecycle = DataLifecycle(store, active_runs=getattr(runtime, "active_runs", None))
-        from .portability import SnapshotImporter
-        app.state.importer = SnapshotImporter(store)
-        await runtime.start()
-        try:
-            yield
-        finally:
-            await runtime.close()
+        from .operations import DataLease, inspect_data, initialize_format
+        # Ownership and compatibility precede even the Store constructor/migrations,
+        # including no-model mode. Startup failure releases ownership as well.
+        with DataLease(settings.data_dir):
+            inspected = inspect_data(settings.data_dir)
+            from .operations import FORMAT_FILE
+            if inspected["state"] == "compatible" and not (settings.data_dir / FORMAT_FILE).exists():
+                raise WorkspaceError("data_upgrade_required", 409)
+            store = Store(settings.data_dir / "catalogue.sqlite")
+            app.state.store = store
+            runtime = (runtime_factory or Runtime)(settings, store)
+            app.state.runtime = runtime
+            from .data_lifecycle import DataLifecycle
+            app.state.lifecycle = DataLifecycle(store, active_runs=getattr(runtime, "active_runs", None))
+            from .portability import SnapshotImporter
+            app.state.importer = SnapshotImporter(store)
+            initialize_format(settings.data_dir)
+            try:
+                await runtime.start()
+                yield
+            finally:
+                await runtime.close()
 
     app = FastAPI(title="Agent Workspace", lifespan=lifespan)
     app.state.store = store
@@ -238,6 +247,11 @@ def create_app(settings: Settings | None = None, *, runtime_factory=None) -> Fas
     @app.get(PREFIX + "/status")
     def status(request: Request, actor: Owner):
         return request.app.state.runtime.status()
+
+    @app.get(PREFIX + "/diagnostics")
+    def local_diagnostics(request: Request, actor: Owner):
+        from .operations import diagnostics
+        return diagnostics(request.app.state.runtime, actor)
 
     @app.get(PREFIX + "/readiness")
     def readiness(request: Request, actor: Owner):

@@ -68,7 +68,9 @@ class Settings:
                 # default origin. Mutation requests fail closed until repaired.
                 origins, error = (), error or "invalid_loopback_origins"
         return cls(
-            data_dir=Path(os.environ.get("WORKSPACE_DATA_DIR", ".workspace-data")).resolve(),
+            # Retain symlink components for the ownership boundary to reject;
+            # resolve() here would silently bless an unsafe alias before startup.
+            data_dir=Path(os.environ.get("WORKSPACE_DATA_DIR", ".workspace-data")).absolute(),
             model=os.environ.get("WORKSPACE_MODEL") or profile.get("model"),
             test_mode=os.environ.get("WORKSPACE_TEST_MODE") == "1",
             api_key=os.environ.get("WORKSPACE_API_KEY") or profile.get("api_key"),

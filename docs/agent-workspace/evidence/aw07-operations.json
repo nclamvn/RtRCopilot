@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "provenance": "Contractor actual two API subprocesses, HTTP, SQLite/DBOS and offline private backup/restore; synthetic deterministic model",
+  "checks": [
+    "Runtime lock rejects live backup without an archive",
+    "Stopped private backup and atomic new-directory restore",
+    "Restore refuses existing source directory and leaves original catalogue unchanged",
+    "Same local session retains raw Unicode source, both output versions, user brief and exact saved context fingerprint",
+    "Completed run is still terminal after restore; no prompt was re-dispatched",
+    "Content-free diagnostics omit private synthetic brief canary"
+  ],
+  "measurements": {
+    "initial_api_startup_ms": 1099.744,
+    "recovered_api_startup_ms": 983.04,
+    "backup_bytes": 23915
+  },
+  "backup": {
+    "bytes": 23915,
+    "format": "agent-workspace-private-backup-v1",
+    "members": 3,
+    "private": true,
+    "replay_started": false,
+    "status": "backed_up"
+  },
+  "restore": {
+    "data_contract": "workspace-data-aw06-v1",
+    "destination_new": true,
+    "replay_started": false,
+    "retained": "Session hashes and private audit retained. Browser drafts are not in this backup. Permissions and manual schedules remain stored; no scheduler or execution started.",
+    "status": "restored"
+  },
+  "external_calls": 0,
+  "real_ai_acceptance": "NOT_MEASURED",
+  "elapsed_seconds": 5.1,
+  "scratch_removed": true
+}

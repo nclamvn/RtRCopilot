@@ -1,9 +1,7 @@
 """PydanticAI slim loop, one new DBOS recovery owner and scoped deterministic tools."""
 import asyncio
 from dataclasses import dataclass
-import importlib.util
 import json
-from pathlib import Path
 import time
 
 from dbos import DBOS, SetWorkflowID
@@ -259,14 +257,8 @@ class Runtime:
 
     def _model(self):
         if self.settings.test_mode:
-            # Fixture intentionally lives outside the production package. Never a real-model fallback.
-            path = Path(__file__).resolve().parents[2] / "tests" / "simulation_model.py"
-            if not path.is_file():
-                self.reason = "simulation_fixture_not_installed"
-                return None
-            spec = importlib.util.spec_from_file_location("workspace_simulation", path)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
+            # Shipped explicitly for local pilot mode, never a real-model fallback.
+            from . import simulation_model as module
             self.model_label = "SIMULATION / FunctionModel"
             return module.build_model()
         from .provider_config import readiness, build_model

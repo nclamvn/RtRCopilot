@@ -1,9 +1,17 @@
 # Agent Workspace local prototype
 
-AW-01 through AW-05 provide a neutral workspace with its own frontend entry/build. It does not
+AW-01 through AW-07 provide a neutral workspace with its own frontend entry/build. It does not
 activate the legacy executor, import the RtR answer pipeline or discover its
 credentials. Current acceptance is **local/mock integration only**, as requested
 by the user. It is not an accepted production AI assistant.
+
+AW-07 adds a bounded neutral source pilot kit, exclusive data ownership, offline
+version/preflight checks, private stopped-runtime backup/new-directory restore and
+content-free authenticated diagnostics. See [LOCAL_PILOT.md](LOCAL_PILOT.md) for
+the runnable same-host guide and explicit compatibility/restore boundaries. An
+existing unversioned AW06 data directory must be drained, backed up and explicitly
+marked with `workspace upgrade-data --data-dir PATH` before AW07 startup. Real AI,
+live connector quality and fresh-machine installation remain unaccepted.
 
 ## Run locally (one command, no legacy services)
 

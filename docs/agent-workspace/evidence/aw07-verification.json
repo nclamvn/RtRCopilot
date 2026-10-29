@@ -1,0 +1,50 @@
+{
+  "format": "agent-workspace-milestone-verification-v1",
+  "milestone": "AW-07",
+  "date": "2026-10-29",
+  "status": "LOCAL_MOCK_ACCEPTED_LIMITED",
+  "base_commit": "48a2cebbc858dfe0ea117727ab59c72acf948744",
+  "binding": "Uncommitted working tree; package-only README mapping was separately retested after the core/API/browser run. Not a signed release or real-AI acceptance.",
+  "source_manifest": {
+    "path": "aw07-source-manifest.json",
+    "files": 95,
+    "source_sha256": "6b0c7a067f69db6dca5d274dd28249b41dbc01b53464c793669015fb0b3e59c6",
+    "backend_source_id": "python-source-6919ce845f098e98659b",
+    "main_frontend_build_id": "xjrdPN8rzum7CIulWUtH6"
+  },
+  "verification": {
+    "python_product_full": {"passed": 175, "failed": 0, "seconds": 92.23, "author": "Builder", "timing": "After runtime/CLI symlink fix, before packaging-only README mapping"},
+    "packaging_targeted_after_mapping": {"passed": 8, "failed": 0, "seconds": 1.49, "overlaps_product_full": true},
+    "retained_independent_aw03_aw07": {"passed": 110, "failed": 0, "seconds": 10.98, "author": "Contractor rerun", "timing": "Final source including neutral README mapping", "warnings": "One intentional duplicate ZIP member warning from rejected input"},
+    "separate_author_aw07_subset": {"passed": 36, "failed": 0, "seconds": 2.29, "subset_of_retained_110": true, "evidence": "aw07-independent-review.json"},
+    "shared_web_unit": {"passed": 302, "failed": 0, "files": 33, "seconds": 10.32},
+    "browser": {"passed": 46, "unexpected": 0, "flaky": 0, "skipped": 0, "seconds": 67.601813, "evidence": "aw07-browser.json", "initial_run": {"passed": 44, "failed": 2, "cause": "New test helper alert-selector and mobile-navigation issues; assertions preserved, complete suite rerun"}},
+    "static_checks": ["Neutral frontend build", "Shared and neutral TypeScript", "Affected ESLint", "Neutral import/route audit", "Production and new AW07 test/probe Ruff", "Diff whitespace"],
+    "historical_test_lint_debt": {"findings": 14, "scope": "Pre-existing unused imports/variable in historical tests; not production/new AW07 lint", "changed": false},
+    "contractor_actual_process_proofs": ["aw07-operations.json", "aw07-source-kit.json", "aw07-http.json"],
+    "integrated_browser": {"url": "http://localhost:3120/workspace", "screenshot": "aw07-local-pilot.png", "confirmed": ["Same selected synthetic project and unsent composer draft after reload", "Both source originals and output context retained", "Local pilot version, final Python fingerprint, owner counts and zero active requests"]}
+  },
+  "acceptance": {
+    "checkpoint_local_milestone": true,
+    "ai_quality": "NOT_MEASURED",
+    "real_provider_latency_and_cost": "NOT_MEASURED",
+    "direct_llm_baseline": "NOT_RUN",
+    "direct_tool_agent_baseline": "NOT_RUN",
+    "human_acceptance": "NOT_REVIEWED",
+    "fresh_machine_self_contained_distribution": "NOT_CERTIFIED",
+    "production_release": false
+  },
+  "authority": {"external_calls": 0, "deployments": 0, "dependency_downloads": 0, "docker_operations": 0, "aw07_commits": 0, "aw07_pushes": 0},
+  "cleanup": {
+    "root_extracted_kit_build_and_recovery_scratch_removed": true,
+    "root_prior_contract_scratch_mib": 26,
+    "isolated_e2e_catalogue_removed_mib": 3,
+    "builder_fixed_test_scratch_removed_mib": 28,
+    "builder_packaging_scratch_removed_mib": 3,
+    "reviewer_scratch_removed_mib": 8.6,
+    "sizes_are_per_directory_not_cumulative_repeated_run_savings": true,
+    "kept": ["Single reusable .next-build", "Declared synthetic demo on3120/8120", "Ignored private pre-upgrade backup, not committed"],
+    "stopped_owned_test_ports": [3130, 8130, 3140, 8140, 8141, 8142],
+    "unrelated_3110_8110_runtime_untouched": true
+  }
+}

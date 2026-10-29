@@ -44,6 +44,21 @@ Demo<http://localhost:3120/workspace>đã cập nhật và kiểm restart, dữ 
 được giữ. Chưa external/deploy/commit/push; AI thật, human acceptance và giá trị
 so với direct tool-agent vẫn chưa đo. Không tự mở mốc tiếp theo.
 
+**AW-07, 2026-10-29:** AW-06 đã commit/push tại
+`48a2cebbc858dfe0ea117727ab59c72acf948744`, SHA remote đã đối chiếu.
+[AW-07](AW-07.md) đạt nghiệm thu kỹ thuật **local/mock có giới hạn**:
+source pilot kit trung tính, offline preflight, khóa sở hữu runtime, diagnostics
+không chứa nội dung, private backup và restore vào thư mục mới. Python product
+175, independent regression AW-03–07 110 (gồm 36 probe AW-07), web unit 302 và
+browser E2E 46 đều đạt. Kit đã giải nén, build và chạy qua BFF với dependency tin
+cậy có sẵn cùng máy; không phải binary tự chứa hoặc fresh-machine certification.
+Demo <http://localhost:3120/workspace> đã backup, nâng cấp và kiểm giữ dữ liệu/draft.
+AI thật, live web/connector, human acceptance và lợi thế so với direct tool-agent
+vẫn chưa nghiệm thu. Người dùng đã phê duyệt checkpoint commit/push AW-07 gồm
+code, test và evidence. Các JSON giữ nguyên provenance trước commit; checkpoint
+không biến mock thành nghiệm thu AI thật. Không model external hay deploy;
+backup, secrets, file tạm và dữ liệu legacy không thuộc phạm vi commit.
+
 **Quyết định thiết kế đề xuất: PydanticAI làm agent loop, bổ sung capability chọn lọc từ Pydantic AI Harness; thử DBOS làm chủ sở hữu duy nhất của recovery trong workflow mới.** Không đưa harness vào pipeline RAG cũ, không ghép hai executor cho cùng một run. Deep Agents/LangGraph là phương án thay thế nếu phép thử tích hợp đầu tiên bác bỏ lựa chọn này.
 
 Đây là kế hoạch phát triển, chưa phải chứng thực harness hay bản triển khai. Người dùng đã đồng ý hướng sản phẩm độc lập và yêu cầu so sánh, lựa chọn, lập kế hoạch. Phiên này không cài dependency, chạy model trả phí, SQL/Docker, campaign, executor hoặc deploy. Quyền chạy các campaign RtR trước đây không mở rộng sang sản phẩm mới.
